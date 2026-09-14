@@ -1,23 +1,169 @@
-<?php use function Naf\I18n\t;
-use function Naf\View\s;
-use function Naf\route;
+<?php
+
 use function Naf\Form\csrf;
-$profile=$user->getProfile();$token=csrf()->token();$current=$project['id']??null;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$profile = $user->getProfile();
+$token   = csrf()->token();
+$current = $project['id'] ?? null;
 ?>
-<!doctype html><html lang="<?= s($preferences['locale']) ?>" data-theme="<?= s($preferences['theme']??'system') ?>"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="csrf-token" content="<?= s($token) ?>">
-<title><?= s(t($title??'Board')) ?> · Nafinity</title><link rel="stylesheet" href="/assets/app.css"><script type="module" src="/assets/app.js"></script>
-</head><body><div class="app-shell">
-<aside class="sidebar" id="sidebar"><a class="brand" href="<?= s(route('home')) ?>"><span class="brand-symbol">∞</span> nafinity<span class="brand-dot"></span></a>
-<div class="workspace-caption"><?= s(t('DEIN WORKSPACE')) ?></div>
-<a class="side-link" href="<?= s(route('projects')) ?>"><span class="nav-icon">▦</span> <?= s(t('Alle Projekte')) ?></a><a class="side-link" href="<?= s(route('notifications')) ?>"><span class="nav-icon">◉</span> <?= s(t('Benachrichtigungen')) ?></a>
-<div class="section-caption"><?= s(t('PROJEKTE')) ?> <button class="icon-button" data-dialog="new-project" aria-label="<?= s(t('Projekt erstellen')) ?>">+</button></div>
-<nav class="project-nav" aria-label="Projekte"><?php foreach($projects as $item): ?>
-<a class="side-link <?= (string)$current===(string)$item['id']?'active':'' ?>" href="<?= s(route('board',['project'=>$item['id']])) ?>"><span class="project-symbol" style="--project-color:<?= s($item['color']) ?>"><?= s($item['icon']) ?></span><span><?= s($item['name']) ?><?= $item['archived_at']?' · Archiv':'' ?></span><span class="side-count"><?= (int)$item['open_count'] ?></span></a>
-<?php endforeach ?></nav>
-<div class="sidebar-note"><span class="mini-orbit">◌</span><strong><?= s(t('Raum für den nächsten Schritt.')) ?></strong><p><?= s(t('Ideen festhalten. Gemeinsam weiterbringen.')) ?></p></div>
-<div class="sidebar-bottom"><button class="side-link theme-toggle" type="button"><span class="nav-icon">◐</span> <?= s(t('Darstellung wechseln')) ?></button><a class="side-link" href="<?= s(route('preferences')) ?>"><span class="nav-icon">⚙</span> <?= s(t('Einstellungen')) ?></a><div class="user-row"><span class="avatar"><?= s(mb_substr($profile->name??'U',0,1)) ?></span><div><strong><?= s($profile->name) ?></strong><small>Powered by NAF</small></div><form method="post" action="<?= s(route('logout')) ?>"><input type="hidden" name="_csrf" value="<?= s($token) ?>"><button class="icon-button" title="<?= s(t('Abmelden')) ?>" aria-label="<?= s(t('Abmelden')) ?>">↗</button></form></div></div>
-</aside><div class="main-shell"><header class="topbar"><button class="icon-button mobile-menu" aria-label="Menü öffnen" aria-controls="sidebar">☰</button><div class="breadcrumb"><span>Workspace</span><span>/</span><strong><?= s($project['name']??'Nafinity') ?></strong></div><div class="topbar-right"><span class="local-status"><i></i> <?= s(t('Gemeinsam voran')) ?></span><span class="avatar avatar-small"><?= s(mb_substr($profile->name??'U',0,1)) ?></span></div></header><main id="main-content"><?= $this->renderBlock('content') ?></main></div></div>
-<dialog id="new-project" class="modal"><form method="post" action="<?= s(route('projects.create')) ?>" data-enhanced><div class="dialog-heading"><div><span class="eyebrow">ETWAS NEUES BEGINNT</span><h2>Neues Projekt</h2></div><button type="button" class="icon-button" data-close-dialog aria-label="Schließen">×</button></div><input type="hidden" name="_csrf" value="<?= s($token) ?>"><label><?= s(t('Name')) ?><input name="name" required maxlength="120" placeholder="Woran arbeitet ihr?"></label><label><?= s(t('Beschreibung')) ?><textarea name="description" rows="3" placeholder="Ein gemeinsames Ziel, ein klarer Anfang."></textarea></label><div class="form-grid"><label><?= s(t('Farbe')) ?><input type="color" name="color" value="#6366f1"></label><label>Projektkürzel<input name="icon" maxlength="2" value="N"></label></div><div class="form-errors" role="alert"></div><button class="button primary"><?= s(t('Projekt erstellen')) ?> <span>↗</span></button></form></dialog>
-<dialog id="ticket-drawer" class="ticket-drawer" aria-label="Ticketdetails"><div class="drawer-content"></div></dialog><div id="toast" class="toast" role="status" aria-live="polite"></div>
-</body></html>
+<!doctype html>
+<html lang="<?= s($preferences['locale']) ?>" data-theme="<?= s($preferences['theme'] ?? 'system') ?>">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="csrf-token" content="<?= s($token) ?>" />
+        <title><?= s(t($title ?? 'Board')) ?> · Nafinity</title>
+        <link rel="stylesheet" href="/assets/app.css" />
+        <script type="module" src="/assets/app.js"></script>
+    </head>
+    <body>
+        <div class="app-shell">
+            <aside class="sidebar" id="sidebar">
+                <a class="brand" href="<?= s(route('home')) ?>">
+                    <span class="brand-symbol">∞</span>
+                    nafinity
+                    <span class="brand-dot"></span>
+                </a>
+                <div class="workspace-caption"><?= s(t('DEIN WORKSPACE')) ?></div>
+                <a class="side-link" href="<?= s(route('projects')) ?>">
+                    <span class="nav-icon">▦</span>
+                    <?= s(t('Alle Projekte')) ?>
+                </a>
+                <a class="side-link" href="<?= s(route('notifications')) ?>">
+                    <span class="nav-icon">◉</span>
+                    <?= s(t('Benachrichtigungen')) ?>
+                </a>
+                <div class="section-caption">
+                    <?= s(t('PROJEKTE')) ?>
+                    <button
+                        class="icon-button"
+                        data-dialog="new-project"
+                        aria-label="<?= s(t('Projekt erstellen')) ?>"
+                    >
+                        +
+                    </button>
+                </div>
+                <nav class="project-nav" aria-label="Projekte">
+                    <?php foreach ($projects as $item): ?>
+                        <a class="side-link <?= (string) $current === (string) $item['id'] ? 'active' : '' ?>" href="<?= s(route('board', ['project' => $item['id']])) ?>">
+                            <span class="project-symbol" style="--project-color: <?= s($item['color']) ?>">
+                                <?= s($item['icon']) ?>
+                            </span>
+                            <span><?= s($item['name']) ?><?= $item['archived_at'] ? ' · Archiv' : '' ?></span>
+                            <span class="side-count"><?= (int) $item['open_count'] ?></span>
+                        </a>
+                    <?php endforeach ?>
+                </nav>
+                <div class="sidebar-note">
+                    <span class="mini-orbit">◌</span>
+                    <strong><?= s(t('Raum für den nächsten Schritt.')) ?></strong>
+                    <p><?= s(t('Ideen festhalten. Gemeinsam weiterbringen.')) ?></p>
+                </div>
+                <div class="sidebar-bottom">
+                    <button class="side-link theme-toggle" type="button">
+                        <span class="nav-icon">◐</span>
+                        <?= s(t('Darstellung wechseln')) ?>
+                    </button>
+                    <a class="side-link" href="<?= s(route('preferences')) ?>">
+                        <span class="nav-icon">⚙</span>
+                        <?= s(t('Einstellungen')) ?>
+                    </a>
+                    <div class="user-row">
+                        <span class="avatar"><?= s(mb_substr($profile->name ?? 'U', 0, 1)) ?></span>
+                        <div>
+                            <strong><?= s($profile->name) ?></strong>
+                            <small>Powered by NAF</small>
+                        </div>
+                        <form method="post" action="<?= s(route('logout')) ?>">
+                            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                            <button
+                                class="icon-button"
+                                title="<?= s(t('Abmelden')) ?>"
+                                aria-label="<?= s(t('Abmelden')) ?>"
+                            >
+                                ↗
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </aside>
+            <div class="main-shell">
+                <header class="topbar">
+                    <button
+                        class="icon-button mobile-menu"
+                        aria-label="Menü öffnen"
+                        aria-controls="sidebar"
+                    >
+                        ☰
+                    </button>
+                    <div class="breadcrumb">
+                        <span>Workspace</span>
+                        <span>/</span>
+                        <strong><?= s($project['name'] ?? 'Nafinity') ?></strong>
+                    </div>
+                    <div class="topbar-right">
+                        <span class="local-status">
+                            <i></i>
+                            <?= s(t('Gemeinsam voran')) ?>
+                        </span>
+                        <span class="avatar avatar-small"><?= s(mb_substr($profile->name ?? 'U', 0, 1)) ?></span>
+                    </div>
+                </header>
+                <main id="main-content"><?= $this->renderBlock('content') ?></main>
+            </div>
+        </div>
+        <dialog id="new-project" class="modal">
+            <form method="post" action="<?= s(route('projects.create')) ?>" data-enhanced>
+                <div class="dialog-heading">
+                    <div>
+                        <span class="eyebrow">ETWAS NEUES BEGINNT</span>
+                        <h2>Neues Projekt</h2>
+                    </div>
+                    <button
+                        type="button"
+                        class="icon-button"
+                        data-close-dialog
+                        aria-label="Schließen"
+                    >
+                        ×
+                    </button>
+                </div>
+                <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                <label>
+                    <?= s(t('Name')) ?>
+                    <input name="name" required maxlength="120" placeholder="Woran arbeitet ihr?" />
+                </label>
+                <label>
+                    <?= s(t('Beschreibung')) ?>
+                    <textarea
+                        name="description"
+                        rows="3"
+                        placeholder="Ein gemeinsames Ziel, ein klarer Anfang."
+                    ></textarea>
+                </label>
+                <div class="form-grid">
+                    <label>
+                        <?= s(t('Farbe')) ?>
+                        <input type="color" name="color" value="#6366f1" />
+                    </label>
+                    <label>
+                        Projektkürzel
+                        <input name="icon" maxlength="2" value="N" />
+                    </label>
+                </div>
+                <div class="form-errors" role="alert"></div>
+                <button class="button primary">
+                    <?= s(t('Projekt erstellen')) ?>
+                    <span>↗</span>
+                </button>
+            </form>
+        </dialog>
+        <dialog id="ticket-drawer" class="ticket-drawer" aria-label="Ticketdetails">
+            <div class="drawer-content"></div>
+        </dialog>
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </body>
+</html>

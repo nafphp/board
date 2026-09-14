@@ -1,5 +1,193 @@
-<?php use function Naf\I18n\t; use function Naf\View\s;use function Naf\route;use function Naf\Form\csrf;$this->setLayout('layout');$this->block('content');$p=$project['id'];$token=csrf()->token(); ?>
-<section class="page-heading"><div><span class="eyebrow">EIN BOARD, DAS ZU EUCH PASST</span><h1>Projekteinstellungen</h1><p><?= s($project['name']) ?> · Mitglieder und Struktur</p></div><a class="button subtle" href="<?= s(route('board',['project'=>$p])) ?>">← Zum Board</a></section>
-<div class="settings-grid"><section class="settings-card"><h2>Über das Projekt</h2><form method="post" data-enhanced action="<?= s(route('project.update',['project'=>$p])) ?>"><input type="hidden" name="_csrf" value="<?= s($token) ?>"><label><?= s(t('Name')) ?><input name="name" required maxlength="120" value="<?= s($project['name']) ?>"></label><label><?= s(t('Beschreibung')) ?><textarea name="description" rows="3"><?= s($project['description']) ?></textarea></label><div class="form-grid"><label><?= s(t('Farbe')) ?><input type="color" name="color" value="<?= s($project['color']) ?>"></label><label>Kürzel<input name="icon" maxlength="2" value="<?= s($project['icon']) ?>"></label></div><div class="form-errors" role="alert"></div><button class="button primary">Projekt speichern</button></form><?php if($scope->role==='owner'): ?><hr><form method="post" data-enhanced action="<?= s(route('project.archive',['project'=>$p])) ?>"><input type="hidden" name="_csrf" value="<?= s($token) ?>"><input type="hidden" name="action" value="<?= $project['archived_at']?'restore':'archive' ?>"><p>Archivierte Projekte bleiben lesbar. Änderungen werden gesperrt.</p><div class="form-errors" role="alert"></div><button class="button subtle"><?= $project['archived_at']?t('Projekt wiederherstellen'):t('Projekt archivieren') ?></button></form><?php endif ?></section>
-<section class="settings-card"><h2><?= s(t('Mitglieder')) ?></h2><table class="member-table"><thead><tr><th>PERSON</th><th>ROLLE</th></tr></thead><tbody><?php foreach($members as$m): ?><tr><td><?= s($m['name']) ?><small><?= s($m['email']) ?></small></td><td><?= s($m['role']) ?></td></tr><?php endforeach ?></tbody></table><form method="post" data-enhanced action="<?= s(route('project.members',['project'=>$p])) ?>" style="margin-top:22px"><input type="hidden" name="_csrf" value="<?= s($token) ?>"><label>Bestehendes Konto<input name="email" type="email" required placeholder="E-Mail-Adresse"></label><label><?= s(t('Rolle')) ?><select name="role"><?php foreach(($scope->role==='owner'?['owner','manager','member','viewer','remove']:['member','viewer','remove'])as$role): ?><option value="<?= s($role) ?>"><?= $role==='remove'?'Zugriff entziehen':s(ucfirst($role)) ?></option><?php endforeach ?></select></label><p>Owner verwalten das Projekt. Manager organisieren das Board. Member bearbeiten Tickets. Viewer lesen mit.</p><div class="form-errors" role="alert"></div><button class="button subtle">Mitgliedschaft speichern</button></form></section>
-<?php foreach(['column'=>[t('Spalten'),$columns],'swimlane'=>['Swimlanes',$swimlanes],'label'=>['Labels',$labels]]as$kind=>[$heading,$items]): ?><section class="settings-card <?= $kind==='column'?'wide':'' ?>"><h2><?= s($heading) ?></h2><?php foreach($items as$item): ?><form method="post" data-enhanced class="structure-row" action="<?= s(route('project.structure',['project'=>$p])) ?>"><input type="hidden" name="_csrf" value="<?= s($token) ?>"><input type="hidden" name="kind" value="<?= s($kind) ?>"><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><div class="form-grid"><label><?= s(t('Name')) ?><input name="name" required maxlength="60" value="<?= s($item['name']) ?>"></label><?php if($kind!=='swimlane'): ?><label><?= s(t('Farbe')) ?><input type="color" name="color" value="<?= s($item['color']) ?>"></label><?php else: ?><span class="muted small"><?= (int)$item['is_default']===1?'Standard-Swimlane':'' ?></span><?php endif ?></div><?php if($kind==='column'): ?><div class="form-grid"><label>Ticketstatus beim Verschieben<select name="closes_tickets"><option value="0" <?= !(int)$item['closes_tickets']?'selected':'' ?>><?= s(t('Offen')) ?></option><option value="1" <?= (int)$item['closes_tickets']?'selected':'' ?>><?= s(t('Geschlossen')) ?></option></select></label><label>WIP-Richtwert (optional)<input type="number" name="wip_limit" min="1" value="<?= s((string)($item['wip_limit']??'')) ?>"></label></div><?php endif ?><div class="form-errors" role="alert"></div><button class="button subtle"><?= s(t('Speichern')) ?></button><?php if($kind!=='label'): ?><button class="button subtle" name="direction" value="up" aria-label="<?= s($item['name']) ?> nach oben">↑</button><button class="button subtle" name="direction" value="down" aria-label="<?= s($item['name']) ?> nach unten">↓</button><?php endif ?><?php if($kind!=='swimlane'||!(int)$item['is_default']): ?><button class="button danger subtle" name="action" value="delete">Entfernen</button><?php endif ?></form><?php endforeach ?><details style="margin-top:18px"><summary class="text-button">+ <?= s($kind==='column'?t('Neue Spalte'):($kind==='swimlane'?t('Neue Swimlane'):t('Neues Label'))) ?></summary><form method="post" data-enhanced action="<?= s(route('project.structure',['project'=>$p])) ?>"><input type="hidden" name="_csrf" value="<?= s($token) ?>"><input type="hidden" name="kind" value="<?= s($kind) ?>"><label><?= s(t('Name')) ?><input name="name" required maxlength="60"></label><?php if($kind!=='swimlane'): ?><label><?= s(t('Farbe')) ?><input type="color" name="color" value="#6366f1"></label><?php endif ?><div class="form-errors" role="alert"></div><button class="button primary"><?= s(t('Hinzufügen')) ?></button></form></details></section><?php endforeach ?></div><?php $this->endblock('content'); ?>
+<?php
+
+use function Naf\Form\csrf;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$this->setLayout('layout');
+$this->block('content');
+$projectId      = $project['id'];
+$token          = csrf()->token();
+$availableRoles = $scope->role === 'owner'
+    ? ['owner', 'manager', 'member', 'viewer', 'remove']
+    : ['member', 'viewer', 'remove'];
+$structureSections = [
+    'column'   => [t('Spalten'), $columns],
+    'swimlane' => ['Swimlanes', $swimlanes],
+    'label'    => ['Labels', $labels],
+];
+?>
+<section class="page-heading">
+    <div>
+        <span class="eyebrow">EIN BOARD, DAS ZU EUCH PASST</span>
+        <h1>Projekteinstellungen</h1>
+        <p><?= s($project['name']) ?> · Mitglieder und Struktur</p>
+    </div>
+    <a class="button subtle" href="<?= s(route('board', ['project' => $projectId])) ?>">← Zum Board</a>
+</section>
+<div class="settings-grid">
+    <section class="settings-card">
+        <h2>Über das Projekt</h2>
+        <form method="post" data-enhanced action="<?= s(route('project.update', ['project' => $projectId])) ?>">
+            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+            <label>
+                <?= s(t('Name')) ?>
+                <input name="name" required maxlength="120" value="<?= s($project['name']) ?>" />
+            </label>
+            <label>
+                <?= s(t('Beschreibung')) ?>
+                <textarea name="description" rows="3"><?= s($project['description']) ?></textarea>
+            </label>
+            <div class="form-grid">
+                <label>
+                    <?= s(t('Farbe')) ?>
+                    <input type="color" name="color" value="<?= s($project['color']) ?>" />
+                </label>
+                <label>
+                    Kürzel
+                    <input name="icon" maxlength="2" value="<?= s($project['icon']) ?>" />
+                </label>
+            </div>
+            <div class="form-errors" role="alert"></div>
+            <button class="button primary">Projekt speichern</button>
+        </form>
+        <?php if ($scope->role === 'owner'): ?>
+            <hr />
+            <form method="post" data-enhanced action="<?= s(route('project.archive', ['project' => $projectId])) ?>">
+                <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                <input type="hidden" name="action" value="<?= $project['archived_at'] ? 'restore' : 'archive' ?>" />
+                <p>Archivierte Projekte bleiben lesbar. Änderungen werden gesperrt.</p>
+                <div class="form-errors" role="alert"></div>
+                <button class="button subtle"><?= $project['archived_at'] ? t('Projekt wiederherstellen') : t('Projekt archivieren') ?></button>
+            </form>
+        <?php endif ?>
+    </section>
+    <section class="settings-card">
+        <h2><?= s(t('Mitglieder')) ?></h2>
+        <table class="member-table">
+            <thead>
+                <tr>
+                    <th>PERSON</th>
+                    <th>ROLLE</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($members as $member): ?>
+                    <tr>
+                        <td>
+                            <?= s($member['name']) ?>
+                            <small><?= s($member['email']) ?></small>
+                        </td>
+                        <td><?= s($member['role']) ?></td>
+                    </tr>
+                <?php endforeach ?>
+            </tbody>
+        </table>
+        <form method="post" data-enhanced action="<?= s(route('project.members', ['project' => $projectId])) ?>" style="margin-top: 22px">
+            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+            <label>
+                Bestehendes Konto
+                <input name="email" type="email" required placeholder="E-Mail-Adresse" />
+            </label>
+            <label>
+                <?= s(t('Rolle')) ?>
+                <select name="role">
+                    <?php foreach ($availableRoles as $role): ?>
+                        <option value="<?= s($role) ?>"><?= $role === 'remove' ? 'Zugriff entziehen' : s(ucfirst($role)) ?></option>
+                    <?php endforeach ?>
+                </select>
+            </label>
+            <p>
+                Owner verwalten das Projekt. Manager organisieren das Board. Member bearbeiten
+                Tickets. Viewer lesen mit.
+            </p>
+            <div class="form-errors" role="alert"></div>
+            <button class="button subtle">Mitgliedschaft speichern</button>
+        </form>
+    </section>
+    <?php foreach ($structureSections as $kind => [$heading, $items]): ?>
+        <section class="settings-card <?= $kind === 'column' ? 'wide' : '' ?>">
+            <h2><?= s($heading) ?></h2>
+            <?php foreach ($items as $item): ?>
+                <form method="post" data-enhanced class="structure-row" action="<?= s(route('project.structure', ['project' => $projectId])) ?>">
+                    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                    <input type="hidden" name="kind" value="<?= s($kind) ?>" />
+                    <input type="hidden" name="id" value="<?= (int) $item['id'] ?>" />
+                    <div class="form-grid">
+                        <label>
+                            <?= s(t('Name')) ?>
+                            <input name="name" required maxlength="60" value="<?= s($item['name']) ?>" />
+                        </label>
+                        <?php if ($kind !== 'swimlane'): ?>
+                            <label>
+                                <?= s(t('Farbe')) ?>
+                                <input type="color" name="color" value="<?= s($item['color']) ?>" />
+                            </label>
+                        <?php else: ?>
+                            <span class="muted small"><?= (int) $item['is_default'] === 1 ? 'Standard-Swimlane' : '' ?></span>
+                        <?php endif ?>
+                    </div>
+                    <?php if ($kind === 'column'): ?>
+                        <div class="form-grid">
+                            <label>
+                                Ticketstatus beim Verschieben
+                                <select name="closes_tickets">
+                                    <option value="0" <?= !(int) $item['closes_tickets'] ? 'selected' : '' ?>><?= s(t('Offen')) ?></option>
+                                    <option value="1" <?= (int) $item['closes_tickets'] ? 'selected' : '' ?>><?= s(t('Geschlossen')) ?></option>
+                                </select>
+                            </label>
+                            <label>
+                                WIP-Richtwert (optional)
+                                <input type="number" name="wip_limit" min="1" value="<?= s((string) ($item['wip_limit'] ?? '')) ?>" />
+                            </label>
+                        </div>
+                    <?php endif ?>
+                    <div class="form-errors" role="alert"></div>
+                    <button class="button subtle"><?= s(t('Speichern')) ?></button>
+                    <?php if ($kind !== 'label'): ?>
+                        <button
+                            class="button subtle"
+                            name="direction"
+                            value="up"
+                            aria-label="<?= s($item['name']) ?> nach oben"
+                        >
+                            ↑
+                        </button>
+                        <button
+                            class="button subtle"
+                            name="direction"
+                            value="down"
+                            aria-label="<?= s($item['name']) ?> nach unten"
+                        >
+                            ↓
+                        </button>
+                    <?php endif ?>
+                    <?php if ($kind !== 'swimlane' || !(int) $item['is_default']): ?>
+                        <button class="button danger subtle" name="action" value="delete">Entfernen</button>
+                    <?php endif ?>
+                </form>
+            <?php endforeach ?>
+            <details style="margin-top: 18px">
+                <summary class="text-button">+ <?= s($kind === 'column' ? t('Neue Spalte') : ($kind === 'swimlane' ? t('Neue Swimlane') : t('Neues Label'))) ?></summary>
+                <form method="post" data-enhanced action="<?= s(route('project.structure', ['project' => $projectId])) ?>">
+                    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                    <input type="hidden" name="kind" value="<?= s($kind) ?>" />
+                    <label>
+                        <?= s(t('Name')) ?>
+                        <input name="name" required maxlength="60" />
+                    </label>
+                    <?php if ($kind !== 'swimlane'): ?>
+                        <label>
+                            <?= s(t('Farbe')) ?>
+                            <input type="color" name="color" value="#6366f1" />
+                        </label>
+                    <?php endif ?>
+                    <div class="form-errors" role="alert"></div>
+                    <button class="button primary"><?= s(t('Hinzufügen')) ?></button>
+                </form>
+            </details>
+        </section>
+    <?php endforeach ?>
+</div>
+<?php $this->endblock('content'); ?>

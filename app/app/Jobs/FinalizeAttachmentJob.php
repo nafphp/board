@@ -10,9 +10,12 @@ use Naf\Queue\Core\QueueJobInterface;
 
 final class FinalizeAttachmentJob implements QueueJobInterface
 {
-    public function __construct(private int $attachmentId, private AttachmentService $attachments)
-    {
+    public function __construct(
+        private int $attachmentId,
+        private AttachmentService $attachments,
+    ) {
     }
+
     public function execute(Output $output): void
     {
         $this->attachments->finalize($this->attachmentId);

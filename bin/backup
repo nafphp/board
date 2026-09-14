@@ -5,18 +5,39 @@ cd "$(dirname "$0")/.."
 backup_dir="${1:-work/backups/$(date -u +%Y%m%dT%H%M%SZ)}"
 mkdir -p "$backup_dir"
 backup_dir=$(cd "$backup_dir" && pwd)
-case "$backup_dir" in "$(pwd)/app/public"*) echo 'Backup destination cannot be public.' >&2; exit 2;; esac
+case "$backup_dir" in
+    "$(pwd)/app/public"*)
+        echo 'Backup destination cannot be public.' >&2
+        exit 2
+        ;;
+esac
+
 # Pause only this Compose project's writers while taking the matching DB/files snapshot.
 writer_ids=$(docker compose ps -q app worker ticker candidate)
-resume_writers() { if [ -n "$writer_ids" ]; then docker unpause $writer_ids >/dev/null; fi; }
+resume_writers() {
+    if [ -n "$writer_ids" ]; then
+        docker unpause $writer_ids >/dev/null
+    fi
+}
+
 trap resume_writers EXIT
 trap 'exit 1' HUP INT TERM
-if [ -n "$writer_ids" ]; then docker pause $writer_ids >/dev/null; fi
+if [ -n "$writer_ids" ]; then
+    docker pause $writer_ids >/dev/null
+fi
+
 docker compose exec -T db sh -c 'MYSQL_PWD="$MARIADB_ROOT_PASSWORD" mariadb-dump -uroot --single-transaction --quick --hex-blob nafinity' > "$backup_dir/database.sql"
 tar -czf "$backup_dir/storage.tar.gz" -C app storage
 python3 - "$backup_dir" <<'PYCODE'
-import hashlib,json,pathlib,sys
-root=pathlib.Path(sys.argv[1]);manifest={name:hashlib.sha256((root/name).read_bytes()).hexdigest() for name in ['database.sql','storage.tar.gz']}
-(root/'checksums.json').write_text(json.dumps(manifest,indent=2)+'\n')
+import hashlib
+import json
+import pathlib
+import sys
+root = pathlib.Path(sys.argv[1])
+manifest = {
+    name: hashlib.sha256((root / name).read_bytes()).hexdigest()
+    for name in ["database.sql", "storage.tar.gz"]
+}
+(root / "checksums.json").write_text(json.dumps(manifest, indent=2) + "\n")
 PYCODE
 echo "Backup created: $backup_dir"

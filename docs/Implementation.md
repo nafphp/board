@@ -132,8 +132,8 @@ Die bisherige Schema-Kennung ist `202609140003`; sechs Migrationen inklusive Plu
 `bin/build-candidate` erzeugt einen eingefrorenen lokalen Runtime-Snapshot mit Package-Hashes.
 Er enthält keine Vendor-Symlinks, kein Composer und keine Source-Mounts. Der Builder kontrolliert die vollständige Menge aller benötigten NAF-Pakete.
 Private Daten- und Logverzeichnisse werden ausgeschlossen; gleichnamige Pakete bleiben enthalten.
-Der geprüfte Snapshot `nafinity:candidate` hat **132,23 MiB** (138.656.645 Byte),
-Image-ID `sha256:4d32cdfd85dd6906bca905912f5b679f9db0a829d226ab67bc6a09cc2cdc7994`.
+Der geprüfte Snapshot `nafinity:candidate` hat **132,31 MiB** (138.735.749 Byte),
+Image-ID `sha256:c01e5da63173f8850c7924090162d77c4d7d1502a7cd0eafd2d266ecea5d0dbc`.
 Anmeldung, fünf geschützte Seiten, Projektisolation und der private Download wurden über
 Port 8090 erfolgreich geprüft. Nur das private Datenverzeichnis ist eingebunden.
 Hashes und Einzelresultate stehen in `docs/Snapshot-Evidenz.json`.
@@ -199,6 +199,26 @@ sind ausgeschlossen; der relative IDE-Symlink ist versioniert.
 Der NAF-Dokumentationsentwurf liegt auf `docs/nafinity-integration-rc`, Commit `9036e2e`.
 Er bleibt bis zu den erforderlichen Paket-Releases außerhalb der öffentlichen Anleitungen.
 
+## Lesbarkeitsrunde nach der Prototyp-Abnahme
+
+Das gesamte Nafinity-Projekt und 44 Dateien unserer bisherigen NAF-Integration wurden
+auf einen gemeinsamen PHP-Stil gebracht: PER Coding Style 3.0 mit gruppenweise ausgerichteten
+`=` und `=>`. Controller, Services, SQL, Templates, Tests und Build-Skripte sind gegliedert;
+Zwischenvariablen erklären Login-Limits, Providerwahl, Upload-Quoten und Board-Zustände.
+JavaScript/CSS folgen Prettier, Python folgt Black. Die separaten Storage-Änderungen blieben unberührt.
+
+`bin/style install`, `bin/style fix` und `bin/style check` machen den Stil reproduzierbar.
+Die Versionen sind in separaten Tool-Manifests/Locks festgelegt; kein Formatter gelangt in die Runtime.
+Der erfolgreiche Check umfasst 54 PHP-Dateien in Nafinity, 44 Paketdateien, JavaScript/CSS
+und sechs Python-Skripte. Die 371 Pakettests sowie jeweils 28 Datenbank- und 28 HTTP-Prüfungen
+sind erneut grün. Native Sessions, Worker-Recovery, Limiter/LDAP-Verträge sowie Anmeldung und
+privater Download im neu gebauten Snapshot sind bestätigt.
+
+Die bestehenden acht RC-Branches wurden aktualisiert; Limiter und LDAP bleiben lokal.
+Die Paket-APIs und fachlichen Verträge sind unverändert, daher war keine Änderung der
+öffentlichen Paket-Anleitungen notwendig. `docs/Code-Style.md` dokumentiert die Entwicklerregeln;
+`docs/Code-Style-Evidenz.json` enthält die neuen Commit- und Prüfnachweise.
+
 ## Git-Übergabe der bestehenden NAF-Pakete
 
 Die folgenden geprüften RC-Branches wurden nach dem vereinbarten NAF-Workflow gepusht.
@@ -206,11 +226,11 @@ Der Maintainer übernimmt Merge und Release; es wurde keine neue Veröffentlichu
 
 | Paket | Branch | Commit | Review |
 |---|---|---|---|
-| framework | `v0.2.4-rc` | `719cb1c` | [Vergleich](https://github.com/nafphp/framework/compare/main...v0.2.4-rc) |
-| database | `v0.2.2-rc` | `50ec941` | [Vergleich](https://github.com/nafphp/database/compare/main...v0.2.2-rc) |
-| form | `v0.2.3-rc` | `b71e88f` | [Vergleich](https://github.com/nafphp/form/compare/main...v0.2.3-rc) |
-| session | `v0.2.2-rc` | `8913cd2` | [Vergleich](https://github.com/nafphp/session/compare/main...v0.2.2-rc) |
-| orm | `v0.2.2-rc` | `3df42e7` | [Vergleich](https://github.com/nafphp/orm/compare/main...v0.2.2-rc) |
-| queue | `v0.2.3-rc` | `b8c394c` | [Vergleich](https://github.com/nafphp/queue/compare/main...v0.2.3-rc) |
-| schedule | `v0.2.3-rc` | `5f674ab` | [Vergleich](https://github.com/nafphp/schedule/compare/main...v0.2.3-rc) |
-| cli | `v0.2.2-rc` | `6beaf63` | [Vergleich](https://github.com/nafphp/cli/compare/main...v0.2.2-rc) |
+| framework | `v0.2.4-rc` | `1166372` | [Vergleich](https://github.com/nafphp/framework/compare/main...v0.2.4-rc) |
+| database | `v0.2.2-rc` | `720fc14` | [Vergleich](https://github.com/nafphp/database/compare/main...v0.2.2-rc) |
+| form | `v0.2.3-rc` | `9dbea01` | [Vergleich](https://github.com/nafphp/form/compare/main...v0.2.3-rc) |
+| session | `v0.2.2-rc` | `27d8014` | [Vergleich](https://github.com/nafphp/session/compare/main...v0.2.2-rc) |
+| orm | `v0.2.2-rc` | `d653bfb` | [Vergleich](https://github.com/nafphp/orm/compare/main...v0.2.2-rc) |
+| queue | `v0.2.3-rc` | `a19e242` | [Vergleich](https://github.com/nafphp/queue/compare/main...v0.2.3-rc) |
+| schedule | `v0.2.3-rc` | `72b35f6` | [Vergleich](https://github.com/nafphp/schedule/compare/main...v0.2.3-rc) |
+| cli | `v0.2.2-rc` | `76df414` | [Vergleich](https://github.com/nafphp/cli/compare/main...v0.2.2-rc) |

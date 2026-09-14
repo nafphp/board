@@ -1,0 +1,16 @@
+{
+  "name": "fkde/nafinity-style",
+  "description": "Isolated development-only PHP formatting tools for Nafinity.",
+  "type": "project",
+  "license": "proprietary",
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "3.95.25"
+  },
+  "config": {
+    "allow-plugins": false,
+    "platform": {
+      "php": "8.3.0"
+    },
+    "sort-packages": true
+  }
+}

@@ -14,6 +14,7 @@ final class M202609140003RateLimits extends AbstractMigration
     {
         (new PdoLimiter($connection))->install();
     }
+
     public function down(PDO $connection): void
     {
         $connection->exec('DROP TABLE IF EXISTS naf_rate_limits');

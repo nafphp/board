@@ -5,11 +5,17 @@ cd "$(dirname "$0")/.."
 restore_backup="${1:?Pass the backup directory}"
 # Never accept a destination argument: this is always a disposable isolated DB.
 python3 - "$restore_backup" <<'PYCODE'
-import pathlib,hashlib,json,sys
-root=pathlib.Path(sys.argv[1]);expected=json.loads((root/'checksums.json').read_text())
-for name,digest in expected.items():
- assert name in ['database.sql','storage.tar.gz']
- assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest,name+' checksum mismatch'
+import pathlib
+import hashlib
+import json
+import sys
+root = pathlib.Path(sys.argv[1])
+expected = json.loads((root / "checksums.json").read_text())
+for name, digest in expected.items():
+    assert name in ["database.sql", "storage.tar.gz"]
+    assert hashlib.sha256((root / name).read_bytes()).hexdigest() == digest, (
+        name + " checksum mismatch"
+    )
 PYCODE
 docker compose exec -T db sh -c 'MYSQL_PWD="$MARIADB_ROOT_PASSWORD" mariadb -uroot -e "DROP DATABASE IF EXISTS nafinity_restore_test; CREATE DATABASE nafinity_restore_test;"'
 docker compose exec -T db sh -c 'MYSQL_PWD="$MARIADB_ROOT_PASSWORD" mariadb -uroot nafinity_restore_test' < "$restore_backup/database.sql"
@@ -18,11 +24,24 @@ trap 'rm -rf "$restore_files"' EXIT HUP INT TERM
 tar -xzf "$restore_backup/storage.tar.gz" -C "$restore_files"
 docker compose exec -T db sh -c 'MYSQL_PWD="$MARIADB_ROOT_PASSWORD" mariadb -uroot -N -e "SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA=\"nafinity_restore_test\" ORDER BY TABLE_NAME; SELECT COUNT(*) FROM nafinity_restore_test.users; SELECT COUNT(*) FROM nafinity_restore_test.tickets; SELECT COUNT(*) FROM nafinity_restore_test.migrations;"'
 python3 - "$restore_files" <<'PYCODE'
-import pathlib,hashlib,sys
-original=pathlib.Path('app/storage/attachments');restored=pathlib.Path(sys.argv[1])/'storage/attachments'
-a={str(p.relative_to(original)):hashlib.sha256(p.read_bytes()).hexdigest() for p in original.rglob('*') if p.is_file()}
-b={str(p.relative_to(restored)):hashlib.sha256(p.read_bytes()).hexdigest() for p in restored.rglob('*') if p.is_file()}
-assert a==b,'Attachment snapshot differs from current files; rerun with writers stopped or verify against backup-time manifest.'
-print('Restored attachment hashes match:',len(b),'files')
+import pathlib
+import hashlib
+import sys
+original = pathlib.Path("app/storage/attachments")
+restored = pathlib.Path(sys.argv[1]) / "storage/attachments"
+a = {
+    str(p.relative_to(original)): hashlib.sha256(p.read_bytes()).hexdigest()
+    for p in original.rglob("*")
+    if p.is_file()
+}
+b = {
+    str(p.relative_to(restored)): hashlib.sha256(p.read_bytes()).hexdigest()
+    for p in restored.rglob("*")
+    if p.is_file()
+}
+assert (
+    a == b
+), "Attachment snapshot differs from current files; rerun with writers stopped or verify against backup-time manifest."
+print("Restored attachment hashes match:", len(b), "files")
 PYCODE
 echo 'Restore probe completed in nafinity_restore_test; the running application was not overwritten.'

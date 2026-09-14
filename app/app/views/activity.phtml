@@ -1,2 +1,41 @@
-<?php use function Naf\I18n\t; use function Naf\View\s;use function Naf\route;$this->setLayout('layout');$this->block('content'); ?>
-<section class="page-heading"><div><span class="eyebrow">GEMEINSAM WEITERGEKOMMEN</span><h1><?= s(t('Aktivität')) ?></h1><p>Die letzten Änderungen in <?= s($project['name']) ?>.</p></div><a class="button subtle" href="<?= s(route('board',['project'=>$project['id']])) ?>">← Zum Board</a></section><section class="settings-card preferences-card"><ol class="activity-list"><?php foreach($activity as$item): ?><li><span class="activity-dot"></span><div><strong><?= s($item['actor_name']) ?></strong><p><?= s(\App\Support\ActivityLabel::for($item['event_type'])) ?><?php if($item['ticket_id']): ?> · <a href="<?= s(route('ticket',['project'=>$project['id'],'ticket'=>$item['ticket_id']])) ?>">NAF-<?= (int)$item['ticket_number'] ?></a><?php endif ?></p><time><?= s(\App\Support\Format::dateTime($item['created_at'],$preferences)) ?></time></div></li><?php endforeach ?></ol></section><?php $this->endblock('content'); ?>
+<?php
+
+use App\Support\ActivityLabel;
+use App\Support\Format;
+
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$this->setLayout('layout');
+$this->block('content');
+?>
+<section class="page-heading">
+    <div>
+        <span class="eyebrow">GEMEINSAM WEITERGEKOMMEN</span>
+        <h1><?= s(t('Aktivität')) ?></h1>
+        <p>Die letzten Änderungen in <?= s($project['name']) ?>.</p>
+    </div>
+    <a class="button subtle" href="<?= s(route('board', ['project' => $project['id']])) ?>">← Zum Board</a>
+</section>
+<section class="settings-card preferences-card">
+    <ol class="activity-list">
+        <?php foreach ($activity as $item): ?>
+            <li>
+                <span class="activity-dot"></span>
+                <div>
+                    <strong><?= s($item['actor_name']) ?></strong>
+                    <p>
+                        <?= s(ActivityLabel::for($item['event_type'])) ?>
+                        <?php if ($item['ticket_id']): ?>
+                            ·
+                            <a href="<?= s(route('ticket', ['project' => $project['id'], 'ticket' => $item['ticket_id']])) ?>">NAF-<?= (int) $item['ticket_number'] ?></a>
+                        <?php endif ?>
+                    </p>
+                    <time><?= s(Format::dateTime($item['created_at'], $preferences)) ?></time>
+                </div>
+            </li>
+        <?php endforeach ?>
+    </ol>
+</section>
+<?php $this->endblock('content'); ?>

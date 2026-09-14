@@ -1,6 +1,8 @@
 <?php
 
-$limiter = $c->make(\Naf\RateLimit\PdoLimiter::class);
+use Naf\RateLimit\PdoLimiter;
+
+$limiter = $c->make(PdoLimiter::class);
 test('atomic login counters isolate keys and expire', function () use ($limiter) {
     check($limiter->consume('test-account', 2, 60, 120)['allowed'], 'first denied');
     check($limiter->consume('test-account', 2, 60, 121)['allowed'], 'second denied');

@@ -2,10 +2,10 @@
   "status": "passed",
   "verified_on": "2026-09-14",
   "mode": "unreleased-source-snapshot",
-  "image_id": "sha256:4d32cdfd85dd6906bca905912f5b679f9db0a829d226ab67bc6a09cc2cdc7994",
-  "image_created": "2026-09-14T22:40:19.792128706+02:00",
-  "image_size_bytes": 138656645,
-  "image_size_mib": 132.23,
+  "image_id": "sha256:c01e5da63173f8850c7924090162d77c4d7d1502a7cd0eafd2d266ecea5d0dbc",
+  "image_created": "2026-09-14T23:18:01.6084796+02:00",
+  "image_size_bytes": 138735749,
+  "image_size_mib": 132.31,
   "container_image_matches": true,
   "mount_destinations": [
     "/workspace/app/storage"
@@ -27,23 +27,24 @@
   "private_download_bytes": 179,
   "private_download_sha256": "52c4e6bc5fdd6a7b228cf709225f98b42f7d55a1a5c40b8c450e78f0ccf68a23",
   "package_hashes": {
-    "naf/database": "0f99f5cc01db4b670fd664ddf3fc4520cef5881f39d71c2448f02169afb8bf13",
-    "naf/auth-ldap": "afdcbc379d88fb307dad1990ebfea8e2b2978d4251541fa9ae961bdba7883d76",
-    "naf/form": "5cc80e60b2073eb8c1536eac7503f85c7ee5761a47aeaee5868831462fe826db",
-    "naf/schedule": "5b79c6efaf9de581a85b6843f83c9d2b862012abecca7da513eb33d283e3df90",
-    "naf/framework": "397f9e5dbc8fd0ff828d2998524e0f917b5f9164cbe17fd0c8a19226da7c75ef",
+    "naf/database": "5385815be63b014d233ca3de1139f46617df2235a16b4f86df9ca0c6439a42c6",
+    "naf/auth-ldap": "1c3310061a36853ca5a691ea50a5478f5f8bed94184c66b0f7797e4434ffe0a4",
+    "naf/form": "1b4067c87bf4a0b441edfdcc6722da0ff1b3eaab9ebc826b67f827b4e923bad5",
+    "naf/schedule": "dbc553211375fecc191fb5cf00a6f96db1054bdd21be3de8a31e6a92fc1299e2",
+    "naf/framework": "07d610134f9faa17cf02f5a56354b79fd2d9b38672dbe369d6491967d08dbd45",
     "naf/auth": "d4e739e1d2ad061db81536a107d45221dc0eb491505e67c1a6854a08b5068b17",
     "naf/mail": "1b7de3ab8c107f1a61868ad8f06a5fea9a476f6e4de50870cc4b587c362f1c68",
-    "naf/cli": "dec70e70ff76d1c479db4867a50a3447d415f9e6c931357b5d2b7f5920162591",
-    "naf/storage": "5b18504af2ece424923f9cfeeed4a35076f4483706cc9ee1e99eef077095421d",
+    "naf/cli": "c483e9f73958861dfa8bbe998821468cd35b80a9bd769b80049fe37e11ca28e5",
+    "naf/storage": "07e3e88ab14ab1d8523cba9eb033f27be1da30d7f3d1385a25dbea08491e5106",
     "naf/oauth-client": "5b96bf8d7f4aeaf32a7a66d89e316f24280e85ab34aa60457c8dee8de78c3ab7",
     "naf/view": "afd3b6de5b572e42bb2e0d2b383e5b92894cd0308fde7ef729b2972439081eb2",
-    "naf/queue": "f3c5890a64fadd49a7950a5c76504da29c99dddc61811549de41f2ec3102c4b3",
-    "naf/orm": "e4e82356950b9a011d3870328bcec0e21c1c3f42236e6b77b726d1072a015d41",
+    "naf/queue": "6172e0f52bd89dd09a3746d2f329987dc0b553cb6269639d05ec0f0af13d2033",
+    "naf/orm": "fde4fe3089e89692c6a14afb24d3cec4229fa8f9c8b04506cd2f84620d42da20",
     "naf/i18n": "9f099aaa23a9d296751e8632529620581bd5afd086a57b87c03dcacf83a4ce49",
-    "naf/client": "3c68f65e76a4eaa94eaae85ade2da65f9597a47f3cbcaf8b32359d8f9c1db1c3",
-    "naf/rate-limit": "d990196e313e8e0083ddbbc5daa59f7e0853b4c509d69358e10db052de8a98e0",
-    "naf/session": "5b1dc2a1444269691dfb32fc127bdebf4a78dc786801bb96fb9675898d23391d"
+    "naf/client": "15ce60f2e069f19f76b00cee76545e8b490cbb3130a31b9d00c64191207b3e05",
+    "naf/rate-limit": "9b6e26a9d0910062bb3b4a96f600e22a9bae9e92eac1e1d3b3d6aa38079206fa",
+    "naf/session": "d5ad9c9397e6b423a9388e425ec23ac5b819e315b8d99946d82a12a24963899a"
   },
-  "scope": "Locally built source snapshot with demo database/private storage; not a published Composer distribution."
+  "scope": "Locally built source snapshot with demo database/private storage; not a published Composer distribution.",
+  "formatters_in_runtime": false
 }

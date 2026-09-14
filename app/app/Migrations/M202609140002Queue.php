@@ -14,6 +14,7 @@ final class M202609140002Queue extends AbstractMigration
     {
         (new PDODriver($connection))->install();
     }
+
     public function down(PDO $connection): void
     {
         $connection->exec('DROP TABLE IF EXISTS naf_queue_jobs');

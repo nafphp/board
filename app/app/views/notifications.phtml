@@ -1,5 +1,57 @@
-<?php use function Naf\I18n\t; use function Naf\View\s;use function Naf\route;use function Naf\Form\csrf;$this->setLayout('layout');$this->block('content'); ?>
-<section class="page-heading"><div><span class="eyebrow"><?= s(t('GEMEINSAM IM BLICK')) ?></span><h1><?= s(t('Benachrichtigungen')) ?></h1><p><?= s(t('Was sich in deinen Projekten bewegt.')) ?></p></div><form method="post" data-enhanced action="<?= s(route('notifications.read')) ?>"><input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>"><button class="button subtle"><?= s(t('Alle als gelesen markieren')) ?></button></form></section>
-<section class="settings-card"><?php if(!$notifications): ?><div class="empty-state"><h2><?= s(t('Du bist auf dem aktuellen Stand.')) ?></h2><p><?= s(t('Neue Aktivitäten aus deinen Projekten erscheinen hier.')) ?></p></div><?php endif ?><ol class="activity-list"><?php foreach($notifications as$n): ?><li><span class="activity-dot" style="opacity:<?= $n['read_at']?'0.25':'1' ?>"></span><div><strong><?= s($n['project_name']) ?></strong><p><a href="<?= s($n['ticket_id']?route('ticket',['project'=>$n['project_id'],'ticket'=>$n['ticket_id']]):route('project.activity',['project'=>$n['project_id']])) ?>"><?= s(\App\Support\ActivityLabel::for($n['title'])) ?></a></p><time><?= s(\App\Support\Format::dateTime($n['created_at'],$preferences)) ?></time></div></li><?php endforeach ?></ol></section>
-<section class="settings-card" style="margin-top:24px"><h2><?= s(t('Projekt-Benachrichtigungen')) ?></h2><?php foreach($projects as$p): ?><form method="post" data-enhanced action="<?= s(route('project.mute',['project'=>$p['id']])) ?>"><input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>"><strong><?= s($p['name']) ?></strong> <button class="button subtle" name="muted" value="1"><?= s(t('Stummschalten')) ?></button> <button class="button subtle" name="muted" value="0"><?= s(t('Aktivieren')) ?></button><div class="form-errors" role="alert"></div></form><?php endforeach ?></section>
+<?php
+
+use App\Support\ActivityLabel;
+use App\Support\Format;
+
+use function Naf\Form\csrf;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$this->setLayout('layout');
+$this->block('content');
+?>
+<section class="page-heading">
+    <div>
+        <span class="eyebrow"><?= s(t('GEMEINSAM IM BLICK')) ?></span>
+        <h1><?= s(t('Benachrichtigungen')) ?></h1>
+        <p><?= s(t('Was sich in deinen Projekten bewegt.')) ?></p>
+    </div>
+    <form method="post" data-enhanced action="<?= s(route('notifications.read')) ?>">
+        <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
+        <button class="button subtle"><?= s(t('Alle als gelesen markieren')) ?></button>
+    </form>
+</section>
+<section class="settings-card">
+    <?php if (!$notifications): ?>
+        <div class="empty-state">
+            <h2><?= s(t('Du bist auf dem aktuellen Stand.')) ?></h2>
+            <p><?= s(t('Neue Aktivitäten aus deinen Projekten erscheinen hier.')) ?></p>
+        </div>
+    <?php endif ?>
+    <ol class="activity-list">
+        <?php foreach ($notifications as $n): ?>
+            <li>
+                <span class="activity-dot" style="opacity: <?= $n['read_at'] ? '0.25' : '1' ?>"></span>
+                <div>
+                    <strong><?= s($n['project_name']) ?></strong>
+                    <p><a href="<?= s($n['ticket_id'] ? route('ticket', ['project' => $n['project_id'], 'ticket' => $n['ticket_id']]) : route('project.activity', ['project' => $n['project_id']])) ?>"><?= s(ActivityLabel::for($n['title'])) ?></a></p>
+                    <time><?= s(Format::dateTime($n['created_at'], $preferences)) ?></time>
+                </div>
+            </li>
+        <?php endforeach ?>
+    </ol>
+</section>
+<section class="settings-card" style="margin-top: 24px">
+    <h2><?= s(t('Projekt-Benachrichtigungen')) ?></h2>
+    <?php foreach ($projects as $projectId): ?>
+        <form method="post" data-enhanced action="<?= s(route('project.mute', ['project' => $projectId['id']])) ?>">
+            <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
+            <strong><?= s($projectId['name']) ?></strong>
+            <button class="button subtle" name="muted" value="1"><?= s(t('Stummschalten')) ?></button>
+            <button class="button subtle" name="muted" value="0"><?= s(t('Aktivieren')) ?></button>
+            <div class="form-errors" role="alert"></div>
+        </form>
+    <?php endforeach ?>
+</section>
 <?php $this->endblock('content'); ?>

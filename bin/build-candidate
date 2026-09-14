@@ -1,31 +1,83 @@
 #!/usr/bin/env python3
 # Build an immutable local RC snapshot; this is explicitly not a published distribution.
 from pathlib import Path
-import shutil,subprocess,json,hashlib
-root=Path(__file__).resolve().parents[1];context=root/'work/runtime-candidate';context.mkdir(parents=True,exist_ok=True)
-app=context/'app'
-if app.exists():shutil.rmtree(app)
-ignore=shutil.ignore_patterns('.git','.idea','.env*','identity.local.php','*-ca.pem','vendor','storage','logs','tests','__pycache__','composer.dev.*','composer.lock')
-shutil.copytree(root/'app',app,ignore=ignore)
+import shutil
+import subprocess
+import json
+import hashlib
+
+root = Path(__file__).resolve().parents[1]
+context = root / "work/runtime-candidate"
+context.mkdir(parents=True, exist_ok=True)
+app = context / "app"
+if app.exists():
+    shutil.rmtree(app)
+ignore = shutil.ignore_patterns(
+    ".git",
+    ".idea",
+    ".env*",
+    "identity.local.php",
+    "*-ca.pem",
+    "vendor",
+    "storage",
+    "logs",
+    "tests",
+    "__pycache__",
+    "composer.dev.*",
+    "composer.lock",
+)
+shutil.copytree(root / "app", app, ignore=ignore)
 # Package names must not be filtered by application data-directory names.
-vendor_ignore=shutil.ignore_patterns('.git','.idea','.env*','identity.local.php','*-ca.pem','vendor','logs','tests','__pycache__','composer.dev.*','composer.lock')
-shutil.copytree(root/'app/vendor',app/'vendor',symlinks=False,ignore=vendor_ignore)
-shutil.copytree(root/'docker',context/'docker',dirs_exist_ok=True)
-packages={}
-for manifest in (app/'vendor/naf').glob('*/composer.json'):
- package=manifest.parent;files=sorted(p for p in package.rglob('*') if p.is_file());digest=hashlib.sha256()
- for file in files:digest.update(str(file.relative_to(package)).encode());digest.update(file.read_bytes())
- packages[json.loads(manifest.read_text())['name']]=digest.hexdigest()
-(app/'source-snapshot.json').write_text(json.dumps({'mode':'unreleased-source-snapshot','packages':packages},indent=2)+'\n')
-expected={name for name in json.loads((root/'app/composer.json').read_text())['require'] if name.startswith('naf/')}
-assert expected==set(packages), 'The snapshot is missing required NAF packages: '+str(expected-set(packages))
-assert not any(p.is_symlink() for p in app.rglob('*'))
-base=(root/'docker/Dockerfile').read_text().split('# Vendor must be prepared')[0]
-(context/'Dockerfile').write_text(base+'''FROM runtime AS candidate
+vendor_ignore = shutil.ignore_patterns(
+    ".git",
+    ".idea",
+    ".env*",
+    "identity.local.php",
+    "*-ca.pem",
+    "vendor",
+    "logs",
+    "tests",
+    "__pycache__",
+    "composer.dev.*",
+    "composer.lock",
+)
+shutil.copytree(root / "app/vendor", app / "vendor", symlinks=False, ignore=vendor_ignore)
+shutil.copytree(root / "docker", context / "docker", dirs_exist_ok=True)
+packages = {}
+for manifest in (app / "vendor/naf").glob("*/composer.json"):
+    package = manifest.parent
+    files = sorted(p for p in package.rglob("*") if p.is_file())
+    digest = hashlib.sha256()
+    for file in files:
+        digest.update(str(file.relative_to(package)).encode())
+        digest.update(file.read_bytes())
+    packages[json.loads(manifest.read_text())["name"]] = digest.hexdigest()
+(app / "source-snapshot.json").write_text(
+    json.dumps({"mode": "unreleased-source-snapshot", "packages": packages}, indent=2) + "\n"
+)
+expected = {
+    name
+    for name in json.loads((root / "app/composer.json").read_text())["require"]
+    if name.startswith("naf/")
+}
+assert expected == set(packages), "The snapshot is missing required NAF packages: " + str(
+    expected - set(packages)
+)
+assert not any(p.is_symlink() for p in app.rglob("*"))
+base = (root / "docker/Dockerfile").read_text().split("# Vendor must be prepared")[0]
+(context / "Dockerfile").write_text(
+    base
+    + """FROM runtime AS candidate
 LABEL org.opencontainers.image.title="Nafinity local RC snapshot"
 LABEL dev.nafinity.distribution="unreleased-source-snapshot"
 COPY --chown=www:www app/ /workspace/app/
 RUN mkdir -p storage/sessions storage/logs storage/attachments storage/queue storage/schedule storage/oauth
-''')
-subprocess.run(['docker','build','--target','candidate','-t','nafinity:candidate',str(context)],check=True)
-print('Built nafinity:candidate without source mounts, symlinks or Composer. Package releases remain a separate gate.')
+"""
+)
+subprocess.run(
+    ["docker", "build", "--target", "candidate", "-t", "nafinity:candidate", str(context)],
+    check=True,
+)
+print(
+    "Built nafinity:candidate without source mounts, symlinks or Composer. Package releases remain a separate gate."
+)

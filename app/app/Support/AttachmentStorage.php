@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use finfo;
+use InvalidArgumentException;
 use Naf\Storage\Storage;
 use Psr\Http\Message\UploadedFileInterface;
-use InvalidArgumentException;
 use RuntimeException;
 
 /** Nafinity's upload policy and lifecycle, backed by a private named NAF disk. */
@@ -25,17 +26,25 @@ final class AttachmentStorage
             throw new InvalidArgumentException('Invalid upload limit.');
         }
 
-        $name = str_replace('\\', '/', $upload->getClientFilename() ?? 'file');
-        $name = preg_replace('/[\x00-\x1f\x7f]/', '', $name);
-        $name = mb_substr(basename($name), 0, 180);
+        $name      = str_replace('\\', '/', $upload->getClientFilename() ?? 'file');
+        $name      = preg_replace('/[\x00-\x1f\x7f]/', '', $name);
+        $name      = mb_substr(basename($name), 0, 180);
         $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-        $types = [
-            'txt' => ['text/plain'], 'md' => ['text/plain'], 'csv' => ['text/plain', 'text/csv'],
-            'pdf' => ['application/pdf'], 'png' => ['image/png'], 'jpg' => ['image/jpeg'],
-            'jpeg' => ['image/jpeg'], 'webp' => ['image/webp'], 'zip' => ['application/zip'],
+        $types     = [
+            'txt'  => ['text/plain'],
+            'md'   => ['text/plain'],
+            'csv'  => ['text/plain', 'text/csv'],
+            'pdf'  => ['application/pdf'],
+            'png'  => ['image/png'],
+            'jpg'  => ['image/jpeg'],
+            'jpeg' => ['image/jpeg'],
+            'webp' => ['image/webp'],
+            'zip'  => ['application/zip'],
         ];
         if (!isset($types[$extension])) {
-            throw new InvalidArgumentException('Erlaubt sind TXT, MD, CSV, PDF, PNG, JPG, WebP und ZIP.');
+            throw new InvalidArgumentException(
+                'Erlaubt sind TXT, MD, CSV, PDF, PNG, JPG, WebP und ZIP.',
+            );
         }
 
         // Private temporary validation stream; never buffer an entire upload in PHP memory.
@@ -45,6 +54,7 @@ final class AttachmentStorage
         }
         $size = 0;
         $hash = hash_init('sha256');
+
         try {
             $input = $upload->getStream();
             if ($input->isSeekable()) {
@@ -68,16 +78,26 @@ final class AttachmentStorage
                 throw new InvalidArgumentException('Leere Dateien sind nicht erlaubt.');
             }
             fflush($temporary);
-            $mime = (new \finfo(FILEINFO_MIME_TYPE))->file(stream_get_meta_data($temporary)['uri']);
+            $temporaryPath = stream_get_meta_data($temporary)['uri'];
+            $mimeDetector  = new finfo(FILEINFO_MIME_TYPE);
+            $mime          = $mimeDetector->file($temporaryPath);
             if (!in_array($mime, $types[$extension], true)) {
-                throw new InvalidArgumentException('Dateiinhalt und Dateityp passen nicht zusammen.');
+                throw new InvalidArgumentException(
+                    'Dateiinhalt und Dateityp passen nicht zusammen.',
+                );
             }
 
             $key = bin2hex(random_bytes(32));
             rewind($temporary);
-            $this->disk->writeStream('staging/'.$key, $temporary);
+            $this->disk->writeStream('staging/' . $key, $temporary);
 
-            return ['key' => $key, 'name' => $name, 'mime' => $mime, 'size' => $size, 'sha256' => hash_final($hash)];
+            return [
+                'key'    => $key,
+                'name'   => $name,
+                'mime'   => $mime,
+                'size'   => $size,
+                'sha256' => hash_final($hash),
+            ];
         } finally {
             fclose($temporary);
         }
@@ -86,8 +106,8 @@ final class AttachmentStorage
     public function promote(string $key): void
     {
         $this->validateKey($key);
-        if (!$this->disk->exists('ready/'.$key)) {
-            $this->disk->move('staging/'.$key, 'ready/'.$key);
+        if (!$this->disk->exists('ready/' . $key)) {
+            $this->disk->move('staging/' . $key, 'ready/' . $key);
         }
     }
 
@@ -95,14 +115,15 @@ final class AttachmentStorage
     public function open(string $key)
     {
         $this->validateKey($key);
-        return $this->disk->readStream('ready/'.$key);
+
+        return $this->disk->readStream('ready/' . $key);
     }
 
     public function delete(string $key): void
     {
         $this->validateKey($key);
-        $this->disk->delete('staging/'.$key);
-        $this->disk->delete('ready/'.$key);
+        $this->disk->delete('staging/' . $key);
+        $this->disk->delete('ready/' . $key);
     }
 
     /** Local-only orphan enumeration; the host owns metadata and retention policy. */
@@ -110,7 +131,7 @@ final class AttachmentStorage
     {
         $count = 0;
         foreach (['staging', 'ready'] as $state) {
-            foreach (glob($this->localRoot.'/'.$state.'/*') ?: [] as $file) {
+            foreach (glob($this->localRoot . '/' . $state . '/*') ?: [] as $file) {
                 $key = basename($file);
                 if (!preg_match('/^[a-f0-9]{64}$/D', $key) || is_link($file) || !is_file($file)) {
                     continue;
@@ -118,10 +139,11 @@ final class AttachmentStorage
                 if (filemtime($file) >= $olderThan || $isReferenced($key)) {
                     continue;
                 }
-                $this->disk->delete($state.'/'.$key);
+                $this->disk->delete($state . '/' . $key);
                 ++$count;
             }
         }
+
         return $count;
     }
 

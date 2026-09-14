@@ -2,7 +2,7 @@
   {
     "package": "framework",
     "branch": "v0.2.4-rc",
-    "commit": "719cb1c86d6d088843261a314862b88225db5240",
+    "commit": "11663721e3f3876069d98379d71309db1d700bd9",
     "compare": "https://github.com/nafphp/framework/compare/main...v0.2.4-rc",
     "working_tree": "",
     "remote_matches": true
@@ -10,7 +10,7 @@
   {
     "package": "database",
     "branch": "v0.2.2-rc",
-    "commit": "50ec941aa8c8ebb15aff59544d39811d753fe988",
+    "commit": "720fc140a20930effa4a6edff37a58f9dcc9afb2",
     "compare": "https://github.com/nafphp/database/compare/main...v0.2.2-rc",
     "working_tree": "",
     "remote_matches": true
@@ -18,7 +18,7 @@
   {
     "package": "form",
     "branch": "v0.2.3-rc",
-    "commit": "b71e88f4caa0e91069020176cb3bdb223638f8e1",
+    "commit": "9dbea01606b16dd4a461b2c44dad108d626bfd77",
     "compare": "https://github.com/nafphp/form/compare/main...v0.2.3-rc",
     "working_tree": "",
     "remote_matches": true
@@ -26,7 +26,7 @@
   {
     "package": "session",
     "branch": "v0.2.2-rc",
-    "commit": "8913cd26fd3919debd5a1f60f24d5b0a77c82d0a",
+    "commit": "27d8014ffc60ff4494139c8c6ee213ddaec8955e",
     "compare": "https://github.com/nafphp/session/compare/main...v0.2.2-rc",
     "working_tree": "",
     "remote_matches": true
@@ -34,7 +34,7 @@
   {
     "package": "orm",
     "branch": "v0.2.2-rc",
-    "commit": "3df42e758312255438e4e760b38217872a4f370d",
+    "commit": "d653bfb94f6f56e8220b39e894dc5b1c6dc9de92",
     "compare": "https://github.com/nafphp/orm/compare/main...v0.2.2-rc",
     "working_tree": "",
     "remote_matches": true
@@ -42,7 +42,7 @@
   {
     "package": "queue",
     "branch": "v0.2.3-rc",
-    "commit": "b8c394c1cbe01a1fd64b25cc97876580633cab75",
+    "commit": "a19e242aa4490770b6a6705abc9e50c35aef8c67",
     "compare": "https://github.com/nafphp/queue/compare/main...v0.2.3-rc",
     "working_tree": "",
     "remote_matches": true
@@ -50,7 +50,7 @@
   {
     "package": "schedule",
     "branch": "v0.2.3-rc",
-    "commit": "5f674abc5b44e85abbec16608d7e5b36d1eccb6d",
+    "commit": "72b35f6ee0449f70f058841301eeafbbb4297a3d",
     "compare": "https://github.com/nafphp/schedule/compare/main...v0.2.3-rc",
     "working_tree": "",
     "remote_matches": true
@@ -58,7 +58,7 @@
   {
     "package": "cli",
     "branch": "v0.2.2-rc",
-    "commit": "6beaf63790f55686f492c51c3ce7805af0c37330",
+    "commit": "76df414fc6480edbfcb960fd799725a2f1524e56",
     "compare": "https://github.com/nafphp/cli/compare/main...v0.2.2-rc",
     "working_tree": "",
     "remote_matches": true

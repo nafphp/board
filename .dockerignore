@@ -12,3 +12,4 @@ app/identity.local.php
 app/config/*-ca.pem
 
 app/logs
+tools/style

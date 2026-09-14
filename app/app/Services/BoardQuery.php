@@ -6,102 +6,284 @@ namespace App\Services;
 
 use App\Domain\Failure;
 use App\Support\Input;
+use App\Support\TicketFilter;
 use PDO;
 
 final class BoardQuery
 {
-    public function __construct(private PDO $pdo, private Access $access, private TicketService $tickets)
-    {
+    public function __construct(
+        private PDO $pdo,
+        private Access $access,
+        private TicketService $tickets,
+    ) {
     }
+
     public function projects(): array
     {
-        $q = $this->pdo->prepare("SELECT p.*,m.role,(SELECT COUNT(*) FROM tickets t WHERE t.project_id=p.id AND t.archived_at IS NULL AND t.status='open') AS open_count FROM projects p JOIN project_members m ON m.project_id=p.id WHERE m.user_id=? AND m.active=1 ORDER BY CASE WHEN p.archived_at IS NULL THEN 0 ELSE 1 END,p.id");
-        $q->execute([$this->access->actor()]);
-        return $q->fetchAll();
+        $statement = $this->pdo->prepare(
+            <<<'SQL'
+            SELECT p.*,
+                   m.role,
+
+                (SELECT COUNT(*)
+                 FROM tickets t
+                 WHERE t.project_id = p.id
+                     AND t.archived_at IS NULL
+                     AND t.status = 'open') AS open_count
+            FROM projects p
+            JOIN project_members m ON m.project_id = p.id
+            WHERE m.user_id = ?
+                AND m.active = 1
+            ORDER BY CASE
+                         WHEN p.archived_at IS NULL THEN 0
+                         ELSE 1
+                     END,
+                     p.id
+            SQL,
+        );
+        $statement->execute([$this->access->actor()]);
+
+        return $statement->fetchAll();
     }
+
     public function board(int $project, array $query = []): array
     {
-        $scope = $this->access->project($project);
-        $board = $this->tickets->board($project);
-        $query = \App\Support\TicketFilter::from($query)->values;
+        $scope   = $this->access->project($project);
+        $board   = $this->tickets->board($project);
+        $query   = TicketFilter::from($query)->values;
         $filters = [];
-        $where = ['t.project_id=?',($query['status'] ?? '') === 'archived' ? 't.archived_at IS NOT NULL' : 't.archived_at IS NULL'];
+        $where   = [
+            't.project_id=?',
+            ($query['status'] ?? '') === 'archived'
+                ? 't.archived_at IS NOT NULL'
+                : 't.archived_at IS NULL',
+        ];
         $params = [$project];
         if (($query['status'] ?? '') === 'archived') {
             $filters['status'] = 'archived';
             unset($query['status']);
         }
-        foreach (['column' => 'column_id','swimlane' => 'swimlane_id'] as $filter => $column) {
+        foreach (['column' => 'column_id', 'swimlane' => 'swimlane_id'] as $filter => $column) {
             if (isset($query[$filter]) && $query[$filter] !== '') {
                 $filters[$filter] = Input::id($query[$filter], $filter);
-                $where[] = 't.'.$column.'=?';
-                $params[] = $filters[$filter];
+                $where[]          = 't.' . $column . '=?';
+                $params[]         = $filters[$filter];
             }
         }
-        foreach (['assignee' => ['ticket_assignees','user_id'],'label' => ['ticket_labels','label_id']] as $filter => [$table,$column]) {
+        $relationFilters = [
+            'assignee' => ['ticket_assignees', 'user_id'],
+            'label'    => ['ticket_labels', 'label_id'],
+        ];
+
+        foreach ($relationFilters as $filter => [$table, $column]) {
             if (isset($query[$filter]) && $query[$filter] !== '') {
                 $filters[$filter] = Input::id($query[$filter], $filter);
-                $where[] = "EXISTS(SELECT 1 FROM $table f WHERE f.project_id=t.project_id AND f.ticket_id=t.id AND f.$column=?)";
-                $params[] = $filters[$filter];
+                $where[]          = "EXISTS(SELECT 1 FROM $table f WHERE f.project_id=t.project_id AND f.ticket_id=t.id AND f.$column=?)";
+                $params[]         = $filters[$filter];
             }
         }
-        foreach (['status' => ['open','closed'],'priority' => ['low','normal','high','urgent']] as $filter => $allowed) {
+        $choiceFilters = [
+            'status'   => ['open', 'closed'],
+            'priority' => ['low', 'normal', 'high', 'urgent'],
+        ];
+
+        foreach ($choiceFilters as $filter => $allowed) {
             if (isset($query[$filter]) && $query[$filter] !== '') {
                 if (!is_string($query[$filter]) || !in_array($query[$filter], $allowed, true)) {
-                    throw new Failure('Ungültiger Filter: '.$filter);
-                }$filters[$filter] = $query[$filter];
-                $where[] = 't.'.$filter.'=?';
-                $params[] = $query[$filter];
+                    throw new Failure('Ungültiger Filter: ' . $filter);
+                }
+                $filters[$filter] = $query[$filter];
+                $where[]          = 't.' . $filter . '=?';
+                $params[]         = $query[$filter];
             }
         }
         if (isset($query['q']) && $query['q'] !== '') {
-            $search = Input::validate($query, ['q' => 'string|max:200'])['q'];
+            $search       = Input::validate($query, ['q' => 'string|max:200'])['q'];
             $filters['q'] = $search;
-            $where[] = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql' ? 'MATCH(t.title,t.description) AGAINST(? IN NATURAL LANGUAGE MODE)' : "to_tsvector('simple',t.title || ' ' || t.description) @@ plainto_tsquery('simple',?)";
+            $isMysql      = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql';
+            $where[]      = $isMysql
+                ? 'MATCH(t.title,t.description) AGAINST(? IN NATURAL LANGUAGE MODE)'
+                : "to_tsvector('simple',t.title || ' ' || t.description) @@ plainto_tsquery('simple',?)";
             $params[] = $search;
         }
-        $clause = implode(' AND ', $where);
-        $q = $this->pdo->prepare('SELECT COUNT(*) FROM tickets t WHERE '.$clause);
-        $q->execute($params);
-        $total = (int)$q->fetchColumn();
-        $q = $this->pdo->prepare('SELECT t.* FROM tickets t WHERE '.$clause.' ORDER BY t.position,t.id LIMIT 300');
-        $q->execute($params);
-        $cards = $q->fetchAll();
-        $labels = $this->rows('SELECT * FROM labels WHERE project_id=? ORDER BY name', [$project]);
-        $members = $this->rows('SELECT u.id,u.name,u.email,m.role FROM project_members m JOIN users u ON u.id=m.user_id WHERE m.project_id=? AND m.active=1 AND u.active=1 ORDER BY u.name', [$project]);
+        $clause    = implode(' AND ', $where);
+        $statement = $this->pdo->prepare('SELECT COUNT(*) FROM tickets t WHERE ' . $clause);
+        $statement->execute($params);
+        $total     = (int) $statement->fetchColumn();
+        $statement = $this->pdo->prepare(
+            'SELECT t.* FROM tickets t WHERE ' . $clause . ' ORDER BY t.position,t.id LIMIT 300',
+        );
+        $statement->execute($params);
+        $cards   = $statement->fetchAll();
+        $labels  = $this->rows('SELECT * FROM labels WHERE project_id=? ORDER BY name', [$project]);
+        $members = $this->rows(
+            <<<'SQL'
+            SELECT u.id,
+                   u.name,
+                   u.email,
+                   m.role
+            FROM project_members m
+            JOIN users u ON u.id = m.user_id
+            WHERE m.project_id = ?
+                AND m.active = 1
+                AND u.active = 1
+            ORDER BY u.name
+            SQL,
+            [$project],
+        );
         $assignments = [];
-        $tags = [];
+        $tags        = [];
         if ($cards) {
-            $ids = array_column($cards, 'id');
+            $ids   = array_column($cards, 'id');
             $marks = implode(',', array_fill(0, count($ids), '?'));
-            foreach ($this->rows("SELECT ticket_id,user_id FROM ticket_assignees WHERE project_id=? AND ticket_id IN ($marks)", [$project,...$ids]) as $item) {
+            foreach (
+                $this->rows(
+                    "SELECT ticket_id,user_id FROM ticket_assignees WHERE project_id=? AND ticket_id IN ($marks)",
+                    [$project, ...$ids],
+                ) as $item
+            ) {
                 $assignments[$item['ticket_id']][] = $item['user_id'];
             }
-            foreach ($this->rows("SELECT ticket_id,label_id FROM ticket_labels WHERE project_id=? AND ticket_id IN ($marks)", [$project,...$ids]) as $item) {
+            foreach (
+                $this->rows(
+                    "SELECT ticket_id,label_id FROM ticket_labels WHERE project_id=? AND ticket_id IN ($marks)",
+                    [$project, ...$ids],
+                ) as $item
+            ) {
                 $tags[$item['ticket_id']][] = $item['label_id'];
             }
         }
-        return ['scope' => $scope,'project' => $scope->project,'board' => $board,'columns' => $this->rows('SELECT * FROM board_columns WHERE project_id=? ORDER BY position,id', [$project]),'swimlanes' => $this->rows('SELECT * FROM swimlanes WHERE project_id=? ORDER BY position,id', [$project]),'cards' => $cards,'labels' => $labels,'members' => $members,'assignments' => $assignments,'tags' => $tags,'filters' => $filters,'total' => $total];
+
+        return [
+            'scope'   => $scope,
+            'project' => $scope->project,
+            'board'   => $board,
+            'columns' => $this->rows(
+                'SELECT * FROM board_columns WHERE project_id=? ORDER BY position,id',
+                [$project],
+            ),
+            'swimlanes' => $this->rows(
+                'SELECT * FROM swimlanes WHERE project_id=? ORDER BY position,id',
+                [$project],
+            ),
+            'cards'       => $cards,
+            'labels'      => $labels,
+            'members'     => $members,
+            'assignments' => $assignments,
+            'tags'        => $tags,
+            'filters'     => $filters,
+            'total'       => $total,
+        ];
     }
+
     public function detail(int $project, int $ticket): array
     {
         $this->access->project($project);
         $row = $this->tickets->ticket($project, $ticket);
-        return ['ticket' => $row,'comments' => $this->rows('SELECT c.*,u.name AS author_name FROM comments c JOIN users u ON u.id=c.author_id WHERE c.project_id=? AND c.ticket_id=? AND c.deleted_at IS NULL ORDER BY c.id', [$project,$ticket]),'activity' => $this->rows('SELECT a.id,a.event_type,a.payload,a.created_at,u.name AS actor_name FROM activities a JOIN users u ON u.id=a.actor_id WHERE a.project_id=? AND a.ticket_id=? ORDER BY a.id DESC LIMIT 50', [$project,$ticket]),'attachments' => $this->rows("SELECT id,original_name,mime_type,byte_size,created_at,state FROM attachments WHERE project_id=? AND ticket_id=? AND state<>'deleting' ORDER BY id", [$project,$ticket]),'selected_labels' => array_column($this->rows('SELECT label_id FROM ticket_labels WHERE project_id=? AND ticket_id=?', [$project,$ticket]), 'label_id'),'selected_assignees' => array_column($this->rows('SELECT user_id FROM ticket_assignees WHERE project_id=? AND ticket_id=?', [$project,$ticket]), 'user_id')];
+
+        return [
+            'ticket'   => $row,
+            'comments' => $this->rows(
+                <<<'SQL'
+                SELECT c.*,
+                       u.name AS author_name
+                FROM comments c
+                JOIN users u ON u.id = c.author_id
+                WHERE c.project_id = ?
+                    AND c.ticket_id = ?
+                    AND c.deleted_at IS NULL
+                ORDER BY c.id
+                SQL,
+                [$project, $ticket],
+            ),
+            'activity' => $this->rows(
+                <<<'SQL'
+                SELECT a.id,
+                       a.event_type,
+                       a.payload,
+                       a.created_at,
+                       u.name AS actor_name
+                FROM activities a
+                JOIN users u ON u.id = a.actor_id
+                WHERE a.project_id = ?
+                    AND a.ticket_id = ?
+                ORDER BY a.id DESC
+                LIMIT 50
+                SQL,
+                [$project, $ticket],
+            ),
+            'attachments' => $this->rows(
+                <<<'SQL'
+                SELECT id,
+                       original_name,
+                       mime_type,
+                       byte_size,
+                       created_at,
+                       state
+                FROM attachments
+                WHERE project_id = ?
+                    AND ticket_id = ?
+                    AND state <> 'deleting'
+                ORDER BY id
+                SQL,
+                [$project, $ticket],
+            ),
+            'selected_labels' => array_column(
+                $this->rows(
+                    'SELECT label_id FROM ticket_labels WHERE project_id=? AND ticket_id=?',
+                    [$project, $ticket],
+                ),
+                'label_id',
+            ),
+            'selected_assignees' => array_column(
+                $this->rows(
+                    'SELECT user_id FROM ticket_assignees WHERE project_id=? AND ticket_id=?',
+                    [$project, $ticket],
+                ),
+                'user_id',
+            ),
+        ];
     }
+
     public function activity(int $project): array
     {
         $this->access->project($project);
-        return $this->rows('SELECT a.*,u.name AS actor_name,t.number AS ticket_number FROM activities a JOIN users u ON u.id=a.actor_id LEFT JOIN tickets t ON t.id=a.ticket_id AND t.project_id=a.project_id WHERE a.project_id=? ORDER BY a.id DESC LIMIT 100', [$project]);
+
+        return $this->rows(
+            <<<'SQL'
+            SELECT a.*,
+                   u.name AS actor_name,
+                   t.number AS ticket_number
+            FROM activities a
+            JOIN users u ON u.id = a.actor_id
+            LEFT JOIN tickets t ON t.id = a.ticket_id
+            AND t.project_id = a.project_id
+            WHERE a.project_id = ?
+            ORDER BY a.id DESC
+            LIMIT 100
+            SQL,
+            [$project],
+        );
     }
+
     public function preferences(): array
     {
-        return $this->rows('SELECT * FROM user_preferences WHERE user_id=?', [$this->access->actor()])[0] ?? ['theme' => 'system','locale' => 'de','timezone' => 'Europe/Berlin','notify_in_app' => 1,'notify_mail' => 0];
+        return $this->rows('SELECT * FROM user_preferences WHERE user_id=?', [
+            $this->access->actor(),
+        ])[0] ?? [
+            'theme'         => 'system',
+            'locale'        => 'de',
+            'timezone'      => 'Europe/Berlin',
+            'notify_in_app' => 1,
+            'notify_mail'   => 0,
+        ];
     }
+
     private function rows(string $sql, array $params): array
     {
-        $q = $this->pdo->prepare($sql);
-        $q->execute($params);
-        return $q->fetchAll();
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute($params);
+
+        return $statement->fetchAll();
     }
 }

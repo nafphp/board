@@ -60,6 +60,10 @@ docker compose --profile background restart worker ticker
 
 ## Pruefungen und Betrieb
 
+Der Code folgt PER Coding Style 3.0 mit lokal ausgerichteten Zuweisungen.
+[Code-Stil und Formatter](docs/Code-Style.md) dokumentiert die Regeln:
+`bin/style install`, danach `bin/style check` oder `bin/style fix`.
+
 Siehe [Implementierung und Abnahme](docs/Implementation.md) fuer Ergebnisse, Grenzen,
 Release-Branches und Wiederholung der Tests. Health: `/health/live` und `/health/ready`.
 Die Readiness prueft Datenbank, erforderliche App-Migrationen, Hintergrundtabellen und die native Storage-Anbindung.

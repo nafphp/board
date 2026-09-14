@@ -20,3 +20,8 @@ __pycache__/
 *.pyc
 
 /app/logs/
+
+/tools/style/php/vendor/
+/tools/style/web/node_modules/
+/tools/style/python/.venv/
+/.php-cs-fixer.cache
