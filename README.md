@@ -62,7 +62,7 @@ docker compose --profile background restart worker ticker
 
 Siehe [Implementierung und Abnahme](docs/Implementation.md) fuer Ergebnisse, Grenzen,
 Release-Branches und Wiederholung der Tests. Health: `/health/live` und `/health/ready`.
-Die Readiness prueft Datenbank, erforderliche App-Migrationen und Hintergrundtabellen.
+Die Readiness prueft Datenbank, erforderliche App-Migrationen, Hintergrundtabellen und die native Storage-Anbindung.
 
 ```sh
 bin/backup

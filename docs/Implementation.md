@@ -72,6 +72,7 @@ dauerhafte Queue-Reservierungen und den tatsächlichen Ticker-/CLI-Aufruf.
 | Backup/Restore | 24 Tabellen, drei Konten, neun Tickets und sechs Migrationen in isolierter Restore-DB; private Testdatei mit gleichem Hash |
 | Source-Live-Reload | Zwei Änderungen derselben Framework-Klasse über FPM beobachtet; Reflection zeigt `/workspace/packages/framework` |
 | Download | 64 MiB tatsächlich übertragen, ohne entsprechende Vergrößerung des PHP-Heap-Peaks; Messung mit PHP-Allokationsseiten, kein Nachweis von null Speicherverbrauch |
+| Lokales Runtime-Image | Anmeldung, fünf geschützte Seiten, Fremdprojekt 404 und privater Download erfolgreich; 17 NAF-Pakete, keine Source-Mounts/Vendor-Symlinks |
 | Composer | Manifeste der beteiligten Pakete und der App mit `validate --strict` geprüft |
 
 Die HTTP-Abnahme umfasst Fremdprojekt-IDs, Rollen, CSRF einschließlich manipuliertem
@@ -125,13 +126,26 @@ NAF-Logs werden über einen PSR-3-Adapter an PHP/FPM und die begrenzten Compose-
 Lokale alte Logdateien werden weder versioniert noch in ein Image kopiert.
 
 `/health/live` prüft den HTTP-Prozess. `/health/ready` prüft PDO, die drei erforderlichen
-App-Migrationen und die Hintergrundtabellen. Worker und Ticker haben eigene Heartbeats.
+App-Migrationen, die Hintergrundtabellen und die Auflösung des AttachmentService mit dem nativen Storage-Datenträger. Worker und Ticker haben eigene Heartbeats.
 Die bisherige Schema-Kennung ist `202609140003`; sechs Migrationen inklusive Plugins sind angewandt.
 
 `bin/build-candidate` erzeugt einen eingefrorenen lokalen Runtime-Snapshot mit Package-Hashes.
 Er enthält keine Vendor-Symlinks, kein Composer und keine Source-Mounts. Der Builder kontrolliert die vollständige Menge aller benötigten NAF-Pakete.
 Private Daten- und Logverzeichnisse werden ausgeschlossen; gleichnamige Pakete bleiben enthalten.
+Der geprüfte Snapshot `nafinity:candidate` hat **132,23 MiB** (138.656.645 Byte),
+Image-ID `sha256:4d32cdfd85dd6906bca905912f5b679f9db0a829d226ab67bc6a09cc2cdc7994`.
+Anmeldung, fünf geschützte Seiten, Projektisolation und der private Download wurden über
+Port 8090 erfolgreich geprüft. Nur das private Datenverzeichnis ist eingebunden.
+Hashes und Einzelresultate stehen in `docs/Snapshot-Evidenz.json`.
 Dieser Snapshot ist ausdrücklich keine veröffentlichte Distribution.
+
+App, Datenbank, Worker und Ticker bleiben aktiv; Worker/Ticker wurden nach den finalen
+Source-Änderungen neu gestartet. Die zusätzlichen Test- und Candidate-Container wurden
+nach der Abnahme gestoppt. Der geprüfte Candidate lässt sich erneut starten:
+
+```sh
+docker compose --profile candidate up -d candidate
+```
 
 Backups mit `bin/backup` erstellen. `bin/verify-restore VERZEICHNIS` stellt ausschließlich
 in `nafinity_restore_test` wieder her und kontrolliert Dateien/Hashes. Niemals Test- oder
@@ -161,7 +175,7 @@ und prüft dort auch eine tatsächlich aufgelöste PDO-Verbindung.
 ## Verbleibende Grenzen
 
 - Stabile Paket-Releases, der daraus erzeugte Distributions-Lock und ein frischer
-  Install ohne lokale Paketquellen stehen aus. Es wurde nichts gemergt oder veröffentlicht.
+  Install ohne lokale Paketquellen stehen aus. Im Rahmen dieser Umsetzung wurden keine Pakete gemergt oder als Release veröffentlicht.
 - Kein echter LDAP-Server, OIDC-Issuer oder SMTP-Dienst wurde kontaktiert. Für deren
   Aktivierung fehlen noch Deployment-Konfiguration und End-to-End-Abnahme.
 - Mail ist ausgeschaltet. Die Ledger-/Queue-Kombination begrenzt normale Duplikate;
@@ -176,6 +190,14 @@ und prüft dort auch eine tatsächlich aufgelöste PDO-Verbindung.
 Die zentrale NAF-Dokumentation ist als [Release-abhängiger Entwurf](https://github.com/nafphp/docs/compare/main...docs/nafinity-integration-rc) vorbereitet. Sie darf
 erst nach Veröffentlichung und Prüfung der jeweiligen Paketversionen als Stable-Anleitung
 erscheinen.
+
+## Lokales Projekt und Dokumentation
+
+Nafinity ist auf dem lokalen Branch `main` versioniert. Für die Anwendung wurde kein
+Remote angelegt. `.env`, private Dateien, Logs, Vendor und generierte Entwicklungs-Locks
+sind ausgeschlossen; der relative IDE-Symlink ist versioniert.
+Der NAF-Dokumentationsentwurf liegt auf `docs/nafinity-integration-rc`, Commit `9036e2e`.
+Er bleibt bis zu den erforderlichen Paket-Releases außerhalb der öffentlichen Anleitungen.
 
 ## Git-Übergabe der bestehenden NAF-Pakete
 

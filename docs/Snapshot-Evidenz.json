@@ -1,4 +1,49 @@
 {
-  "status": "pending",
-  "reason": "Local rebuild after native Storage API adaptation awaits renewed automatic-review approval; source runtime verified."
+  "status": "passed",
+  "verified_on": "2026-09-14",
+  "mode": "unreleased-source-snapshot",
+  "image_id": "sha256:4d32cdfd85dd6906bca905912f5b679f9db0a829d226ab67bc6a09cc2cdc7994",
+  "image_created": "2026-09-14T22:40:19.792128706+02:00",
+  "image_size_bytes": 138656645,
+  "image_size_mib": 132.23,
+  "container_image_matches": true,
+  "mount_destinations": [
+    "/workspace/app/storage"
+  ],
+  "source_mounts": false,
+  "vendor_symlinks": false,
+  "composer_in_runtime": false,
+  "historical_app_logs_in_image": false,
+  "schema": "202609140003",
+  "login": "passed",
+  "authenticated_pages": [
+    "/projects/1",
+    "/projects/1/tickets/9",
+    "/projects/1/settings",
+    "/notifications",
+    "/preferences"
+  ],
+  "foreign_project_status": 404,
+  "private_download_bytes": 179,
+  "private_download_sha256": "52c4e6bc5fdd6a7b228cf709225f98b42f7d55a1a5c40b8c450e78f0ccf68a23",
+  "package_hashes": {
+    "naf/database": "0f99f5cc01db4b670fd664ddf3fc4520cef5881f39d71c2448f02169afb8bf13",
+    "naf/auth-ldap": "afdcbc379d88fb307dad1990ebfea8e2b2978d4251541fa9ae961bdba7883d76",
+    "naf/form": "5cc80e60b2073eb8c1536eac7503f85c7ee5761a47aeaee5868831462fe826db",
+    "naf/schedule": "5b79c6efaf9de581a85b6843f83c9d2b862012abecca7da513eb33d283e3df90",
+    "naf/framework": "397f9e5dbc8fd0ff828d2998524e0f917b5f9164cbe17fd0c8a19226da7c75ef",
+    "naf/auth": "d4e739e1d2ad061db81536a107d45221dc0eb491505e67c1a6854a08b5068b17",
+    "naf/mail": "1b7de3ab8c107f1a61868ad8f06a5fea9a476f6e4de50870cc4b587c362f1c68",
+    "naf/cli": "dec70e70ff76d1c479db4867a50a3447d415f9e6c931357b5d2b7f5920162591",
+    "naf/storage": "5b18504af2ece424923f9cfeeed4a35076f4483706cc9ee1e99eef077095421d",
+    "naf/oauth-client": "5b96bf8d7f4aeaf32a7a66d89e316f24280e85ab34aa60457c8dee8de78c3ab7",
+    "naf/view": "afd3b6de5b572e42bb2e0d2b383e5b92894cd0308fde7ef729b2972439081eb2",
+    "naf/queue": "f3c5890a64fadd49a7950a5c76504da29c99dddc61811549de41f2ec3102c4b3",
+    "naf/orm": "e4e82356950b9a011d3870328bcec0e21c1c3f42236e6b77b726d1072a015d41",
+    "naf/i18n": "9f099aaa23a9d296751e8632529620581bd5afd086a57b87c03dcacf83a4ce49",
+    "naf/client": "3c68f65e76a4eaa94eaae85ade2da65f9597a47f3cbcaf8b32359d8f9c1db1c3",
+    "naf/rate-limit": "d990196e313e8e0083ddbbc5daa59f7e0853b4c509d69358e10db052de8a98e0",
+    "naf/session": "5b1dc2a1444269691dfb32fc127bdebf4a78dc786801bb96fb9675898d23391d"
+  },
+  "scope": "Locally built source snapshot with demo database/private storage; not a published Composer distribution."
 }
