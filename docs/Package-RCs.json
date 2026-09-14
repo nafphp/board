@@ -1,0 +1,66 @@
+[
+  {
+    "package": "framework",
+    "branch": "v0.2.4-rc",
+    "commit": "719cb1c86d6d088843261a314862b88225db5240",
+    "compare": "https://github.com/nafphp/framework/compare/main...v0.2.4-rc",
+    "working_tree": "",
+    "remote_matches": true
+  },
+  {
+    "package": "database",
+    "branch": "v0.2.2-rc",
+    "commit": "50ec941aa8c8ebb15aff59544d39811d753fe988",
+    "compare": "https://github.com/nafphp/database/compare/main...v0.2.2-rc",
+    "working_tree": "",
+    "remote_matches": true
+  },
+  {
+    "package": "form",
+    "branch": "v0.2.3-rc",
+    "commit": "b71e88f4caa0e91069020176cb3bdb223638f8e1",
+    "compare": "https://github.com/nafphp/form/compare/main...v0.2.3-rc",
+    "working_tree": "",
+    "remote_matches": true
+  },
+  {
+    "package": "session",
+    "branch": "v0.2.2-rc",
+    "commit": "8913cd26fd3919debd5a1f60f24d5b0a77c82d0a",
+    "compare": "https://github.com/nafphp/session/compare/main...v0.2.2-rc",
+    "working_tree": "",
+    "remote_matches": true
+  },
+  {
+    "package": "orm",
+    "branch": "v0.2.2-rc",
+    "commit": "3df42e758312255438e4e760b38217872a4f370d",
+    "compare": "https://github.com/nafphp/orm/compare/main...v0.2.2-rc",
+    "working_tree": "",
+    "remote_matches": true
+  },
+  {
+    "package": "queue",
+    "branch": "v0.2.3-rc",
+    "commit": "b8c394c1cbe01a1fd64b25cc97876580633cab75",
+    "compare": "https://github.com/nafphp/queue/compare/main...v0.2.3-rc",
+    "working_tree": "",
+    "remote_matches": true
+  },
+  {
+    "package": "schedule",
+    "branch": "v0.2.3-rc",
+    "commit": "5f674abc5b44e85abbec16608d7e5b36d1eccb6d",
+    "compare": "https://github.com/nafphp/schedule/compare/main...v0.2.3-rc",
+    "working_tree": "",
+    "remote_matches": true
+  },
+  {
+    "package": "cli",
+    "branch": "v0.2.2-rc",
+    "commit": "6beaf63790f55686f492c51c3ce7805af0c37330",
+    "compare": "https://github.com/nafphp/cli/compare/main...v0.2.2-rc",
+    "working_tree": "",
+    "remote_matches": true
+  }
+]
