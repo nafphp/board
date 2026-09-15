@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+"""Create the private local Compose environment without replacing existing settings."""
+
+import os
+import secrets
+from pathlib import Path
+
+root = Path(__file__).resolve().parents[1]
+environment = root / ".env"
+template = (root / ".env.example").read_text()
+template = template.replace("replace-with-a-local-password", secrets.token_hex(24))
+template = template.replace("replace-with-a-different-local-password", secrets.token_hex(24))
+
+try:
+    descriptor = os.open(environment, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+except FileExistsError:
+    print("Existing .env retained.")
+else:
+    with os.fdopen(descriptor, "w") as output:
+        output.write(template)
+    print("Created private .env with random database passwords for local development.")

@@ -7,3 +7,7 @@ Project root: /Users/flo/PhpStormProjects/nafinity. app/ contains the Composer a
 Use docs/Nafinity-Prototypplan.md as scope and docs/Implementation.md as the live evidence/status record. Source mode can use tested RC branches; stable distribution is gated on the maintainer merging/publishing those packages. Never silently fake stable aliases in distribution.
 
 Follow docs/Code-Style.md and .php-cs-fixer.dist.php: PER Coding Style 3.0, locally aligned = and =>, descriptive variables and blank lines between logical steps. Run bin/style check after changes. Keep SQL, mixed PHP/HTML templates and build/test scripts readable; preserve escaping, form-value whitespace, evaluation order and transaction boundaries. Formatter tooling is isolated in tools/style and must not enter the runtime image.
+
+Docker configuration mirrors container paths under docker/rootfs. Keep nginx, PHP-FPM, the native NAF queue worker and the schedule ticker under Supervisor in the app container. Use make restart-background for source changes to long-running processes. Local HTTPS defaults to port 443; generate certificates with make certificates. Never commit or bake TLS keys/certificates into images, or mount the private CA key. Test and candidate services disable background processes explicitly.
+
+Use native ENV:VARIABLE_NAME references in PHP configuration. Keep environment defaults in Compose and let NAF resolve $_ENV; do not duplicate this in app configuration with getenv().

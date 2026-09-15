@@ -6,24 +6,36 @@ PDO/Migrationen, ORM, Events, Queue, Scheduler, Mail und Uebersetzung kommen aus
 
 ## Starten
 
-Voraussetzungen: Docker mit Compose, Python 3 auf dem Host und die lokalen NAF-Pakete
-unter `../nafphp`. `.env` ist lokal bereits eingerichtet und wird nicht versioniert.
-Bei einer neuen Einrichtung `.env.example` kopieren und beide Datenbankpasswoerter setzen.
+Voraussetzungen: Docker mit Compose, Make, OpenSSL und Python 3 auf dem Host und die lokalen
+NAF-Pakete unter `../nafphp`.
 
 ```sh
 cd ~/PhpStormProjects/nafinity
-docker compose build app
-bin/dev-composer install --no-interaction
-docker compose up -d db app
-docker compose exec app php vendor/bin/naf db:migrate up
-docker compose exec app php vendor/bin/naf nafinity:seed
-docker compose --profile background up -d worker ticker
+make first-install
+```
+
+Das richtet eine fehlende `.env` mit zufälligen lokalen Datenbankpasswörtern ein,
+erzeugt das lokale TLS-Zertifikat, baut das Image, installiert Composer-Abhängigkeiten im Container, führt die
+NAF-Migrationen und den Demo-Seed aus und startet App, Datenbank, Worker und Scheduler.
+Eine vorhandene `.env` bleibt erhalten. `NAFINITY_PORT`, `NAFINITY_HTTPS_PORT` und `NAF_SOURCE_ROOT` können
+dort angepasst werden. Die installierte Umgebung lässt sich danach mit `make run`
+starten; nach Änderungen an Docker-Dateien `make build-app run` verwenden.
+
+```sh
+make                       # Alle verfügbaren Befehle
+make status                # Container und Health-Status
+make logs                  # App-, Worker- und Scheduler-Logs verfolgen
+make ssh                   # Shell als www im App-Container
+make composer ARGS='show naf/framework'
+make naf                   # Verfügbare NAF-Befehle
+make stop                  # Alle Nafinity-Container anhalten
+make down                  # Container/Netz entfernen; Datenbank und Dateien behalten
 ```
 
 Der Seed ist nur fuer eine leere Entwicklungs-/Testdatenbank erlaubt. Bestehende Daten
 bleiben bei einem erneuten Aufruf erhalten; der Befehl ueberspringt die Initialisierung.
 
-Oeffnen: **http://localhost:8088**. Demo-Passwort fuer alle drei Konten:
+Öffnen: **https://localhost** (Port 443). HTTP auf Port 8088 leitet mit Status 308 dorthin weiter. Demo-Passwort fuer alle drei Konten:
 `Nafinity-Demo-2026!`.
 
 | Konto | Rolle / Projekt |
@@ -46,33 +58,112 @@ Boards liefern maximal 300 Karten und die gesamte Trefferzahl; bei groesseren Be
 die Filter verwenden. Deutsch ist die vollstaendige Basissprache; Englisch deckt die
 wichtigsten Oberflaechentexte ab, einige Meldungen bleiben im Prototyp deutsch.
 
+## Docker-Struktur
+
+Wie in `website`, `weonlywalk` und `nafphp/studio` bildet `docker/rootfs` die Pfade
+im Container ab. Das Dockerfile kopiert diesen Baum nach `/`:
+
+```text
+docker/
+├── Dockerfile
+├── rootfs/etc/
+│   ├── nginx/
+│   │   ├── nginx.conf
+│   │   ├── conf.d/app.conf
+│   │   └── ssl/                 # Zertifikat und Schlüssel: nur lokal
+│   ├── php85/
+│   │   ├── conf.d/99-nafinity.ini
+│   │   ├── php-fpm.conf
+│   │   └── php-fpm.d/www.conf
+│   ├── ssl/nafinity.cnf         # Lokale Zertifikatserzeugung
+│   └── supervisor/
+│       ├── conf.d/supervisord.conf
+│       └── programs/
+│           ├── nginx.conf
+│           ├── php-fpm.conf
+│           ├── queue-worker.conf
+│           └── schedule-ticker.conf
+├── rootfs/usr/local/bin/
+│   ├── nafinity-entrypoint
+│   └── nafinity-healthcheck
+└── development/rootfs/etc/php85/conf.d/zz-development.ini
+```
+
+Das Development-Target ergänzt die OPcache-Einstellungen für direkt sichtbare
+Source-Änderungen. Runtime und Production verwenden nur den gemeinsamen Baum.
+Supervisor steuert nginx, PHP-FPM, `naf queue:consume` und `naf schedule:ticker`
+gemeinsam im App-Container. MariaDB bleibt ein eigener Dienst. Mit
+`make supervisor-status` sieht man alle vier Prozesse; `make restart-background`
+startet gezielt Worker und Ticker neu. Der Container-Healthcheck prüft HTTPS,
+die beiden Supervisor-Prozesse und ihre NAF-Heartbeats. Test- und Candidate-Dienste
+setzen `NAFINITY_BACKGROUND_ENABLED=false`, damit sie keine zusätzlichen Aufgaben
+ausführen beziehungsweise isolierte Test-Fixtures verändern.
+Der Build-Kontext bleibt das Projektverzeichnis, damit auch die App in das
+Production- beziehungsweise Snapshot-Image kopiert werden kann.
+
+## Lokales HTTPS
+
+`make certificates` erzeugt mit OpenSSL eine private Entwicklungs-CA und ein von ihr signiertes Serverzertifikat für
+`localhost`, `nafinity.local`, `127.0.0.1` und `::1`. Es gilt 365 Tage; ein noch
+gültiges zusammengehöriges Zertifikat/Schlüsselpaar bleibt beim erneuten Aufruf
+erhalten. `make first-install`, `make run` und die Test-/Candidate-Startziele rufen
+die Erzeugung automatisch auf. Nach einer Erneuerung `make restart` ausführen.
+
+Der private CA-Schlüssel liegt ausschließlich unter `work/tls` und wird nicht in
+den Container eingebunden. Die Server-TLS-Dateien liegen unter `docker/rootfs/etc/nginx/ssl`, sind von Git und beiden
+Image-Builds ausgeschlossen und werden nur lesbar eingebunden. Das private
+Schlüsselmaterial bleibt lokal. Der Schlüssel hat Dateimodus 0600.
+
+Für einen Browser ohne Zertifikatswarnung das öffentliche CA-Zertifikat `ca.pem` in der
+macOS-Schlüsselbundverwaltung importieren und für SSL als vertrauenswürdig markieren.
+Private Schlüssel werden dafür nicht importiert. Das Setup verändert
+den System-Schlüsselbund nicht. CLI- und Integrationstests prüfen TLS mit dem
+öffentlichen CA-Zertifikat als explizitem Vertrauensanker.
+
+Port 443 muss frei sein. Alternativ `NAFINITY_HTTPS_PORT=8443` in `.env` setzen;
+die HTTP-Weiterleitung folgt diesem Port. Der Testdienst verwendet HTTPS auf 8444,
+der Candidate auf 8445. Im Container bindet nginx den unprivilegierten Port 8443
+und läuft weiterhin als `www`.
+
 ## Lokale Framework-Quellen
 
 `packages -> ../nafphp` dient der IDE. Compose bindet die App unter `/workspace/app`
 und die NAF-Quellen unter `/workspace/packages` ein. `bin/dev-composer` erzeugt ein
 ignoriertes Source-Manifest mit ausdruecklichen Development-Versionen. Composer laeuft
 im Container und erzeugt relative Vendor-Symlinks, die auf Host und Container aufgehen.
+Die App-Konfiguration verwendet NAFs native `ENV:VARIABLE_NAME`-Referenzen, auch
+für die optionalen LDAP-/OIDC-Zugangsdaten im Konfigurationsbeispiel. Standardwerte
+stehen in Compose; außerhalb von Compose die Variablen über das Environment oder
+NAFs `.env`/`.env.local` im App-Verzeichnis bereitstellen. PHP verwendet im Container
+`variables_order=EGPCS`, damit NAF die Werte aus `$_ENV` auflösen kann.
+
 FPM liest Source-Aenderungen beim naechsten Request. Nach Aenderungen an Hintergrundcode:
 
 ```sh
-docker compose --profile background restart worker ticker
+make restart-background
 ```
 
 ## Pruefungen und Betrieb
 
 Der Code folgt PER Coding Style 3.0 mit lokal ausgerichteten Zuweisungen.
 [Code-Stil und Formatter](docs/Code-Style.md) dokumentiert die Regeln:
-`bin/style install`, danach `bin/style check` oder `bin/style fix`.
+`make style-install`, danach `make style-check` oder `make style-fix`.
+Die Formatter benötigen zusätzlich Node.js/npm auf dem Host und bleiben außerhalb der Runtime.
 
 Siehe [Implementierung und Abnahme](docs/Implementation.md) fuer Ergebnisse, Grenzen,
 Release-Branches und Wiederholung der Tests. Health: `/health/live` und `/health/ready`.
 Die Readiness prueft Datenbank, erforderliche App-Migrationen, Hintergrundtabellen und die native Storage-Anbindung.
 
 ```sh
-bin/backup
-bin/verify-restore work/backups/ZEITSTEMPEL
-docker compose --profile background logs --tail=50 worker ticker
+make test                  # MariaDB, PostgreSQL, HTTP und Worker
+make test-down             # Testdienste anschließend anhalten
+make backup
+make verify-restore BACKUP=work/backups/ZEITSTEMPEL
+make supervisor-status     # Status aller vier App-Prozesse
 ```
+
+Die Tests legen `nafinity_test` bei Bedarf an und setzen nur diese Testdatenbanken zurück.
+`make test-http` bereitet seine Fixtures bei jedem Aufruf neu vor.
 
 Backups enthalten Datenbank und private Dateien. Die Restore-Probe schreibt ausschliesslich
 nach `nafinity_restore_test`; sie ersetzt keine laufende Anwendung. Backups sind privat zu
@@ -85,9 +176,11 @@ beschreibt die benoetigten zukuenftigen Mindestversionen. Ein sauberer Install a
 veroeffentlichten Paketen und ein stabiler Lock sind erst nach deren Releases moeglich.
 Es wurden keine Pakete gemergt oder veroeffentlicht.
 
-`bin/build-candidate` baut jetzt schon einen eingefrorenen lokalen Source-Snapshot ohne
+`make candidate-build` baut jetzt schon einen eingefrorenen lokalen Source-Snapshot ohne
 Source-Mounts, Vendor-Symlinks oder Composer im Runtime-Image. Er ist ausdruecklich
 `unreleased-source-snapshot`, kein Nachweis einer veroeffentlichten Distribution.
+`make candidate-up` startet den gebauten Snapshot auf https://localhost:8445;
+`make candidate-down` hält ihn wieder an.
 Das Production-Target verlangt dagegen einen echten `composer.lock`, linkfreies Vendor
 und den Marker `vendor/.nafinity-distribution` nach verifiziertem Dist-Install.
 

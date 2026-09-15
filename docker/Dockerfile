@@ -10,20 +10,20 @@ RUN apk add --no-cache ca-certificates curl nginx supervisor tzdata \
     && addgroup -g 1000 www && adduser -D -u 1000 -G www www \
     && mkdir -p /workspace/app/storage /tmp/nginx /tmp/php \
     && chown -R www:www /workspace /tmp/nginx /tmp/php
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-COPY docker/php.ini /etc/php85/conf.d/99-nafinity.ini
-COPY docker/php-fpm.conf /etc/php85/php-fpm.conf
-COPY docker/supervisord.conf /etc/supervisord.conf
+COPY docker/rootfs/ /
+
 WORKDIR /workspace/app
 USER www
-EXPOSE 8080
-HEALTHCHECK --interval=15s --timeout=3s --start-period=20s CMD curl -fsS http://127.0.0.1:8080/health/live || exit 1
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+ENV NAFINITY_BACKGROUND_ENABLED=true
+EXPOSE 8080 8443
+HEALTHCHECK --interval=15s --timeout=3s --start-period=20s CMD ["/usr/local/bin/nafinity-healthcheck"]
+ENTRYPOINT ["/usr/local/bin/nafinity-entrypoint"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
 
 FROM runtime AS development
 USER root
-RUN apk add --no-cache composer git \
-    && printf '\nopcache.validate_timestamps=1\nopcache.revalidate_freq=0\n' >> /etc/php85/conf.d/99-nafinity.ini
+RUN apk add --no-cache composer git
+COPY docker/development/rootfs/ /
 USER www
 
 # Vendor must be prepared by a verified distribution install; never copy Source-mode links.

@@ -13,3 +13,6 @@ app/config/*-ca.pem
 
 app/logs
 tools/style
+
+docker/rootfs/etc/nginx/ssl/*
+!docker/rootfs/etc/nginx/ssl/.gitkeep

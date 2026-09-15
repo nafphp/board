@@ -42,7 +42,12 @@ vendor_ignore = shutil.ignore_patterns(
     "composer.lock",
 )
 shutil.copytree(root / "app/vendor", app / "vendor", symlinks=False, ignore=vendor_ignore)
-shutil.copytree(root / "docker", context / "docker", dirs_exist_ok=True)
+docker_context = context / "docker"
+if docker_context.exists():
+    shutil.rmtree(docker_context)
+shutil.copytree(
+    root / "docker", docker_context, ignore=shutil.ignore_patterns("*.pem", ".generate-*")
+)
 packages = {}
 for manifest in (app / "vendor/naf").glob("*/composer.json"):
     package = manifest.parent

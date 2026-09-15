@@ -6,17 +6,17 @@ use Naf\Mail\Core\Transport\DummyTransport;
 use Naf\Storage\Adapters\LocalAdapter;
 
 $settings = [
-    'app'      => ['name' => 'Nafinity', 'url' => getenv('APP_URL') ?: 'http://localhost:8088'],
+    'app'      => ['name' => 'Nafinity', 'url' => 'ENV:APP_URL'],
     'database' => [
-        'driver'   => getenv('DB_DRIVER') ?: 'mysql',
-        'host'     => getenv('DB_HOST') ?: 'db',
-        'port'     => getenv('DB_PORT') ?: '3306',
-        'database' => getenv('DB_DATABASE') ?: 'nafinity',
-        'username' => getenv('DB_USERNAME') ?: 'nafinity',
-        'password' => getenv('DB_PASSWORD') ?: '',
+        'driver'   => 'ENV:DB_DRIVER',
+        'host'     => 'ENV:DB_HOST',
+        'port'     => 'ENV:DB_PORT',
+        'database' => 'ENV:DB_DATABASE',
+        'username' => 'ENV:DB_USERNAME',
+        'password' => 'ENV:DB_PASSWORD',
         'charset'  => 'utf8mb4',
     ],
-    'public_url' => getenv('APP_URL') ?: 'http://localhost:8088',
+    'public_url' => 'ENV:APP_URL',
     'oauth'      => [
         'accounts'    => ['provider' => 'users', 'auto_register' => false],
         'error_route' => '/login',

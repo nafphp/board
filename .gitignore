@@ -25,3 +25,6 @@ __pycache__/
 /tools/style/web/node_modules/
 /tools/style/python/.venv/
 /.php-cs-fixer.cache
+
+/docker/rootfs/etc/nginx/ssl/*
+!/docker/rootfs/etc/nginx/ssl/.gitkeep

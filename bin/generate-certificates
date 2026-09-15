@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+"""Generate or renew a localhost certificate signed by a private development CA."""
+
+from pathlib import Path
+import os
+import secrets
+import shutil
+import subprocess
+import tempfile
+
+root = Path(__file__).resolve().parents[1]
+directory = root / "docker/rootfs/etc/nginx/ssl"
+certificate = directory / "fullchain.pem"
+private_key = directory / "privkey.pem"
+public_authority = directory / "ca.pem"
+authority_directory = root / "work/tls"
+authority_key = authority_directory / "ca-key.pem"
+authority_certificate = authority_directory / "ca.pem"
+configuration = root / "docker/rootfs/etc/ssl/nafinity.cnf"
+
+
+def openssl(*arguments):
+    return subprocess.run(
+        ["openssl", *map(str, arguments)],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+
+
+directory.mkdir(parents=True, exist_ok=True)
+if certificate.is_file() and private_key.is_file() and public_authority.is_file():
+    try:
+        openssl("verify", "-CAfile", public_authority, certificate)
+        openssl("x509", "-in", certificate, "-checkend", "86400", "-noout")
+        certificate_public_key = openssl("x509", "-in", certificate, "-pubkey", "-noout")
+        actual_public_key = openssl("pkey", "-in", private_key, "-pubout")
+        if certificate_public_key == actual_public_key:
+            print("Existing valid localhost certificate retained.")
+            raise SystemExit(0)
+    except subprocess.CalledProcessError:
+        pass
+
+authority_directory.mkdir(parents=True, exist_ok=True, mode=0o700)
+if not authority_key.is_file() or not authority_certificate.is_file():
+    with tempfile.TemporaryDirectory(prefix=".generate-", dir=authority_directory) as temporary:
+        temporary = Path(temporary)
+        openssl(
+            "req",
+            "-x509",
+            "-newkey",
+            "rsa:4096",
+            "-sha256",
+            "-nodes",
+            "-days",
+            "3650",
+            "-config",
+            configuration,
+            "-extensions",
+            "authority",
+            "-subj",
+            "/CN=Nafinity Local Development CA/O=Nafinity",
+            "-keyout",
+            temporary / "ca-key.pem",
+            "-out",
+            temporary / "ca.pem",
+        )
+        (temporary / "ca-key.pem").chmod(0o600)
+        os.replace(temporary / "ca-key.pem", authority_key)
+        os.replace(temporary / "ca.pem", authority_certificate)
+
+with tempfile.TemporaryDirectory(prefix=".generate-", dir=directory) as temporary:
+    temporary = Path(temporary)
+    generated_key = temporary / "privkey.pem"
+    generated_certificate = temporary / "fullchain.pem"
+    openssl(
+        "req",
+        "-new",
+        "-newkey",
+        "rsa:4096",
+        "-sha256",
+        "-nodes",
+        "-config",
+        configuration,
+        "-keyout",
+        generated_key,
+        "-out",
+        temporary / "server.csr",
+    )
+    openssl(
+        "x509",
+        "-req",
+        "-in",
+        temporary / "server.csr",
+        "-sha256",
+        "-days",
+        "365",
+        "-CA",
+        authority_certificate,
+        "-CAkey",
+        authority_key,
+        "-set_serial",
+        "0x" + secrets.token_hex(16),
+        "-extfile",
+        configuration,
+        "-extensions",
+        "extensions",
+        "-out",
+        generated_certificate,
+    )
+    openssl("verify", "-CAfile", authority_certificate, generated_certificate)
+    generated_key.chmod(0o600)
+    generated_certificate.chmod(0o644)
+    os.replace(generated_key, private_key)
+    os.replace(generated_certificate, certificate)
+    shutil.copyfile(authority_certificate, public_authority)
+    public_authority.chmod(0o644)
+
+print("Generated localhost certificate signed by the local development CA (365 days, DNS/IP SANs).")
+print("CA private key stays in work/tls; only server key and public certificates are mounted.")
+print(
+    "Import docker/rootfs/etc/nginx/ssl/ca.pem into Keychain to trust local HTTPS in the browser."
+)

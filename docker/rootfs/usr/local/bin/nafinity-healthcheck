@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+
+curl --fail --silent --show-error --cacert /etc/nginx/ssl/ca.pem \
+    https://localhost:8443/health/live >/dev/null
+
+if [ "${NAFINITY_BACKGROUND_ENABLED:-true}" = true ]; then
+    supervisorctl -c /etc/supervisor/conf.d/supervisord.conf \
+        status queue-worker schedule-ticker >/dev/null
+    php -r '
+        foreach (["worker", "ticker"] as $process) {
+            $path = "/tmp/nafinity-" . $process . "-heartbeat";
+            if (!is_file($path) || time() - (int) file_get_contents($path) >= 30) {
+                fwrite(STDERR, $process . " heartbeat is missing or stale\n");
+                exit(1);
+            }
+        }
+    '
+fi

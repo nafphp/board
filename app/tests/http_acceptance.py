@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
 """Real HTTP regression suite. Run against only the named disposable Compose app-test service."""
 import urllib.request, urllib.error, http.cookiejar, urllib.parse, json, re, concurrent.futures, time
+import ssl
+from pathlib import Path
 
-BASE = "http://127.0.0.1:8089"
+BASE = "https://127.0.0.1:8444"
+TLS = ssl.create_default_context(
+    cafile=str(Path(__file__).resolve().parents[2] / "docker/rootfs/etc/nginx/ssl/ca.pem")
+)
 
 
 class Client:
     def __init__(self):
         self.jar = http.cookiejar.CookieJar()
-        self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.jar))
+        self.opener = urllib.request.build_opener(
+            urllib.request.HTTPSHandler(context=TLS), urllib.request.HTTPCookieProcessor(self.jar)
+        )
 
     def request(self, path, method="GET", data=None, headers=None):
         headers = headers or {}
@@ -57,6 +64,7 @@ bob = Client()
 viewer = Client()
 alice2 = Client()
 assert "Nafinity" in alice.login("alice@example.test")
+ok(any(cookie.secure for cookie in alice.jar), "HTTPS session uses a Secure cookie")
 assert "Studio Nord" in bob.login("bob@example.test")
 viewer.login("viewer@example.test")
 alice2.login("alice@example.test")

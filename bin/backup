@@ -13,7 +13,7 @@ case "$backup_dir" in
 esac
 
 # Pause only this Compose project's writers while taking the matching DB/files snapshot.
-writer_ids=$(docker compose ps -q app worker ticker candidate)
+writer_ids=$(docker compose ps -q app candidate)
 resume_writers() {
     if [ -n "$writer_ids" ]; then
         docker unpause $writer_ids >/dev/null

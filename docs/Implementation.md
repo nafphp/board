@@ -1,7 +1,7 @@
 # Nafinity – Implementierung und Abnahme
 
 Stand: 14. September 2026. Der Prototyp liegt unter
-`/Users/flo/PhpStormProjects/nafinity` und läuft auf **http://localhost:8088**.
+`/Users/flo/PhpStormProjects/nafinity` und läuft auf **https://localhost** (Port 443).
 Er verwendet echte Daten, lokale NAF-Quellen und projektgebundene Rechte.
 
 ## Einstieg
@@ -107,20 +107,44 @@ falsche Position erzeugen; das Verschiebemenü bleibt verfügbar.
 Die Runtime folgt dem ASPX-Aufbau mit Alpine, nativen PHP-Paketen, Nginx, PHP-FPM und
 Supervisor. Alpine 3.24.1 ist per Digest festgelegt; PHP 8.5.10 läuft nativ auf ARM64.
 App-Prozesse laufen als `www` mit UID 1000. Öffentlich ist ausschließlich `app/public`.
-Ports werden an Loopback gebunden. Logs sind größenbegrenzt.
+Ports werden an Loopback gebunden. HTTP auf 8088 leitet auf HTTPS/443 weiter. Logs sind größenbegrenzt.
+
+Seit dem 15. September 2026 folgt auch die Verzeichnisstruktur den lokalen Projekten
+`website`, `weonlywalk` und `nafphp/studio`: `docker/rootfs/etc` enthält getrennte
+nginx-, PHP-FPM- und Supervisor-Konfigurationen. Ein Development-Overlay schaltet
+die OPcache-Zeitstempelprüfung ein. `make first-install` richtet eine fehlende private
+`.env` ein, baut das Image, installiert die lokalen Composer-Verknüpfungen und startet
+die Anwendung über NAF-Migrationen und den wiederholbaren Demo-Seed.
+`make` zeigt alle Befehle; Aufbau und tägliche Bedienung stehen in der README.
+Der neue Ablauf wurde mit `make first-install`, `make test`, `make style-check`
+und dem Candidate-Build geprüft. Alle 85 MariaDB-/PostgreSQL-/HTTPS-Szenarien und
+drei Worker-Prüfungen bestanden. `docs/Docker-Evidenz.json` und
+`docs/Tests-Docker-Make.txt` dokumentieren diesen Durchlauf.
+Auf Nutzerwunsch steuert Supervisor jetzt auch die nativen NAF-Worker-/Ticker-Befehle
+im App-Container. `make restart-background` startet nur diese beiden Prozesse neu.
+Der Container-Healthcheck umfasst HTTPS, Supervisor-Status und beide Heartbeats.
+Die Test- und Candidate-Dienste deaktivieren Hintergrundprozesse ausdrücklich.
+
+`make certificates` erzeugt eine private Entwicklungs-CA und ein signiertes TLS-Serverzertifikat mit DNS-/IP-SANs.
+Zertifikat und privater Schlüssel sind von Git und Images ausgeschlossen und werden
+nur lesbar eingebunden. Das Systemvertrauen wird nicht verändert; die Tests prüfen
+das Zertifikat ausdrücklich. Die zuvor Port 443 belegende Studio-App wurde mit
+ausdrücklicher Nutzerfreigabe angehalten; ihre Datenbank bleibt aktiv.
 
 ```sh
 cd ~/PhpStormProjects/nafinity
-docker compose up -d app db
-docker compose --profile background up -d worker ticker
-docker compose --profile background ps
-docker compose --profile background logs --tail=50 worker ticker
+make run
+make status
+make logs
+make supervisor-status
 ```
 
 `packages -> ../nafphp` ist der IDE-Link. Die App und die Quellen werden im Container
 separat eingebunden. `bin/dev-composer` erzeugt das ignorierte Development-Manifest und
-installiert im Container relative Vendor-Links. FPM sieht Änderungen im nächsten Request.
-Langlebige Prozesse nach Source-Änderungen mit `restart worker ticker` neu starten.
+installiert im Container relative Vendor-Links. Die PHP-Konfiguration referenziert
+App-URL und Datenbankwerte mit NAFs `ENV:...`; das gilt auch für das LDAP-/OIDC-Beispiel.
+Standardwerte kommen aus Compose, die Auflösung übernimmt der Framework-Config-Service. FPM sieht Änderungen im nächsten Request.
+Langlebige Prozesse nach Source-Änderungen mit `make restart-background` neu starten.
 
 NAF-Logs werden über einen PSR-3-Adapter an PHP/FPM und die begrenzten Compose-Logs weitergereicht.
 Lokale alte Logdateien werden weder versioniert noch in ein Image kopiert.
@@ -132,22 +156,21 @@ Die bisherige Schema-Kennung ist `202609140003`; sechs Migrationen inklusive Plu
 `bin/build-candidate` erzeugt einen eingefrorenen lokalen Runtime-Snapshot mit Package-Hashes.
 Er enthält keine Vendor-Symlinks, kein Composer und keine Source-Mounts. Der Builder kontrolliert die vollständige Menge aller benötigten NAF-Pakete.
 Private Daten- und Logverzeichnisse werden ausgeschlossen; gleichnamige Pakete bleiben enthalten.
-Der geprüfte Snapshot `nafinity:candidate` hat **132,31 MiB** (138.735.749 Byte),
-Image-ID `sha256:c01e5da63173f8850c7924090162d77c4d7d1502a7cd0eafd2d266ecea5d0dbc`.
+Der geprüfte Snapshot `nafinity:candidate` hat **132,32 MiB** (138.750.892 Byte),
+Image-ID `sha256:490135bb5ddb3189248eac7b2c38a8546e303404c99987d1ce85afb447a2a61c`.
 Anmeldung, fünf geschützte Seiten, Projektisolation und der private Download wurden über
-Port 8090 erfolgreich geprüft. Nur das private Datenverzeichnis ist eingebunden.
+HTTPS-Port 8445 erfolgreich geprüft. Eingebunden sind das private Datenverzeichnis und die lokalen TLS-Dateien.
 Hashes und Einzelresultate stehen in `docs/Snapshot-Evidenz.json`.
 Dieser Snapshot ist ausdrücklich keine veröffentlichte Distribution.
 
-App, Datenbank, Worker und Ticker bleiben aktiv; Worker/Ticker wurden nach den finalen
-Source-Änderungen neu gestartet. Die zusätzlichen Test- und Candidate-Container wurden
+App und Datenbank bleiben aktiv; Worker und Ticker laufen unter Supervisor im App-Container. Die zusätzlichen Test- und Candidate-Container wurden
 nach der Abnahme gestoppt. Der geprüfte Candidate lässt sich erneut starten:
 
 ```sh
-docker compose --profile candidate up -d candidate
+make candidate-up
 ```
 
-Backups mit `bin/backup` erstellen. `bin/verify-restore VERZEICHNIS` stellt ausschließlich
+Backups mit `make backup` erstellen. `make verify-restore BACKUP=VERZEICHNIS` stellt ausschließlich
 in `nafinity_restore_test` wieder her und kontrolliert Dateien/Hashes. Niemals Test- oder
 Down-Migrationsbefehle gegen die Demo-/Produktivdatenbank umleiten.
 
@@ -155,19 +178,15 @@ Down-Migrationsbefehle gegen die Demo-/Produktivdatenbank umleiten.
 
 `app/tests/run.php`, `benchmark.php` und `queue_process.php` verlangen ausdrücklich
 `APP_ENV=test` und `DB_DATABASE=nafinity_test`. Der Integrationsrunner setzt dieses Schema
-zurück. Die Testdatenbank ist bereits angelegt; die Demo-Datenbank heißt `nafinity`.
+zurück. Die Make-Ziele legen die Testdatenbank bei Bedarf an; die Demo-Datenbank heißt `nafinity`.
 
 ```sh
-docker compose --profile test up -d app-test postgres
-docker compose exec -T app-test php tests/run.php
-docker compose exec -T -e DB_DRIVER=pgsql -e DB_HOST=postgres -e DB_PORT=5432 app-test php tests/run.php
-docker compose exec -T app-test php vendor/bin/naf nafinity:seed
-python3 app/tests/http_acceptance.py
-docker compose exec -T app-test php tests/queue_process.php
+make test
+make test-down
 ```
 
-Vor einem erneuten HTTP-Test die Testdatenbank mit `tests/run.php` zurücksetzen und erneut
-seeden, damit Ratelimits und Testzustände nicht aus dem vorigen Lauf übernommen werden.
+`make test-http` setzt die Testdatenbank vor jedem Aufruf mit `tests/run.php` zurück
+und seedet sie neu, damit Ratelimits und Testzustände nicht aus dem vorigen Lauf übernommen werden.
 Die JSON-Dateien in `docs/` enthalten die einzelnen Szenarien, Messwerte und Runtime-Evidenz.
 `bin/check-plugin-stack` wiederholt den Minimal-/Alle-Plugin-Boot in isolierten Hosts
 und prüft dort auch eine tatsächlich aufgelöste PDO-Verbindung.

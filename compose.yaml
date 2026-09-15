@@ -8,7 +8,8 @@ x-runtime: &runtime
   working_dir: /workspace/app
   environment: &environment
     APP_ENV: dev
-    APP_URL: http://localhost:${NAFINITY_PORT:-8088}
+    APP_URL: https://localhost:${NAFINITY_HTTPS_PORT:-443}
+    NAFINITY_BACKGROUND_ENABLED: "true"
     DB_DRIVER: mysql
     DB_HOST: db
     DB_PORT: 3306
@@ -18,6 +19,7 @@ x-runtime: &runtime
   volumes:
     - ./app:/workspace/app
     - ${NAF_SOURCE_ROOT:-../nafphp}:/workspace/packages:ro
+    - ./docker/rootfs/etc/nginx/ssl:/etc/nginx/ssl:ro
   init: true
   logging:
     driver: json-file
@@ -25,7 +27,10 @@ x-runtime: &runtime
 services:
   app:
     <<: *runtime
-    ports: ["127.0.0.1:${NAFINITY_PORT:-8088}:8080"]
+    ports:
+      - "127.0.0.1:${NAFINITY_PORT:-8088}:8080"
+      - "127.0.0.1:${NAFINITY_HTTPS_PORT:-443}:8443"
+    restart: unless-stopped
     depends_on:
       db: {condition: service_healthy}
   candidate:
@@ -34,51 +39,32 @@ services:
     environment:
       <<: *environment
       APP_ENV: prod
-      APP_URL: http://localhost:8090
-    ports: ["127.0.0.1:8090:8080"]
-    volumes: ["./app/storage:/workspace/app/storage"]
+      APP_URL: https://localhost:8445
+      NAFINITY_BACKGROUND_ENABLED: "false"
+    ports: ["127.0.0.1:8090:8080", "127.0.0.1:8445:8443"]
+    volumes:
+      - ./app/storage:/workspace/app/storage
+      - ./docker/rootfs/etc/nginx/ssl:/etc/nginx/ssl:ro
     init: true
     depends_on:
       db: {condition: service_healthy}
   app-test:
     <<: *runtime
     profiles: [test]
-    ports: ["127.0.0.1:8089:8080"]
+    ports: ["127.0.0.1:8089:8080", "127.0.0.1:8444:8443"]
     environment:
       <<: *environment
       APP_ENV: test
-      APP_URL: http://localhost:8089
+      APP_URL: https://localhost:8444
+      NAFINITY_BACKGROUND_ENABLED: "false"
       DB_DATABASE: nafinity_test
     volumes:
       - ./app:/workspace/app
       - ${NAF_SOURCE_ROOT:-../nafphp}:/workspace/packages:ro
       - ./.test-storage:/workspace/app/storage
+      - ./docker/rootfs/etc/nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       db: {condition: service_healthy}
-  worker:
-    <<: *runtime
-    command: ["php", "vendor/bin/naf", "queue:consume"]
-    profiles: [background]
-    healthcheck:
-      test: ["CMD", "php", "-r", "exit(is_file('/tmp/nafinity-worker-heartbeat') && time()-(int)file_get_contents('/tmp/nafinity-worker-heartbeat')<30 ? 0 : 1);"]
-      interval: 15s
-      timeout: 3s
-      start_period: 15s
-    depends_on:
-      db: {condition: service_healthy}
-    restart: unless-stopped
-  ticker:
-    <<: *runtime
-    command: ["php", "vendor/bin/naf", "schedule:ticker"]
-    profiles: [background]
-    healthcheck:
-      test: ["CMD", "php", "-r", "exit(is_file('/tmp/nafinity-ticker-heartbeat') && time()-(int)file_get_contents('/tmp/nafinity-ticker-heartbeat')<30 ? 0 : 1);"]
-      interval: 15s
-      timeout: 3s
-      start_period: 15s
-    depends_on:
-      db: {condition: service_healthy}
-    restart: unless-stopped
   db:
     image: mariadb:11.4
     environment:

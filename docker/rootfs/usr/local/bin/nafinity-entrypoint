@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+
+# APP_URL includes the published HTTPS port; nginx does not expand environment variables.
+printf 'return 308 %s$request_uri;\n' "${APP_URL:-https://localhost}" > /tmp/nginx/redirect.conf
+exec "$@"
