@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Domain\Failure;
 use App\Services\Access;
+use App\Services\AccountService;
 use App\Services\AttachmentService;
 use App\Services\BoardQuery;
 use App\Services\CommentService;
@@ -19,6 +20,7 @@ use Naf\Auth\Auth;
 use Naf\Auth\Credentials\PasswordCredentials;
 use Naf\Auth\Exceptions\UnauthenticatedException;
 use Naf\RateLimit\PdoLimiter;
+use Naf\Session\Core\Session;
 use Nyholm\Psr7\Stream;
 use PDO;
 use Psr\Http\Message\ResponseInterface;
@@ -46,6 +48,8 @@ final class AppController
         private PreferenceService $prefs,
         private PdoLimiter $limiter,
         private RoleService $roles,
+        private AccountService $accounts,
+        private Session $session,
     ) {
     }
 
@@ -55,7 +59,7 @@ final class AppController
             return redirect('/', 303);
         }
 
-        return render('login', ['error' => null, 'email' => '']);
+        return render('login', ['error' => null, 'email' => '', 'notice' => $this->session->getFlash('account.notice')])->withHeader('Cache-Control', 'no-store');
     }
 
     public function authenticate(): ResponseInterface
@@ -86,7 +90,7 @@ final class AppController
             $provider    = $useLdap ? 'ldap' : 'users';
             $credentials = new PasswordCredentials($email, $data['password']);
 
-            if (!$this->auth->authenticate($credentials, $provider)) {
+            if (!$this->accounts->authenticate($credentials, $provider)) {
                 return render('login', [
                     'error' => 'E-Mail oder Passwort stimmt nicht.',
                     'email' => $data['email'],

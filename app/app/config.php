@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 use App\Models\User;
-use Naf\Mail\Core\Transport\DummyTransport;
+use Naf\Mail\Core\Transport\MailTransport;
 use Naf\Storage\Adapters\LocalAdapter;
 
 $settings = [
@@ -31,7 +31,7 @@ $settings = [
         'session' => true,
     ],
     'session'  => ['storage' => 'default', 'trust_proxy_headers' => false],
-    'nafinity' => ['mail_enabled' => false, 'mail_from' => 'notifications@example.test'],
+    'nafinity' => ['mail_enabled' => false, 'mail_from' => 'ENV:NAFINITY_MAIL_FROM'],
     'storage'  => [
         'disks' => [
             'attachments' => [
@@ -43,7 +43,7 @@ $settings = [
     'queue'           => ['heartbeat_file' => '/tmp/nafinity-worker-heartbeat'],
     'schedule'        => ['heartbeat_file' => '/tmp/nafinity-ticker-heartbeat'],
     'csrf_validation' => true,
-    'mail'            => ['transport' => DummyTransport::class],
+    'mail'            => ['transport' => MailTransport::class],
     'view'            => ['paths' => ['app/views']],
 ];
 

@@ -159,6 +159,8 @@ Die Readiness prueft Datenbank, erforderliche App-Migrationen, Hintergrundtabell
 
 ```sh
 make test                  # MariaDB, PostgreSQL, HTTP, Worker und lokale AI-Logik
+make test-profile          # Kontowechsel, Code-Verifizierung und Sitzungswiderruf
+make mailpit               # Lokales Testpostfach auf Port 8025 starten
 make test-ai               # AI-Transport und semantischer Router, ohne laufendes Modell
 make test-down             # Testdienste anschließend anhalten
 make backup
@@ -171,7 +173,10 @@ Die Tests legen `nafinity_test` bei Bedarf an und setzen nur diese Testdatenbank
 
 Backups enthalten Datenbank und private Dateien. Die Restore-Probe schreibt ausschliesslich
 nach `nafinity_restore_test`; sie ersetzt keine laufende Anwendung. Backups sind privat zu
-behandeln. Ausgehende Mail ist deaktiviert; lokal ist ein DummyTransport konfiguriert.
+behandeln. Sicherheitsmails laufen lokal über NAFs MailTransport und Mailpit; das Testpostfach
+liegt auf http://localhost:8025. Es wird nichts ins Internet versendet. Projektbenachrichtigungen
+per Mail bleiben deaktiviert. [Eigenes Profil und Kontoverifizierung](docs/Profile.md) beschreibt
+die Bedienung, SMTP-Konfiguration und Sicherheitsgrenzen.
 
 ## Source-Modus und Distribution
 

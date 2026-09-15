@@ -1,0 +1,197 @@
+<?php
+
+use function Naf\route;
+use function Naf\View\s;
+
+?>
+<dialog
+    id="profile-dialog"
+    class="profile-dialog"
+    aria-labelledby="profile-title"
+    aria-describedby="profile-description"
+>
+    <header class="profile-header">
+        <div class="profile-role">
+            <span class="profile-role-dot"></span>
+            <?= s($roleName) ?>
+            <span><?= s($projectName ? 'in ' . $projectName : 'Persönliches Konto') ?></span>
+        </div>
+        <button
+            type="button"
+            class="icon-button profile-close"
+            data-profile-close
+            aria-label="Profil schließen"
+            autofocus
+        >
+            ×
+        </button>
+        <div class="profile-identity">
+            <span class="avatar profile-avatar" aria-hidden="true"><?= s(mb_substr($profile->name ?? 'U', 0, 1)) ?></span>
+            <div>
+                <span class="eyebrow">DEIN PROFIL</span>
+                <h2 id="profile-title"><?= s($profile->name) ?></h2>
+                <p data-profile-email><?= s($profile->email) ?></p>
+            </div>
+        </div>
+    </header>
+    <div class="profile-body">
+        <p id="profile-description" class="profile-intro">Dein Konto. Alles an einem Ort.</p>
+        <p class="profile-notice" data-profile-status role="status" aria-live="polite">
+            Kontoeinstellungen werden geladen …
+        </p>
+        <button type="button" class="button subtle" data-profile-retry hidden>Erneut laden</button>
+        <div data-profile-content hidden>
+            <div class="profile-account-line">
+                <span>Anmeldung</span>
+                <span data-profile-account-kind>Lokales Konto</span>
+            </div>
+            <p class="profile-external" data-profile-external hidden>
+                Deine Zugangsdaten werden extern verwaltet. Bitte ändere sie bei deinem Anmeldeanbieter.
+            </p>
+            <div data-profile-local>
+                <details class="profile-section" name="profile-section">
+                    <summary>
+                        <span class="profile-section-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="5" y="10" width="14" height="11" rx="3" />
+                                <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2" />
+                            </svg>
+                        </span>
+                        <span>
+                            <strong>Passwort ändern</strong>
+                            <small>Mit deinem aktuellen Passwort bestätigen</small>
+                        </span>
+                        <span class="profile-chevron" aria-hidden="true">⌄</span>
+                    </summary>
+                    <form
+                        method="post"
+                        action="<?= s(route('profile.password')) ?>"
+                        data-profile-form="password"
+                        class="profile-form"
+                    >
+                        <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                        <input type="hidden" name="username" value="<?= s($profile->email) ?>" autocomplete="username" />
+                        <label>
+                            Aktuelles Passwort
+                            <input type="password" name="current_password" autocomplete="current-password" required maxlength="1024" />
+                        </label>
+                        <div class="form-grid">
+                            <label>
+                                Neues Passwort
+                                <input type="password" name="password" autocomplete="new-password" required minlength="15" maxlength="72" aria-describedby="profile-password-help" />
+                            </label>
+                            <label>
+                                Passwort wiederholen
+                                <input type="password" name="password_confirmation" autocomplete="new-password" required minlength="15" maxlength="72" />
+                            </label>
+                        </div>
+                        <p id="profile-password-help" class="profile-help">
+                            Mindestens 15 Zeichen. Maximal 72 Bytes; Umlaute und Emojis zählen mehrfach.
+                            Danach meldest du dich auf allen Geräten neu an.
+                        </p>
+                        <p class="profile-error" data-profile-error role="alert" tabindex="-1" hidden></p>
+                        <button class="button primary" type="submit">
+                            Neues Passwort speichern <span aria-hidden="true">→</span>
+                        </button>
+                    </form>
+                </details>
+                <details class="profile-section" name="profile-section" data-profile-email-section>
+                    <summary>
+                        <span class="profile-section-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="5" width="18" height="14" rx="3" />
+                                <path d="m4 7 8 6 8-6" />
+                            </svg>
+                        </span>
+                        <span>
+                            <strong>E-Mail-Adresse ändern</strong>
+                            <small>Neue Adresse per Bestätigungscode verifizieren</small>
+                        </span>
+                        <span class="profile-chevron" aria-hidden="true">⌄</span>
+                    </summary>
+                    <div data-profile-email-request>
+                        <form
+                            method="post"
+                            action="<?= s(route('profile.email')) ?>"
+                            data-profile-form="email"
+                            class="profile-form"
+                        >
+                            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                            <label>
+                                Neue E-Mail-Adresse
+                                <input type="email" name="email" autocomplete="email" required maxlength="190" placeholder="du@beispiel.de" />
+                            </label>
+                            <label>
+                                Aktuelles Passwort
+                                <input type="password" name="current_password" autocomplete="current-password" required maxlength="1024" />
+                            </label>
+                            <p class="profile-help">
+                                Wir senden einen Code an deine neue Adresse. Deine bisherige Adresse
+                                bleibt bis zur Bestätigung gültig und erhält einen Sicherheitshinweis.
+                            </p>
+                            <p class="profile-error" data-profile-error role="alert" tabindex="-1" hidden></p>
+                            <button class="button primary" type="submit">
+                                Bestätigungscode senden <span aria-hidden="true">→</span>
+                            </button>
+                        </form>
+                    </div>
+                    <div data-profile-email-pending hidden>
+                        <div class="profile-verification">
+                            <span class="profile-step">NOCH EIN SCHRITT</span>
+                            <p>Dein Code ist unterwegs an <strong data-profile-pending-email></strong>.</p>
+                            <small>
+                                Gültig bis <time data-profile-expiry></time>.
+                                Die neue Adresse wird erst nach der Bestätigung übernommen.
+                            </small>
+                        </div>
+                        <form
+                            method="post"
+                            action="<?= s(route('profile.email.confirm')) ?>"
+                            data-profile-form="confirm"
+                            class="profile-form"
+                        >
+                            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                            <input type="hidden" name="request_id" />
+                            <label>
+                                Bestätigungscode
+                                <input class="profile-code" name="code" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" required minlength="12" maxlength="32" placeholder="ABCD-EFGH-JKLM" />
+                            </label>
+                            <p class="profile-help">
+                                Nach der Bestätigung meldest du dich mit deiner neuen Adresse an.
+                                Dein Passwort bleibt gleich.
+                            </p>
+                            <p class="profile-error" data-profile-error role="alert" tabindex="-1" hidden></p>
+                            <button class="button primary" type="submit">
+                                Adresse bestätigen <span aria-hidden="true">✓</span>
+                            </button>
+                        </form>
+                        <form
+                            method="post"
+                            action="<?= s(route('profile.email.cancel')) ?>"
+                            data-profile-form="cancel"
+                            class="profile-cancel-form"
+                        >
+                            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                            <p class="profile-error" data-profile-error role="alert" tabindex="-1" hidden></p>
+                            <button class="profile-text-button" type="submit">
+                                Änderung abbrechen / neuen Code anfordern
+                            </button>
+                        </form>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+    <footer class="profile-footer">
+        <span><span class="profile-presence"></span>Schön, dass du da bist.</span>
+        <form method="post" action="<?= s(route('logout')) ?>">
+            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+            <button type="submit" class="button subtle profile-logout">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 5H5v14h4m5-14 5 7-5 7m-5-7h10" />
+                </svg>
+                Abmelden
+            </button>
+        </form>
+    </footer>
+</dialog>

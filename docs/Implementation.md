@@ -1,6 +1,6 @@
 # Nafinity – Implementierung und Abnahme
 
-Stand: 15. September 2026. Der Prototyp liegt unter
+Stand: 16. September 2026. Der Prototyp liegt unter
 `/Users/flo/PhpStormProjects/nafinity` und läuft auf **https://localhost** (Port 443).
 Er verwendet echte Daten, lokale NAF-Quellen und projektgebundene Rechte.
 
@@ -18,6 +18,21 @@ Die im Browser angelegte Karte „Showcase-Abnahme im Browser“ hat eine eigene
 wurde über das Verschiebemenü nach Review bewegt und enthält eine private Testdatei.
 Die Demo enthält keine echten Kundendaten.
 
+## Eigenes Profil
+
+Der Avatar öffnet das Profil-Modal mit der aktuellen Projektrolle, Passwortwechsel,
+verifizierter E-Mail-Änderung und Logout. Die Abläufe verwenden NAFs Auth-/Session-,
+Formular-, Mail- und Queue-Verträge. Neue Adressen bleiben bis zum Bestätigungscode
+inaktiv; erfolgreiche Kontowechsel widerrufen bestehende Sitzungen. Sicherheitshinweise
+gehen an die bisherige Adresse, lokal über Mailpit auf http://localhost:8025.
+
+[Profile.md](Profile.md) beschreibt Bedienung, Architektur und Grenzen;
+[Profile-Evidenz.json](Profile-Evidenz.json) enthält die aktuellen Prüfergebnisse.
+174 Datenbank-/HTTPS-/Worker-Prüfungen, beide AI-Suites und alle Stilprüfungen sind grün.
+Die visuelle Abnahme des neuen Modals ist noch offen: Firefox ist auf dem gesperrten Mac
+nicht steuerbar; der interne Browser meldet weiterhin einen Zertifikatsfehler. Diese
+Zertifikatswarnung wurde nicht umgangen. Die HTTPS-Tests verwenden die lokale CA regulär.
+
 ## Settings und lokale AI
 
 Der Source-Prototyp verwendet außerdem einen eigenen, abgerundeten Kontur-Cursor mit
@@ -27,8 +42,8 @@ Dialogen; Textfelder, Ziehen und Wartezustände verwenden weiterhin die passende
 Touch-Geräte und erzwungene Systemfarben erhalten die Browser-Standards. Es gibt keinen
 zusätzlichen JavaScript-Prozess für Mausbewegungen. SVGs und CSS wurden über verifiziertes
 HTTPS geprüft. Firefox bestätigt den Kontur-Cursor für Flächen, die violette Variante für
-Buttons und Links sowie den Textcursor in Eingabefeldern. Der dokumentierte Runtime-Snapshot
-unten stammt noch aus der Settings-/AI-Abnahme.
+Buttons und Links sowie den Textcursor in Eingabefeldern. Der aktualisierte Runtime-Snapshot
+unten enthält auch die Profiloberfläche und die neuen Kontofunktionen.
 
 Die neue Settings-Seite bündelt persönliche und projektbezogene Einstellungen in acht
 kompakten Karten. Beim Öffnen und Schließen animiert der Dialog zwischen Karte und
@@ -194,16 +209,16 @@ Langlebige Prozesse nach Source-Änderungen mit `make restart-background` neu st
 NAF-Logs werden über einen PSR-3-Adapter an PHP/FPM und die begrenzten Compose-Logs weitergereicht.
 Lokale alte Logdateien werden weder versioniert noch in ein Image kopiert.
 
-`/health/live` prüft den HTTP-Prozess. `/health/ready` prüft PDO, die vier erforderlichen
+`/health/live` prüft den HTTP-Prozess. `/health/ready` prüft PDO, die fünf erforderlichen
 App-Migrationen, die Hintergrundtabellen und die Auflösung des AttachmentService mit dem nativen Storage-Datenträger. Worker und Ticker haben eigene Heartbeats.
-Die aktuelle Schema-Kennung ist `202609150001`; sieben Migrationen inklusive Plugins sind angewandt.
+Die aktuelle Schema-Kennung ist `202609150002`; acht Migrationen inklusive Plugins sind angewandt.
 
 `bin/build-candidate` erzeugt einen eingefrorenen lokalen Runtime-Snapshot mit Package-Hashes.
 Er enthält keine Vendor-Symlinks, kein Composer und keine Source-Mounts. Der Builder kontrolliert die vollständige Menge aller benötigten NAF-Pakete.
 Private Daten-, Logverzeichnisse und generierte PHPStan-/Test-/Formatter-Caches werden ausgeschlossen; gleichnamige Runtime-Pakete bleiben enthalten.
-Der geprüfte Snapshot `nafinity:candidate` hat **118,57 MiB** (124.329.261 Byte),
-Image-ID `sha256:8522c7a37ecd8daefc3ed2125dd63eadcbe73cd198d061e56f03c7caf59db8ba`.
-Anmeldung, fünf geschützte Seiten, Projektisolation und der private Download wurden über
+Der geprüfte Snapshot `nafinity:candidate` hat **130,03 MiB** (136.351.411 Byte),
+Image-ID `sha256:efe0a19b9d0bab04b156549034263f36a7c91d5db93d4a420c9cbace72df904d`.
+Anmeldung, fünf geschützte Seiten, Profil-API, Projektisolation und der private Download wurden über
 HTTPS-Port 8445 erfolgreich geprüft. Eingebunden sind das private Datenverzeichnis und die lokalen TLS-Dateien.
 Hashes und Einzelresultate stehen in `docs/Snapshot-Evidenz.json`.
 Dieser Snapshot ist ausdrücklich keine veröffentlichte Distribution.
@@ -241,9 +256,10 @@ und prüft dort auch eine tatsächlich aufgelöste PDO-Verbindung.
 
 - Stabile Paket-Releases, der daraus erzeugte Distributions-Lock und ein frischer
   Install ohne lokale Paketquellen stehen aus. Im Rahmen dieser Umsetzung wurden keine Pakete gemergt oder als Release veröffentlicht.
-- Kein echter LDAP-Server, OIDC-Issuer oder SMTP-Dienst wurde kontaktiert. Für deren
-  Aktivierung fehlen noch Deployment-Konfiguration und End-to-End-Abnahme.
-- Mail ist ausgeschaltet. Die Ledger-/Queue-Kombination begrenzt normale Duplikate;
+- Kein externer LDAP-Server, OIDC-Issuer oder SMTP-Dienst wurde kontaktiert. Für deren
+  Aktivierung fehlen noch Deployment-Konfiguration und End-to-End-Abnahme. Lokales SMTP
+  über Mailpit ist für Kontoverifizierung und Sicherheitshinweise geprüft.
+- Projekt-Mail ist ausgeschaltet. Die Ledger-/Queue-Kombination begrenzt normale Duplikate;
   ein externes SMTP-Ergebnis lässt sich nicht atomar mit einer PDO-Transaktion bestätigen.
 - Deutsch ist die vollständige Basissprache. Englisch ist für zentrale UI-Texte vorhanden;
   einige Meldungen und dynamische Texte bleiben im Prototyp deutsch.

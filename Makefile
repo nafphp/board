@@ -14,9 +14,9 @@ BACKUP       ?=
 .PHONY: help first-install install create-env-file check-env-file config-check \
         build-app run up stop down restart restart-background status logs ssh shell \
         composer composer-install composer-update naf migrate seed health \
-        test test-up test-down test-mariadb test-postgres test-http test-worker test-ai \
+        test test-up test-down test-mariadb test-postgres test-http test-profile test-worker test-ai \
         style-install style-check style-fix backup verify-restore \
-        candidate-build candidate-up candidate-down plugin-check certificates supervisor-status
+        candidate-build candidate-up candidate-down plugin-check certificates supervisor-status mailpit
 
 help: ## Show available commands (the default)
 	@awk 'BEGIN { FS = ":.*## " } /^[a-zA-Z_-]+:.*## / { printf "  %-22s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
@@ -64,6 +64,9 @@ restart: check-env-file ## Restart app, worker and scheduler
 restart-background: check-env-file ## Reload worker and scheduler after PHP source changes
 	@$(SUPERVISOR) restart queue-worker schedule-ticker
 
+mailpit: config-check ## Start the local test mailbox at http://localhost:8025
+	@$(COMPOSE) up -d --wait mailpit
+
 supervisor-status: check-env-file ## Show nginx, PHP-FPM, queue worker and scheduler
 	@$(SUPERVISOR) status
 
@@ -101,7 +104,7 @@ health: check-env-file ## Check app readiness (database, migrations and storage)
 	@$(COMPOSE) exec -T app curl --fail --silent --show-error --cacert /etc/nginx/ssl/ca.pem https://localhost:8443/health/ready
 	@printf '\n'
 
-test: test-http test-postgres test-worker test-ai ## Run MariaDB, PostgreSQL, HTTP and worker checks in disposable databases
+test: test-http test-profile test-postgres test-worker test-ai ## Run MariaDB, PostgreSQL, HTTP and worker checks in disposable databases
 
 test-up: config-check certificates ## Prepare nafinity_test and start the isolated test services
 	@$(COMPOSE) up -d --wait db
@@ -122,6 +125,9 @@ test-postgres: test-up ## Reset and check only the PostgreSQL nafinity_test sche
 test-http: test-mariadb ## Reset test fixtures and check HTTP, permissions and private files
 	@$(COMPOSE) exec -T app-test php vendor/bin/naf nafinity:seed
 	@python3 app/tests/http_acceptance.py
+
+test-profile: test-up ## Check password/email changes, SMTP delivery and session revocation over HTTPS
+	@python3 app/tests/profile_http.py
 
 test-worker: test-up ## Check worker termination, lease recovery and dead letters
 	@$(COMPOSE) exec -T app-test php tests/queue_process.php

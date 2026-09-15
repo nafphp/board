@@ -3,10 +3,12 @@
 declare(strict_types=1);
 use App\Controllers\AiController;
 use App\Controllers\AppController as C;
+use App\Controllers\ProfileController;
 use App\Migrations\M202609140001Nafinity;
 use App\Migrations\M202609140002Queue;
 use App\Migrations\M202609140003RateLimits;
 use App\Migrations\M202609150001ProjectRoles;
+use App\Migrations\M202609150002AccountProfile;
 use App\Services\AttachmentService;
 
 use function Naf\json;
@@ -24,6 +26,7 @@ route()->add(
                 M202609140002Queue::class,
                 M202609140003RateLimits::class,
                 M202609150001ProjectRoles::class,
+                M202609150002AccountProfile::class,
             ];
             $applied = $pdo->query('SELECT name FROM migrations')->fetchAll(PDO::FETCH_COLUMN);
             if (array_diff($required, $applied)) {
@@ -33,7 +36,7 @@ route()->add(
             $pdo->query('SELECT 1 FROM naf_rate_limits LIMIT 1');
             \Naf\app()->container()->make(AttachmentService::class);
 
-            return json(['status' => 'ready', 'schema' => '202609150001']);
+            return json(['status' => 'ready', 'schema' => '202609150002']);
         } catch (Throwable) {
             return json(['status' => 'not-ready'], 503);
         }
@@ -42,6 +45,11 @@ route()->add(
 );
 route()->add('GET', '/ai/tools', [AiController::class, 'tools'], 'ai.tools');
 route()->add('POST', '/ai/tools/call', [AiController::class, 'call'], 'ai.call');
+route()->add('GET', '/profile', [ProfileController::class, 'show'], 'profile');
+route()->add('POST', '/profile/password', [ProfileController::class, 'password'], 'profile.password');
+route()->add('POST', '/profile/email', [ProfileController::class, 'requestEmail'], 'profile.email');
+route()->add('POST', '/profile/email/confirm', [ProfileController::class, 'confirmEmail'], 'profile.email.confirm');
+route()->add('POST', '/profile/email/cancel', [ProfileController::class, 'cancelEmail'], 'profile.email.cancel');
 $routes = [
     ['GET', '/notifications', 'notifications', 'notifications'],
     ['POST', '/notifications/read', 'markNotificationsRead', 'notifications.read'],

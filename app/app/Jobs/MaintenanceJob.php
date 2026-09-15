@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Services\AccountService;
 use App\Services\AttachmentService;
 use Naf\CLI\Core\Output;
 use Naf\RateLimit\PdoLimiter;
@@ -14,6 +15,7 @@ final class MaintenanceJob implements ScheduledJobInterface
     public function __construct(
         private AttachmentService $attachments,
         private PdoLimiter $limiter,
+        private AccountService $accounts,
     ) {
     }
 
@@ -26,6 +28,7 @@ final class MaintenanceJob implements ScheduledJobInterface
     {
         $this->attachments->cleanup();
         $this->limiter->cleanup();
+        $this->accounts->cleanup();
         file_put_contents(
             BASE_PATH . '/storage/queue/maintenance-heartbeat',
             (string) time(),

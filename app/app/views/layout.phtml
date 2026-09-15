@@ -19,6 +19,8 @@ $current = $project['id'] ?? null;
         <link rel="stylesheet" href="/assets/app.css" />
         <script type="module" src="/assets/app.js"></script>
         <script type="module" src="/assets/settings.js"></script>
+        <script type="module" src="/assets/profile.js"></script>
+        <link rel="stylesheet" href="/assets/profile.css" />
         <script type="module" src="/assets/ai/chat.js"></script>
         <link rel="stylesheet" href="/assets/settings.css" />
         <link rel="stylesheet" href="/assets/ai.css" />
@@ -82,16 +84,10 @@ $current = $project['id'] ?? null;
                             <strong><?= s($profile->name) ?></strong>
                             <small>Powered by NAF</small>
                         </div>
-                        <form method="post" action="<?= s(route('logout')) ?>">
-                            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-                            <button
-                                class="icon-button"
-                                title="<?= s(t('Abmelden')) ?>"
-                                aria-label="<?= s(t('Abmelden')) ?>"
-                            >
-                                ↗
-                            </button>
-                        </form>
+                        <button type="button" class="icon-button" data-profile-open
+                            aria-label="Mein Profil" aria-haspopup="dialog" aria-controls="profile-dialog">
+                            ···
+                        </button>
                     </div>
                 </div>
             </aside>
@@ -114,12 +110,21 @@ $current = $project['id'] ?? null;
                             <i></i>
                             <?= s(t('Gemeinsam voran')) ?>
                         </span>
-                        <span class="avatar avatar-small"><?= s(mb_substr($profile->name ?? 'U', 0, 1)) ?></span>
+                        <button type="button" class="avatar avatar-small profile-trigger" data-profile-open
+                            aria-label="Mein Profil" aria-haspopup="dialog" aria-controls="profile-dialog">
+                            <?= s(mb_substr($profile->name ?? 'U', 0, 1)) ?>
+                        </button>
                     </div>
                 </header>
                 <main id="main-content"><?= $this->renderBlock('content') ?></main>
             </div>
         </div>
+        <?= \Naf\View\view('profile.modal', [
+            'profile'     => $profile,
+            'token'       => $token,
+            'roleName'    => $scope->roleName ?? 'Benutzer',
+            'projectName' => $project['name'] ?? null,
+        ]) ?>
         <dialog id="new-project" class="modal">
             <form method="post" action="<?= s(route('projects.create')) ?>" data-enhanced>
                 <div class="dialog-heading">

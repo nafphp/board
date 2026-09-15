@@ -10,12 +10,19 @@ use Naf\ORM\Model\AbstractModel;
 
 final class User extends AbstractModel implements UserInterface
 {
-    protected string $name           = '';
-    protected string $email          = '';
-    protected ?string $password_hash = null;
-    protected int $active            = 1;
-    protected string $global_role    = 'user';
-    protected string $created_at     = '';
+    protected string $name               = '';
+    protected string $email              = '';
+    protected ?string $password_hash     = null;
+    protected int $active                = 1;
+    protected string $global_role        = 'user';
+    protected string $created_at         = '';
+    protected int $security_version      = 0;
+    protected ?string $email_verified_at = null;
+
+    public function securityVersion(): int
+    {
+        return $this->security_version;
+    }
 
     public function getIdentifier(): string
     {
@@ -39,6 +46,6 @@ final class User extends AbstractModel implements UserInterface
 
     public function getProfile(): UserProfile
     {
-        return new UserProfile($this->name, $this->email, false);
+        return new UserProfile($this->name, $this->email, $this->email_verified_at !== null);
     }
 }

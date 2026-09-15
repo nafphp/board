@@ -10,6 +10,7 @@ x-runtime: &runtime
     APP_ENV: dev
     APP_URL: https://localhost:${NAFINITY_HTTPS_PORT:-443}
     NAFINITY_BACKGROUND_ENABLED: "true"
+    NAFINITY_MAIL_FROM: ${NAFINITY_MAIL_FROM:-notifications@example.test}
     DB_DRIVER: mysql
     DB_HOST: db
     DB_PORT: 3306
@@ -33,6 +34,7 @@ services:
     restart: unless-stopped
     depends_on:
       db: {condition: service_healthy}
+      mailpit: {condition: service_started}
   candidate:
     image: nafinity:candidate
     profiles: [candidate]
@@ -48,6 +50,7 @@ services:
     init: true
     depends_on:
       db: {condition: service_healthy}
+      mailpit: {condition: service_started}
   app-test:
     <<: *runtime
     profiles: [test]
@@ -65,6 +68,17 @@ services:
       - ./docker/rootfs/etc/nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       db: {condition: service_healthy}
+      mailpit: {condition: service_started}
+  mailpit:
+    image: axllent/mailpit:v1.31.1
+    ports: ["127.0.0.1:${NAFINITY_MAILPIT_PORT:-8025}:8025"]
+    environment:
+      MP_MAX_MESSAGES: 500
+      MP_ALLOWED_HOSTS: localhost,127.0.0.1,mailpit
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
   db:
     image: mariadb:11.4
     environment:

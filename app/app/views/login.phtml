@@ -47,6 +47,9 @@ use function Naf\View\s;
                 <span class="eyebrow"><?= s(t('SCHÖN, DASS DU DA BIST')) ?></span>
                 <h2><?= s(t('Willkommen zurück.')) ?></h2>
                 <p class="muted"><?= s(t('Melde dich an und mach den nächsten Schritt.')) ?></p>
+                <?php if ($notice ?? null): ?>
+                    <p class="demo-note" role="status"><?= s($notice) ?></p>
+                <?php endif ?>
                 <form method="post" action="<?= s(route('login.submit')) ?>">
                     <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
                     <label>

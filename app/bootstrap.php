@@ -8,12 +8,14 @@ use App\Domain\ProjectScope;
 use App\Events\ActivityListener;
 use App\Jobs\MaintenanceJob;
 use App\Policies\ProjectPolicy;
+use App\Support\AccountStateStore;
 use App\Support\AttachmentStorage;
 use App\Support\ContainerLogger;
 use Naf\Auth\Auth;
 use Naf\Auth\Ldap\LdapProvider;
 use Naf\Auth\Ldap\NativeDirectory;
 use Naf\Auth\Provider\OrmProvider;
+use Naf\Auth\Session\StateStoreInterface;
 use Naf\CLI\Support\CommandRegistry;
 use Naf\Queue\Core\Queue;
 use Naf\Queue\Drivers\PDODriver;
@@ -37,6 +39,7 @@ foreach (['host', 'database', 'username', 'password'] as $field) {
         throw new RuntimeException('Nafinity requires database configuration: ' . $field);
     }
 }
+$container->set(StateStoreInterface::class, static fn() => $container->make(AccountStateStore::class));
 $container->get(Auth::class)->policy(ProjectScope::class, new ProjectPolicy());
 $container->set(ActivityListener::class, static fn() => $container->make(ActivityListener::class));
 event()->listen(
