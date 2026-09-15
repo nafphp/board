@@ -1,6 +1,7 @@
 {
-  "passed": 28,
+  "passed": 42,
   "tests": [
+    "HTTPS session uses a Secure cookie",
     "Alice list excludes Bob project",
     "Bob denied /projects/1",
     "Bob denied /projects/1/settings",
@@ -28,6 +29,19 @@
     "webroot protects /storage/attachments/test",
     "webroot protects /.env",
     "webroot protects /composer.json",
-    "webroot protects /vendor/autoload.php"
+    "webroot protects /vendor/autoload.php",
+    "Owner settings expose all eight cards",
+    "Viewer settings show role information without member administration",
+    "Personal settings include local AI",
+    "AI requires a session",
+    "AI tools do not leak foreign projects",
+    "AI calls require CSRF",
+    "Custom role can be created through HTTP",
+    "Custom role can be assigned through HTTP",
+    "AI catalog follows custom role permissions",
+    "Role permissions can be revoked through HTTP",
+    "AI rechecks revoked rights without logging in again",
+    "Member can return to a standard role",
+    "Unassigned role can be deleted through HTTP"
   ]
 }

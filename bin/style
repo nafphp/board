@@ -68,8 +68,9 @@ run(
     "node",
     required[1],
     "--check" if check else "--write",
-    "app/public/assets/app.js",
-    "app/public/assets/app.css",
+    "app/public/assets/**/*.js",
+    "app/public/assets/**/*.css",
+    "app/tests/*.mjs",
 )
 
 python_files = sorted((root / "app/tests").glob("*.py"))

@@ -14,7 +14,7 @@ BACKUP       ?=
 .PHONY: help first-install install create-env-file check-env-file config-check \
         build-app run up stop down restart restart-background status logs ssh shell \
         composer composer-install composer-update naf migrate seed health \
-        test test-up test-down test-mariadb test-postgres test-http test-worker \
+        test test-up test-down test-mariadb test-postgres test-http test-worker test-ai \
         style-install style-check style-fix backup verify-restore \
         candidate-build candidate-up candidate-down plugin-check certificates supervisor-status
 
@@ -101,11 +101,13 @@ health: check-env-file ## Check app readiness (database, migrations and storage)
 	@$(COMPOSE) exec -T app curl --fail --silent --show-error --cacert /etc/nginx/ssl/ca.pem https://localhost:8443/health/ready
 	@printf '\n'
 
-test: test-http test-postgres test-worker ## Run MariaDB, PostgreSQL, HTTP and worker checks in disposable databases
+test: test-http test-postgres test-worker test-ai ## Run MariaDB, PostgreSQL, HTTP and worker checks in disposable databases
 
 test-up: config-check certificates ## Prepare nafinity_test and start the isolated test services
 	@$(COMPOSE) up -d --wait db
 	@bin/prepare-test-database
+	@$(COMPOSE) --profile test up -d app-test postgres
+	@$(COMPOSE) exec -T app-test php vendor/bin/naf db:migrate up
 	@$(COMPOSE) --profile test up -d --wait app-test postgres
 
 test-down: check-env-file ## Stop test services, preserving the development environment
@@ -123,6 +125,10 @@ test-http: test-mariadb ## Reset test fixtures and check HTTP, permissions and p
 
 test-worker: test-up ## Check worker termination, lease recovery and dead letters
 	@$(COMPOSE) exec -T app-test php tests/queue_process.php
+
+test-ai: ## Check local AI streaming transport and browser storage boundaries
+	@node app/tests/ai_transport.mjs
+	@node app/tests/ai_routing.mjs
 
 style-install: check-env-file ## Install the pinned development formatters
 	@bin/style install

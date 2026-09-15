@@ -14,7 +14,7 @@ if (!$fragment) {
 }
 $projectId = $project['id'];
 $isNew     = $ticket === null;
-$canWrite  = in_array($scope->role, ['owner', 'manager', 'member'], true) && $project['archived_at'] === null;
+$canWrite  = $scope->allows('write');
 $token     = csrf()->token();
 $row       = $ticket ?? ['title' => '', 'description' => '', 'priority' => 'normal', 'color' => '#6366f1', 'due_date' => ''];
 ?>
@@ -158,7 +158,7 @@ $row       = $ticket ?? ['title' => '', 'description' => '', 'priority' => 'norm
                                 <span><?= s($file['original_name']) ?> · Wird verarbeitet …</span>
                             <?php endif ?>
                             <span class="muted small"><?= number_format((int) $file['byte_size'] / 1024, 1, ',', '.') ?> KiB</span>
-                            <?php if ($canWrite): ?>
+                            <?php if ($scope->allows('upload')): ?>
                                 <form method="post" data-enhanced action="<?= s(route('attachment.delete', ['project' => $projectId, 'ticket' => $ticket['id'], 'attachment' => $file['id']])) ?>">
                                     <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
                                     <button
@@ -172,7 +172,7 @@ $row       = $ticket ?? ['title' => '', 'description' => '', 'priority' => 'norm
                             <?php endif ?>
                         </div>
                     <?php endforeach ?>
-                    <?php if ($canWrite && !$ticket['archived_at']): ?>
+                    <?php if ($scope->allows('upload') && !$ticket['archived_at']): ?>
                         <form
                             method="post"
                             enctype="multipart/form-data"
@@ -209,7 +209,7 @@ $row       = $ticket ?? ['title' => '', 'description' => '', 'priority' => 'norm
                                 <strong><?= s($comment['author_name']) ?></strong>
                                 <time><?= s(Format::dateTime($comment['created_at'], $preferences)) ?></time>
                                 <p><?= nl2br(s($comment['body'])) ?></p>
-                                <?php if ($canWrite && ((string) $comment['author_id'] === $user->getIdentifier() || in_array($scope->role, ['owner', 'manager'], true))): ?>
+                                <?php if ($scope->allows('comment') && ((string) $comment['author_id'] === $user->getIdentifier() || $scope->allows('moderate'))): ?>
                                     <details>
                                         <summary class="muted small"><?= s(t('Bearbeiten')) ?></summary>
                                         <form method="post" data-enhanced action="<?= s(route('ticket.comments', ['project' => $projectId, 'ticket' => $ticket['id']])) ?>">
@@ -228,7 +228,7 @@ $row       = $ticket ?? ['title' => '', 'description' => '', 'priority' => 'norm
                             </div>
                         </article>
                     <?php endforeach ?>
-                    <?php if ($canWrite): ?>
+                    <?php if ($scope->allows('comment')): ?>
                         <form method="post" data-enhanced action="<?= s(route('ticket.comments', ['project' => $projectId, 'ticket' => $ticket['id']])) ?>">
                             <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
                             <label class="sr-only" for="new-comment"><?= s(t('Kommentar')) ?></label>

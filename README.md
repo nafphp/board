@@ -54,6 +54,9 @@ mit 409; die Oberflaeche bietet das Nachladen des aktuellen Stands an.
 
 Filter und echte Volltextsuche, private Anhaenge ueber den benannten NAF-Storage-Datentraeger mit Quoten und Wiederanlauf,
 In-App-Benachrichtigungen, Einstellungen, Light/Dark und mobile Darstellung sind integriert.
+Die Settings öffnen sich als animierte Karten und enthalten eigene Projektrollen sowie einen
+lokalen Ollama-Chat. Der Embedding-Layer wählt aus großen Werkzeugkatalogen passende Aktionen
+aus; Details stehen in [Settings und lokale AI](docs/Settings-AI.md).
 Boards liefern maximal 300 Karten und die gesamte Trefferzahl; bei groesseren Bestaenden
 die Filter verwenden. Deutsch ist die vollstaendige Basissprache; Englisch deckt die
 wichtigsten Oberflaechentexte ab, einige Meldungen bleiben im Prototyp deutsch.
@@ -155,7 +158,8 @@ Release-Branches und Wiederholung der Tests. Health: `/health/live` und `/health
 Die Readiness prueft Datenbank, erforderliche App-Migrationen, Hintergrundtabellen und die native Storage-Anbindung.
 
 ```sh
-make test                  # MariaDB, PostgreSQL, HTTP und Worker
+make test                  # MariaDB, PostgreSQL, HTTP, Worker und lokale AI-Logik
+make test-ai               # AI-Transport und semantischer Router, ohne laufendes Modell
 make test-down             # Testdienste anschließend anhalten
 make backup
 make verify-restore BACKUP=work/backups/ZEITSTEMPEL

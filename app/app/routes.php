@@ -1,10 +1,12 @@
 <?php
 
 declare(strict_types=1);
+use App\Controllers\AiController;
 use App\Controllers\AppController as C;
 use App\Migrations\M202609140001Nafinity;
 use App\Migrations\M202609140002Queue;
 use App\Migrations\M202609140003RateLimits;
+use App\Migrations\M202609150001ProjectRoles;
 use App\Services\AttachmentService;
 
 use function Naf\json;
@@ -21,6 +23,7 @@ route()->add(
                 M202609140001Nafinity::class,
                 M202609140002Queue::class,
                 M202609140003RateLimits::class,
+                M202609150001ProjectRoles::class,
             ];
             $applied = $pdo->query('SELECT name FROM migrations')->fetchAll(PDO::FETCH_COLUMN);
             if (array_diff($required, $applied)) {
@@ -30,13 +33,15 @@ route()->add(
             $pdo->query('SELECT 1 FROM naf_rate_limits LIMIT 1');
             \Naf\app()->container()->make(AttachmentService::class);
 
-            return json(['status' => 'ready', 'schema' => '202609140003']);
+            return json(['status' => 'ready', 'schema' => '202609150001']);
         } catch (Throwable) {
             return json(['status' => 'not-ready'], 503);
         }
     },
     'health.ready',
 );
+route()->add('GET', '/ai/tools', [AiController::class, 'tools'], 'ai.tools');
+route()->add('POST', '/ai/tools/call', [AiController::class, 'call'], 'ai.call');
 $routes = [
     ['GET', '/notifications', 'notifications', 'notifications'],
     ['POST', '/notifications/read', 'markNotificationsRead', 'notifications.read'],
@@ -53,6 +58,7 @@ $routes = [
     ['GET', '/projects/{project}', 'board', 'board'],
     ['GET', '/projects/{project}/settings', 'settings', 'project.settings'],
     ['POST', '/projects/{project}/settings', 'updateProject', 'project.update'],
+    ['POST', '/projects/{project}/roles', 'saveRole', 'project.roles'],
     ['POST', '/projects/{project}/members', 'member', 'project.members'],
     ['POST', '/projects/{project}/structure', 'structure', 'project.structure'],
     ['POST', '/projects/{project}/archive', 'archiveProject', 'project.archive'],

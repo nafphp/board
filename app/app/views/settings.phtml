@@ -1,193 +1,156 @@
 <?php
+use App\Domain\ProjectPermissions;
 
 use function Naf\Form\csrf;
-use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Naf\View\view;
 
 $this->setLayout('layout');
 $this->block('content');
-$projectId      = $project['id'];
+$projectId      = $project['id'] ?? null;
 $token          = csrf()->token();
-$availableRoles = $scope->role === 'owner'
-    ? ['owner', 'manager', 'member', 'viewer', 'remove']
-    : ['member', 'viewer', 'remove'];
-$structureSections = [
-    'column'   => [t('Spalten'), $columns],
-    'swimlane' => ['Swimlanes', $swimlanes],
-    'label'    => ['Labels', $labels],
+$availableRoles = ($scope ?? null)?->role === 'owner'
+    ? ['owner' => 'Owner', 'manager' => 'Manager', 'member' => 'Member', 'viewer' => 'Viewer']
+    : ['member' => 'Member', 'viewer' => 'Viewer'];
+if (isset($scope) && $scope->role !== 'owner') {
+    $availableRoles = array_filter($availableRoles, fn($label, $role) => !array_diff(ProjectPermissions::defaults($role), $scope->permissions), ARRAY_FILTER_USE_BOTH);
+}
+foreach ($customRoles ?? [] as $role) {
+    if ($scope->role === 'owner' || !array_diff($role['permissions'], $scope->permissions)) {
+        $availableRoles['custom:' . $role['id']] = $role['name'];
+    }
+}
+$availableRoles['remove'] = 'Zugriff entziehen';
+$cards                    = [
+    ['personal', 'Persönlich', 'Darstellung, Sprache & Benachrichtigungen', 'user', 'settings.personal', []],
+    ['ai', 'Lokale AI', 'Modelle, Verbindung & Assistent', 'spark', 'settings.ai', []],
+];
+if ($projectId !== null) {
+    if ($scope->allows('manage') || $scope->allows('restore')) {
+        $cards[] = ['general', 'Allgemein', 'Name, Farbe & Projektstatus', 'sliders', 'settings.project', []];
+    }
+    $cards[] = ['roles', 'Rollen & Rechte', 'Verantwortung im Team gestalten', 'shield', 'settings.roles', []];
+    if ($scope->allows('members')) {
+        $cards[] = ['users', 'Benutzer', count($members) . ' Personen in diesem Projekt', 'users', 'settings.members', []];
+    }
+    if ($scope->allows('structure')) {
+        foreach (['column' => ['Spalten', $columns], 'swimlane' => ['Swimlanes', $swimlanes], 'label' => ['Labels', $labels]] as $kind => [$heading, $items]) {
+            $cards[] = [$kind, $heading, count($items) . ' Einträge · Board organisieren', $kind, 'settings.structure', compact('kind', 'items')];
+        }
+    }
+}
+$viewData = [
+    'projectId'      => $projectId,
+    'token'          => $token,
+    'scope'          => $scope ?? null,
+    'project'        => $project ?? null,
+    'preferences'    => $preferences,
+    'customRoles'    => $customRoles ?? [],
+    'members'        => $members ?? [],
+    'availableRoles' => $availableRoles,
+    'user'           => $user,
+];
+$icons = [
+    'user'     => '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
+    'users'    => '<circle cx="9" cy="8" r="3"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M17 5a3 3 0 0 1 0 6m2 4a6 6 0 0 1 3 5"/>',
+    'spark'    => '<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5ZM20 2v4m-2-2h4"/>',
+    'shield'   => '<path d="M12 3 3 7v5c0 5 9 9 9 9s9-4 9-9V7Z"/><path d="m8 12 3 3 5-6"/>',
+    'sliders'  => '<path d="M4 3v8m0 4v6M12 3v3m0 4v11M20 3v11m0 4v3M1 11h6m2-5h6m2 8h6"/>',
+    'column'   => '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16M15 4v16"/>',
+    'swimlane' => '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 10h18M3 15h18"/>',
+    'label'    => '<path d="M3 3h8l10 10-8 8L3 11Z"/><circle cx="7.5" cy="7.5" r="1"/>',
 ];
 ?>
-<section class="page-heading">
+<section class="page-heading settings-heading">
     <div>
-        <span class="eyebrow">EIN BOARD, DAS ZU EUCH PASST</span>
-        <h1>Projekteinstellungen</h1>
-        <p><?= s($project['name']) ?> · Mitglieder und Struktur</p>
+        <span class="eyebrow">DEIN RAUM FÜR FEINABSTIMMUNG</span>
+        <h1>Einstellungen</h1>
+        <p>Alles an seinem Platz. Und so, wie es für euch passt.</p>
     </div>
-    <a class="button subtle" href="<?= s(route('board', ['project' => $projectId])) ?>">← Zum Board</a>
+    <?php if ($projectId): ?>
+        <a class="button subtle" href="<?= s(route('board', ['project' => $projectId])) ?>">← Zum Board</a>
+    <?php endif ?>
 </section>
-<div class="settings-grid">
-    <section class="settings-card">
-        <h2>Über das Projekt</h2>
-        <form method="post" data-enhanced action="<?= s(route('project.update', ['project' => $projectId])) ?>">
-            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-            <label>
-                <?= s(t('Name')) ?>
-                <input name="name" required maxlength="120" value="<?= s($project['name']) ?>" />
-            </label>
-            <label>
-                <?= s(t('Beschreibung')) ?>
-                <textarea name="description" rows="3"><?= s($project['description']) ?></textarea>
-            </label>
-            <div class="form-grid">
-                <label>
-                    <?= s(t('Farbe')) ?>
-                    <input type="color" name="color" value="<?= s($project['color']) ?>" />
-                </label>
-                <label>
-                    Kürzel
-                    <input name="icon" maxlength="2" value="<?= s($project['icon']) ?>" />
-                </label>
-            </div>
-            <div class="form-errors" role="alert"></div>
-            <button class="button primary">Projekt speichern</button>
-        </form>
-        <?php if ($scope->role === 'owner'): ?>
-            <hr />
-            <form method="post" data-enhanced action="<?= s(route('project.archive', ['project' => $projectId])) ?>">
-                <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-                <input type="hidden" name="action" value="<?= $project['archived_at'] ? 'restore' : 'archive' ?>" />
-                <p>Archivierte Projekte bleiben lesbar. Änderungen werden gesperrt.</p>
-                <div class="form-errors" role="alert"></div>
-                <button class="button subtle"><?= $project['archived_at'] ? t('Projekt wiederherstellen') : t('Projekt archivieren') ?></button>
-            </form>
-        <?php endif ?>
-    </section>
-    <section class="settings-card">
-        <h2><?= s(t('Mitglieder')) ?></h2>
-        <table class="member-table">
-            <thead>
-                <tr>
-                    <th>PERSON</th>
-                    <th>ROLLE</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($members as $member): ?>
-                    <tr>
-                        <td>
-                            <?= s($member['name']) ?>
-                            <small><?= s($member['email']) ?></small>
-                        </td>
-                        <td><?= s($member['role']) ?></td>
-                    </tr>
-                <?php endforeach ?>
-            </tbody>
-        </table>
-        <form method="post" data-enhanced action="<?= s(route('project.members', ['project' => $projectId])) ?>" style="margin-top: 22px">
-            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-            <label>
-                Bestehendes Konto
-                <input name="email" type="email" required placeholder="E-Mail-Adresse" />
-            </label>
-            <label>
-                <?= s(t('Rolle')) ?>
-                <select name="role">
-                    <?php foreach ($availableRoles as $role): ?>
-                        <option value="<?= s($role) ?>"><?= $role === 'remove' ? 'Zugriff entziehen' : s(ucfirst($role)) ?></option>
-                    <?php endforeach ?>
-                </select>
-            </label>
-            <p>
-                Owner verwalten das Projekt. Manager organisieren das Board. Member bearbeiten
-                Tickets. Viewer lesen mit.
-            </p>
-            <div class="form-errors" role="alert"></div>
-            <button class="button subtle">Mitgliedschaft speichern</button>
-        </form>
-    </section>
-    <?php foreach ($structureSections as $kind => [$heading, $items]): ?>
-        <section class="settings-card <?= $kind === 'column' ? 'wide' : '' ?>">
-            <h2><?= s($heading) ?></h2>
-            <?php foreach ($items as $item): ?>
-                <form method="post" data-enhanced class="structure-row" action="<?= s(route('project.structure', ['project' => $projectId])) ?>">
-                    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-                    <input type="hidden" name="kind" value="<?= s($kind) ?>" />
-                    <input type="hidden" name="id" value="<?= (int) $item['id'] ?>" />
-                    <div class="form-grid">
-                        <label>
-                            <?= s(t('Name')) ?>
-                            <input name="name" required maxlength="60" value="<?= s($item['name']) ?>" />
-                        </label>
-                        <?php if ($kind !== 'swimlane'): ?>
-                            <label>
-                                <?= s(t('Farbe')) ?>
-                                <input type="color" name="color" value="<?= s($item['color']) ?>" />
-                            </label>
-                        <?php else: ?>
-                            <span class="muted small"><?= (int) $item['is_default'] === 1 ? 'Standard-Swimlane' : '' ?></span>
-                        <?php endif ?>
-                    </div>
-                    <?php if ($kind === 'column'): ?>
-                        <div class="form-grid">
-                            <label>
-                                Ticketstatus beim Verschieben
-                                <select name="closes_tickets">
-                                    <option value="0" <?= !(int) $item['closes_tickets'] ? 'selected' : '' ?>><?= s(t('Offen')) ?></option>
-                                    <option value="1" <?= (int) $item['closes_tickets'] ? 'selected' : '' ?>><?= s(t('Geschlossen')) ?></option>
-                                </select>
-                            </label>
-                            <label>
-                                WIP-Richtwert (optional)
-                                <input type="number" name="wip_limit" min="1" value="<?= s((string) ($item['wip_limit'] ?? '')) ?>" />
-                            </label>
-                        </div>
-                    <?php endif ?>
-                    <div class="form-errors" role="alert"></div>
-                    <button class="button subtle"><?= s(t('Speichern')) ?></button>
-                    <?php if ($kind !== 'label'): ?>
-                        <button
-                            class="button subtle"
-                            name="direction"
-                            value="up"
-                            aria-label="<?= s($item['name']) ?> nach oben"
-                        >
-                            ↑
-                        </button>
-                        <button
-                            class="button subtle"
-                            name="direction"
-                            value="down"
-                            aria-label="<?= s($item['name']) ?> nach unten"
-                        >
-                            ↓
-                        </button>
-                    <?php endif ?>
-                    <?php if ($kind !== 'swimlane' || !(int) $item['is_default']): ?>
-                        <button class="button danger subtle" name="action" value="delete">Entfernen</button>
-                    <?php endif ?>
-                </form>
+<div class="settings-context">
+    <div>
+        <strong><?= s($project['name'] ?? 'Dein Workspace') ?></strong>
+        <span><?= $projectId ? 'Projekt & persönliche Einstellungen' : 'Persönliche Einstellungen' ?></span>
+    </div>
+    <label>
+        Projekt wechseln
+        <select data-settings-project aria-label="Projekt für Einstellungen">
+            <option value="/preferences">Nur persönliche Einstellungen</option>
+            <?php foreach ($projects as $item): ?>
+                <option value="/projects/<?= (int) $item['id'] ?>/settings" <?= (string) $projectId === (string) $item['id'] ? 'selected' : '' ?>>
+                    <?= s($item['name']) ?>
+                </option>
             <?php endforeach ?>
-            <details style="margin-top: 18px">
-                <summary class="text-button">+ <?= s($kind === 'column' ? t('Neue Spalte') : ($kind === 'swimlane' ? t('Neue Swimlane') : t('Neues Label'))) ?></summary>
-                <form method="post" data-enhanced action="<?= s(route('project.structure', ['project' => $projectId])) ?>">
-                    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-                    <input type="hidden" name="kind" value="<?= s($kind) ?>" />
-                    <label>
-                        <?= s(t('Name')) ?>
-                        <input name="name" required maxlength="60" />
-                    </label>
-                    <?php if ($kind !== 'swimlane'): ?>
-                        <label>
-                            <?= s(t('Farbe')) ?>
-                            <input type="color" name="color" value="#6366f1" />
-                        </label>
-                    <?php endif ?>
-                    <div class="form-errors" role="alert"></div>
-                    <button class="button primary"><?= s(t('Hinzufügen')) ?></button>
-                </form>
-            </details>
+        </select>
+    </label>
+</div>
+<div class="settings-tiles">
+    <?php foreach ($cards as [$id, $label, $description, $icon, $template, $extra]): ?>
+        <button
+            type="button"
+            class="settings-tile"
+            data-settings-open="<?= s($id) ?>"
+            aria-haspopup="dialog"
+            aria-controls="settings-detail"
+        >
+            <span class="settings-icon">
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                >
+                    <?= $icons[$icon] ?>
+                </svg>
+            </span>
+            <span class="settings-tile-text">
+                <strong><?= s($label) ?></strong>
+                <small><?= s($description) ?></small>
+            </span>
+            <span class="settings-arrow" aria-hidden="true">↗</span>
+        </button>
+        <section
+            hidden
+            data-settings-content="<?= s($id) ?>"
+            data-title="<?= s($label) ?>"
+            data-description="<?= s($description) ?>"
+        >
+            <?= view($template, [...$viewData, ...$extra]) ?>
         </section>
     <?php endforeach ?>
 </div>
+<p class="settings-footnote">
+    Persönliche Einstellungen gelten nur für dich. Projektänderungen gelten für euer Team.
+</p>
+<dialog
+    id="settings-detail"
+    class="settings-detail"
+    aria-labelledby="settings-detail-title"
+    aria-describedby="settings-detail-description"
+>
+    <header class="settings-detail-heading">
+        <div class="settings-icon" data-settings-icon></div>
+        <div>
+            <h2 id="settings-detail-title"></h2>
+            <p id="settings-detail-description"></p>
+        </div>
+        <button
+            type="button"
+            class="icon-button"
+            data-settings-close
+            aria-label="Einstellungen schließen"
+        >
+            ×
+        </button>
+    </header>
+    <div class="settings-detail-body"></div>
+</dialog>
 <?php $this->endblock('content'); ?>

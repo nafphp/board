@@ -23,7 +23,7 @@ final class BoardQuery
         $statement = $this->pdo->prepare(
             <<<'SQL'
             SELECT p.*,
-                   m.role,
+                   COALESCE(r.name, m.role) AS role,
 
                 (SELECT COUNT(*)
                  FROM tickets t
@@ -32,6 +32,7 @@ final class BoardQuery
                      AND t.status = 'open') AS open_count
             FROM projects p
             JOIN project_members m ON m.project_id = p.id
+            LEFT JOIN project_roles r ON r.project_id=m.project_id AND r.id=m.custom_role_id
             WHERE m.user_id = ?
                 AND m.active = 1
             ORDER BY CASE
@@ -121,9 +122,11 @@ final class BoardQuery
             SELECT u.id,
                    u.name,
                    u.email,
-                   m.role
+                   COALESCE(r.name, m.role) AS role,
+                   m.custom_role_id
             FROM project_members m
             JOIN users u ON u.id = m.user_id
+            LEFT JOIN project_roles r ON r.project_id=m.project_id AND r.id=m.custom_role_id
             WHERE m.project_id = ?
                 AND m.active = 1
                 AND u.active = 1

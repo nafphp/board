@@ -126,6 +126,16 @@ document.addEventListener('submit', async (event) => {
     if (form.action.endsWith('/preferences')) {
       localStorage.setItem('nafinity.theme', data.get('theme'));
     }
+    if (form.closest('#settings-detail')) {
+      const destination = new URL(result.url || location.href, location.href);
+      if (destination.pathname.endsWith('/settings') || destination.pathname === '/preferences') {
+        const card = form.closest('[data-settings-content]')?.dataset.settingsContent;
+        destination.hash = card || '';
+        location.assign(destination.href);
+        if (destination.pathname === location.pathname) location.reload();
+        return;
+      }
+    }
     if (result.url) location.assign(result.url);
     else location.reload();
   } catch {
@@ -206,6 +216,10 @@ if (board && board.dataset.filtered === '0') {
     }
   });
 }
+document.addEventListener('nafinity:ai-changed', () => {
+  const update = document.querySelector('#board-update');
+  if (update) update.hidden = false;
+});
 if (board) {
   setInterval(async () => {
     if (document.hidden) return;

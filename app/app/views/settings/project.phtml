@@ -1,0 +1,41 @@
+<?php
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+?>
+<form method="post" data-enhanced action="<?= s(route('project.update', ['project' => $projectId])) ?>">
+    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+    <fieldset <?= !$scope->allows('manage') ? 'disabled' : '' ?>>
+        <label>
+            <?= s(t('Name')) ?>
+            <input name="name" required maxlength="120" value="<?= s($project['name']) ?>" />
+        </label>
+        <label>
+            <?= s(t('Beschreibung')) ?>
+            <textarea name="description" rows="3"><?= s($project['description']) ?></textarea>
+        </label>
+        <div class="form-grid">
+            <label>
+                <?= s(t('Farbe')) ?>
+                <input type="color" name="color" value="<?= s($project['color']) ?>" />
+            </label>
+            <label>
+                Kürzel
+                <input name="icon" maxlength="2" value="<?= s($project['icon']) ?>" />
+            </label>
+        </div>
+        <div class="form-errors" role="alert"></div>
+        <button class="button primary">Projekt speichern</button>
+    </fieldset>
+</form>
+<?php if ($scope->role === 'owner'): ?>
+    <hr />
+    <form method="post" data-enhanced action="<?= s(route('project.archive', ['project' => $projectId])) ?>">
+        <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+        <input type="hidden" name="action" value="<?= $project['archived_at'] ? 'restore' : 'archive' ?>" />
+        <p>Archivierte Projekte bleiben lesbar. Änderungen werden gesperrt.</p>
+        <div class="form-errors" role="alert"></div>
+        <button class="button subtle"><?= $project['archived_at'] ? t('Projekt wiederherstellen') : t('Projekt archivieren') ?></button>
+    </form>
+<?php endif ?>

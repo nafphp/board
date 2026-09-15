@@ -12,6 +12,7 @@ use App\Services\CommentService;
 use App\Services\NotificationService;
 use App\Services\PreferenceService;
 use App\Services\ProjectService;
+use App\Services\RoleService;
 use App\Services\TicketService;
 use App\Support\Input;
 use Naf\Auth\Auth;
@@ -44,6 +45,7 @@ final class AppController
         private NotificationService $notifications,
         private PreferenceService $prefs,
         private PdoLimiter $limiter,
+        private RoleService $roles,
     ) {
     }
 
@@ -175,10 +177,11 @@ final class AppController
     {
         return $this->read(function () use ($project) {
             $id = Input::id($project);
-            $this->access->project($id, 'manage');
+            $this->access->project($id);
 
             return $this->page('settings', [
-                'title' => 'Projekteinstellungen',
+                'title'       => 'Einstellungen',
+                'customRoles' => $this->roles->list($id),
                 ...$this->query->board($id),
             ]);
         });
@@ -229,6 +232,15 @@ final class AppController
             $this->projects->member(Input::id($project), $data);
 
             return ['url' => '/projects/' . $project . '/settings'];
+        });
+    }
+
+    public function saveRole(string $project): ResponseInterface
+    {
+        return $this->mutation(function ($data) use ($project) {
+            $this->roles->save(Input::id($project), $data);
+
+            return ['url' => '/projects/' . $project . '/settings#roles'];
         });
     }
 
@@ -304,10 +316,7 @@ final class AppController
 
     public function preferences(): ResponseInterface
     {
-        return $this->page('preferences', [
-            'title'       => 'Einstellungen',
-            'preferences' => $this->query->preferences(),
-        ]);
+        return $this->page('settings', ['title' => 'Einstellungen']);
     }
 
     public function savePreferences(): ResponseInterface

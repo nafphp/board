@@ -1,0 +1,60 @@
+<?php use function Naf\View\s;
+
+?>
+<aside
+    class="ai-widget"
+    data-ai-chat
+    data-user="<?= s($user->getIdentifier()) ?>"
+    data-project="<?= (int) ($projectId ?? 0) ?>"
+    hidden
+>
+    <button
+        type="button"
+        class="ai-launcher"
+        data-ai-toggle
+        aria-controls="ai-panel"
+        aria-expanded="false"
+    >
+        <span aria-hidden="true">✧</span>
+        Nafinity AI
+    </button>
+    <section id="ai-panel" data-ai-panel class="ai-panel" hidden aria-label="Nafinity AI Chat">
+        <header class="ai-header">
+            <div>
+                <strong>✧ Nafinity AI</strong>
+                <small><?= $projectId ? 'Dein Assistent für dieses Projekt' : 'Dein persönlicher Assistent' ?></small>
+            </div>
+            <button type="button" class="icon-button" data-ai-close aria-label="Chat schließen">
+                ×
+            </button>
+        </header>
+        <div class="ai-toolbar">
+            <button type="button" class="text-button" data-ai-new>Neuer Chat</button>
+            <label>
+                <input type="checkbox" data-ai-stream checked />
+                Live-Antworten
+            </label>
+            <a href="<?= $projectId ? '/projects/' . (int) $projectId . '/settings' : '/preferences' ?>#ai" aria-label="AI-Einstellungen">Einstellungen</a>
+        </div>
+        <details class="ai-routing" data-ai-routing hidden>
+            <summary data-ai-routing-summary></summary>
+            <p data-ai-routing-detail></p>
+        </details>
+        <div
+            class="ai-messages"
+            data-ai-messages
+            role="log"
+            aria-label="Chatverlauf"
+            aria-live="off"
+        ></div>
+        <div class="ai-status" data-ai-status role="status" aria-live="polite">Bereit</div>
+        <div data-ai-confirmation class="ai-confirmation" hidden></div>
+        <form class="ai-composer" data-ai-form>
+            <label for="ai-input" class="sr-only">Nachricht an Nafinity AI</label>
+            <textarea id="ai-input" rows="2" maxlength="12000" placeholder="Was möchtest du voranbringen?" required></textarea>
+            <button class="button primary" data-ai-send>Senden ↑</button>
+            <button type="button" class="button subtle" data-ai-stop hidden>Stoppen</button>
+        </form>
+        <p class="ai-privacy">Lokal auf deinem Gerät · Änderungen bestätigst du selbst</p>
+    </section>
+</aside>

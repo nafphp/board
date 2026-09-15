@@ -53,7 +53,7 @@ final class CommentService
                 }
                 if (
                     (int) $old['author_id'] !== $actor
-                    && !in_array($scope->role, ['owner', 'manager'], true)
+                    && !$scope->allows('moderate')
                 ) {
                     throw new Failure('Du darfst diesen Kommentar nicht ändern.', 403);
                 }

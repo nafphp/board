@@ -35,8 +35,8 @@ final class ProjectService
         try {
             $id = $this->insert('projects', [...$data, 'created_by' => $actor]);
             $this->pdo
-                ->prepare('INSERT INTO project_members(project_id,user_id,role) VALUES(?,?,?)')
-                ->execute([$id, $actor, 'owner']);
+                ->prepare('INSERT INTO project_members(project_id,user_id,role,custom_role_id) VALUES(?,?,?,?)')
+                ->execute([$id, $actor, 'owner', null]);
             $board = $this->insert('boards', ['project_id' => $id, 'name' => 'Projektboard']);
             foreach (
                 [
@@ -106,7 +106,7 @@ final class ProjectService
         $role      = $data['role'] ?? 'member';
         if (
             !is_string($role)
-            || !in_array($role, ['owner', 'manager', 'member', 'viewer', 'remove'], true)
+            || (!in_array($role, ['owner', 'manager', 'member', 'viewer', 'remove'], true) && preg_match('/^custom:[1-9][0-9]*$/D', $role) !== 1)
         ) {
             throw new Failure('Ungültige Projektrolle.');
         }
@@ -115,6 +115,15 @@ final class ProjectService
             $email,
             $role,
         ) {
+            $customRoleId = str_starts_with($role, 'custom:') ? Input::id(substr($role, 7)) : null;
+            $storedRole   = $customRoleId === null ? $role : 'viewer';
+            if ($customRoleId !== null) {
+                $statement = $this->pdo->prepare('SELECT id FROM project_roles WHERE project_id=? AND id=?');
+                $statement->execute([$project, $customRoleId]);
+                if (!$statement->fetchColumn()) {
+                    throw new Failure('Rolle nicht gefunden.', 404);
+                }
+            }
             $statement = $this->pdo->prepare('SELECT id FROM users WHERE email=? AND active=1');
             $statement->execute([$email]);
             $user = $statement->fetchColumn();
@@ -122,14 +131,17 @@ final class ProjectService
                 throw new Failure('Kein aktives Konto mit dieser E-Mail gefunden.');
             }
             $statement = $this->pdo->prepare(
-                'SELECT role,active FROM project_members WHERE project_id=? AND user_id=?',
+                'SELECT role,active,custom_role_id FROM project_members WHERE project_id=? AND user_id=?',
             );
             $statement->execute([$project, $user]);
             $old              = $statement->fetch();
             $grantsManagement = in_array($role, ['owner', 'manager'], true);
             $changesManager   = $old && in_array($old['role'], ['owner', 'manager'], true);
 
-            if ($scope->role !== 'owner' && ($grantsManagement || $changesManager)) {
+            $newRights     = $this->access->permissions($project, $storedRole, $customRoleId);
+            $oldRights     = $old ? $this->access->permissions($project, $old['role'], $old['custom_role_id'] === null ? null : (int) $old['custom_role_id']) : [];
+            $exceedsRights = array_diff([...$newRights, ...$oldRights], $scope->permissions ?? []);
+            if ($scope->role !== 'owner' && ($grantsManagement || $changesManager || $exceedsRights)) {
                 throw new Failure('Diese Rolle kann nur ein Owner vergeben oder ändern.', 403);
             }
             if (
@@ -149,18 +161,19 @@ final class ProjectService
             if ($old) {
                 $this->pdo
                     ->prepare(
-                        'UPDATE project_members SET role=?,active=? WHERE project_id=? AND user_id=?',
+                        'UPDATE project_members SET role=?,active=?,custom_role_id=? WHERE project_id=? AND user_id=?',
                     )
                     ->execute([
-                        $role === 'remove' ? $old['role'] : $role,
+                        $role === 'remove' ? 'viewer' : $storedRole,
                         $role === 'remove' ? 0 : 1,
+                        $role === 'remove' ? null : $customRoleId,
                         $project,
                         $user,
                     ]);
             } elseif ($role !== 'remove') {
                 $this->pdo
-                    ->prepare('INSERT INTO project_members(project_id,user_id,role) VALUES(?,?,?)')
-                    ->execute([$project, $user, $role]);
+                    ->prepare('INSERT INTO project_members(project_id,user_id,role,custom_role_id) VALUES(?,?,?,?)')
+                    ->execute([$project, $user, $storedRole, $customRoleId]);
             }
             if ($role === 'remove') {
                 $this->pdo

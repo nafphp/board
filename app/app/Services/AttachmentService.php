@@ -31,7 +31,7 @@ final class AttachmentService
 
     public function upload(int $project, int $ticket, UploadedFileInterface $upload): void
     {
-        $this->access->project($project, 'write');
+        $this->access->project($project, 'upload');
         $this->tickets->ticket($project, $ticket);
 
         try {
@@ -42,7 +42,7 @@ final class AttachmentService
         $committed = false;
 
         try {
-            $id = $this->access->write($project, 'write', function () use (
+            $id = $this->access->write($project, 'upload', function () use (
                 $project,
                 $ticket,
                 $file,
@@ -116,7 +116,7 @@ final class AttachmentService
 
     public function remove(int $project, int $ticket, int $id): void
     {
-        $this->access->write($project, 'write', function () use ($project, $ticket, $id) {
+        $this->access->write($project, 'upload', function () use ($project, $ticket, $id) {
             $row = $this->row($project, $ticket, $id);
             $this->pdo
                 ->prepare("UPDATE attachments SET state='deleting' WHERE id=?")
@@ -180,7 +180,7 @@ final class AttachmentService
             }
             $statement = $this->pdo->prepare(
                 <<<'SQL'
-                SELECT COUNT(*)
+                SELECT m.role, m.custom_role_id
                 FROM project_members m
                 JOIN users u ON u.id = m.user_id
                 JOIN projects p ON p.id = m.project_id
@@ -188,12 +188,13 @@ final class AttachmentService
                     AND m.user_id = ?
                     AND m.active = 1
                     AND u.active = 1
-                    AND m.role <> 'viewer'
                     AND p.archived_at IS NULL
                 SQL,
             );
             $statement->execute([$project, $row['uploaded_by']]);
-            if ($row['state'] === 'deleting' || !(int) $statement->fetchColumn()) {
+            $membership = $statement->fetch();
+            $rights     = $membership ? $this->access->permissions($project, $membership['role'], $membership['custom_role_id'] === null ? null : (int) $membership['custom_role_id']) : [];
+            if ($row['state'] === 'deleting' || !in_array('upload', $rights, true)) {
                 $this->storage->delete($row['storage_key']);
                 $this->pdo->prepare('DELETE FROM attachments WHERE id=?')->execute([$id]);
             } else {

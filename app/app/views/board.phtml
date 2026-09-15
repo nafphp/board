@@ -7,9 +7,8 @@ use function Naf\View\s;
 
 $this->setLayout('layout');
 $this->block('content');
-$canWrite = in_array($scope->role, ['owner', 'manager', 'member'], true)
-    && $project['archived_at'] === null;
-$canManage = in_array($scope->role, ['owner', 'manager'], true);
+$canWrite  = $scope->allows('write');
+$canManage = true;
 $isLimited = $total > 300;
 $canDrag   = $canWrite && !$filters && !$isLimited;
 
@@ -70,7 +69,7 @@ if ($filters) {
         <a href="<?= s(route('project.settings', ['project' => $projectId])) ?>">⚙ &nbsp; Einstellungen</a>
     <?php endif ?>
     <div class="tabs-spacer"></div>
-    <span class="role-badge"><?= s(ucfirst($scope->role)) ?></span>
+    <span class="role-badge"><?= s($scope->roleName ?? ucfirst($scope->role)) ?></span>
 </nav>
 <form method="get" class="filterbar" action="<?= s(route('board', ['project' => $projectId])) ?>">
     <label class="search-field">

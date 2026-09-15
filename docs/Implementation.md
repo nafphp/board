@@ -1,6 +1,6 @@
 # Nafinity – Implementierung und Abnahme
 
-Stand: 14. September 2026. Der Prototyp liegt unter
+Stand: 15. September 2026. Der Prototyp liegt unter
 `/Users/flo/PhpStormProjects/nafinity` und läuft auf **https://localhost** (Port 443).
 Er verwendet echte Daten, lokale NAF-Quellen und projektgebundene Rechte.
 
@@ -17,6 +17,38 @@ Demo-Passwort: `Nafinity-Demo-2026!`.
 Die im Browser angelegte Karte „Showcase-Abnahme im Browser“ hat eine eigene Ticket-URL,
 wurde über das Verschiebemenü nach Review bewegt und enthält eine private Testdatei.
 Die Demo enthält keine echten Kundendaten.
+
+## Settings und lokale AI
+
+Die neue Settings-Seite bündelt persönliche und projektbezogene Einstellungen in acht
+kompakten Karten. Beim Öffnen und Schließen animiert der Dialog zwischen Karte und
+Inhalt; X, Escape, Fokus-Rückgabe und reduzierte Bewegung sind berücksichtigt.
+Owner können eigene projektgebundene Rollen mit konfigurierbaren Rechten anlegen und
+Benutzern zuordnen. Native Auth-Policies prüfen die aktuellen Rechte bei jeder Aktion,
+einschließlich AI-Aufrufen und der Wiederherstellung unterbrochener Uploads.
+
+Die lokale AI übernimmt kompatible Ollama-, Werkzeug- und Markdown-Bausteine aus der
+NAF-Version von nixcms. Modellwahl, Verbindungstest, Prompts, Gedächtnis, Feedback und
+ein Chat mit Streaming sind integriert. Die Werkzeuge verwenden NAFs MCP-Verträge und
+die bestehenden App-Services. Schreibende Vorschläge benötigen eine ausdrückliche
+Bestätigung mit sichtbaren Argumenten. Browserdaten sind nach Nutzer und Projekt getrennt.
+Der Embedding-Layer indiziert Werkzeugdefinitionen in einem persistenten Browser-Cache,
+begrenzt die Vorauswahl und berücksichtigt benötigte Lesewerkzeuge. Ein lokaler Katalogtest
+mit 500 Definitionen ergab rund sieben Sekunden für den ersten Index und 66 ms für die
+nächste Auswahl mit vorhandenem Index. [Settings-AI.md](Settings-AI.md) beschreibt die Grenzen.
+
+Im Firefox über vertrauenswürdiges HTTPS geprüft: Kartenübersicht, Rollen-Dialog,
+Schließen mit X und Escape sowie Fokus-Rückgabe, Modellabfrage, Speichern der
+AI-Einstellungen und Live-Antwort. `gemma4:e2b` hat über das Board-Werkzeug die vier
+tatsächlichen Spalten gelesen. Eine vorgeschlagene Ticketanlage zeigte ihre Argumente
+und wurde nach „Ablehnen“ nicht ausgeführt. Die AI ist im geprüften Alice-Browser aktiviert.
+Diese Settings-Abnahme fand am Desktop statt; die frühere mobile Board-Abnahme unten
+ist ein separater Nachweis.
+
+Bedienung und Architektur stehen in [Settings-AI.md](Settings-AI.md), aktuelle
+Prüfergebnisse in [Settings-AI-Evidenz.json](Settings-AI-Evidenz.json). Die neue Migration
+ergänzt eigene Rollen ohne Änderungen an bestehenden Mitgliedschaften. Vor dem Einspielen
+wurde `work/backups/20260915T202311Z` erstellt.
 
 ## Ergebnis des Plans
 
@@ -37,7 +69,7 @@ es gibt weder automatische Kontoanlage noch eine Verknüpfung allein anhand der 
 
 Nafinity verwendet NAF-Routing und Responses, den Container, Auth und Policies, Views und
 Escaping, Form/CSRF/Validierung, PDO und die Migration Registry, ORM-Modelle/Repositories,
-Events, CLI Commands, Queue, Scheduler, i18n und den Mail-Transportvertrag.
+Events, CLI Commands, Queue, Scheduler, i18n, MCP-Werkzeugverträge und den Mail-Transportvertrag.
 Geschäftsregeln liegen in App-Services. Allgemeine Fehler wurden in den zuständigen Paketen
 korrigiert. Es gibt keine veränderten Vendor-Kopien.
 
@@ -58,9 +90,12 @@ dauerhafte Queue-Reservierungen und den tatsächlichen Ticker-/CLI-Aufruf.
 | Prüfung | Ergebnis |
 |---|---|
 | Acht geänderte NAF-Pakete | 371 Tests, 833 Assertions erfolgreich, Host-PHP 8.5.4 |
-| App auf MariaDB 11.4 | 28 Integrationsszenarien erfolgreich, Container-PHP 8.5.10 |
-| App auf PostgreSQL 17 | Dieselben 28 Szenarien erfolgreich |
-| Echte HTTP-Anfragen | 28 Prüfungen erfolgreich, getrennte Cookie-Jars und parallele Schreibzugriffe |
+| App auf MariaDB 11.4 | 36 Integrationsszenarien erfolgreich, Container-PHP 8.5.10 |
+| App auf PostgreSQL 17 | Dieselben 36 Szenarien erfolgreich |
+| Echte HTTPS-Anfragen | 42 Prüfungen erfolgreich, getrennte Cookie-Jars und parallele Schreibzugriffe |
+| AI-Transport | Streaming-Paketgrenzen, Unicode, Werkzeugantworten, Fehler, Abbruch, lokale URLs und Speichertrennung erfolgreich |
+| Lokales Ollama | Echte Werkzeugrunde mit `gemma4:e2b`; zusätzlich Chat und Ablehnen einer Schreibaktion im Firefox geprüft |
+| Aktueller Code-Stil | 67 PHP-Dateien nach PER Coding Style 3.0, alle JS-/CSS-Dateien und acht Python-Skripte erfolgreich geprüft |
 | Neue Plugin-Verträge | Private Upload-Grenzen, Limiter und LDAP-Provider mit Fake-Directory erfolgreich |
 | Aktuelle Storage-Paketsuite | Isolierte PHP-8.5.10-Runtime: 123 Tests, 498 Assertions, ein plattformabhängiger Skip; Host-Discovery, DI und Beispiele erfolgreich |
 | Minimaler NAF-Stack | Sieben Plugins gebootet; erforderliche PDO-Bindung auch ohne OAuth vorhanden |
@@ -72,7 +107,7 @@ dauerhafte Queue-Reservierungen und den tatsächlichen Ticker-/CLI-Aufruf.
 | Backup/Restore | 24 Tabellen, drei Konten, neun Tickets und sechs Migrationen in isolierter Restore-DB; private Testdatei mit gleichem Hash |
 | Source-Live-Reload | Zwei Änderungen derselben Framework-Klasse über FPM beobachtet; Reflection zeigt `/workspace/packages/framework` |
 | Download | 64 MiB tatsächlich übertragen, ohne entsprechende Vergrößerung des PHP-Heap-Peaks; Messung mit PHP-Allokationsseiten, kein Nachweis von null Speicherverbrauch |
-| Lokales Runtime-Image | Anmeldung, fünf geschützte Seiten, Fremdprojekt 404 und privater Download erfolgreich; 17 NAF-Pakete, keine Source-Mounts/Vendor-Symlinks |
+| Lokales Runtime-Image | Anmeldung, fünf geschützte Seiten, Fremdprojekt 404 und privater Download erfolgreich; 18 NAF-Pakete, keine Source-Mounts/Vendor-Symlinks |
 | Composer | Manifeste der beteiligten Pakete und der App mit `validate --strict` geprüft |
 
 Die HTTP-Abnahme umfasst Fremdprojekt-IDs, Rollen, CSRF einschließlich manipuliertem
@@ -116,7 +151,7 @@ die OPcache-Zeitstempelprüfung ein. `make first-install` richtet eine fehlende 
 `.env` ein, baut das Image, installiert die lokalen Composer-Verknüpfungen und startet
 die Anwendung über NAF-Migrationen und den wiederholbaren Demo-Seed.
 `make` zeigt alle Befehle; Aufbau und tägliche Bedienung stehen in der README.
-Der neue Ablauf wurde mit `make first-install`, `make test`, `make style-check`
+Der erste Docker-Abnahmelauf wurde mit `make first-install`, `make test`, `make style-check`
 und dem Candidate-Build geprüft. Alle 85 MariaDB-/PostgreSQL-/HTTPS-Szenarien und
 drei Worker-Prüfungen bestanden. `docs/Docker-Evidenz.json` und
 `docs/Tests-Docker-Make.txt` dokumentieren diesen Durchlauf.
@@ -149,15 +184,15 @@ Langlebige Prozesse nach Source-Änderungen mit `make restart-background` neu st
 NAF-Logs werden über einen PSR-3-Adapter an PHP/FPM und die begrenzten Compose-Logs weitergereicht.
 Lokale alte Logdateien werden weder versioniert noch in ein Image kopiert.
 
-`/health/live` prüft den HTTP-Prozess. `/health/ready` prüft PDO, die drei erforderlichen
+`/health/live` prüft den HTTP-Prozess. `/health/ready` prüft PDO, die vier erforderlichen
 App-Migrationen, die Hintergrundtabellen und die Auflösung des AttachmentService mit dem nativen Storage-Datenträger. Worker und Ticker haben eigene Heartbeats.
-Die bisherige Schema-Kennung ist `202609140003`; sechs Migrationen inklusive Plugins sind angewandt.
+Die aktuelle Schema-Kennung ist `202609150001`; sieben Migrationen inklusive Plugins sind angewandt.
 
 `bin/build-candidate` erzeugt einen eingefrorenen lokalen Runtime-Snapshot mit Package-Hashes.
 Er enthält keine Vendor-Symlinks, kein Composer und keine Source-Mounts. Der Builder kontrolliert die vollständige Menge aller benötigten NAF-Pakete.
-Private Daten- und Logverzeichnisse werden ausgeschlossen; gleichnamige Pakete bleiben enthalten.
-Der geprüfte Snapshot `nafinity:candidate` hat **132,32 MiB** (138.750.892 Byte),
-Image-ID `sha256:490135bb5ddb3189248eac7b2c38a8546e303404c99987d1ce85afb447a2a61c`.
+Private Daten-, Logverzeichnisse und generierte PHPStan-/Test-/Formatter-Caches werden ausgeschlossen; gleichnamige Runtime-Pakete bleiben enthalten.
+Der geprüfte Snapshot `nafinity:candidate` hat **118,57 MiB** (124.329.261 Byte),
+Image-ID `sha256:8522c7a37ecd8daefc3ed2125dd63eadcbe73cd198d061e56f03c7caf59db8ba`.
 Anmeldung, fünf geschützte Seiten, Projektisolation und der private Download wurden über
 HTTPS-Port 8445 erfolgreich geprüft. Eingebunden sind das private Datenverzeichnis und die lokalen TLS-Dateien.
 Hashes und Einzelresultate stehen in `docs/Snapshot-Evidenz.json`.
@@ -185,6 +220,7 @@ make test
 make test-down
 ```
 
+`make test-ai` wiederholt die isolierten AI-Transport- und Speicherprüfungen.
 `make test-http` setzt die Testdatenbank vor jedem Aufruf mit `tests/run.php` zurück
 und seedet sie neu, damit Ratelimits und Testzustände nicht aus dem vorigen Lauf übernommen werden.
 Die JSON-Dateien in `docs/` enthalten die einzelnen Szenarien, Messwerte und Runtime-Evidenz.

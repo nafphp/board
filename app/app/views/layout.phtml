@@ -18,6 +18,10 @@ $current = $project['id'] ?? null;
         <title><?= s(t($title ?? 'Board')) ?> · Nafinity</title>
         <link rel="stylesheet" href="/assets/app.css" />
         <script type="module" src="/assets/app.js"></script>
+        <script type="module" src="/assets/settings.js"></script>
+        <script type="module" src="/assets/ai/chat.js"></script>
+        <link rel="stylesheet" href="/assets/settings.css" />
+        <link rel="stylesheet" href="/assets/ai.css" />
     </head>
     <body>
         <div class="app-shell">
@@ -67,7 +71,7 @@ $current = $project['id'] ?? null;
                         <span class="nav-icon">◐</span>
                         <?= s(t('Darstellung wechseln')) ?>
                     </button>
-                    <a class="side-link" href="<?= s(route('preferences')) ?>">
+                    <a class="side-link" href="<?= s($current ? route('project.settings', ['project' => $current]) : route('preferences')) ?>">
                         <span class="nav-icon">⚙</span>
                         <?= s(t('Einstellungen')) ?>
                     </a>
@@ -164,6 +168,7 @@ $current = $project['id'] ?? null;
         <dialog id="ticket-drawer" class="ticket-drawer" aria-label="Ticketdetails">
             <div class="drawer-content"></div>
         </dialog>
+        <?= \Naf\View\view('settings.chat', ['user' => $user, 'projectId' => $current]) ?>
         <div id="toast" class="toast" role="status" aria-live="polite"></div>
     </body>
 </html>

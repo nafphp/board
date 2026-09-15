@@ -186,4 +186,78 @@ ok(status == 429 and int(headers["Retry-After"]) > 0, "login limit returns 429 a
 # Private resources have no web route.
 for path in ["/storage/attachments/test", "/.env", "/composer.json", "/vendor/autoload.php"]:
     ok(alice.request(path)[0] in [403, 404], "webroot protects " + path)
+# Settings and local AI share the native session, CSRF and project policy.
+settings = alice.page("/projects/1/settings")
+ok(
+    all(
+        f'data-settings-open="{card}"' in settings
+        for card in ["personal", "ai", "general", "roles", "users", "column", "swimlane", "label"]
+    ),
+    "Owner settings expose all eight cards",
+)
+viewer_settings = viewer.page("/projects/1/settings")
+ok(
+    'data-settings-open="roles"' in viewer_settings
+    and 'data-settings-open="users"' not in viewer_settings,
+    "Viewer settings show role information without member administration",
+)
+ok("Lokale AI" in alice.page("/preferences"), "Personal settings include local AI")
+ok(Client().request("/ai/tools?project=1")[0] == 401, "AI requires a session")
+ok(bob.request("/ai/tools?project=1")[0] == 404, "AI tools do not leak foreign projects")
+ok(
+    alice.request(
+        "/ai/tools/call", "POST", {"project": 1, "name": "nafinity_board", "arguments": {}}
+    )[0]
+    == 400,
+    "AI calls require CSRF",
+)
+status, body, _ = alice.post(
+    "/projects/1/roles",
+    {"name": "HTTP Redaktion", "description": "Only comments", "permissions": ["comment"]},
+)
+ok(status == 200, "Custom role can be created through HTTP")
+settings = alice.page("/projects/1/settings")
+role_section = settings.split('data-settings-content="roles"', 1)[1]
+role_id = int(re.search(r'name="id" value="([0-9]+)"', role_section)[1])
+ok(
+    alice.post(
+        "/projects/1/members", {"email": "viewer@example.test", "role": f"custom:{role_id}"}
+    )[0]
+    == 200,
+    "Custom role can be assigned through HTTP",
+)
+status, body, _ = viewer.request("/ai/tools?project=1")
+names = [tool["name"] for tool in json.loads(body)["tools"]]
+ok(
+    "nafinity_comment" in names and "nafinity_ticket_create" not in names,
+    "AI catalog follows custom role permissions",
+)
+ok(
+    alice.post(
+        "/projects/1/roles",
+        {
+            "id": role_id,
+            "version": 1,
+            "name": "HTTP Redaktion",
+            "description": "Read only",
+            "permissions": [],
+        },
+    )[0]
+    == 200,
+    "Role permissions can be revoked through HTTP",
+)
+status, body, _ = viewer.request("/ai/tools?project=1")
+ok(
+    "nafinity_comment" not in [tool["name"] for tool in json.loads(body)["tools"]],
+    "AI rechecks revoked rights without logging in again",
+)
+ok(
+    alice.post("/projects/1/members", {"email": "viewer@example.test", "role": "viewer"})[0] == 200,
+    "Member can return to a standard role",
+)
+ok(
+    alice.post("/projects/1/roles", {"id": role_id, "version": 2, "action": "delete"})[0] == 200,
+    "Unassigned role can be deleted through HTTP",
+)
+
 print(json.dumps({"passed": len(results), "tests": results}, indent=2))
