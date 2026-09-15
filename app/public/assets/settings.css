@@ -44,7 +44,7 @@
   background: var(--surface);
   color: var(--text);
   text-align: left;
-  cursor: pointer;
+  cursor: var(--cursor-pointer, pointer);
   box-shadow: 0 3px 12px #17223b03;
   transition:
     transform 0.22s,
@@ -191,7 +191,7 @@
 }
 .role-defaults summary,
 .role-editor summary {
-  cursor: pointer;
+  cursor: var(--cursor-pointer, pointer);
   font-size: 14px;
 }
 .role-defaults .badge {

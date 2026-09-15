@@ -1,0 +1,47 @@
+/* Native cursor images keep the hotspot exact, including inside modal dialogs. */
+@media (hover: hover) and (pointer: fine) and (forced-colors: none) {
+  :root {
+    --cursor-default: url('cursors/arrow-light.svg?v=2') 5 5, auto;
+    --cursor-pointer: url('cursors/arrow-light-active.svg?v=2') 5 5, pointer;
+  }
+
+  html[data-theme='dark'] {
+    --cursor-default: url('cursors/arrow-dark.svg?v=2') 5 5, auto;
+    --cursor-pointer: url('cursors/arrow-dark-active.svg?v=2') 5 5, pointer;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html[data-theme='system'] {
+      --cursor-default: url('cursors/arrow-dark.svg?v=2') 5 5, auto;
+      --cursor-pointer: url('cursors/arrow-dark-active.svg?v=2') 5 5, pointer;
+    }
+  }
+}
+
+body {
+  cursor: var(--cursor-default, auto);
+}
+
+body a[href],
+body button:enabled,
+body summary:not([aria-disabled='true']),
+input[type='checkbox']:enabled,
+input[type='radio']:enabled,
+input[type='button']:enabled,
+input[type='submit']:enabled,
+[role='button']:not([aria-disabled='true']) {
+  cursor: var(--cursor-pointer, pointer);
+}
+
+input:not([type]):enabled,
+input[type='text']:enabled,
+input[type='email']:enabled,
+input[type='password']:enabled,
+input[type='search']:enabled,
+input[type='tel']:enabled,
+input[type='url']:enabled,
+input[type='number']:enabled,
+textarea:enabled,
+[contenteditable]:not([contenteditable='false']) {
+  cursor: text;
+}

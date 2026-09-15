@@ -82,7 +82,7 @@ summary {
   -webkit-tap-highlight-color: transparent;
 }
 button {
-  cursor: pointer;
+  cursor: var(--cursor-pointer, pointer);
 }
 button:disabled {
   opacity: 0.55;
@@ -571,7 +571,7 @@ small,
   padding: 8px 11px;
   border-radius: 7px;
   background: var(--surface);
-  cursor: pointer;
+  cursor: var(--cursor-pointer, pointer);
 }
 .extra-filters > div {
   position: absolute;
@@ -1103,7 +1103,7 @@ fieldset:disabled select {
   margin: 7px 0;
 }
 .comment summary {
-  cursor: pointer;
+  cursor: var(--cursor-pointer, pointer);
 }
 .activity-list {
   list-style: none;

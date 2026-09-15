@@ -20,6 +20,16 @@ Die Demo enthält keine echten Kundendaten.
 
 ## Settings und lokale AI
 
+Der Source-Prototyp verwendet außerdem einen eigenen, abgerundeten Kontur-Cursor mit
+violetter Hervorhebung über klickbaren Elementen. Vier SVGs mit jeweils 28 × 28 Pixeln passen ihn an helle
+und dunkle Darstellung an. Native CSS-Cursor behalten den präzisen Klickpunkt auch in
+Dialogen; Textfelder, Ziehen und Wartezustände verwenden weiterhin die passenden Cursor.
+Touch-Geräte und erzwungene Systemfarben erhalten die Browser-Standards. Es gibt keinen
+zusätzlichen JavaScript-Prozess für Mausbewegungen. SVGs und CSS wurden über verifiziertes
+HTTPS geprüft. Firefox bestätigt den Kontur-Cursor für Flächen, die violette Variante für
+Buttons und Links sowie den Textcursor in Eingabefeldern. Der dokumentierte Runtime-Snapshot
+unten stammt noch aus der Settings-/AI-Abnahme.
+
 Die neue Settings-Seite bündelt persönliche und projektbezogene Einstellungen in acht
 kompakten Karten. Beim Öffnen und Schließen animiert der Dialog zwischen Karte und
 Inhalt; X, Escape, Fokus-Rückgabe und reduzierte Bewegung sind berücksichtigt.
