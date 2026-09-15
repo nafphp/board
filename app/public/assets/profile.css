@@ -113,6 +113,51 @@
   font-size: 13px;
   margin: 0 0 22px;
 }
+.profile-memberships {
+  margin-bottom: 16px;
+}
+.profile-memberships h3 {
+  margin: 0 0 7px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.profile-memberships ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 150px;
+  overflow: auto;
+  scrollbar-width: thin;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.profile-memberships li + li {
+  border-top: 1px solid var(--line);
+}
+.profile-memberships a {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 9px 13px;
+  font-size: 12px;
+  transition: background 0.18s;
+}
+.profile-memberships a:hover {
+  background: var(--hover);
+}
+.profile-memberships span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.profile-memberships strong {
+  max-width: 50%;
+  overflow-wrap: anywhere;
+  text-align: right;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 550;
+}
 .profile-account-line {
   display: flex;
   align-items: center;

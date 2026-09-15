@@ -26,13 +26,16 @@ $priorityLabels = [
     'low'    => t('Niedrig'),
 ];
 $prioritySymbols = ['urgent' => '↑↑', 'high' => '↑', 'normal' => '−', 'low' => '↓'];
-$boardHint       = $canWrite
-    ? t('Karten ziehen oder über das Menü verschieben')
-    : 'Du hast Lesezugriff auf dieses Board';
-
-if ($filters) {
-    $boardHint = 'Gefilterte Ansicht · Verschieben über das Kartenmenü';
-}
+$boardHint       = match (true) {
+    $project['archived_at'] !== null => t('Archiviertes Projekt · Tickets können gelesen, aber nicht geändert werden'),
+    !$canWrite                       => t('Du hast Lesezugriff auf dieses Board'),
+    (bool) $filters                  => t('Gefilterte Ansicht · Verschieben über das Kartenmenü'),
+    $isLimited                       => t('Begrenzte Ansicht · Verschieben über das Kartenmenü'),
+    default                          => t('Karten ziehen oder über das Menü verschieben'),
+};
+$emptyCellHint = $filters
+    ? t('Keine Treffer mit diesen Filtern')
+    : t('Keine Tickets in diesem Bereich');
 ?>
 <section class="page-heading">
     <div>
@@ -69,7 +72,7 @@ if ($filters) {
         <a href="<?= s(route('project.settings', ['project' => $projectId])) ?>">⚙ &nbsp; Einstellungen</a>
     <?php endif ?>
     <div class="tabs-spacer"></div>
-    <span class="role-badge"><?= s($scope->roleName ?? ucfirst($scope->role)) ?></span>
+    <span class="role-badge" title="<?= s($scope->roleName ?? ucfirst($scope->role)) ?>"><?= s($scope->roleName ?? ucfirst($scope->role)) ?></span>
 </nav>
 <form method="get" class="filterbar" action="<?= s(route('board', ['project' => $projectId])) ?>">
     <label class="search-field">
@@ -141,7 +144,7 @@ if ($filters) {
         <strong><?= $total ?></strong>
         Tickets · <?= count($swimlanes) ?> Swimlanes
     </span>
-    <span><?= $boardHint ?></span>
+    <span><?= s($boardHint) ?></span>
 </div>
 <div id="board-update" class="update-banner" hidden>
     Es gibt Änderungen im Projekt.
@@ -255,8 +258,8 @@ if ($filters) {
                         <?php endforeach ?>
                         <?php if (!$cell): ?>
                             <div class="empty-cell">
-                                <span>＋</span>
-                                <small><?= s(t('Raum für den nächsten Schritt')) ?></small>
+                                <span aria-hidden="true">—</span>
+                                <small><?= s($emptyCellHint) ?></small>
                             </div>
                         <?php endif ?>
                     </div>

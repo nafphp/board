@@ -1,5 +1,5 @@
 <?php
-
+use function Naf\I18n\t;
 use function Naf\View\s;
 
 ?>
@@ -9,14 +9,14 @@ use function Naf\View\s;
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <title><?= (int) $status ?> · Nafinity</title>
-        <link rel="stylesheet" href="/assets/app.css" />
+        <link rel="stylesheet" href="/assets/app.css?v=2" />
     </head>
     <body>
         <main class="error-page">
             <span class="brand-symbol">∞</span>
             <span class="eyebrow"><?= (int) $status ?></span>
             <h1><?= s($message) ?></h1>
-            <p>Gehe zurück zu deinen Projekten und versuche es erneut.</p>
+            <p><?= s(t('Öffne deine Projektübersicht oder kehre zur vorherigen Seite zurück.')) ?></p>
             <a class="button primary" href="/projects">Zu meinen Projekten →</a>
         </main>
     </body>

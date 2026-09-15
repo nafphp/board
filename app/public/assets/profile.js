@@ -6,6 +6,7 @@ if (dialog) {
   const content = dialog.querySelector('[data-profile-content]');
   const retry = dialog.querySelector('[data-profile-retry]');
   const forms = [...dialog.querySelectorAll('[data-profile-form]')];
+  const triggers = [...document.querySelectorAll('[data-profile-open]')];
   let opener;
   let busy = false;
   let closing = false;
@@ -86,11 +87,12 @@ if (dialog) {
     closing = false;
   }
 
-  document.querySelectorAll('[data-profile-open]').forEach((button) => {
+  triggers.forEach((button) => {
     button.addEventListener('click', () => {
       if (dialog.open) return;
       opener = button;
       dialog.showModal();
+      triggers.forEach((trigger) => trigger.setAttribute('aria-expanded', 'true'));
       document.body.classList.add('profile-open');
       if (!reducedMotion.matches) {
         dialog.animate(
@@ -125,6 +127,7 @@ if (dialog) {
     backdropPress = false;
   });
   dialog.addEventListener('close', () => {
+    triggers.forEach((trigger) => trigger.setAttribute('aria-expanded', 'false'));
     document.body.classList.remove('profile-open');
     loadController?.abort();
     clearSecrets();

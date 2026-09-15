@@ -2,6 +2,7 @@
 use App\Domain\ProjectPermissions;
 
 use function Naf\Form\csrf;
+use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
 use function Naf\View\view;
@@ -30,7 +31,10 @@ if ($projectId !== null) {
     if ($scope->allows('manage') || $scope->allows('restore')) {
         $cards[] = ['general', 'Allgemein', 'Name, Farbe & Projektstatus', 'sliders', 'settings.project', []];
     }
-    $cards[] = ['roles', 'Rollen & Rechte', 'Verantwortung im Team gestalten', 'shield', 'settings.roles', []];
+    $rolesDescription = $scope->allows('roles')
+        ? t('Rechte prüfen und eigene Rollen verwalten')
+        : t('Rechte der Projektrollen ansehen');
+    $cards[] = ['roles', 'Rollen & Rechte', $rolesDescription, 'shield', 'settings.roles', []];
     if ($scope->allows('members')) {
         $cards[] = ['users', 'Benutzer', count($members) . ' Personen in diesem Projekt', 'users', 'settings.members', []];
     }
@@ -64,9 +68,9 @@ $icons = [
 ?>
 <section class="page-heading settings-heading">
     <div>
-        <span class="eyebrow">DEIN RAUM FÜR FEINABSTIMMUNG</span>
+        <span class="eyebrow"><?= s(t($projectId ? 'KONTO & PROJEKT' : 'DEIN KONTO')) ?></span>
         <h1>Einstellungen</h1>
-        <p>Alles an seinem Platz. Und so, wie es für euch passt.</p>
+        <p><?= s(t('Öffne eine Karte für die zugehörigen Einstellungen.')) ?></p>
     </div>
     <?php if ($projectId): ?>
         <a class="button subtle" href="<?= s(route('board', ['project' => $projectId])) ?>">← Zum Board</a>

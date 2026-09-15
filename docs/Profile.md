@@ -1,9 +1,11 @@
 # Eigenes Profil
 
-Der Avatar oben rechts und das Profil-Symbol in der Seitenleiste öffnen denselben
-Dialog. Im Header stehen Name und die Rolle im aktuell geöffneten Projekt, auch bei
-selbst angelegten Rollen. Außerhalb eines Projekts erscheint „Benutzer · Persönliches
-Konto“. Das Modal enthält Passwortwechsel, E-Mail-Wechsel und den Logout.
+Der Avatar oben rechts und die gesamte Nutzerkarte unten in der Seitenleiste öffnen
+denselben Dialog. Name, Avatar und Pfeil sind eine gemeinsame Schaltfläche, auch per
+Tastatur bedienbar. In der Karte und der Kopfzeile steht die Rolle im aktuellen Projekt,
+einschließlich selbst angelegter Rollen. Außerhalb eines Projekts erscheint „Persönliches
+Konto“, da Rollen projektbezogen sind. Das Modal zeigt die zugewiesenen Projektrollen
+mit Links zu den jeweiligen Boards sowie Passwortwechsel, E-Mail-Wechsel und Logout.
 
 Der native HTML-Dialog hält den Tastaturfokus. X, Escape und ein Klick auf den Hintergrund
 schließen ihn und geben den Fokus an den Auslöser zurück. Öffnen/Schließen animieren

@@ -1,15 +1,15 @@
 <?php
-
+use function Naf\I18n\t;
 use function Naf\View\s;
 
 $suggestions = $projectId ? [
     ['Board überblicken', 'Gib mir einen kurzen Überblick über dieses Board.', 'M4 5h6v14H4zM14 5h6v9h-6z'],
-    ['Nächsten Schritt finden', 'Welche offenen Aufgaben sollte ich als Nächstes angehen? Lies dafür zuerst das Board.', 'm5 12 4 4L19 6M5 5h4M15 19h4'],
+    ['Offene Aufgaben prüfen', 'Welche offenen Aufgaben sollte ich als Nächstes angehen? Lies dafür zuerst das Board.', 'm5 12 4 4L19 6M5 5h4M15 19h4'],
     ['Eine Idee ausarbeiten', 'Hilf mir, eine neue Idee als Aufgabe zu formulieren.', 'M9 18h6m-5 3h4M8 14a6 6 0 1 1 8 0c-1 1-1 2-1 2H9s0-1-1-2'],
 ] : [
     ['Projekte überblicken', 'Zeige mir einen kurzen Überblick über meine Projekte.', 'M4 5h6v14H4zM14 5h6v9h-6z'],
     ['Gedanken sortieren', 'Hilf mir, meine Gedanken zu einer neuen Idee zu ordnen.', 'M5 6h14M5 12h10M5 18h6'],
-    ['Den nächsten Schritt planen', 'Hilf mir, einen konkreten nächsten Schritt für meine Arbeit zu planen.', 'm5 12 4 4L19 6M5 5h4M15 19h4'],
+    ['Eine Aufgabe planen', 'Hilf mir, einen konkreten nächsten Schritt für meine Arbeit zu planen.', 'm5 12 4 4L19 6M5 5h4M15 19h4'],
 ];
 ?>
 <aside
@@ -52,7 +52,7 @@ $suggestions = $projectId ? [
                 </span>
                 <div class="ai-heading">
                     <strong id="ai-title">Nafinity <span>AI</span></strong>
-                    <small><?= $projectId ? 'An deiner Seite im Projekt' : 'Raum für deinen nächsten Schritt' ?></small>
+                    <small><?= s(t($projectId ? 'Fragen und Aufgaben zum Board' : 'Fragen zu deinen Projekten')) ?></small>
                 </div>
                 <nav class="ai-toolbar" aria-label="Chat-Aktionen">
                     <button type="button" class="ai-icon-button" data-ai-new aria-label="Neuen Chat beginnen" title="Neuer Chat">
@@ -113,14 +113,14 @@ $suggestions = $projectId ? [
                     <path d="m26 3 1.2 2.8L30 7l-2.8 1.2L26 11l-1.2-2.8L22 7l2.8-1.2L26 3Z" />
                 </svg>
             </div>
-            <span class="ai-welcome-eyebrow">GEMEINSAM WEITERDENKEN</span>
-            <h2>Ein guter nächster Schritt.</h2>
-            <p><?= $projectId ? 'Dein Board verstehen. Ideen sortieren. Etwas voranbringen.' : 'Ideen sortieren, Projekte überblicken oder einfach losfragen.' ?></p>
+            <span class="ai-welcome-eyebrow"><?= s(t('LOKALER ASSISTENT')) ?></span>
+            <h2><?= s(t($projectId ? 'Fragen zu deinem Board' : 'Fragen zu deinen Projekten')) ?></h2>
+            <p><?= s(t($projectId ? 'Frage nach offenen Tickets, prüfe Zuständigkeiten oder bereite eine neue Aufgabe vor.' : 'Lass dir deine Projekte anzeigen oder beschreibe eine Aufgabe, bei der du Unterstützung brauchst.')) ?></p>
             <div class="ai-suggestions" aria-label="Ideen für deine Nachricht">
                 <?php foreach ($suggestions as [$label, $prompt, $icon]): ?>
                     <button type="button" class="ai-suggestion" data-ai-prompt="<?= s($prompt) ?>">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="<?= s($icon) ?>" /></svg>
-                        <span><?= s($label) ?></span>
+                        <span><?= s(t($label)) ?></span>
                         <span class="ai-suggestion-arrow" aria-hidden="true">↗</span>
                     </button>
                 <?php endforeach ?>

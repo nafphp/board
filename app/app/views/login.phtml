@@ -12,7 +12,7 @@ use function Naf\View\s;
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <title>Anmelden · Nafinity</title>
-        <link rel="stylesheet" href="/assets/app.css" />
+        <link rel="stylesheet" href="/assets/app.css?v=2" />
         <script type="module" src="/assets/app.js"></script>
     </head>
     <body class="login-body">
@@ -23,16 +23,16 @@ use function Naf\View\s;
                 <span class="brand-dot"></span>
             </a>
             <div class="login-message">
-                <span class="eyebrow"><?= s(t('IDEEN WERDEN FORTSCHRITT')) ?></span>
+                <span class="eyebrow"><?= s(t('PROJEKTVERWALTUNG')) ?></span>
                 <h1>
-                    <?= s(t('Ein klarer Kopf.')) ?>
+                    <?= s(t('Projekte überblicken.')) ?>
                     <br />
-                    <?= s(t('Ein gemeinsames Board.')) ?>
+                    <?= s(t('Aufgaben organisieren.')) ?>
                 </h1>
                 <p>
-                    <?= s(t('Alles, was dein Team weiterbringt.')) ?>
+                    <?= s(t('Tickets, Zuständigkeiten und Termine.')) ?>
                     <br />
-                    <?= s(t('Mit Raum für das Wesentliche.')) ?>
+                    <?= s(t('Für jedes Projekt in einem Board.')) ?>
                 </p>
                 <div class="orbit-art" aria-hidden="true">
                     <span>∞</span>
@@ -44,9 +44,9 @@ use function Naf\View\s;
         </div>
         <main class="login-panel">
             <div class="login-card">
-                <span class="eyebrow"><?= s(t('SCHÖN, DASS DU DA BIST')) ?></span>
+                <span class="eyebrow"><?= s(t('ANMELDUNG')) ?></span>
                 <h2><?= s(t('Willkommen zurück.')) ?></h2>
-                <p class="muted"><?= s(t('Melde dich an und mach den nächsten Schritt.')) ?></p>
+                <p class="muted"><?= s(t('Melde dich mit deinem Konto an, um deine Projekte zu öffnen.')) ?></p>
                 <?php if ($notice ?? null): ?>
                     <p class="demo-note" role="status"><?= s($notice) ?></p>
                 <?php endif ?>

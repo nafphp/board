@@ -1,5 +1,6 @@
 <?php
 
+use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
 
@@ -14,7 +15,9 @@ use function Naf\View\s;
         <div class="profile-role">
             <span class="profile-role-dot"></span>
             <?= s($roleName) ?>
-            <span><?= s($projectName ? 'in ' . $projectName : 'Persönliches Konto') ?></span>
+            <?php if ($projectName): ?>
+                <span><?= s(t('in :project', ['project' => $projectName])) ?></span>
+            <?php endif ?>
         </div>
         <button
             type="button"
@@ -35,7 +38,22 @@ use function Naf\View\s;
         </div>
     </header>
     <div class="profile-body">
-        <p id="profile-description" class="profile-intro">Dein Konto. Alles an einem Ort.</p>
+        <p id="profile-description" class="profile-intro"><?= s(t('Verwalte deine Anmeldung und sieh deine Rollen in den Projekten.')) ?></p>
+        <?php if ($projects): ?>
+            <section class="profile-memberships" aria-labelledby="profile-projects-title">
+                <h3 id="profile-projects-title"><?= s(t('Deine Projektrollen')) ?></h3>
+                <ul>
+                    <?php foreach ($projects as $membership): ?>
+                        <li>
+                            <a href="<?= s(route('board', ['project' => $membership['id']])) ?>">
+                                <span><?= s($membership['name']) ?><?= $membership['archived_at'] ? ' · ' . s(t('Archiviert')) : '' ?></span>
+                                <strong><?= s($membership['role']) ?></strong>
+                            </a>
+                        </li>
+                    <?php endforeach ?>
+                </ul>
+            </section>
+        <?php endif ?>
         <p class="profile-notice" data-profile-status role="status" aria-live="polite">
             Kontoeinstellungen werden geladen …
         </p>
@@ -137,7 +155,7 @@ use function Naf\View\s;
                     </div>
                     <div data-profile-email-pending hidden>
                         <div class="profile-verification">
-                            <span class="profile-step">NOCH EIN SCHRITT</span>
+                            <span class="profile-step"><?= s(t('E-MAIL BESTÄTIGEN')) ?></span>
                             <p>Dein Code ist unterwegs an <strong data-profile-pending-email></strong>.</p>
                             <small>
                                 Gültig bis <time data-profile-expiry></time>.
@@ -183,7 +201,7 @@ use function Naf\View\s;
         </div>
     </div>
     <footer class="profile-footer">
-        <span><span class="profile-presence"></span>Schön, dass du da bist.</span>
+        <span><?= s(t('Abmelden beendet diese Sitzung.')) ?></span>
         <form method="post" action="<?= s(route('logout')) ?>">
             <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
             <button type="submit" class="button subtle profile-logout">

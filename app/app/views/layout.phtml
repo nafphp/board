@@ -5,9 +5,20 @@ use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
 
-$profile = $user->getProfile();
-$token   = csrf()->token();
-$current = $project['id'] ?? null;
+$profile  = $user->getProfile();
+$token    = csrf()->token();
+$current  = $project['id'] ?? null;
+$roleName = isset($scope)
+    ? ($scope->roleName ?? ucfirst($scope->role))
+    : t('Persönliches Konto');
+$roleContext = $current ? $roleName . ' · ' . $project['name'] : $roleName;
+$hintTitle   = $current ? t('Deine Projektrechte') : t('Projekt auswählen');
+$hintText    = $current
+    ? t('Rechte deiner Rolle im Projekt ansehen.')
+    : t('Öffne ein Projekt, um seine Tickets und den Verlauf zu sehen.');
+$hintUrl = $current
+    ? route('project.settings', ['project' => $current]) . '#roles'
+    : route('projects');
 ?>
 <!doctype html>
 <html lang="<?= s($preferences['locale']) ?>" data-theme="<?= s($preferences['theme'] ?? 'system') ?>">
@@ -16,11 +27,11 @@ $current = $project['id'] ?? null;
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <meta name="csrf-token" content="<?= s($token) ?>" />
         <title><?= s(t($title ?? 'Board')) ?> · Nafinity</title>
-        <link rel="stylesheet" href="/assets/app.css" />
+        <link rel="stylesheet" href="/assets/app.css?v=2" />
         <script type="module" src="/assets/app.js"></script>
         <script type="module" src="/assets/settings.js"></script>
-        <script type="module" src="/assets/profile.js"></script>
-        <link rel="stylesheet" href="/assets/profile.css" />
+        <script type="module" src="/assets/profile.js?v=2"></script>
+        <link rel="stylesheet" href="/assets/profile.css?v=2" />
         <script type="module" src="/assets/ai/chat.js?v=2"></script>
         <link rel="stylesheet" href="/assets/settings.css" />
         <link rel="stylesheet" href="/assets/ai.css?v=2" />
@@ -64,11 +75,11 @@ $current = $project['id'] ?? null;
                         </a>
                     <?php endforeach ?>
                 </nav>
-                <div class="sidebar-note">
-                    <span class="mini-orbit">◌</span>
-                    <strong><?= s(t('Raum für den nächsten Schritt.')) ?></strong>
-                    <p><?= s(t('Ideen festhalten. Gemeinsam weiterbringen.')) ?></p>
-                </div>
+                <a class="sidebar-note" href="<?= s($hintUrl) ?>">
+                    <span class="mini-orbit" aria-hidden="true">ⓘ</span>
+                    <strong><?= s($hintTitle) ?></strong>
+                    <p><?= s($hintText) ?></p>
+                </a>
                 <div class="sidebar-bottom">
                     <button class="side-link theme-toggle" type="button">
                         <span class="nav-icon">◐</span>
@@ -78,17 +89,20 @@ $current = $project['id'] ?? null;
                         <span class="nav-icon">⚙</span>
                         <?= s(t('Einstellungen')) ?>
                     </a>
-                    <div class="user-row">
-                        <span class="avatar"><?= s(mb_substr($profile->name ?? 'U', 0, 1)) ?></span>
-                        <div>
+                    <button type="button" class="user-row" data-profile-open
+                        aria-label="<?= s(t('Mein Profil öffnen')) ?>" aria-haspopup="dialog"
+                        aria-controls="profile-dialog" aria-expanded="false"
+                        title="<?= s(t('Profil und Kontoeinstellungen öffnen')) ?>">
+                        <span class="avatar" aria-hidden="true"><?= s(mb_substr($profile->name ?? 'U', 0, 1)) ?></span>
+                        <span class="user-identity">
                             <strong><?= s($profile->name) ?></strong>
-                            <small>Powered by NAF</small>
-                        </div>
-                        <button type="button" class="icon-button" data-profile-open
-                            aria-label="Mein Profil" aria-haspopup="dialog" aria-controls="profile-dialog">
-                            ···
-                        </button>
-                    </div>
+                            <small title="<?= s($roleContext) ?>"><?= s($roleName) ?></small>
+                        </span>
+                        <svg class="user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="m7 14 5-5 5 5" />
+                        </svg>
+                    </button>
                 </div>
             </aside>
             <div class="main-shell">
@@ -106,12 +120,16 @@ $current = $project['id'] ?? null;
                         <strong><?= s($project['name'] ?? 'Nafinity') ?></strong>
                     </div>
                     <div class="topbar-right">
-                        <span class="local-status">
-                            <i></i>
-                            <?= s(t('Gemeinsam voran')) ?>
+                        <span class="account-role" title="<?= s($roleContext) ?>">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="m12 3 8 4v5c0 5-8 9-8 9s-8-4-8-9V7l8-4Z" />
+                            </svg>
+                            <span><?= s($roleName) ?></span>
                         </span>
                         <button type="button" class="avatar avatar-small profile-trigger" data-profile-open
-                            aria-label="Mein Profil" aria-haspopup="dialog" aria-controls="profile-dialog">
+                            aria-label="<?= s(t('Mein Profil öffnen')) ?>" aria-haspopup="dialog"
+                            aria-controls="profile-dialog" aria-expanded="false">
                             <?= s(mb_substr($profile->name ?? 'U', 0, 1)) ?>
                         </button>
                     </div>
@@ -122,14 +140,15 @@ $current = $project['id'] ?? null;
         <?= \Naf\View\view('profile.modal', [
             'profile'     => $profile,
             'token'       => $token,
-            'roleName'    => $scope->roleName ?? 'Benutzer',
+            'roleName'    => $roleName,
             'projectName' => $project['name'] ?? null,
+            'projects'    => $projects,
         ]) ?>
         <dialog id="new-project" class="modal">
             <form method="post" action="<?= s(route('projects.create')) ?>" data-enhanced>
                 <div class="dialog-heading">
                     <div>
-                        <span class="eyebrow">ETWAS NEUES BEGINNT</span>
+                        <span class="eyebrow"><?= s(t('PROJEKT ANLEGEN')) ?></span>
                         <h2>Neues Projekt</h2>
                     </div>
                     <button
@@ -144,14 +163,14 @@ $current = $project['id'] ?? null;
                 <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
                 <label>
                     <?= s(t('Name')) ?>
-                    <input name="name" required maxlength="120" placeholder="Woran arbeitet ihr?" />
+                    <input name="name" required maxlength="120" placeholder="<?= s(t('Zum Beispiel: Website-Relaunch')) ?>" />
                 </label>
                 <label>
                     <?= s(t('Beschreibung')) ?>
                     <textarea
                         name="description"
                         rows="3"
-                        placeholder="Ein gemeinsames Ziel, ein klarer Anfang."
+                        placeholder="<?= s(t('Was gehört zu diesem Projekt und welches Ziel verfolgt ihr?')) ?>"
                     ></textarea>
                 </label>
                 <div class="form-grid">

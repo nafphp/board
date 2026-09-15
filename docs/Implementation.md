@@ -29,9 +29,38 @@ gehen an die bisherige Adresse, lokal über Mailpit auf http://localhost:8025.
 [Profile.md](Profile.md) beschreibt Bedienung, Architektur und Grenzen;
 [Profile-Evidenz.json](Profile-Evidenz.json) enthält die aktuellen Prüfergebnisse.
 174 Datenbank-/HTTPS-/Worker-Prüfungen, beide AI-Suites und alle Stilprüfungen sind grün.
-Die visuelle Abnahme des neuen Modals ist noch offen: Firefox ist auf dem gesperrten Mac
+Die direkte Abnahme im angemeldeten Firefox ist noch offen: Firefox ist auf dem gesperrten Mac
 nicht steuerbar; der interne Browser meldet weiterhin einen Zertifikatsfehler. Diese
 Zertifikatswarnung wurde nicht umgangen. Die HTTPS-Tests verwenden die lokale CA regulär.
+
+### Nutzerkarte, Rollenanzeige und Bedienhinweise
+
+Die gesamte Nutzerkarte am unteren Rand der Seitenleiste öffnet das native Profil-Modal.
+Beide Auslöser teilen dessen Öffnungszustand und geben beim Schließen den Fokus zurück.
+Die Karte und die Kopfzeile zeigen `ProjectScope::roleName`; ohne Projektkontext steht
+„Persönliches Konto“. Im Modal sind die eigenen Projektrollen aus der bereits autorisierten
+Projektabfrage verlinkt. Der frühere Spruch in der Seitenleiste führt jetzt direkt zur
+Settings-Karte „Rollen & Rechte“ beziehungsweise zur Projektauswahl.
+
+Anmeldung, Projekte, Board, Ticketformular, Benachrichtigungen, Settings, Profil und AI-Chat
+verwenden konkrete Hinweise statt allgemeiner Motivationssätze. Die neuen Texte nutzen
+NAFs i18n-Kataloge. Board-Hinweise berücksichtigen Lesezugriff, Filter, Ergebnislimit und
+Archivierung. Leere Zellen nennen ihren Zustand und enthalten kein funktionsloses Plus.
+Lange Rollennamen werden in kompakten Anzeigen begrenzt; die Seitenleiste scrollt bei wenig Höhe.
+
+11 lokale HTTPS-Prüfungen mit eigenen temporären Sitzungen sind grün: sieben Seiten mit
+Owner-Rolle beziehungsweise persönlichem Kontext, Profilabfrage, gefilterter Viewer-Zugriff,
+Abmelden der Testsitzungen und identische CSS-/JS-Auslieferung. Keine Kontodaten, Rollen oder
+Projektinhalte wurden dabei geändert. Acht synthetische NAF-Ansichten ergänzen die Prüfung,
+unter anderem eigene Rollen, archivierte Projekte und Englisch. Stil- und JavaScript-Prüfung
+sind grün.
+
+Die isolierte Browser-Vorschau bestätigt die Nutzerkarte, X/Escape und Fokus-Rückgabe,
+den Direktlink zum Rollen-Dialog sowie helle/dunkle Darstellung. Bei 390 × 844 und
+320 × 568 Pixeln bleiben Profil und Seitenleiste bedienbar; die Seite läuft auch mit
+langem Rollennamen nicht horizontal über. [Bedienung-UI-Evidenz.json](Bedienung-UI-Evidenz.json)
+trennt diese Vorschau von der noch offenen Firefox-Abnahme. Die Änderungen gelten für
+Source-Betrieb; der frühere Candidate wurde für diese UI-Runde nicht neu gebaut.
 
 ## Settings und lokale AI
 

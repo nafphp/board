@@ -30,7 +30,7 @@ $row       = $ticket ?? ['title' => '', 'description' => '', 'priority' => 'norm
     </div>
     <div class="ticket-detail-grid">
         <section>
-            <span class="eyebrow"><?= $isNew ? t('VOM GEDANKEN ZUM NÄCHSTEN SCHRITT') : s(strtoupper($ticket['status'] === 'closed' ? t('Geschlossen') : t('Offen'))) ?></span>
+            <span class="eyebrow"><?= $isNew ? s(t('AUFGABE ANLEGEN')) : s(strtoupper($ticket['status'] === 'closed' ? t('Geschlossen') : t('Offen'))) ?></span>
             <form method="post" action="<?= s($isNew ? route('ticket.create', ['project' => $projectId]) : route('ticket.update', ['project' => $projectId, 'ticket' => $ticket['id']])) ?>" data-enhanced>
                 <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
                 <input type="hidden" name="board_revision" value="<?= (int) $board['revision'] ?>" />
@@ -46,7 +46,7 @@ $row       = $ticket ?? ['title' => '', 'description' => '', 'priority' => 'norm
                         required
                         maxlength="200"
                         value="<?= s($row['title']) ?>"
-                        placeholder="<?= s(t('Was möchtest du voranbringen?')) ?>"
+                        placeholder="<?= s(t('Zum Beispiel: Anmeldung für neue Mitglieder testen')) ?>"
                     />
                     <label>
                         <?= s(t('Beschreibung')) ?>
@@ -54,7 +54,7 @@ $row       = $ticket ?? ['title' => '', 'description' => '', 'priority' => 'norm
                             name="description"
                             rows="6"
                             maxlength="50000"
-                            placeholder="<?= s(t('Kontext, Ideen und alles, was hilft.')) ?>"
+                            placeholder="<?= s(t('Was soll erledigt werden? Beschreibe das Ziel und wann die Aufgabe fertig ist.')) ?>"
                         ><?= s($row['description']) ?></textarea>
                     </label>
                     <div class="form-grid">
@@ -237,7 +237,7 @@ $row       = $ticket ?? ['title' => '', 'description' => '', 'priority' => 'norm
                                 name="body"
                                 rows="3"
                                 required
-                                placeholder="<?= s(t('Teile ein Update oder eine Idee …')) ?>"
+                                placeholder="<?= s(t('Fortschritt, Rückfrage oder Entscheidung festhalten …')) ?>"
                             ></textarea>
                             <div class="form-errors" role="alert"></div>
                             <button class="button subtle"><?= s(t('Kommentar hinzufügen')) ?></button>
@@ -300,8 +300,8 @@ $row       = $ticket ?? ['title' => '', 'description' => '', 'priority' => 'norm
             <?php else: ?>
                 <div class="context-card tip-card">
                     <span>✦</span>
-                    <h2><?= s(t('Klarheit hilft allen.')) ?></h2>
-                    <p><?= s(t('Ein konkreter Titel und etwas Kontext machen aus einer Idee einen guten nächsten Schritt.')) ?></p>
+                    <h2><?= s(t('Aufgabe klar beschreiben')) ?></h2>
+                    <p><?= s(t('Notiere das gewünschte Ergebnis. Ergänze bei Bedarf Zuständigkeit, Priorität und Termin.')) ?></p>
                 </div>
             <?php endif ?>
         </aside>

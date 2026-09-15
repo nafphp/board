@@ -9,9 +9,9 @@ $this->block('content');
 ?>
 <section class="page-heading">
     <div>
-        <span class="eyebrow">EIN GEMEINSAMER ANFANG</span>
+        <span class="eyebrow"><?= s(t('PROJEKTÜBERSICHT')) ?></span>
         <h1><?= s(t('Deine Projekte')) ?></h1>
-        <p>Jedes Team hat seinen eigenen Raum.</p>
+        <p><?= s(t('Öffne ein Projekt, um Tickets, Zuständigkeiten und Termine zu sehen.')) ?></p>
     </div>
     <button class="button primary" data-dialog="new-project">+ Neues Projekt</button>
 </section>
@@ -29,8 +29,8 @@ $this->block('content');
     <?php if (!$projects): ?>
         <div class="empty-state">
             <span>◌</span>
-            <h2>Dein erstes Projekt wartet.</h2>
-            <p>Gib eurer nächsten Idee einen gemeinsamen Ort.</p>
+            <h2><?= s(t('Noch keine Projekte')) ?></h2>
+            <p><?= s(t('Erstelle ein Projekt oder lass dich zu einem bestehenden Projekt hinzufügen.')) ?></p>
             <button class="button primary" data-dialog="new-project"><?= s(t('Projekt erstellen')) ?></button>
         </div>
     <?php endif ?>
