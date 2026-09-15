@@ -75,6 +75,28 @@ Prüfergebnisse in [Settings-AI-Evidenz.json](Settings-AI-Evidenz.json). Die neu
 ergänzt eigene Rollen ohne Änderungen an bestehenden Mitgliedschaften. Vor dem Einspielen
 wurde `work/backups/20260915T202311Z` erstellt.
 
+### Überarbeiteter AI-Chat
+
+Der aktuelle Source-Stand ersetzt den breiten Launcher durch ein 44 × 44 Pixel großes
+Sternsymbol. Die Chatfläche wächst beim Öffnen aus dessen Position und fährt beim
+Schließen zurück; Inhalte blenden separat ein. Eine kompakte Kopfzeile, kontextbezogene
+Einstiege und der kleine Sende-/Stopppfeil im mitwachsenden Eingabefeld ergänzen das Layout.
+Fokus-Rückgabe, Escape und reduzierte Bewegung sind berücksichtigt.
+
+Das echte NAF-Template wurde mit einem synthetischen, nicht gespeicherten Nutzer in einer
+isolierten Browser-Vorschau geprüft: dunkle und helle Darstellung, Öffnen/Schließen,
+Fokus-Rückgabe, Entwurf ohne Absenden, neuer Chat, mehrzeilige Eingabe, leerer Sendebutton
+und Konfigurationshinweis. Bei 390 × 844 und 320 × 568 Pixeln bleibt die Chatfläche innerhalb
+des Viewports; der Verlauf scrollt intern. Es gab keine Browserfehler. Die Vorschau hat
+keine realen Konten, Chats oder Modellaufrufe verwendet.
+
+JavaScript-Syntax, PHP-Template, `make test-ai` und `bin/style check` sind grün. Die App liefert
+die neuen CSS-/JS-Dateien über CA-verifiziertes HTTPS identisch zum Source aus.
+[AI-Chat-UI-Evidenz.json](AI-Chat-UI-Evidenz.json) hält die Prüfung und ihre Grenzen fest.
+Die direkte Abnahme im angemeldeten Firefox bleibt wegen des gesperrten Macs offen.
+Der unten dokumentierte Runtime-Snapshot enthält noch die vorherige Chatgestaltung;
+die aktuelle Oberfläche ist im Source-Betrieb auf https://localhost verfügbar.
+
 ## Ergebnis des Plans
 
 | Bereich | Umsetzung |

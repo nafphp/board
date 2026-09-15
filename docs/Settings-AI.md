@@ -99,6 +99,19 @@ im eigenen Browser beziehungsweise Schlüsselbund freigegeben werden; TLS-Prüfu
 
 ## Chat und Werkzeuge
 
+Das kleine Sternsymbol unten rechts öffnet den Chat. Die Fläche entfaltet sich direkt
+aus dem 44-Pixel-Button; beim Schließen über X oder Escape fährt sie dorthin zurück.
+Der Inhalt blendet versetzt ein, ohne die Schrift zu skalieren. Die Betriebssystemoption
+für reduzierte Bewegung überspringt die Animation. Nach dem Schließen liegt der
+Tastaturfokus wieder auf dem Einstiegssymbol.
+
+In der Kopfzeile liegen die Symbole für einen neuen Chat, AI-Einstellungen und Schließen.
+Drei Einstiege im leeren Chat passen zum aktuellen Projektkontext. Ein Klick übernimmt
+nur den Vorschlag ins Eingabefeld; gesendet wird erst per Pfeil oder Enter. Shift+Enter
+fügt einen Zeilenumbruch ein. Das Feld wächst mit, und der Sendepfeil bleibt bei leerer
+Eingabe deaktiviert. Während einer Antwort steht an derselben Stelle das Stoppsymbol.
+Der kleine Live-Schalter im Fußbereich steuert das Streaming.
+
 Der Chat unterstützt gestreamte und vollständige Antworten, Stoppen, Markdown mit Tabellen und
 Codeblöcken, Kopieren, neue Gespräche sowie Feedback zu einzelnen Antworten. Die History umfasst
 bis zu 40 Nachrichten. Das Modell erhält einen begrenzten Ausschnitt der letzten Nachrichten.

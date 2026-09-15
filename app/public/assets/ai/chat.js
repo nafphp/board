@@ -20,6 +20,12 @@ function initChat(root) {
   const send = root.querySelector('[data-ai-send]');
   const stop = root.querySelector('[data-ai-stop]');
   const confirmation = root.querySelector('[data-ai-confirmation]');
+  const panelContent = root.querySelector('[data-ai-panel-content]');
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  let expanded = false;
+  let motionVersion = 0;
+  let panelAnimation;
+  let contentAnimation;
   const project = Number(root.dataset.project) || null;
   let history = read(keys.messages, [])
     .filter(
@@ -36,9 +42,23 @@ function initChat(root) {
   }
   function setStatus(text) {
     status.textContent = text;
+    status.hidden = !text;
+    status.classList.toggle('sr-only', text === 'Bereit' || text.startsWith('Bereit ·'));
+  }
+  function fitInput() {
+    input.style.height = 'auto';
+    input.style.height = `${Math.max(48, Math.min(132, input.scrollHeight))}px`;
+  }
+  function syncComposer() {
+    send.disabled = busy || !input.value.trim();
+    send.hidden = busy;
+    stop.hidden = !busy;
+    root.dataset.busy = String(busy);
+    form.setAttribute('aria-busy', String(busy));
+    fitInput();
   }
   function scroll() {
-    messageList.scrollTop = messageList.scrollHeight;
+    messageList.scrollTop = history.length ? messageList.scrollHeight : 0;
   }
   function feedback(question, answer, button) {
     try {
@@ -89,16 +109,15 @@ function initChat(root) {
   function render() {
     messageList.replaceChildren();
     if (!history.length) {
-      const hello = document.createElement('div');
-      hello.className = 'ai-welcome';
-      const title = document.createElement('strong');
-      title.textContent = 'Wobei kann ich helfen?';
-      const text = document.createElement('p');
-      text.textContent = project
-        ? 'Lass uns dein Board überblicken, Ideen ordnen oder gemeinsam ein Ticket vorbereiten.'
-        : 'Stelle eine Frage oder lass dir deine Projekte zeigen.';
-      hello.append(title, text);
-      messageList.append(hello);
+      const welcome = root.querySelector('[data-ai-welcome]').content.cloneNode(true);
+      welcome.querySelectorAll('[data-ai-prompt]').forEach((button) => {
+        button.addEventListener('click', () => {
+          input.value = button.dataset.aiPrompt;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.focus({ preventScroll: true });
+        });
+      });
+      messageList.append(welcome);
     }
     let question = '';
     for (const entry of history) {
@@ -107,21 +126,86 @@ function initChat(root) {
     }
     scroll();
   }
-  function open(value) {
-    panel.hidden = !value;
+  async function open(value) {
+    if (value === expanded) return;
+    expanded = value;
+    const version = ++motionVersion;
+    const wasHidden = panel.hidden;
+    panel.hidden = false;
+    panel.inert = !value;
+    root.dataset.open = 'true';
+    toggle.tabIndex = -1;
     toggle.setAttribute('aria-expanded', String(value));
+
+    // Reveal the real-sized content through a growing shape; text is never scaled.
+    const frame = panel.getBoundingClientRect();
+    const button = toggle.getBoundingClientRect();
+    const iconRadius = getComputedStyle(toggle).borderRadius;
+    const fullRadius = matchMedia('(max-width: 600px)').matches ? '20px' : '22px';
+    const iconClip = `inset(${button.top - frame.top}px ${frame.right - button.right}px ${frame.bottom - button.bottom}px ${button.left - frame.left}px round ${iconRadius})`;
+    const fullClip = `inset(0px 0px 0px 0px round ${fullRadius})`;
+    const currentClip = getComputedStyle(panel).clipPath;
+    const fromClip = wasHidden ? iconClip : currentClip === 'none' ? fullClip : currentClip;
+    const fromOpacity = wasHidden ? 0 : Number(getComputedStyle(panelContent).opacity);
+    const fromRadius = getComputedStyle(panel).borderRadius;
+    panelAnimation?.cancel();
+    contentAnimation?.cancel();
+
     if (value) {
-      input.focus();
+      syncComposer();
       scroll();
-    } else toggle.focus();
+      if (matchMedia('(pointer: fine)').matches) input.focus({ preventScroll: true });
+      else panel.focus({ preventScroll: true });
+    }
+    if (!reducedMotion.matches) {
+      const duration = value ? 420 : 280;
+      panelAnimation = panel.animate(
+        [
+          { clipPath: fromClip, borderRadius: wasHidden ? iconRadius : fromRadius },
+          { clipPath: value ? fullClip : iconClip, borderRadius: value ? fullRadius : iconRadius },
+        ],
+        {
+          duration,
+          easing: value ? 'cubic-bezier(.16,1,.3,1)' : 'cubic-bezier(.4,0,.2,1)',
+          fill: 'both',
+        },
+      );
+      contentAnimation = panelContent.animate(
+        value
+          ? [{ opacity: fromOpacity }, { opacity: fromOpacity, offset: 0.2 }, { opacity: 1 }]
+          : [{ opacity: fromOpacity }, { opacity: 0, offset: 0.55 }, { opacity: 0 }],
+        { duration, easing: 'ease-out', fill: 'both' },
+      );
+      await panelAnimation.finished.catch(() => {});
+    }
+    if (version !== motionVersion) return;
+    panel.hidden = !value;
+    root.dataset.open = String(value);
+    panelAnimation?.cancel();
+    contentAnimation?.cancel();
+    if (!value) {
+      toggle.tabIndex = 0;
+      toggle.focus({ preventScroll: true });
+    }
   }
   function synchronize() {
     controller?.abort();
     epoch += 1;
-    root.hidden = !configFor(root).enabled;
-    if (root.hidden) panel.hidden = true;
+    const config = configFor(root);
+    root.hidden = !config.enabled;
+    if (root.hidden) {
+      motionVersion += 1;
+      expanded = false;
+      panelAnimation?.cancel();
+      contentAnimation?.cancel();
+      panel.hidden = true;
+      panel.inert = false;
+      root.dataset.open = 'false';
+      toggle.tabIndex = 0;
+      toggle.setAttribute('aria-expanded', 'false');
+    }
   }
-  toggle.addEventListener('click', () => open(panel.hidden));
+  toggle.addEventListener('click', () => open(!expanded));
   root.querySelector('[data-ai-close]').addEventListener('click', () => open(false));
   panel.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && confirmation.hidden) {
@@ -130,6 +214,7 @@ function initChat(root) {
     }
   });
   input.addEventListener('input', () => {
+    syncComposer();
     try {
       write(keys.draft, input.value);
     } catch (error) {
@@ -146,6 +231,7 @@ function initChat(root) {
     controller?.abort();
     epoch += 1;
     history = [];
+    setStatus('');
     try {
       save();
       write(keys.draft, '');
@@ -153,7 +239,10 @@ function initChat(root) {
     } catch (error) {
       setStatus(error.message);
     }
+    root.querySelector('[data-ai-routing]').hidden = true;
+    syncComposer();
     render();
+    input.focus({ preventScroll: true });
   });
   stop.addEventListener('click', () => controller?.abort());
   window.addEventListener('nafinity:ai-settings', synchronize);
@@ -161,6 +250,7 @@ function initChat(root) {
     if (event.key === keys.config || event.key === keys.memory) synchronize();
   });
   synchronize();
+  syncComposer();
   render();
 
   function approve(call, definition, signal) {
@@ -212,13 +302,13 @@ function initChat(root) {
       return;
     }
     busy = true;
-    send.disabled = true;
-    stop.hidden = false;
+    syncComposer();
     controller = new AbortController();
     const signal = controller.signal;
     const turn = ++epoch;
     history.push({ role: 'user', content: question });
     input.value = '';
+    fitInput();
     render();
     let pending;
     let completed = false;
@@ -389,8 +479,7 @@ function initChat(root) {
         );
     } finally {
       busy = false;
-      send.disabled = false;
-      stop.hidden = true;
+      syncComposer();
       confirmation.hidden = true;
     }
   });
