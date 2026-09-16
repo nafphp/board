@@ -156,6 +156,46 @@ Spalte, Abbruch per Escape, abgelehnte Verschiebung mit Rücksprung, Tippen ohne
 Wischen ohne Aufnehmen und Halten mit Aufnehmen. Der Rundlauf gegen die laufende App
 bestätigt Version und Status in der Antwort. `bin/style check` und `make test-http` sind grün.
 
+### Bis es ruhig war
+
+Das Ablegen sah danach noch unruhig aus, und es brauchte mehrere Anläufe, die Ursachen
+auseinanderzuhalten — sie sahen sich ähnlich, hatten aber nichts miteinander zu tun.
+
+Die Einflugbewegung vom Seitenaufbau galt dauerhaft. Weil ein Zug die Karte aus dem Dokument
+nimmt und wieder einsetzt, spielte sie dabei erneut ab: mit ihrer gestaffelten Verzögerung
+also erst unsichtbar, dann einblendend. Sie hängt jetzt an einer Markierung, die nach dem
+ersten Abspielen entfernt wird.
+
+Beim Landen stritten drei Wirkungen um dieselbe Eigenschaft: eine federnde Maßstabsanimation,
+die in jedem Abschnitt über ihr Ziel hinausschoss, und die Hover-Anhebung, sobald die
+Zeigersperre am Ende des Zuges fiel. Die Ankunft wird jetzt nur noch durch einen Ring
+markiert, der nichts bewegt.
+
+Der Platzhalter wählte seine Stelle als reine Funktion der Kartenposition, ohne Beharrung.
+An der Grenze zwischen zwei Stellen kippte er dadurch schon bei einem Pixel Handzittern um
+eine ganze Kartenhöhe. Er gibt seine Stelle jetzt erst auf, wenn eine andere spürbar besser
+passt, gemessen dreizehn Pixel; dieselbe Beharrung gilt für die Spalte, weil im Spalt zwischen
+zwei Spalten die Abstände fast gleich sind.
+
+Beim Ziehen quer über das Board fuhr die Karte durch die Spalten dazwischen hindurch und
+sortierte sie jedes Mal um — deren Karten machten Platz und nahmen ihn sofort wieder zurück.
+Unterwegs sein ist aber nicht zielen: Der Platzhalter bleibt jetzt liegen, solange die Karte
+zügig bewegt wird, und folgt, sobald die Hand zur Ruhe kommt. Kommt sie ganz zum Stillstand,
+holt die Bildschleife das nach, weil dann keine Zeigerereignisse mehr eintreffen; beim
+Loslassen wird die Stelle in jedem Fall final bestimmt.
+
+Zuletzt blieb ein Flimmern der ganzen Karte, zwei- bis dreimal pro Zug — also einmal je
+Gleitbewegung. Die schwebende Karte lässt Zeigerereignisse durch, sodass die Karte darunter
+den Hover-Zustand annahm und ihren Rahmen samt Titel aufblitzen ließ; das ist abgeschaltet,
+seit die Zielspalte geometrisch statt über Treffererkennung bestimmt wird. Der eigentliche
+Grund lag jedoch tiefer: Jede Gleitbewegung hob die Karte auf eine eigene Zeichenebene und
+nahm sie danach wieder herunter, und dieses Auf und Ab musste Farbverlauf, Schlagschatten und
+runde Ecken jedes Mal neu rastern. Die Beförderung hält jetzt für die Dauer des Zuges, und
+der ohnehin unsichtbare Verlauf hinter der Karte entfällt dabei.
+
+Diese letzte Ursache ließ sich in der Vorschau nicht beobachten, weil sie keine Bilder
+zeichnet; sie wurde aus dem Symptom erschlossen und am Nutzer bestätigt.
+
 ## Seitenleiste als Schiene
 
 Die Navigation steht im Ruhezustand nur noch als 56 Pixel breite Schiene: Markenzeichen,
@@ -222,8 +262,9 @@ die gerade zur Seite gleitet, meldete eine Position, die sie noch gar nicht hatt
 angehobene Karte unter dem Zeiger zusätzlich ihre drei Pixel Hover-Versatz. Beides wird jetzt
 herausgerechnet, und die Hover-Anhebung bleibt während eines Zuges ohnehin aus. Außerdem maß
 die FLIP-Animation ihre Zielposition, während die vorherige noch lief, wodurch sich der Fehler
-über mehrere Züge aufschaukelte; die vorige Bewegung wird nun vor der Messung beendet, nachdem
-ihr sichtbarer Stand als Startpunkt festgehalten wurde.
+über mehrere Züge aufschaukelte. Die Zielposition wird jetzt rechnerisch um die laufende
+Transformation bereinigt, und eine Karte, die bereits genau dorthin unterwegs ist, läuft
+ungestört weiter, statt abgebrochen und neu gestartet zu werden.
 
 Geprüft wurden Schiene, Hover, Tastaturfokus, Pin über einen Seitenwechsel hinweg, das
 Verhalten bei 1280, 800 und 375 Pixeln Breite sowie Ziehen und Ablegen bei ausgefahrener

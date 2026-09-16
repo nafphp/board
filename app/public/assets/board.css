@@ -22,7 +22,9 @@
     transform: none;
   }
 }
-.board-scroll.ready .ticket-card {
+/* Marked once per page load and cleared when it has played. A dropped card is taken out of
+   the document and put back, which would otherwise replay this and blank the card first. */
+.ticket-card[data-enter] {
   animation: card-enter 0.52s cubic-bezier(0.2, 1.1, 0.3, 1) backwards;
   animation-delay: var(--enter-delay, 0ms);
 }
@@ -33,7 +35,7 @@
   transition:
     border-color 0.2s,
     box-shadow 0.25s,
-    transform 0.25s cubic-bezier(0.2, 1.1, 0.3, 1),
+    transform 0.22s cubic-bezier(0.22, 0.7, 0.3, 1),
     background 0.2s;
 }
 /* A soft highlight tracks the pointer so the card feels physical under the cursor. */
@@ -77,17 +79,11 @@
 
 /* The slot left behind while a card is in flight. */
 .card-slot {
+  flex: none;
   border-radius: 10px;
   border: 1px dashed color-mix(in srgb, var(--accent) 55%, var(--line));
   background: color-mix(in srgb, var(--accent) 7%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
-  animation: slot-breathe 1.9s ease-in-out infinite;
-}
-@keyframes slot-breathe {
-  50% {
-    border-color: color-mix(in srgb, var(--accent) 25%, var(--line));
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-  }
 }
 
 .ticket-ghost {
@@ -117,16 +113,21 @@ html.board-dragging .board-cell,
 html.board-dragging .ticket-card {
   touch-action: none;
 }
+/* Every glide puts the card on its own compositing layer and takes it off again when the
+   animation ends, and that churn shows as a brief flicker of the whole card. The promotion
+   is held for the length of the drag instead, and the gradient layer behind the card — which
+   is invisible while dragging anyway — is dropped so there is less to composite. */
+html.board-dragging .ticket-card {
+  will-change: transform;
+}
 html.board-dragging * {
   cursor: grabbing !important;
 }
-/* The card under the ghost must not lift, or it shifts the edge the drop is measured against. */
-html.board-dragging .ticket-card:hover {
-  transform: none;
-  box-shadow: var(--card-shadow);
+html.board-dragging .ticket-card {
+  pointer-events: none;
 }
 html.board-dragging .ticket-card::after {
-  opacity: 0;
+  display: none;
 }
 
 .board-cell.is-target {
@@ -150,26 +151,12 @@ html.board-dragging .ticket-card::after {
     outline-color: color-mix(in srgb, #ffd267 70%, transparent);
   }
 }
-.board-cell.is-target .card-slot {
-  animation: none;
-}
 
-@keyframes card-land {
-  0% {
-    transform: scale(1.03);
-  }
-  55% {
-    transform: scale(0.988);
-  }
-  100% {
-    transform: none;
-  }
-}
+/* The arrival is marked by a ring that fades in and back out through the card's own
+   transition. Nothing here moves the card, so it cannot fight the hover lift. */
 .ticket-card.landed {
-  animation: card-land 0.44s cubic-bezier(0.2, 1.1, 0.3, 1);
   border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
-  transition: box-shadow 0.5s 0.15s ease-out;
 }
 
 @keyframes card-reject {
@@ -252,12 +239,10 @@ html.board-dragging .ticket-card::after {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .board-scroll.ready .ticket-card,
-  .ticket-card.landed,
+  .ticket-card[data-enter],
   .ticket-card.celebrating,
   .ticket-card.celebrating::before,
   .ticket-card.rejected,
-  .card-slot,
   .board-cell.is-target.is-closing {
     animation: none;
   }

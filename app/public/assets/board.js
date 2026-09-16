@@ -6,6 +6,14 @@ import { celebrate } from './fireworks.js';
 const board = document.querySelector('#board');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const spring = 'cubic-bezier(.2,1.1,.3,1)';
+// Cards making room glide without overshoot: they are rearranged over and over during a drag,
+// and a curve that swings past its target never comes to rest.
+const glide = 'cubic-bezier(.22,.7,.3,1)';
+// How much better another spot has to be before the slot gives up the one it holds. Without
+// it a pixel of hand tremor at the boundary between two spots throws the slot back and forth.
+const stickiness = 24;
+// Pixels per pointer event above which the card counts as travelling rather than aiming.
+const travelling = 10;
 const holdDelay = 240;
 const threshold = 6;
 const edgeZone = 72;
@@ -24,6 +32,7 @@ const drag = {
   x: 0,
   y: 0,
   tilt: 0,
+  speed: 0,
   hold: 0,
   frame: 0,
   started: false,
@@ -87,9 +96,14 @@ function syncCounts() {
 // Rects carry transforms, so a card mid-glide reports a position it does not hold.
 function layoutBox(node) {
   const transform = getComputedStyle(node).transform;
-  const shift = transform === 'none' ? 0 : new DOMMatrixReadOnly(transform).m42;
+  const matrix = transform === 'none' ? null : new DOMMatrixReadOnly(transform);
+  const box = node.getBoundingClientRect();
 
-  return { top: node.getBoundingClientRect().top - shift, height: node.offsetHeight };
+  return {
+    top: box.top - (matrix?.m42 ?? 0),
+    left: box.left - (matrix?.m41 ?? 0),
+    height: node.offsetHeight,
+  };
 }
 
 // The card under the pointer is what the person aims at, not the pointer itself: grabbing a
@@ -100,28 +114,36 @@ function anchor() {
   return { x: drag.x - drag.offsetX + drag.width / 2, y: top + drag.height / 2, top };
 }
 
-function cellAt(x, y) {
-  return document.elementFromPoint(x, y)?.closest('.board-cell') ?? null;
+function cellGap(node, x, y) {
+  const box = node.getBoundingClientRect();
+
+  return Math.hypot(
+    Math.max(box.left - x, 0, x - box.right),
+    Math.max(box.top - y, 0, y - box.bottom),
+  );
 }
 
-// Holding a card at the foot of a full column puts its middle below that column, and a card
-// carried over a gap between cells hits nothing at all. Both still mean the nearest cell.
-function nearestCell(x, y) {
+// The cell the card is over, zero distance meaning it is inside one. It keeps the cell it
+// already occupies until another is clearly closer: between two columns, and below a full
+// one, the distances are nearly equal, and a wavering hand would otherwise throw the slot
+// from column to column and shuffle both of them on every pixel.
+function targetCell(x, y) {
+  const current = drag.slot.parentElement?.classList.contains('board-cell')
+    ? drag.slot.parentElement
+    : null;
   let best = null;
   let distance = Infinity;
+  let holding = Infinity;
 
   for (const node of board.querySelectorAll('.board-cell')) {
-    const box = node.getBoundingClientRect();
-    const gap = Math.hypot(
-      Math.max(box.left - x, 0, x - box.right),
-      Math.max(box.top - y, 0, y - box.bottom),
-    );
+    const gap = cellGap(node, x, y);
+    if (node === current) holding = gap;
     if (gap >= distance) continue;
     distance = gap;
     best = node;
   }
 
-  return best;
+  return current && distance + stickiness >= holding ? current : best;
 }
 
 const flights = new WeakMap();
@@ -135,21 +157,30 @@ function flip(nodes, mutate) {
   const targets = [...new Set(nodes)];
   // Captured while the previous glide still shows, so the next one continues from there.
   const before = new Map(targets.map((node) => [node, node.getBoundingClientRect()]));
-  for (const node of targets) flights.get(node)?.cancel();
   mutate();
   for (const node of targets) {
     const first = before.get(node);
-    const last = node.getBoundingClientRect();
+    // Read past any running glide: where the card belongs now, not where it currently shows.
+    const last = layoutBox(node);
+    const flight = flights.get(node);
+    // A card already on its way to exactly this place keeps going. Restarting it would
+    // resample a position the compositor may be a frame ahead of, which shows as a twitch.
+    if (flight && Math.abs(flight.top - last.top) < 1 && Math.abs(flight.left - last.left) < 1) {
+      continue;
+    }
+    flight?.animation.cancel();
+    flights.delete(node);
     const dx = first.left - last.left;
     const dy = first.top - last.top;
     if (Math.abs(dx) < 1 && Math.abs(dy) < 1) continue;
-    flights.set(
-      node,
-      node.animate([{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }], {
-        duration: 280,
-        easing: spring,
-      }),
-    );
+    flights.set(node, {
+      animation: node.animate(
+        [{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }],
+        { duration: 190, easing: glide },
+      ),
+      top: last.top,
+      left: last.left,
+    });
   }
 }
 
@@ -206,15 +237,20 @@ function openings(cell) {
 // card's middle while it clearly sits higher. The slot therefore goes where the card is:
 // the spot whose top comes closest to the top of the card being carried.
 function insertionPoint(cell, top) {
+  const held =
+    drag.slot.parentElement === cell ? neighbour(drag.slot, 'nextElementSibling') : false;
   let best = null;
   let distance = Infinity;
+  let holding = Infinity;
 
   for (const spot of openings(cell)) {
     const gap = Math.abs(spot.top - top);
+    if (spot.before === held) holding = gap;
     if (gap >= distance) continue;
     distance = gap;
     best = spot.before;
   }
+  if (held !== false && distance + stickiness >= holding) return held;
 
   return best;
 }
@@ -234,6 +270,21 @@ function paintGhost() {
     ` rotate(${drag.tilt.toFixed(2)}deg) scale(1.035)`;
 }
 
+// Marks the column under the card, and settles the slot into it once the hand has stopped
+// travelling. Sweeping a card across the board passes over columns on the way; reordering
+// each of them would make their cards step aside and straight back again.
+function hover() {
+  const point = anchor();
+  const cell = targetCell(point.x, point.y);
+  // Marking a column the slot has not moved into yet would flash each one the card sweeps
+  // over, so the outline stays on the column the card would actually land in.
+  if (!cell || drag.speed > travelling) return;
+  highlight(cell);
+  const before = insertionPoint(cell, point.top);
+  if (drag.slot.parentElement === cell && drag.slot.nextElementSibling === before) return;
+  place(cell, before);
+}
+
 function autoScroll() {
   drag.frame = requestAnimationFrame(autoScroll);
   if (!drag.started) return;
@@ -242,6 +293,10 @@ function autoScroll() {
   else if (drag.x > box.right - edgeZone) board.scrollLeft += (drag.x - box.right + edgeZone) * 0.2;
   if (drag.y < edgeZone) scrollBy(0, -(edgeZone - drag.y) * 0.18);
   else if (drag.y > innerHeight - edgeZone) scrollBy(0, (drag.y - innerHeight + edgeZone) * 0.18);
+  // A hand that comes to rest sends no more events, so the slot catches up from here.
+  if (drag.speed <= travelling) return;
+  drag.speed *= 0.8;
+  if (drag.speed <= travelling) hover();
 }
 
 function lift(card, x, y) {
@@ -255,6 +310,7 @@ function lift(card, x, y) {
   drag.x = x;
   drag.y = y;
   drag.tilt = 0;
+  drag.speed = 0;
   drag.originCell = card.closest('.board-cell');
   drag.originIndex = cardsIn(drag.originCell).indexOf(card);
   suppressClick = true;
@@ -399,6 +455,7 @@ function reset() {
   document.documentElement.classList.remove('board-dragging');
   highlight(null);
   drag.started = false;
+  drag.speed = 0;
   drag.card = null;
   drag.ghost = null;
   drag.slot = null;
@@ -438,25 +495,22 @@ function onMove(event) {
     return;
   }
   event.preventDefault();
+  drag.speed = drag.speed * 0.6 + Math.hypot(x - drag.x, y - drag.y) * 0.4;
   drag.tilt = Math.max(-7, Math.min(7, drag.tilt * 0.72 + (x - drag.x) * 0.55));
   drag.x = x;
   drag.y = y;
   paintGhost();
-
-  // The body of the card decides where it goes, not the pointer that carries it.
-  const point = anchor();
-  const cell = cellAt(point.x, point.y) ?? nearestCell(point.x, point.y);
-  highlight(cell);
-  if (!cell) return;
-  const before = insertionPoint(cell, point.top);
-  if (drag.slot.parentElement === cell && drag.slot.nextElementSibling === before) return;
-  place(cell, before);
+  hover();
 }
 
 function onUp(event) {
   if (event.pointerId !== drag.pointer) return;
   release();
-  if (drag.started) commit(drag.slot.closest('.board-cell'));
+  if (!drag.started) return;
+  // Letting go is the final aim, however fast the card was moving a moment ago.
+  drag.speed = 0;
+  hover();
+  commit(drag.slot.closest('.board-cell'));
 }
 
 function onCancel() {
@@ -499,13 +553,18 @@ if (board) {
     });
   });
 
-  for (const cell of board.querySelectorAll('.board-cell')) {
-    const column = [...cell.parentElement.children].indexOf(cell);
-    cardsIn(cell).forEach((card, row) => {
-      card.style.setProperty('--enter-delay', Math.min(520, column * 45 + row * 55) + 'ms');
+  if (!reducedMotion.matches) {
+    for (const cell of board.querySelectorAll('.board-cell')) {
+      const column = [...cell.parentElement.children].indexOf(cell);
+      cardsIn(cell).forEach((card, row) => {
+        card.style.setProperty('--enter-delay', Math.min(520, column * 45 + row * 55) + 'ms');
+        card.dataset.enter = '';
+      });
+    }
+    board.addEventListener('animationend', (event) => {
+      if (event.animationName === 'card-enter') delete event.target.dataset.enter;
     });
   }
-  board.classList.add('ready');
 
   // A move through the dialog reloads the page, so the celebration is picked up afterwards.
   const pending = sessionStorage.getItem('nafinity.celebrate');
