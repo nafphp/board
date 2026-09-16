@@ -46,7 +46,6 @@ use function Naf\View\s;
             <div class="login-card">
                 <span class="eyebrow"><?= s(t('ANMELDUNG')) ?></span>
                 <h2><?= s(t('Willkommen zurück.')) ?></h2>
-                <p class="muted"><?= s(t('Melde dich mit deinem Konto an, um deine Projekte zu öffnen.')) ?></p>
                 <?php if ($notice ?? null): ?>
                     <p class="demo-note" role="status"><?= s($notice) ?></p>
                 <?php endif ?>

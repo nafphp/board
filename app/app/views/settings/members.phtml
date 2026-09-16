@@ -26,8 +26,8 @@ use function Naf\View\s;
 <form method="post" data-enhanced action="<?= s(route('project.members', ['project' => $projectId])) ?>" style="margin-top: 22px">
     <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
     <label>
-        Bestehendes Konto
-        <input name="email" type="email" required placeholder="E-Mail-Adresse" />
+        E-Mail-Adresse
+        <input name="email" type="email" required placeholder="person@beispiel.de" />
     </label>
     <label>
         <?= s(t('Rolle')) ?>
@@ -38,8 +38,8 @@ use function Naf\View\s;
         </select>
     </label>
     <p>
-        Eigene Rollen gelten für dieses Projekt. Du kannst nur Rechte vergeben, die du selbst
-        besitzt.
+        Die Person braucht bereits ein Konto. Eigene Rollen gelten nur für dieses Projekt, und du
+        kannst nur Rechte vergeben, die du selbst besitzt.
     </p>
     <div class="form-errors" role="alert"></div>
     <button class="button subtle">Mitgliedschaft speichern</button>

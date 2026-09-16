@@ -31,7 +31,7 @@ $boardHint       = match (true) {
     !$canWrite                       => t('Du hast Lesezugriff auf dieses Board'),
     (bool) $filters                  => t('Gefilterte Ansicht · Verschieben über das Kartenmenü'),
     $isLimited                       => t('Begrenzte Ansicht · Verschieben über das Kartenmenü'),
-    default                          => t('Karten ziehen oder über das Menü verschieben'),
+    default                          => '',
 };
 $emptyCellHint = $filters
     ? t('Keine Treffer mit diesen Filtern')
@@ -161,11 +161,12 @@ $emptyCellHint = $filters
     data-project="<?= (int) $projectId ?>"
     data-revision="<?= (int) $board['revision'] ?>"
     data-filtered="<?= $filters || $isLimited ? '1' : '0' ?>"
+    data-empty-hint="<?= s($emptyCellHint) ?>"
     style="--column-count: <?= count($columns) ?>"
 >
     <div class="column-headings">
         <?php foreach ($columns as $column): ?>
-            <div class="column-heading">
+            <div class="column-heading" data-column="<?= (int) $column['id'] ?>" <?= $column['closes_tickets'] ? 'data-closes="1"' : '' ?>>
                 <span class="status-dot" style="background: <?= s($column['color']) ?>"></span>
                 <h2><?= s($column['name']) ?></h2>
                 <span class="count"><?= $columnCounts[$column['id']] ?? 0 ?></span>
@@ -176,11 +177,11 @@ $emptyCellHint = $filters
         <?php endforeach ?>
     </div>
     <?php foreach ($swimlanes as $lane): ?>
-        <section class="swimlane">
+        <section class="swimlane" data-lane="<?= (int) $lane['id'] ?>">
             <div class="lane-heading">
                 <span>⌄</span>
                 <h3><?= s($lane['name']) ?></h3>
-                <span><?= $laneCounts[$lane['id']] ?? 0 ?></span>
+                <span class="lane-count"><?= $laneCounts[$lane['id']] ?? 0 ?></span>
                 <i></i>
             </div>
             <div class="board-grid">
@@ -189,6 +190,7 @@ $emptyCellHint = $filters
                         class="board-cell"
                         data-column="<?= (int) $column['id'] ?>"
                         data-lane="<?= (int) $lane['id'] ?>"
+                        <?= $column['closes_tickets'] ? 'data-closes="1"' : '' ?>
                         aria-label="<?= s($lane['name'] . ' · ' . $column['name']) ?>"
                     >
                         <?php
@@ -204,6 +206,7 @@ $emptyCellHint = $filters
                                 draggable="<?= $canDrag ? 'true' : 'false' ?>"
                                 data-ticket="<?= (int) $card['id'] ?>"
                                 data-version="<?= (int) $card['version'] ?>"
+                                data-status="<?= s($card['status']) ?>"
                                 data-title="<?= s($card['title']) ?>"
                             >
                                 <div class="card-top">
@@ -286,7 +289,7 @@ $emptyCellHint = $filters
                 <?= s(t('Spalte')) ?>
                 <select name="column_id">
                     <?php foreach ($columns as $column): ?>
-                        <option value="<?= (int) $column['id'] ?>"><?= s($column['name']) ?></option>
+                        <option value="<?= (int) $column['id'] ?>" <?= $column['closes_tickets'] ? 'data-closes="1"' : '' ?>><?= s($column['name']) ?></option>
                     <?php endforeach ?>
                 </select>
             </label>

@@ -1,17 +1,26 @@
 <?php
 
+use App\Support\Format;
+
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
 
 $this->setLayout('layout');
 $this->block('content');
+$openTickets = array_sum(array_column($projects, 'open_count'));
+$archived    = count(array_filter($projects, static fn($item) => $item['archived_at'] !== null));
 ?>
 <section class="page-heading">
     <div>
         <span class="eyebrow"><?= s(t('PROJEKTÜBERSICHT')) ?></span>
         <h1><?= s(t('Deine Projekte')) ?></h1>
-        <p><?= s(t('Öffne ein Projekt, um Tickets, Zuständigkeiten und Termine zu sehen.')) ?></p>
+        <?php if ($projects): ?>
+            <p>
+                <?= s(Format::count(count($projects), 'Projekt', 'Projekte')) ?>
+                · <?= s(Format::count($openTickets, 'offenes Ticket', 'offene Tickets')) ?><?= $archived ? ' · ' . s(t(':count archiviert', ['count' => $archived])) : '' ?>
+            </p>
+        <?php endif ?>
     </div>
     <button class="button primary" data-dialog="new-project">+ Neues Projekt</button>
 </section>

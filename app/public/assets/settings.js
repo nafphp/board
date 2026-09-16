@@ -103,3 +103,23 @@ if (dialog && location.hash) openCard(decodeURIComponent(location.hash.slice(1))
 window.addEventListener('hashchange', () => {
   if (!activeCard && location.hash) openCard(decodeURIComponent(location.hash.slice(1)));
 });
+
+// The assistant is configured per browser, so only the page itself knows its state.
+const assistant = document.querySelector('[data-ai-settings]');
+if (assistant) {
+  import('./ai/store.js').then(({ configFor }) => {
+    const config = configFor(assistant);
+    let host = '';
+    try {
+      host = new URL(config.url).host;
+    } catch {}
+    let summary = 'Ausgeschaltet';
+    if (config.enabled && config.model) summary = host ? `${config.model} · ${host}` : config.model;
+    else if (config.enabled)
+      summary = host ? `Kein Modell gewählt · ${host}` : 'Kein Modell gewählt';
+    document.querySelector('[data-settings-summary="ai"]').textContent = summary;
+    document
+      .querySelector('[data-settings-content="ai"]')
+      ?.setAttribute('data-description', summary);
+  });
+}

@@ -1,5 +1,6 @@
 <?php
 use App\Domain\ProjectPermissions;
+use App\Support\Format;
 
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
@@ -23,24 +24,43 @@ foreach ($customRoles ?? [] as $role) {
     }
 }
 $availableRoles['remove'] = 'Zugriff entziehen';
-$cards                    = [
-    ['personal', 'Persönlich', 'Darstellung, Sprache & Benachrichtigungen', 'user', 'settings.personal', []],
-    ['ai', 'Lokale AI', 'Modelle, Verbindung & Assistent', 'spark', 'settings.ai', []],
+
+// Every card shows what is set right now instead of listing the fields it contains.
+$themeLabels     = ['system' => t('Wie mein Gerät'), 'light' => t('Hell'), 'dark' => t('Dunkel')];
+$personalSummary = implode(' · ', [
+    $themeLabels[$preferences['theme']] ?? $preferences['theme'],
+    $preferences['locale'] === 'de' ? 'Deutsch' : 'English',
+    $preferences['timezone'],
+]);
+$names = static fn(array $items): string => implode(', ', array_slice(array_column($items, 'name'), 0, 4))
+    . (count($items) > 4 ? ' +' . (count($items) - 4) : '');
+
+$cards = [
+    ['personal', 'Persönlich', $personalSummary, 'user', 'settings.personal', []],
+    ['ai', 'Lokale AI', t('Noch nicht eingerichtet'), 'spark', 'settings.ai', []],
 ];
 if ($projectId !== null) {
+    $customCount = count($customRoles ?? []);
     if ($scope->allows('manage') || $scope->allows('restore')) {
-        $cards[] = ['general', 'Allgemein', 'Name, Farbe & Projektstatus', 'sliders', 'settings.project', []];
+        $cards[] = [
+            'general',
+            'Allgemein',
+            ($project['archived_at'] ? t('Archiviert') : t('Aktiv')) . ' · ' . $project['name'],
+            'sliders',
+            'settings.project',
+            [],
+        ];
     }
-    $rolesDescription = $scope->allows('roles')
-        ? t('Rechte prüfen und eigene Rollen verwalten')
-        : t('Rechte der Projektrollen ansehen');
+    $rolesDescription = $customCount
+        ? Format::count($customCount, 'eigene Rolle', 'eigene Rollen') . ' · ' . t('vier Standardrollen')
+        : t('Vier Standardrollen, keine eigenen');
     $cards[] = ['roles', 'Rollen & Rechte', $rolesDescription, 'shield', 'settings.roles', []];
     if ($scope->allows('members')) {
-        $cards[] = ['users', 'Benutzer', count($members) . ' Personen in diesem Projekt', 'users', 'settings.members', []];
+        $cards[] = ['users', 'Mitglieder', $names($members), 'users', 'settings.members', []];
     }
     if ($scope->allows('structure')) {
         foreach (['column' => ['Spalten', $columns], 'swimlane' => ['Swimlanes', $swimlanes], 'label' => ['Labels', $labels]] as $kind => [$heading, $items]) {
-            $cards[] = [$kind, $heading, count($items) . ' Einträge · Board organisieren', $kind, 'settings.structure', compact('kind', 'items')];
+            $cards[] = [$kind, $heading, $items ? $names($items) : t('Noch keine angelegt'), $kind, 'settings.structure', compact('kind', 'items')];
         }
     }
 }
@@ -70,7 +90,6 @@ $icons = [
     <div>
         <span class="eyebrow"><?= s(t($projectId ? 'KONTO & PROJEKT' : 'DEIN KONTO')) ?></span>
         <h1>Einstellungen</h1>
-        <p><?= s(t('Öffne eine Karte für die zugehörigen Einstellungen.')) ?></p>
     </div>
     <?php if ($projectId): ?>
         <a class="button subtle" href="<?= s(route('board', ['project' => $projectId])) ?>">← Zum Board</a>
@@ -79,7 +98,12 @@ $icons = [
 <div class="settings-context">
     <div>
         <strong><?= s($project['name'] ?? 'Dein Workspace') ?></strong>
-        <span><?= $projectId ? 'Projekt & persönliche Einstellungen' : 'Persönliche Einstellungen' ?></span>
+        <span>
+            <?= $projectId
+                ? s(Format::count(count($members), 'Mitglied', 'Mitglieder'))
+                    . ' · ' . s(Format::count(4 + count($customRoles ?? []), 'Rolle', 'Rollen'))
+                : s(Format::count(count($projects), 'Projekt', 'Projekte')) ?>
+        </span>
     </div>
     <label>
         Projekt wechseln
@@ -117,7 +141,7 @@ $icons = [
             </span>
             <span class="settings-tile-text">
                 <strong><?= s($label) ?></strong>
-                <small><?= s($description) ?></small>
+                <small data-settings-summary="<?= s($id) ?>"><?= s($description) ?></small>
             </span>
             <span class="settings-arrow" aria-hidden="true">↗</span>
         </button>
@@ -132,7 +156,7 @@ $icons = [
     <?php endforeach ?>
 </div>
 <p class="settings-footnote">
-    Persönliche Einstellungen gelten nur für dich. Projektänderungen gelten für euer Team.
+    <?= s(t('Änderungen am Projekt gelten für alle Mitglieder, persönliche Einstellungen nur für dich.')) ?>
 </p>
 <dialog
     id="settings-detail"

@@ -16,10 +16,13 @@
   --accent: #6558e8;
   --accent-soft: #ebe9ff;
   --card-shadow: 0 2px 3px #20243803, 0 4px 12px #20243803;
+  --panel-shadow: 18px 0 46px -22px #2024384d;
   --input: #fff;
   --hover: #f3f3fc;
   --danger: #cf4261;
   --radius: 12px;
+  --rail: 56px;
+  --panel: 244px;
   font-size: 14px;
 }
 html[data-theme='dark'] {
@@ -33,6 +36,7 @@ html[data-theme='dark'] {
   --accent: #9b8cff;
   --accent-soft: #302a51;
   --card-shadow: 0 3px 15px #0002;
+  --panel-shadow: 18px 0 46px -16px #000000b3;
   --input: #202230;
   --hover: #282a3d;
   --danger: #fb7b99;
@@ -49,6 +53,7 @@ html[data-theme='dark'] {
     --accent: #9b8cff;
     --accent-soft: #302a51;
     --card-shadow: 0 3px 15px #0002;
+    --panel-shadow: 18px 0 46px -16px #000000b3;
     --input: #202230;
     --hover: #282a3d;
     --danger: #fb7b99;
@@ -228,8 +233,15 @@ small,
 .nav-icon {
   font-size: 17px;
   width: 23px;
+  flex: none;
   text-align: center;
   opacity: 0.85;
+}
+.nav-icon svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+  margin: 0 auto;
 }
 .project-symbol {
   --project-color: #6558e8;
@@ -258,7 +270,9 @@ small,
 .project-nav {
   display: grid;
   gap: 5px;
-  overflow: auto;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
   flex-shrink: 0;
   max-height: 30dvh;
 }
@@ -385,6 +399,141 @@ small,
 }
 .avatar-stack .avatar {
   margin-left: -7px;
+}
+/* Collapsed sidebar: a rail of icons that grows into the full panel on hover, on focus
+   or when it is pinned. The three open states share one selector so the rules stay in
+   one place; :is() keeps them readable. */
+@media (min-width: 761px) {
+  .app-shell {
+    grid-template-columns: var(--rail) minmax(0, 1fr);
+  }
+  html[data-sidebar='pinned'] .app-shell {
+    grid-template-columns: var(--panel) minmax(0, 1fr);
+  }
+  .sidebar {
+    width: var(--rail);
+    padding-inline: 4px;
+    z-index: 15;
+    overflow-x: hidden;
+    transition:
+      width 0.24s cubic-bezier(0.2, 1.1, 0.3, 1),
+      padding 0.24s cubic-bezier(0.2, 1.1, 0.3, 1),
+      box-shadow 0.24s;
+    transition-delay: 0.16s;
+  }
+  :is(.sidebar:hover, .sidebar:focus-within, html[data-sidebar='pinned'] .sidebar) {
+    width: var(--panel);
+    padding-inline: 18px;
+    transition-delay: 0.1s;
+  }
+  :is(.sidebar:hover, .sidebar:focus-within) {
+    box-shadow: var(--panel-shadow);
+  }
+  /* A card dragged towards the left edge must not be covered by the panel opening. */
+  html.board-dragging .sidebar:hover {
+    --panel-open: 0;
+    width: var(--rail);
+    padding-inline: 4px;
+    box-shadow: none;
+  }
+  html[data-sidebar='pinned'] .sidebar {
+    transition-delay: 0s;
+  }
+  /* Captions keep their height so nothing moves vertically while the panel widens. */
+  .sidebar :is(.workspace-caption, .section-caption, .brand, .side-link, .user-row) {
+    white-space: nowrap;
+  }
+  .sidebar .brand {
+    margin-left: 5px;
+  }
+  :is(.sidebar:hover, .sidebar:focus-within, html[data-sidebar='pinned'] .sidebar) .brand {
+    margin-left: 9px;
+  }
+  /* One flag drives every label, so the list of them lives in a single place. Labels fade
+     with opacity and stay in the accessibility tree, which keeps the icon links named. */
+  .sidebar {
+    --panel-open: 0;
+  }
+  :is(.sidebar:hover, .sidebar:focus-within, html[data-sidebar='pinned'] .sidebar) {
+    --panel-open: 1;
+  }
+  .sidebar
+    :where(
+      .brand-word,
+      .brand-dot,
+      .link-label,
+      .user-identity,
+      .user-chevron,
+      .workspace-caption,
+      .caption-label,
+      .section-caption .icon-button,
+      .sidebar-note
+    ) {
+    opacity: var(--panel-open);
+    transition: opacity 0.15s 0.05s;
+  }
+  /* These two are focusable, so the rail has to take them out of reach as well. */
+  .sidebar :where(.sidebar-note, .section-caption .icon-button) {
+    visibility: hidden;
+  }
+  :is(.sidebar:hover, .sidebar:focus-within, html[data-sidebar='pinned'] .sidebar)
+    :where(.sidebar-note, .section-caption .icon-button) {
+    visibility: visible;
+  }
+  /* The hint card rewraps every time the panel gets wider, so it waits for the panel to
+     arrive instead of stretching along with it. Closing still hides it straight away. */
+  .sidebar .sidebar-note {
+    transition:
+      opacity 0.16s,
+      visibility 0.16s,
+      border-color 0.18s,
+      background 0.18s;
+  }
+  :is(.sidebar:hover, .sidebar:focus-within, html[data-sidebar='pinned'] .sidebar) .sidebar-note {
+    transition-delay: 0.34s;
+  }
+  /* In the rail a project's open tickets show as a dot on its tile. */
+  .project-nav .side-link {
+    position: relative;
+    min-width: 0;
+  }
+  .project-nav .link-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .project-nav .side-link[data-open]:not([data-open='0'])::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 32px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--sidebar);
+    transition: opacity 0.15s;
+  }
+  :is(.sidebar:hover, .sidebar:focus-within, html[data-sidebar='pinned'] .sidebar)
+    .project-nav
+    .side-link::after {
+    opacity: 0;
+  }
+}
+.sidebar-pin [data-pin-off],
+html[data-sidebar='pinned'] .sidebar-pin [data-pin-on] {
+  display: none;
+}
+html[data-sidebar='pinned'] .sidebar-pin {
+  color: var(--accent);
+}
+html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
+  display: inline;
+}
+@media (max-width: 760px) {
+  .sidebar-pin {
+    display: none;
+  }
 }
 .main-shell {
   min-width: 0;
@@ -755,30 +904,19 @@ small,
   padding: 2px;
   transition: background 0.15s;
 }
-.board-cell.drag-over {
-  background: var(--accent-soft);
-  outline: 2px dashed var(--accent);
-  outline-offset: 4px;
-}
 .ticket-card {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 13px 14px 11px;
   box-shadow: var(--card-shadow);
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
 }
 .ticket-card:hover {
   border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
-  box-shadow: 0 5px 16px #30305809;
 }
-.ticket-card[draggable='true'] {
+.ticket-card[draggable='true'],
+.ticket-card[draggable='true'] .card-title {
   cursor: grab;
-}
-.ticket-card.dragging {
-  opacity: 0.35;
 }
 .card-top {
   display: flex;
@@ -1082,6 +1220,11 @@ fieldset:disabled select {
   grid-template-columns: minmax(0, 1fr) 260px;
   gap: 32px;
 }
+/* A ticket that does not exist yet has no history or state to show beside the form. */
+.ticket-detail-grid.single {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 760px;
+}
 .detail-title-input {
   display: block;
   font-size: 25px;
@@ -1207,23 +1350,6 @@ fieldset:disabled select {
 .activity-list time {
   font-size: 8px;
   color: var(--muted);
-}
-.tip-card {
-  background: var(--accent-soft);
-  border-color: transparent;
-}
-.tip-card > span {
-  font-size: 26px;
-  color: var(--accent);
-}
-.tip-card h2 {
-  margin: 12px 0 8px;
-}
-.tip-card p {
-  font-size: 12px;
-  line-height: 1.8;
-  color: var(--muted);
-  margin: 0;
 }
 .ticket-drawer {
   position: fixed;
@@ -1569,11 +1695,8 @@ fieldset:disabled select {
   }
 }
 @media (max-width: 1100px) {
-  .app-shell {
-    grid-template-columns: 214px minmax(0, 1fr);
-  }
   .sidebar {
-    padding: 29px 13px 0;
+    padding-block: 29px 0;
   }
   .topbar {
     padding: 0 24px;

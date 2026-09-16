@@ -28,7 +28,7 @@ $row       = $ticket ?? ['title' => '', 'description' => '', 'priority' => 'norm
             </button>
         <?php endif ?>
     </div>
-    <div class="ticket-detail-grid">
+    <div class="ticket-detail-grid <?= $isNew ? 'single' : '' ?>">
         <section>
             <span class="eyebrow"><?= $isNew ? s(t('AUFGABE ANLEGEN')) : s(strtoupper($ticket['status'] === 'closed' ? t('Geschlossen') : t('Offen'))) ?></span>
             <form method="post" action="<?= s($isNew ? route('ticket.create', ['project' => $projectId]) : route('ticket.update', ['project' => $projectId, 'ticket' => $ticket['id']])) ?>" data-enhanced>
@@ -246,8 +246,8 @@ $row       = $ticket ?? ['title' => '', 'description' => '', 'priority' => 'norm
                 </section>
             <?php endif ?>
         </section>
-        <aside class="ticket-context">
-            <?php if (!$isNew): ?>
+        <?php if (!$isNew): ?>
+            <aside class="ticket-context">
                 <div class="context-card">
                     <span class="eyebrow"><?= s(t('IM ÜBERBLICK')) ?></span>
                     <dl>
@@ -297,14 +297,8 @@ $row       = $ticket ?? ['title' => '', 'description' => '', 'priority' => 'norm
                         <?php endforeach ?>
                     </ol>
                 </section>
-            <?php else: ?>
-                <div class="context-card tip-card">
-                    <span>✦</span>
-                    <h2><?= s(t('Aufgabe klar beschreiben')) ?></h2>
-                    <p><?= s(t('Notiere das gewünschte Ergebnis. Ergänze bei Bedarf Zuständigkeit, Priorität und Termin.')) ?></p>
-                </div>
-            <?php endif ?>
-        </aside>
+            </aside>
+        <?php endif ?>
     </div>
 </div>
 <?php if (!$fragment) {

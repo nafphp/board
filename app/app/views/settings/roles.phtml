@@ -1,5 +1,6 @@
 <?php
 use App\Domain\ProjectPermissions;
+use App\Support\Format;
 
 use function Naf\route;
 use function Naf\View\s;
@@ -38,7 +39,7 @@ use function Naf\View\s;
 </h3>
 <?php foreach ([...$customRoles, ...($scope->allows('roles') ? [null] : [])] as $role): ?>
     <details class="role-editor" <?= $role === null && !$customRoles ? 'open' : '' ?>>
-        <summary><?= $role ? s($role['name']) . ' · ' . (int) $role['member_count'] . ' Personen' : '+ Eigene Rolle anlegen' ?></summary>
+        <summary><?= $role ? s($role['name']) . ' · ' . s(Format::count((int) $role['member_count'], 'Mitglied', 'Mitglieder')) : '+ Eigene Rolle anlegen' ?></summary>
         <form method="post" data-enhanced action="<?= s(route('project.roles', ['project' => $projectId])) ?>">
             <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
             <?php if ($role): ?>

@@ -126,6 +126,137 @@ Die direkte Abnahme im angemeldeten Firefox bleibt wegen des gesperrten Macs off
 Der unten dokumentierte Runtime-Snapshot enthält noch die vorherige Chatgestaltung;
 die aktuelle Oberfläche ist im Source-Betrieb auf https://localhost verfügbar.
 
+## Bewegte Board-Karten
+
+Das Board zieht Karten nicht mehr über die native HTML5-Drag-API, sondern über Pointer-Events.
+Die aufgenommene Karte schwebt als eigenes Element unter dem Zeiger, neigt sich leicht in die
+Bewegungsrichtung und lässt an ihrer alten Stelle einen gestrichelten Platzhalter zurück. Der
+Platzhalter wandert live in die Zielzelle; die verdrängten Karten gleiten per FLIP-Technik an
+ihre neue Position statt zu springen. Zellen am Rand scrollen das Board mit, Escape bricht ab
+und legt die Karte zurück, und ein Ablegen auf der Ausgangsposition erzeugt gar keine Anfrage.
+Auf Touch und Stift hebt erst ein kurzes Halten die Karte an, damit Wischen weiterhin scrollt.
+
+Erreicht eine Karte eine abschließende Spalte, zündet ein kleines Feuerwerk auf einem
+gemeinsamen Canvas über der Seite: ein Blitz mit Druckring, gut fünfzig Funken und Konfetti,
+dazu zwei kleine Raketen, die neben der Karte aufsteigen und verzögert zerplatzen. Die Karte
+selbst bekommt einen grünen Rahmen, einen kurzen Stempel und dauerhaft ein Häkchen vor der
+Ticketnummer. Weil additive Mischung auf hellem Grund ausbleicht, wählt der Canvas Blendmodus
+und Farbpalette nach dem aktiven Farbschema. Der Canvas räumt sich selbst ab, sobald der
+letzte Funke erloschen ist, und bleibt bei reduzierter Bewegung vollständig aus.
+
+Damit das Board ohne Neuladen stimmig bleibt, liefert `POST /projects/{id}/tickets/{id}/move`
+jetzt zusätzlich die neue Version und den Status des Tickets. Spalten- und Swimlane-Zähler,
+leere Zellen und der Erledigt-Haken werden daraus direkt aktualisiert; eine abgelehnte
+Verschiebung wandert sichtbar zurück, wackelt kurz und meldet den Servertext. Der Weg über
+das Kartenmenü reicht die Feier über `sessionStorage` an die neu geladene Seite weiter.
+
+Geprüft wurde der echte Seitenquelltext mit den echten Assets in einer isolierten Vorschau:
+Ziehen zwischen Spalten und Swimlanes, Ablegen in leere Zellen, Umsortieren innerhalb einer
+Spalte, Abbruch per Escape, abgelehnte Verschiebung mit Rücksprung, Tippen ohne Ziehen,
+Wischen ohne Aufnehmen und Halten mit Aufnehmen. Der Rundlauf gegen die laufende App
+bestätigt Version und Status in der Antwort. `bin/style check` und `make test-http` sind grün.
+
+## Seitenleiste als Schiene
+
+Die Navigation steht im Ruhezustand nur noch als 56 Pixel breite Schiene: Markenzeichen,
+Projektsymbole, Theme, Einstellungen und Avatar bleiben sichtbar, alle Beschriftungen sind
+ausgeblendet. Ein Projekt mit offenen Tickets trägt dabei einen kleinen Punkt auf seiner
+Kachel. Beim Überfahren, beim Tastaturfokus oder per Pin wächst die Leiste auf ihre volle
+Breite von 244 Pixeln und legt sich mit Schatten über den Inhalt, statt ihn umzubrechen.
+Das Öffnen setzt kurz verzögert ein und das Schließen etwas später, damit die Leiste beim
+bloßen Vorbeifahren nicht aufspringt; während eine Ticketkarte gezogen wird, bleibt sie zu.
+
+Der Pin sitzt als eigener Eintrag über Theme und Einstellungen und merkt sich seinen Zustand
+lokal. Weil die Content-Security-Policy `script-src 'self'` setzt und Inline-Skripte damit
+ausschließt, wendet ein kleines blockierendes `boot.js` den gespeicherten Zustand vor dem
+ersten Zeichnen an; ohne das würde eine angeheftete Leiste bei jedem Seitenaufruf kurz als
+Schiene aufblitzen. Unterhalb von 761 Pixeln bleibt alles beim Bisherigen: Hamburger-Knopf
+und einfahrendes Overlay, ohne Schiene und ohne Pin.
+
+Die Beschriftungen werden über ein einziges `--panel-open`-Flag ein- und ausgeblendet, damit
+die Liste der betroffenen Elemente nur an einer Stelle steht. Sie verschwinden über die
+Deckkraft und bleiben im Accessibility-Baum, sodass die Icon-Links ihren Namen behalten;
+nur die beiden fokussierbaren Elemente der Leiste — Projekt-Plus und Hinweiskarte — werden
+zusätzlich über `visibility` aus dem Zugriff genommen.
+
+Zwei Dinge fielen beim Ausprobieren auf. Die Hinweiskarte wuchs mit der Leiste mit und
+brach ihren Text bei jeder Zwischenbreite neu um, was sie sichtbar auseinanderzog; sie
+erscheint jetzt erst, wenn die Breite nach 0,34 Sekunden steht, und verschwindet beim
+Einfahren weiterhin sofort. Und die Projektliste trug `overflow: auto`, sodass ihre Zeilen
+in der schmalen Schiene kurz einen waagerechten Rollbalken erzeugten; sie wird dort jetzt
+beschnitten, und ein langer Projektname endet mit Auslassungspunkten statt mitten im Wort.
+Die gemeinsame Liste der Beschriftungen steht zudem in `:where()`, damit einzelne Elemente
+ohne Spezifitätskampf eigene Zeiten bekommen können.
+
+Beim Ziehen dockte der Platzhalter nicht immer dort an, wo die Karte zu sehen war. Die Ursache
+war die Bezugsgröße: Entschieden wurde nach dem Mauszeiger, gesehen wird aber der Kartenkörper.
+Wer eine Karte am unteren Rand greift, hält sie deutlich über dem Zeiger — die Karte stand dann
+längst über der Zielkarte, während der Zeiger noch unter deren Mitte lag, und der Platzhalter
+rutschte darunter. Umgekehrt beim Griff am oberen Rand. Maßgeblich ist jetzt die Mitte der
+gezogenen Karte; der Zeiger dient nur noch als Rückfall, wenn die Karte über den Rand des
+Boards hinausragt. Gemessen an einem Griff bei 5, 50 und 95 Prozent der Kartenhöhe fällt die
+Entscheidung nun an derselben Stelle, auf vier Pixel genau an der Mitte der Zielkarte.
+
+Zwei weitere Fehler in derselben Rechnung kamen dabei mit heraus. Die Positionen wurden über
+`getBoundingClientRect()` gelesen, und das schließt laufende Transformationen ein: Eine Karte,
+die gerade zur Seite gleitet, meldete eine Position, die sie noch gar nicht hatte, und die
+angehobene Karte unter dem Zeiger zusätzlich ihre drei Pixel Hover-Versatz. Beides wird jetzt
+herausgerechnet, und die Hover-Anhebung bleibt während eines Zuges ohnehin aus. Außerdem maß
+die FLIP-Animation ihre Zielposition, während die vorherige noch lief, wodurch sich der Fehler
+über mehrere Züge aufschaukelte; die vorige Bewegung wird nun vor der Messung beendet, nachdem
+ihr sichtbarer Stand als Startpunkt festgehalten wurde.
+
+Geprüft wurden Schiene, Hover, Tastaturfokus, Pin über einen Seitenwechsel hinweg, das
+Verhalten bei 1280, 800 und 375 Pixeln Breite sowie Ziehen und Ablegen bei ausgefahrener
+Nachbarschaft. Dabei kam ein Fehler ans Licht, der nichts mit der Leiste zu tun hatte: Das
+Ablegen einer Karte wartete auf das Ende der Fluganimation, und dieses Versprechen löst in
+einem unsichtbaren Tab nicht aus. Wer eine Karte ablegte und sofort den Tab wechselte, sah
+die Karte verschwinden. Der Einschub in die Spalte hängt jetzt nicht mehr allein an der
+Animation. `bin/style check` und `make test-http` sind grün.
+
+## Texte, die etwas sagen
+
+Unter fast jeder Überschrift stand ein Satz, der die Überschrift noch einmal sagte. Im
+Profilfenster stand über zwei Abschnitten namens „Deine Projektrollen" und „Anmeldung" der
+Hinweis, man könne hier seine Anmeldung verwalten und seine Rollen sehen; neben dem Knopf
+„Abmelden" stand, dass Abmelden die Sitzung beendet. Solche Sätze sind ersatzlos entfallen,
+ebenso die Aufforderung, eine Einstellungskarte zu öffnen, der Anmeldehinweis über dem
+Anmeldeformular und die Tippkarte beim neuen Ticket. Das Formular für ein neues Ticket nimmt
+die frei gewordene Spalte jetzt selbst ein, weil es daneben weder Verlauf noch Status gibt.
+
+Wo der Platz sich lohnte, steht statt der Beschreibung der Zustand. Die Einstellungskacheln
+zeigen nicht mehr, welche Felder sie enthalten, sondern was eingestellt ist: „Dunkel ·
+Deutsch · Europe/Berlin", „Offen, In Arbeit, Review, Erledigt", „Aktiv · Nafinity". Die
+Kachel der lokalen AI kennt der Server nicht, weil ihre Einrichtung im Browser liegt; sie
+wird nach dem Laden aus dem gespeicherten Zustand nachgetragen und zeigt bis dahin, dass
+nichts eingerichtet ist. Projektübersicht, Benachrichtigungen und Aktivität nennen ihre
+Zahlen, und die Aktivität sagt jetzt, wenn ihre Liste bei hundert Einträgen endet — das war
+vorher nirgends zu sehen. Die Karte in der Seitenleiste nennt Rolle und Anzahl der Rechte.
+
+Die Rolle stand danach noch zweimal im Profilfenster: einmal als Marke über dem Namen, einmal
+in der Liste der Projektrollen darunter. Die Marke ist entfallen; die Liste hebt stattdessen
+das Projekt hervor, in dem man gerade ist, und schreibt die eingebauten Rollen groß, die aus
+der Datenbank klein kommen.
+
+Im Profilfenster kam dabei eine Lücke ans Licht: Die Schnittstelle liefert seit jeher
+`email_verified`, die Oberfläche hat das Feld weggeworfen. Man konnte seiner Adresse also
+nicht ansehen, ob sie je bestätigt wurde. Die Zeile unter „E-Mail-Adresse ändern" zeigt nun
+die Adresse mit ihrem Zustand, eine offene Änderung im Akzentton und eine unbestätigte
+Adresse in der Warnfarbe.
+
+Erhalten bleibt alles, was eine Folge oder eine Grenze erklärt: Passwortregeln, Ablauf des
+Bestätigungscodes, Anhanggrenzen, Rollen- und Archivierungsregeln, die Erklärungen zur
+lokalen AI und sämtliche Leerzustände. Auch die Board-Hinweise für Archiv, Lesezugriff und
+gefilterte Ansicht bleiben, weil sie begründen, warum Ziehen gerade nicht geht; nur der
+Hinweis, dass man Karten ziehen kann, ist entfallen.
+
+Nebenbei vereinheitlicht: Benutzer, Personen und Mitglieder meinten dieselben Leute und
+heißen jetzt durchgehend Mitglieder. Das Feld für eine neue Mitgliedschaft war mit
+„Bestehendes Konto" beschriftet, was keine Feldbezeichnung ist; es heißt jetzt
+„E-Mail-Adresse", und die Regel steht im erklärenden Absatz darunter. Weil der Übersetzer
+keine Pluralformen kennt und daher „1 Projekte" erschien, wählt `Format::count()` die Form
+nach der Zahl.
+
 ## Ergebnis des Plans
 
 | Bereich | Umsetzung |

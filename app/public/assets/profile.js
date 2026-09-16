@@ -8,6 +8,7 @@ if (dialog) {
   const forms = [...dialog.querySelectorAll('[data-profile-form]')];
   const triggers = [...document.querySelectorAll('[data-profile-open]')];
   let opener;
+  let account = null;
   let busy = false;
   let closing = false;
   let loadController;
@@ -16,6 +17,21 @@ if (dialog) {
     dialog.querySelectorAll('input[type="password"], input[name="code"]').forEach((input) => {
       input.value = '';
     });
+  }
+
+  // The summary line carries the state of the address: pending change, confirmed or not.
+  function setEmailState(profile) {
+    const line = dialog.querySelector('[data-profile-email-state]');
+    if (!line) return;
+    if (profile.pending) {
+      line.textContent = `Bestätigung offen für ${profile.pending.email}`;
+      line.dataset.state = 'pending';
+      return;
+    }
+    line.textContent = profile.email_verified
+      ? `${profile.email} · bestätigt`
+      : `${profile.email} · nicht bestätigt`;
+    line.dataset.state = profile.email_verified ? 'verified' : 'unverified';
   }
 
   function setPending(pending) {
@@ -52,6 +68,7 @@ if (dialog) {
       if (!response.ok)
         throw new Error(result.message || 'Dein Profil konnte nicht geladen werden.');
       const profile = result.profile;
+      account = profile;
       dialog.querySelector('[data-profile-email]').textContent = profile.email;
       dialog.querySelector('[data-profile-local]').hidden = !profile.local_password;
       dialog.querySelector('[data-profile-external]').hidden = profile.local_password;
@@ -59,6 +76,7 @@ if (dialog) {
         ? 'Lokales Konto'
         : 'Extern verwaltetes Konto';
       setPending(profile.pending);
+      setEmailState(profile);
       if (profile.pending) dialog.querySelector('[data-profile-email-section]').open = true;
       status.hidden = true;
       content.hidden = false;
@@ -171,6 +189,8 @@ if (dialog) {
           return;
         }
         setPending(result.pending);
+        // Requesting and cancelling leave the current address untouched, only its pending change.
+        if (account) setEmailState({ ...account, pending: result.pending });
         form.reset();
         const next = result.pending
           ? dialog.querySelector('input[name="code"]')

@@ -290,12 +290,17 @@ final class AppController
     public function moveTicket(string $project, string $ticket): ResponseInterface
     {
         return $this->mutation(function ($data) use ($project, $ticket) {
-            $id = Input::id($project);
-            $this->tickets->move($id, Input::id($ticket), $data);
+            $id       = Input::id($project);
+            $ticketId = Input::id($ticket);
+            $this->tickets->move($id, $ticketId, $data);
+            $moved = $this->tickets->ticket($id, $ticketId);
 
+            // The board applies the move in place, so it needs the fresh optimistic lock values.
             return [
                 'url'      => '/projects/' . $project,
                 'revision' => (string) $this->tickets->board($id)['revision'],
+                'version'  => (string) $moved['version'],
+                'status'   => $moved['status'],
             ];
         });
     }

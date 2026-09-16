@@ -14,7 +14,11 @@ $this->block('content');
     <div>
         <span class="eyebrow"><?= s(t('PROJEKTVERLAUF')) ?></span>
         <h1><?= s(t('Aktivität')) ?></h1>
-        <p>Die letzten Änderungen in <?= s($project['name']) ?>.</p>
+        <p>
+            <?= count($activity) >= 100
+                ? s(t('Die letzten 100 Einträge'))
+                : s(Format::count(count($activity), 'Eintrag', 'Einträge')) ?>
+        </p>
     </div>
     <a class="button subtle" href="<?= s(route('board', ['project' => $project['id']])) ?>">← Zum Board</a>
 </section>

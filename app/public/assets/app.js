@@ -8,9 +8,9 @@ mobileViewport.addEventListener('change', syncSidebar);
 syncSidebar();
 const savedTheme = localStorage.getItem('nafinity.theme');
 if (['dark', 'light', 'system'].includes(savedTheme)) root.dataset.theme = savedTheme;
-const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
+export const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
 let toastTimer;
-function toast(message) {
+export function toast(message) {
   const node = document.querySelector('#toast');
   if (!node) return;
   node.textContent = message;
@@ -61,6 +61,13 @@ document.addEventListener('click', (event) => {
     root.dataset.theme = dark ? 'light' : 'dark';
     localStorage.setItem('nafinity.theme', root.dataset.theme);
   }
+  if (target.hasAttribute('data-sidebar-pin')) {
+    root.dataset.sidebar = root.dataset.sidebar === 'pinned' ? 'rail' : 'pinned';
+    localStorage.setItem('nafinity.sidebar', root.dataset.sidebar);
+    // A mouse click would otherwise hold the panel open through :focus-within;
+    // keyboard activation keeps the focus where the user is navigating.
+    if (event.detail > 0) target.blur();
+  }
   if (target.matches('.mobile-menu')) {
     const sidebar = document.querySelector('#sidebar');
     sidebar?.classList.toggle('open');
@@ -86,6 +93,8 @@ document.addEventListener('click', (event) => {
     const dialog = document.querySelector('#move-card');
     const form = dialog.querySelector('form');
     form.action = `/projects/${board.dataset.project}/tickets/${card.dataset.ticket}/move`;
+    form.dataset.ticket = card.dataset.ticket;
+    form.dataset.status = card.dataset.status || 'open';
     form.elements.version.value = card.dataset.version;
     form.elements.column_id.value = cell.dataset.column;
     form.elements.swimlane_id.value = cell.dataset.lane;
@@ -123,6 +132,13 @@ document.addEventListener('submit', async (event) => {
       );
       return;
     }
+    // The dialog move reloads the board, so the celebration is handed over to the next page.
+    if (form.closest('#move-card')) {
+      const column = form.elements.column_id.selectedOptions[0];
+      if (column?.dataset.closes === '1' && form.dataset.status !== 'closed') {
+        sessionStorage.setItem('nafinity.celebrate', form.dataset.ticket);
+      }
+    }
     if (form.action.endsWith('/preferences')) {
       localStorage.setItem('nafinity.theme', data.get('theme'));
     }
@@ -145,77 +161,6 @@ document.addEventListener('submit', async (event) => {
   }
 });
 const board = document.querySelector('#board');
-let dragged = null;
-if (board && board.dataset.filtered === '0') {
-  board.addEventListener('dragstart', (event) => {
-    const card = event.target.closest('.ticket-card[draggable=true]');
-    if (!card) return;
-    dragged = card;
-    card.classList.add('dragging');
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', card.dataset.ticket);
-  });
-  board.addEventListener('dragend', () => {
-    dragged?.classList.remove('dragging');
-    dragged = null;
-    board.querySelectorAll('.drag-over').forEach((node) => node.classList.remove('drag-over'));
-  });
-  board.addEventListener('dragover', (event) => {
-    if (!dragged) return;
-    const cell = event.target.closest('.board-cell');
-    if (!cell) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-    board
-      .querySelectorAll('.drag-over')
-      .forEach((node) => node.classList.toggle('drag-over', node === cell));
-  });
-  board.addEventListener('drop', async (event) => {
-    if (!dragged) return;
-    const cell = event.target.closest('.board-cell');
-    if (!cell) return;
-    event.preventDefault();
-    const card = dragged;
-    const siblings = [...cell.querySelectorAll('.ticket-card')].filter((node) => node !== card);
-    const next = siblings.find(
-      (node) => event.clientY < node.getBoundingClientRect().top + node.offsetHeight / 2,
-    );
-    const index = next ? siblings.indexOf(next) : siblings.length;
-    const previous = index > 0 ? siblings[index - 1] : null;
-    const body = {
-      version: card.dataset.version,
-      board_revision: board.dataset.revision,
-      column_id: cell.dataset.column,
-      swimlane_id: cell.dataset.lane,
-      placement: 'between',
-      left_id: previous?.dataset.ticket || null,
-      right_id: next?.dataset.ticket || null,
-    };
-    try {
-      const response = await fetch(
-        `/projects/${board.dataset.project}/tickets/${card.dataset.ticket}/move`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            'X-CSRF-Token': csrf(),
-          },
-          body: JSON.stringify(body),
-        },
-      );
-      const result = await response.json();
-      if (!response.ok) {
-        toast(result.message || 'Verschieben fehlgeschlagen.');
-        document.querySelector('#board-update').hidden = false;
-        return;
-      }
-      location.reload();
-    } catch {
-      toast('Die Verbindung ist unterbrochen. Bitte lade das Board neu.');
-    }
-  });
-}
 document.addEventListener('nafinity:ai-changed', () => {
   const update = document.querySelector('#board-update');
   if (update) update.hidden = false;
@@ -300,3 +245,6 @@ document.addEventListener('keydown', (event) => {
     }
   }
 });
+
+// The board brings its own drag, drop and celebration layer and is only needed there.
+if (board) import('./board.js');

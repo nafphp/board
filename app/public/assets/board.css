@@ -1,0 +1,279 @@
+/* Motion layer for the board: card entrances, the drag ghost, the drop slot and the
+   celebration that fires when a ticket reaches a closing column. */
+.fireworks-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.fireworks-layer.active {
+  opacity: 1;
+}
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.board-scroll.ready .ticket-card {
+  animation: card-enter 0.52s cubic-bezier(0.2, 1.1, 0.3, 1) backwards;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+.ticket-card {
+  position: relative;
+  isolation: isolate;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.25s,
+    transform 0.25s cubic-bezier(0.2, 1.1, 0.3, 1),
+    background 0.2s;
+}
+/* A soft highlight tracks the pointer so the card feels physical under the cursor. */
+.ticket-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.25s;
+  background: radial-gradient(
+    240px circle at var(--mx, 50%) var(--my, 0%),
+    color-mix(in srgb, var(--accent) 13%, transparent),
+    transparent 62%
+  );
+}
+.ticket-card:hover::after {
+  opacity: 1;
+}
+.ticket-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 12px 26px -12px color-mix(in srgb, var(--accent) 45%, transparent),
+    0 3px 8px #20243810;
+}
+.ticket-card:hover .card-title {
+  color: var(--accent);
+}
+.ticket-card .card-title {
+  transition: color 0.18s;
+}
+.ticket-card[draggable='true']:active {
+  transform: translateY(-1px) scale(0.985);
+  transition-duration: 0.09s;
+}
+.ticket-card[data-busy] {
+  opacity: 0.82;
+  pointer-events: none;
+}
+
+/* The slot left behind while a card is in flight. */
+.card-slot {
+  border-radius: 10px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
+  animation: slot-breathe 1.9s ease-in-out infinite;
+}
+@keyframes slot-breathe {
+  50% {
+    border-color: color-mix(in srgb, var(--accent) 25%, var(--line));
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+}
+
+.ticket-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 70;
+  margin: 0;
+  pointer-events: none;
+  will-change: transform;
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  box-shadow:
+    0 24px 48px -18px #2024383d,
+    0 6px 16px -8px #20243830,
+    0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.ticket-ghost::after {
+  opacity: 1;
+  --mx: 50%;
+  --my: 0%;
+}
+html.board-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+html.board-dragging .board-cell,
+html.board-dragging .ticket-card {
+  touch-action: none;
+}
+html.board-dragging * {
+  cursor: grabbing !important;
+}
+/* The card under the ghost must not lift, or it shifts the edge the drop is measured against. */
+html.board-dragging .ticket-card:hover {
+  transform: none;
+  box-shadow: var(--card-shadow);
+}
+html.board-dragging .ticket-card::after {
+  opacity: 0;
+}
+
+.board-cell.is-target {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  outline: 1px dashed color-mix(in srgb, var(--accent) 45%, transparent);
+  outline-offset: 5px;
+}
+/* The closing column promises the reward before the card even lands there. */
+.board-cell.is-target.is-closing {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #2fbf8f 14%, transparent),
+    color-mix(in srgb, #ffd267 12%, transparent)
+  );
+  outline-color: color-mix(in srgb, #2fbf8f 65%, transparent);
+  animation: closing-glow 1.3s ease-in-out infinite;
+}
+@keyframes closing-glow {
+  50% {
+    outline-offset: 8px;
+    outline-color: color-mix(in srgb, #ffd267 70%, transparent);
+  }
+}
+.board-cell.is-target .card-slot {
+  animation: none;
+}
+
+@keyframes card-land {
+  0% {
+    transform: scale(1.03);
+  }
+  55% {
+    transform: scale(0.988);
+  }
+  100% {
+    transform: none;
+  }
+}
+.ticket-card.landed {
+  animation: card-land 0.44s cubic-bezier(0.2, 1.1, 0.3, 1);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+  transition: box-shadow 0.5s 0.15s ease-out;
+}
+
+@keyframes card-reject {
+  20% {
+    transform: translateX(-6px);
+  }
+  45% {
+    transform: translateX(5px);
+  }
+  70% {
+    transform: translateX(-3px);
+  }
+  100% {
+    transform: none;
+  }
+}
+.ticket-card.rejected {
+  animation: card-reject 0.42s ease-out;
+  border-color: color-mix(in srgb, var(--danger) 60%, var(--line));
+}
+
+/* Closed tickets carry a quiet check, and light up once while they are celebrated. */
+.ticket-card[data-status='closed'] .ticket-number::before {
+  content: '✓ ';
+  color: #2fbf8f;
+  font-weight: 700;
+}
+.ticket-card[data-status='closed'] .card-title {
+  color: var(--muted);
+}
+@keyframes card-celebrate {
+  0% {
+    transform: scale(1);
+  }
+  28% {
+    transform: scale(1.055) rotate(-1.1deg);
+  }
+  55% {
+    transform: scale(0.985) rotate(0.5deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+.ticket-card.celebrating {
+  animation: card-celebrate 0.72s cubic-bezier(0.2, 1.1, 0.3, 1);
+  border-color: color-mix(in srgb, #2fbf8f 70%, var(--line));
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, #2fbf8f 22%, transparent),
+    0 14px 34px -14px color-mix(in srgb, #2fbf8f 60%, transparent);
+  transition: box-shadow 0.8s 0.5s ease-out;
+}
+.ticket-card.celebrating::before {
+  content: '🎉';
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  font-size: 19px;
+  z-index: 1;
+  animation: stamp 1s cubic-bezier(0.2, 1.4, 0.3, 1);
+  pointer-events: none;
+}
+@keyframes stamp {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-25deg);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.25) rotate(8deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1) translateY(-10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-scroll.ready .ticket-card,
+  .ticket-card.landed,
+  .ticket-card.celebrating,
+  .ticket-card.celebrating::before,
+  .ticket-card.rejected,
+  .card-slot,
+  .board-cell.is-target.is-closing {
+    animation: none;
+  }
+  .ticket-card:hover {
+    transform: none;
+  }
+  .fireworks-layer {
+    display: none;
+  }
+}
+@media (forced-colors: active) {
+  .card-slot,
+  .ticket-ghost {
+    border: 1px solid Highlight;
+  }
+  .fireworks-layer {
+    display: none;
+  }
+}

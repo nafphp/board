@@ -9,16 +9,8 @@ use function Naf\View\s;
     id="profile-dialog"
     class="profile-dialog"
     aria-labelledby="profile-title"
-    aria-describedby="profile-description"
 >
     <header class="profile-header">
-        <div class="profile-role">
-            <span class="profile-role-dot"></span>
-            <?= s($roleName) ?>
-            <?php if ($projectName): ?>
-                <span><?= s(t('in :project', ['project' => $projectName])) ?></span>
-            <?php endif ?>
-        </div>
         <button
             type="button"
             class="icon-button profile-close"
@@ -31,23 +23,24 @@ use function Naf\View\s;
         <div class="profile-identity">
             <span class="avatar profile-avatar" aria-hidden="true"><?= s(mb_substr($profile->name ?? 'U', 0, 1)) ?></span>
             <div>
-                <span class="eyebrow">DEIN PROFIL</span>
                 <h2 id="profile-title"><?= s($profile->name) ?></h2>
                 <p data-profile-email><?= s($profile->email) ?></p>
             </div>
         </div>
     </header>
     <div class="profile-body">
-        <p id="profile-description" class="profile-intro"><?= s(t('Verwalte deine Anmeldung und sieh deine Rollen in den Projekten.')) ?></p>
         <?php if ($projects): ?>
             <section class="profile-memberships" aria-labelledby="profile-projects-title">
                 <h3 id="profile-projects-title"><?= s(t('Deine Projektrollen')) ?></h3>
                 <ul>
                     <?php foreach ($projects as $membership): ?>
                         <li>
-                            <a href="<?= s(route('board', ['project' => $membership['id']])) ?>">
+                            <a
+                                href="<?= s(route('board', ['project' => $membership['id']])) ?>"
+                                <?= (string) $membership['id'] === (string) $currentProject ? 'aria-current="page"' : '' ?>
+                            >
                                 <span><?= s($membership['name']) ?><?= $membership['archived_at'] ? ' · ' . s(t('Archiviert')) : '' ?></span>
-                                <strong><?= s($membership['role']) ?></strong>
+                                <strong><?= s(ucfirst($membership['role'])) ?></strong>
                             </a>
                         </li>
                     <?php endforeach ?>
@@ -76,8 +69,8 @@ use function Naf\View\s;
                             </svg>
                         </span>
                         <span>
-                            <strong>Passwort ändern</strong>
-                            <small>Mit deinem aktuellen Passwort bestätigen</small>
+                            <strong><?= s(t('Passwort ändern')) ?></strong>
+                            <small><?= s(t('Meldet dich auf allen Geräten neu an')) ?></small>
                         </span>
                         <span class="profile-chevron" aria-hidden="true">⌄</span>
                     </summary>
@@ -104,8 +97,7 @@ use function Naf\View\s;
                             </label>
                         </div>
                         <p id="profile-password-help" class="profile-help">
-                            Mindestens 15 Zeichen. Maximal 72 Bytes; Umlaute und Emojis zählen mehrfach.
-                            Danach meldest du dich auf allen Geräten neu an.
+                            <?= s(t('Mindestens 15 Zeichen. Maximal 72 Bytes; Umlaute und Emojis zählen mehrfach.')) ?>
                         </p>
                         <p class="profile-error" data-profile-error role="alert" tabindex="-1" hidden></p>
                         <button class="button primary" type="submit">
@@ -122,8 +114,8 @@ use function Naf\View\s;
                             </svg>
                         </span>
                         <span>
-                            <strong>E-Mail-Adresse ändern</strong>
-                            <small>Neue Adresse per Bestätigungscode verifizieren</small>
+                            <strong><?= s(t('E-Mail-Adresse ändern')) ?></strong>
+                            <small data-profile-email-state><?= s($profile->email) ?></small>
                         </span>
                         <span class="profile-chevron" aria-hidden="true">⌄</span>
                     </summary>
@@ -201,7 +193,6 @@ use function Naf\View\s;
         </div>
     </div>
     <footer class="profile-footer">
-        <span><?= s(t('Abmelden beendet diese Sitzung.')) ?></span>
         <form method="post" action="<?= s(route('logout')) ?>">
             <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
             <button type="submit" class="button subtle profile-logout">

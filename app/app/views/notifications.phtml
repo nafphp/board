@@ -10,12 +10,18 @@ use function Naf\View\s;
 
 $this->setLayout('layout');
 $this->block('content');
+$unread = count(array_filter($notifications, static fn($item) => $item['read_at'] === null));
 ?>
 <section class="page-heading">
     <div>
         <span class="eyebrow"><?= s(t('DEINE HINWEISE')) ?></span>
         <h1><?= s(t('Benachrichtigungen')) ?></h1>
-        <p><?= s(t('Neue Hinweise zu Änderungen an Tickets in deinen Projekten.')) ?></p>
+        <?php if ($notifications): ?>
+            <p>
+                <?= s(t(':unread ungelesen', ['unread' => $unread])) ?>
+                · <?= s(Format::count(count($notifications), 'Hinweis', 'Hinweise')) ?>
+            </p>
+        <?php endif ?>
     </div>
     <form method="post" data-enhanced action="<?= s(route('notifications.read')) ?>">
         <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />

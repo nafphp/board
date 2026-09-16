@@ -12,7 +12,7 @@ final class ProjectPermissions
         'moderate'  => 'Kommentare anderer bearbeiten',
         'upload'    => 'Anhänge hochladen und entfernen',
         'manage'    => 'Projektdetails bearbeiten',
-        'members'   => 'Benutzer zuordnen',
+        'members'   => 'Mitglieder verwalten',
         'structure' => 'Spalten, Swimlanes und Labels verwalten',
     ];
 
