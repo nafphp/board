@@ -95,14 +95,33 @@ function layoutBox(node) {
 // The card under the pointer is what the person aims at, not the pointer itself: grabbing a
 // card near its edge puts its body far from the cursor.
 function anchor() {
-  return {
-    x: drag.x - drag.offsetX + drag.width / 2,
-    y: drag.y - drag.offsetY + drag.height / 2,
-  };
+  const top = drag.y - drag.offsetY;
+
+  return { x: drag.x - drag.offsetX + drag.width / 2, y: top + drag.height / 2, top };
 }
 
 function cellAt(x, y) {
   return document.elementFromPoint(x, y)?.closest('.board-cell') ?? null;
+}
+
+// Holding a card at the foot of a full column puts its middle below that column, and a card
+// carried over a gap between cells hits nothing at all. Both still mean the nearest cell.
+function nearestCell(x, y) {
+  let best = null;
+  let distance = Infinity;
+
+  for (const node of board.querySelectorAll('.board-cell')) {
+    const box = node.getBoundingClientRect();
+    const gap = Math.hypot(
+      Math.max(box.left - x, 0, x - box.right),
+      Math.max(box.top - y, 0, y - box.bottom),
+    );
+    if (gap >= distance) continue;
+    distance = gap;
+    best = node;
+  }
+
+  return best;
 }
 
 const flights = new WeakMap();
@@ -155,14 +174,49 @@ function slotIndex() {
   return index;
 }
 
-function insertionPoint(cell, y) {
-  return (
-    cardsIn(cell).find((node) => {
-      const box = layoutBox(node);
+// Where the slot would end up for every possible spot in this cell, measured as if the slot
+// were not in the flow. Independent of its current position, so the choice never depends on
+// where it happens to sit and cannot settle into a dead zone.
+function openings(cell) {
+  const gap = parseFloat(getComputedStyle(cell).rowGap) || 0;
+  // What the slot takes up right now, which is less than the card while it is still growing.
+  const span =
+    drag.slot.parentElement === cell ? drag.slot.getBoundingClientRect().height + gap : 0;
+  const spots = [];
+  let below = false;
+  let end = null;
 
-      return y < box.top + box.height / 2;
-    }) ?? null
-  );
+  for (const node of cell.children) {
+    if (node === drag.slot) {
+      below = true;
+      continue;
+    }
+    if (!node.classList.contains('ticket-card')) continue;
+    const box = layoutBox(node);
+    const top = box.top - (below ? span : 0);
+    spots.push({ before: node, top });
+    end = top + box.height + gap;
+  }
+  if (end !== null) spots.push({ before: null, top: end });
+
+  return spots;
+}
+
+// Cards differ in height, so a card held over a shorter one can have its middle below that
+// card's middle while it clearly sits higher. The slot therefore goes where the card is:
+// the spot whose top comes closest to the top of the card being carried.
+function insertionPoint(cell, top) {
+  let best = null;
+  let distance = Infinity;
+
+  for (const spot of openings(cell)) {
+    const gap = Math.abs(spot.top - top);
+    if (gap >= distance) continue;
+    distance = gap;
+    best = spot.before;
+  }
+
+  return best;
 }
 
 function highlight(cell) {
@@ -389,12 +443,12 @@ function onMove(event) {
   drag.y = y;
   paintGhost();
 
-  // The body of the card decides; the pointer only helps when the card hangs off the board.
+  // The body of the card decides where it goes, not the pointer that carries it.
   const point = anchor();
-  const cell = cellAt(point.x, point.y) ?? cellAt(x, y);
+  const cell = cellAt(point.x, point.y) ?? nearestCell(point.x, point.y);
   highlight(cell);
   if (!cell) return;
-  const before = insertionPoint(cell, point.y);
+  const before = insertionPoint(cell, point.top);
   if (drag.slot.parentElement === cell && drag.slot.nextElementSibling === before) return;
   place(cell, before);
 }

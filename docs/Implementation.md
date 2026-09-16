@@ -192,10 +192,29 @@ Beim Ziehen dockte der Platzhalter nicht immer dort an, wo die Karte zu sehen wa
 war die Bezugsgröße: Entschieden wurde nach dem Mauszeiger, gesehen wird aber der Kartenkörper.
 Wer eine Karte am unteren Rand greift, hält sie deutlich über dem Zeiger — die Karte stand dann
 längst über der Zielkarte, während der Zeiger noch unter deren Mitte lag, und der Platzhalter
-rutschte darunter. Umgekehrt beim Griff am oberen Rand. Maßgeblich ist jetzt die Mitte der
-gezogenen Karte; der Zeiger dient nur noch als Rückfall, wenn die Karte über den Rand des
-Boards hinausragt. Gemessen an einem Griff bei 5, 50 und 95 Prozent der Kartenhöhe fällt die
-Entscheidung nun an derselben Stelle, auf vier Pixel genau an der Mitte der Zielkarte.
+rutschte darunter. Umgekehrt beim Griff am oberen Rand. Maßgeblich ist jetzt der Körper der
+gezogenen Karte; der Zeiger entscheidet nicht mehr mit.
+
+Die Mitte der Karte gegen die Mitte der Zielkarte zu stellen, war dabei zunächst naheliegend,
+aber immer noch die falsche Bezugsgröße, sobald Karten unterschiedlich hoch sind. Eine 230 Pixel
+hohe Karte über einer 190 Pixel hohen: Ihre Oberkante steht sichtbar
+darüber, ihre Mitte liegt trotzdem fünf Pixel unter der Mitte der Zielkarte, und der
+Platzhalter rutschte darunter — eine ganze Kartenhöhe von der Stelle entfernt, an der die
+Karte gehalten wird. Der Platzhalter geht jetzt dorthin, wo die Karte ist: Für jede mögliche
+Stelle in der Spalte wird ausgerechnet, wo der Platzhalter dann läge, und es gewinnt die
+Stelle, die der Oberkante der getragenen Karte am nächsten kommt. Weil diese Stellen ohne den
+Platzhalter im Fluss gemessen werden, hängt die Wahl nicht davon ab, wo er gerade steht; es
+gibt also keine tote Zone, in der sich nichts mehr bewegt.
+
+Dazu kam ein Rechenfehler: Der Platzhalter wächst beim Aufnehmen erst in seine Höhe hinein,
+gerechnet wurde aber immer mit der vollen Höhe der Karte. In den ersten Zehntelsekunden eines
+Zuges verschob das jede Stelle unterhalb des Platzhalters um bis zu eine Kartenhöhe. Maßgeblich
+ist jetzt, was er gerade einnimmt. Und wer eine Karte an den Fuß einer vollen Spalte hält, hat
+ihre Mitte unter der Spalte; solche Punkte treffen keine Zelle mehr und fallen jetzt auf die
+nächstgelegene zurück, statt den Zug ins Leere laufen zu lassen. Über fünf Kombinationen aus
+Kartenhöhe (173 bis 202 Pixel) und Griffpunkt (5, 50 und 95 Prozent) trifft der Platzhalter
+alle sieben möglichen Stellen einer Spalte, einschließlich der letzten, und der Griffpunkt
+ändert das Ergebnis nicht mehr.
 
 Zwei weitere Fehler in derselben Rechnung kamen dabei mit heraus. Die Positionen wurden über
 `getBoundingClientRect()` gelesen, und das schließt laufende Transformationen ein: Eine Karte,
