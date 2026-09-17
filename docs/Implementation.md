@@ -275,6 +275,31 @@ Der Rückweg oben heißt außerhalb der Leiste jetzt „Zurück zum Board“ sta
 in der Leiste bleibt der Name, weil der Klick dort die Leiste schließt und nirgendwo hinführt.
 
 
+## Anhängen mit Fortschritt
+
+Das Anhängen war das nackte Dateifeld des Browsers samt „Keine Datei ausgewählt“ und der
+Sprechblase, die erscheint, wenn man ohne Auswahl absendet. An seine Stelle tritt eine Fläche,
+auf die man klicken oder ziehen kann, danach die Auswahl im Klartext mit Größe und einem
+Kreuz zum Verwerfen, und darunter ein Balken, der meldet, wie viel vom Rumpf tatsächlich
+hinausgegangen ist.
+
+Gesendet wird mit `XMLHttpRequest`, nicht mit `fetch`: Nur dort gibt es Fortschritt beim
+Hochladen. Mit 9 MiB gegen einen absichtlich langsamen Endpunkt meldet der Balken zwanzig
+Stufen, 0, 12, 15, 18, 25, 37 und so fort bis 100; bei kleinen Dateien springt er auf einmal
+durch, weil der Socket-Puffer sie im Ganzen schluckt — das ist ehrlich und nicht zu beheben.
+
+Die Auswahl ist die ganze Handlung: Wer eine Datei wählt oder fallen lässt, hat sie damit
+hochgeladen, es gibt nichts weiter zu bestätigen. Der Knopf „Hochladen“ bleibt im Markup und
+wird vom Skript ausgeblendet — er ist der Weg für einen Browser, in dem nichts davon läuft.
+Dasselbe Kreuz, das eine Auswahl verwirft, bricht einen laufenden Upload ab.
+
+Das Formular bleibt ein gewöhnliches Multipart-Formular. Das Dateifeld wird nur optisch
+verborgen und nie ersetzt, deshalb funktioniert das Anhängen auch ohne das Skript. Die Grenze
+von zehn Mebibyte wird schon im Browser geprüft, damit niemand eine Minute hochlädt, um dann
+abgewiesen zu werden; der Server prüft sie unverändert weiter. Nach dem Hochladen wird die
+Liste als Fragment nachgeladen statt geraten, und die neue Zeile leuchtet einmal auf.
+
+
 ## Eigenes Profil
 
 Der Avatar öffnet das Profil-Modal mit der aktuellen Projektrolle, Passwortwechsel,

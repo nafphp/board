@@ -164,24 +164,45 @@ foreach ($labels as $label) {
                     <?php endforeach ?>
                     <?php if ($scope->allows('upload') && !$ticket['archived_at']): ?>
                         <form
+                            class="upload-form"
                             method="post"
                             enctype="multipart/form-data"
-                            data-enhanced
+                            data-upload
                             action="<?= s(route('attachment.upload', ['project' => $projectId, 'ticket' => $params['ticket']])) ?>"
                         >
                             <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-                            <label>
-                                <?= s(t('Datei anhängen')) ?>
+                            <label class="dropzone" data-dropzone>
                                 <input
                                     type="file"
                                     name="attachment"
                                     required
+                                    class="sr-only"
+                                    data-upload-input
                                     accept=".txt,.md,.csv,.pdf,.png,.jpg,.jpeg,.webp,.zip"
                                 />
+                                <span class="dropzone-mark"><?= Icon::mark('attach_file', 'lg') ?></span>
+                                <span class="dropzone-words">
+                                    <strong><?= s(t('Datei anhängen')) ?></strong>
+                                    <small class="muted"><?= s(t('Bis 10 MiB · Text, PDF, Bilder oder ZIP · privat im Projekt')) ?></small>
+                                </span>
                             </label>
-                            <p class="muted small"><?= s(t('Bis 10 MiB · Text, PDF, Bilder oder ZIP · privat im Projekt')) ?></p>
+                            <div class="upload-chosen" hidden data-upload-chosen>
+                                <?= Icon::mark('folder_open', 'sm') ?>
+                                <span class="upload-name" data-upload-name></span>
+                                <span class="muted small" data-upload-size></span>
+                                <button
+                                    type="button"
+                                    class="text-button muted"
+                                    data-upload-clear
+                                    aria-label="<?= s(t('Auswahl aufheben')) ?>"
+                                ><?= Icon::mark('close', 'sm') ?></button>
+                            </div>
+                            <div class="upload-progress" hidden data-upload-progress>
+                                <span class="upload-track"><span class="upload-fill" data-upload-fill></span></span>
+                                <span class="muted small" data-upload-percent>0 %</span>
+                            </div>
                             <div class="form-errors" role="alert"></div>
-                            <button class="button subtle"><?= s(t('Hochladen')) ?></button>
+                            <button class="button subtle" data-upload-submit><?= s(t('Hochladen')) ?></button>
                         </form>
                     <?php endif ?>
                 </section>
