@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Domain\Change;
+use App\Domain\Estimation;
 use App\Domain\Failure;
 use App\Models\Ticket;
+use App\Support\Duration;
 use App\Support\Format;
 use App\Support\Input;
 use App\Support\RichText;
@@ -361,14 +363,23 @@ final class TicketService
         }
         $validated['start_date'] = $start;
         foreach (['estimate_minutes' => null, 'spent_minutes' => 0] as $field => $default) {
-            $value = $data[$field] ?? $default;
-            $value = $value === '' ? $default : $value;
-            if ($value !== null && ((!is_string($value) && !is_int($value))
-                || filter_var($value, FILTER_VALIDATE_INT) === false || (int) $value < 0 || (int) $value > 10000000)) {
-                throw new Failure('Bitte gib eine Zeit in ganzen Minuten zwischen 0 und 10000000 ein.', 422, [$field => ['Ungültiger Zeitaufwand.']]);
-            }
-            $validated[$field] = $value === null ? null : (int) $value;
+            $value             = $data[$field] ?? $default;
+            $value             = $value === '' ? $default : $value;
+            $validated[$field] = Duration::parse($value, $field) ?? $default;
         }
+        // Stored without regard for the project's scale: a value kept from an earlier scale
+        // has to survive, and the interface is what offers the values a scale allows.
+        $points = $data['estimate_points'] ?? null;
+        $points = $points === '' ? null : $points;
+        if ($points !== null && ((!is_string($points) && !is_int($points))
+            || filter_var($points, FILTER_VALIDATE_INT) === false
+            || (int) $points < 0 || (int) $points > Estimation::MAX)) {
+            throw new Failure('Bitte gib eine Schätzung zwischen 0 und ' . Estimation::MAX . ' ein.', 422, [
+                'estimate_points' => ['Ungültige Schätzung.'],
+            ]);
+        }
+        $validated['estimate_points'] = $points === null ? null : (int) $points;
+
         $html = $data['description_html'] ?? null;
         if ($html !== null) {
             Input::validate(['description_html' => $html], ['description_html' => 'string|max:100000']);

@@ -30,6 +30,7 @@ final class ActivityLabel
                 'comment.created'         => 'Kommentar erstellt',
                 'comment.updated'         => 'Kommentar bearbeitet',
                 'comment.deleted'         => 'Kommentar gelöscht',
+                'timer.recorded'          => 'Zeit erfasst',
                 'attachment.added'        => 'Anhang hinzugefügt',
                 'attachment.deleted'      => 'Anhang gelöscht',
             ][$type] ?? 'Projekt aktualisiert',

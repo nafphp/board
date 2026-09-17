@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Domain\Change;
+use App\Domain\Estimation;
 use App\Domain\Failure;
 use App\Domain\ProjectScope;
 use App\Support\Input;
@@ -78,12 +79,66 @@ final class ProjectService
     public function update(int $project, array $data): void
     {
         $fields = $this->projectFields($data);
-        $this->access->write($project, 'manage', function () use ($project, $fields) {
+        $remap  = !empty($data['remap_estimates']);
+        $this->access->write($project, 'manage', function () use ($project, $fields, $remap) {
             $this->pdo
-                ->prepare('UPDATE projects SET name=?,description=?,ticket_key=?,color=?,icon=? WHERE id=?')
+                ->prepare('UPDATE projects SET name=?,description=?,ticket_key=?,estimation_scale=?,color=?,icon=? WHERE id=?')
                 ->execute([...array_values($fields), $project]);
+            if ($remap) {
+                $this->remapEstimates($project, $fields['estimation_scale']);
+            }
             $this->changed($project, 'project.updated', ['name' => $fields['name']]);
         });
+    }
+
+    /**
+     * Moves estimates left over from an earlier scale onto the closest value this one
+     * offers. Asked for explicitly, because a switch on its own keeps every number.
+     */
+    private function remapEstimates(int $project, string $scale): void
+    {
+        if (!Estimation::active($scale)) {
+            return;
+        }
+        $statement = $this->pdo->prepare(
+            'SELECT id,estimate_points FROM tickets WHERE project_id=? AND archived_at IS NULL AND estimate_points IS NOT NULL',
+        );
+        $statement->execute([$project]);
+        $update = $this->pdo->prepare(
+            'UPDATE tickets SET estimate_points=?,version=version+1,updated_at=? WHERE project_id=? AND id=?',
+        );
+        $now = gmdate('Y-m-d H:i:s');
+
+        foreach ($statement->fetchAll() as $ticket) {
+            $value = (int) $ticket['estimate_points'];
+            if (!Estimation::offScale($scale, $value)) {
+                continue;
+            }
+            $update->execute([Estimation::nearest($scale, $value), $now, $project, $ticket['id']]);
+        }
+    }
+
+    /** How many stored estimates the project's current scale no longer offers. */
+    public function offScaleEstimates(int $project, mixed $scale): int
+    {
+        $values = Estimation::values($scale);
+        if (!$values) {
+            return 0;
+        }
+        $marks     = implode(',', array_fill(0, count($values), '?'));
+        $statement = $this->pdo->prepare(
+            <<<SQL
+            SELECT COUNT(*)
+            FROM tickets
+            WHERE project_id = ?
+                AND archived_at IS NULL
+                AND estimate_points IS NOT NULL
+                AND estimate_points NOT IN ($marks)
+            SQL,
+        );
+        $statement->execute([$project, ...$values]);
+
+        return (int) $statement->fetchColumn();
     }
 
     public function archive(int $project, bool $archived): void
@@ -361,11 +416,12 @@ final class ProjectService
         }
 
         return [
-            'name'        => $name,
-            'description' => $validated['description'],
-            'ticket_key'  => $key,
-            'color'       => $this->color($data['color'] ?? '#6366f1'),
-            'icon'        => $icon,
+            'name'             => $name,
+            'description'      => $validated['description'],
+            'ticket_key'       => $key,
+            'estimation_scale' => Estimation::scale($data['estimation_scale'] ?? null),
+            'color'            => $this->color($data['color'] ?? '#6366f1'),
+            'icon'             => $icon,
         ];
     }
 

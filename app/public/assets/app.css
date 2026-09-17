@@ -861,6 +861,21 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   font-size: 9px;
   color: var(--muted);
 }
+/* The estimate sum sits at the far end of the heading without competing with the ticket
+   count: the count keeps its filled pill, the sum is a quiet accent figure. */
+.column-points {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 10px;
+  font-weight: 650;
+  color: color-mix(in srgb, var(--accent) 80%, var(--muted));
+}
+.column-points small {
+  font-size: 8px;
+  opacity: 0.75;
+}
 .lane-heading {
   display: flex;
   align-items: center;
@@ -1007,6 +1022,213 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 }
 .due-date {
   font-size: 9px;
+  color: var(--muted);
+}
+/* A running timer has to be visible without opening the ticket. */
+.timer-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2fbf8f;
+  box-shadow: 0 0 0 0 color-mix(in srgb, #2fbf8f 60%, transparent);
+  animation: timer-pulse 1.8s ease-out infinite;
+}
+@keyframes timer-pulse {
+  70% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+.timer-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  text-decoration: none;
+  color: var(--text);
+  background: color-mix(in srgb, #2fbf8f 13%, transparent);
+  border: 1px solid color-mix(in srgb, #2fbf8f 35%, transparent);
+}
+.timer-chip:hover {
+  background: color-mix(in srgb, #2fbf8f 20%, transparent);
+}
+.timer-chip .timer-ticket {
+  color: var(--muted);
+}
+.timer-chip time {
+  font-variant-numeric: tabular-nums;
+}
+/* The timer is a row of the planning list like any other: its label on the left, the control
+   on the right. One control: a tap starts and pauses, holding it stops. The outline that
+   draws itself around the button while it is held explains how long to hold. */
+.ticket-timer {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.timer-button {
+  position: relative;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--line) 85%, transparent);
+  display: grid;
+  place-items: center;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    transform 0.14s cubic-bezier(0.2, 1.1, 0.3, 1);
+}
+.timer-button:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+}
+.timer-button:active {
+  transform: scale(0.94);
+}
+.timer-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.ticket-timer[data-state='running'] .timer-button {
+  color: #2fbf8f;
+  background: color-mix(in srgb, #2fbf8f 14%, transparent);
+}
+.timer-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.timer-ring rect {
+  fill: none;
+  stroke-width: 2.6;
+}
+.timer-track {
+  stroke: transparent;
+}
+.ticket-timer[data-holding] .timer-track {
+  stroke: color-mix(in srgb, currentColor 18%, transparent);
+}
+/* Closed by the hold animation, which drives stroke-dashoffset from full to zero. It takes
+   the button's own colour, so the control reads as charging up rather than as a warning.
+   Hidden outright when idle: a round linecap draws a dot even at zero dash length. */
+.timer-hold {
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-dashoffset: 118.2;
+  opacity: 0;
+}
+.ticket-timer[data-holding] .timer-hold {
+  opacity: 1;
+}
+.ticket-timer[data-held] .timer-button {
+  transform: scale(0.92);
+}
+/* Drawn rather than clipped, so the triangle can carry the same rounded joins as the bars.
+   A right-pointing triangle keeps its area on the left, so its points are set to put the
+   centroid near the middle of the box instead of centring the bounding box. */
+.timer-glyph {
+  display: grid;
+  width: 12px;
+  height: 12px;
+}
+.timer-glyph svg {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  transition:
+    opacity 0.18s,
+    transform 0.18s cubic-bezier(0.2, 1.1, 0.3, 1);
+}
+.glyph-play {
+  fill: currentColor;
+  stroke-width: 1.7;
+}
+.glyph-pause {
+  fill: none;
+  stroke-width: 2.8;
+  opacity: 0;
+  transform: scale(0.7);
+  transform-origin: center;
+}
+.ticket-timer[data-state='running'] .glyph-play {
+  opacity: 0;
+  transform: scale(0.7);
+  transform-origin: center;
+}
+.ticket-timer[data-state='running'] .glyph-pause {
+  opacity: 1;
+  transform: none;
+}
+.glyph-play,
+.glyph-pause {
+  transition:
+    opacity 0.18s,
+    transform 0.18s cubic-bezier(0.2, 1.1, 0.3, 1);
+}
+.timer-readout {
+  font-size: 15px;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+}
+.ticket-timer[data-state='running'] .timer-readout {
+  color: var(--text);
+}
+.ticket-timer .form-errors {
+  flex-basis: 100%;
+}
+.card-points {
+  margin-left: 7px;
+  margin-right: auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 650;
+  color: color-mix(in srgb, var(--accent) 85%, var(--muted));
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.card-points small {
+  font-size: 8px;
+  opacity: 0.8;
+}
+/* A value the project's scale no longer offers keeps its place and says so. */
+.card-points.off-scale {
+  color: var(--muted);
+  background: none;
+  border: 1px dashed color-mix(in srgb, var(--muted) 45%, transparent);
+}
+.ticket-points {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font-weight: 650;
+}
+.ticket-points small {
+  font-size: 9px;
+  color: var(--muted);
+}
+.ticket-points.off-scale {
   color: var(--muted);
 }
 .card-assignees {

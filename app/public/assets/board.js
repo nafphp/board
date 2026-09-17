@@ -70,6 +70,26 @@ function emptyHint(cell) {
   cell.append(hint);
 }
 
+// The estimate sum per column is read back off the cards, so a drop needs no round trip
+// and the number always describes exactly what is on screen.
+function syncPoints() {
+  for (const total of document.querySelectorAll('.column-points[data-column-points]')) {
+    const cells = board.querySelectorAll(
+      `.board-cell[data-column="${total.dataset.columnPoints}"]`,
+    );
+    const sum = [...cells].reduce(
+      (points, cell) =>
+        points + cardsIn(cell).reduce((cards, card) => cards + Number(card.dataset.points || 0), 0),
+      0,
+    );
+    const value = total.querySelector('[data-points-value]');
+    if (!value || value.textContent.trim() === String(sum)) continue;
+    value.textContent = String(sum);
+    if (reducedMotion.matches) continue;
+    total.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 300, easing: glide });
+  }
+}
+
 function syncCounts() {
   for (const heading of document.querySelectorAll('.column-heading[data-column]')) {
     const cells = board.querySelectorAll(`.board-cell[data-column="${heading.dataset.column}"]`);
@@ -83,6 +103,7 @@ function syncCounts() {
       { duration: 340, easing: spring },
     );
   }
+  syncPoints();
   for (const lane of document.querySelectorAll('.swimlane[data-lane]')) {
     const total = [...lane.querySelectorAll('.board-cell')].reduce(
       (sum, cell) => sum + cardsIn(cell).length,

@@ -103,6 +103,75 @@ begann erwartungsgemäß bei `WEB-1`, während Projekt 1 bei 10 stand; diese Pr�
 wieder entfernt. `/health/ready` meldet Schema `202609160003`.
 
 
+## Schätzung je Projekt und Zeiterfassung
+
+Komplexität und Story-Points sind dieselbe Zahl auf zwei Skalen, deshalb gibt es ein Feld
+und nicht zwei: `tickets.estimate_points` trägt den Wert, `projects.estimation_scale` sagt,
+wie er zu lesen ist — `none`, `complexity` (1–5) oder `points` (1, 2, 3, 5, 8, 13, 21). Das
+„nur eine Skala gleichzeitig“ ist damit strukturell und keine Regel, die die Oberfläche
+durchsetzen müsste. Über jeder Spalte steht die Summe der sichtbaren Schätzungen; sie wird
+beim Verschieben aus den Karten neu gerechnet, ohne den Server zu fragen. Bei aktiven Filtern
+beschreibt sie die gefilterte Ansicht, worauf der bestehende Hinweis über dem Board zeigt.
+
+Ein Skalenwechsel verändert keine Zahl. Werte, die die neue Skala nicht anbietet, bleiben
+stehen, sind auf Karte und Ticket markiert und bleiben im Auswahlfeld wählbar, damit das
+Öffnen eines Tickets sie nicht still verwirft. Die Projekteinstellungen nennen ihre Anzahl
+und bieten einmalig an, sie auf den nächstgelegenen angebotenen Wert abzubilden; bei
+Gleichstand gewinnt der kleinere. Das Abbilden passiert nur auf Aufforderung.
+
+Die Zeiterfassung liegt in `ticket_timers` je Projekt, Ticket und Person. Gezählt wird aus
+einem gespeicherten Startzeitpunkt, nicht im Browser: ein geschlossener Tab, ein Reload oder
+ein schlafendes Gerät können damit weder Minuten verlieren noch erfinden. Eine Person zählt
+eine Sache — ein Start beendet den laufenden Lauf, auch in einem anderen Projekt. Mehrere
+Personen erfassen unabhängig auf dasselbe Ticket; ihre Minuten addieren sich in `spent_minutes`.
+
+Ein Lauf führt zwei Zahlen, und das aus einem Grund, den erst die Benutzung zeigte. Gebucht
+werden volle Minuten; die Sekunden darunter bleiben als Rest am Lauf und zählen beim nächsten
+Mal mit, sonst würden wiederholte kurze Einheiten weggerundet. Zeigte die Uhr diesen Rest,
+sprang sie beim Pausieren von 1:30 auf 0:30 zurück — buchhalterisch richtig, als Uhr
+unbrauchbar. Was angezeigt wird, ist deshalb eine eigene, ausschließlich wachsende Zahl:
+Pausieren friert sie ein, Fortsetzen zählt von dort weiter, und erst Beenden beginnt eine
+neue Sitzung bei null. Die gebuchten Minuten liegen damit immer weniger als eine Minute
+hinter der Uhr und nie davor. Ein Prüffall geht genau diesen Ablauf durch.
+
+Der Timer ist eine Zeile der Planungsliste wie jede andere: links seine Beschriftung, rechts
+die Bedienung. Ein Aufklappbereich stand vorher davor und war die unruhigste Stelle der
+Ansicht; als gewöhnliche Zeile braucht er weder Animation noch Zustand und steht neben
+Startdatum, Fälligkeit und Erfasst, wohin er gehört.
+
+Bedient wird der Timer über eine einzige Schaltfläche, ein abgerundetes Quadrat: ein Tippen
+startet und pausiert, langes Drücken beendet. Doppelklick wäre hier falsch — der erste Klick
+müsste rund eine Viertelsekunde abwarten, ob ein zweiter folgt, und Start und Pause würden
+träge. Die ersten 160 ms eines Drucks passiert nichts; erst danach schließt sich in 620 ms
+eine Kontur um die Schaltfläche. Damit bleibt ein normaler Klick vollkommen still. Die Kontur
+trägt die Farbe der Schaltfläche selbst, nicht die Warnfarbe, und liest sich so als Aufladen
+statt als Alarm. Außerhalb des Haltens ist sie ganz ausgeblendet: eine runde Strichkappe
+zeichnet sonst auch bei Strichlänge null noch einen Punkt. Ihre Länge wird aus den Maßen des
+Rechtecks gerechnet statt eingetragen, damit Form und Animation nicht auseinanderlaufen
+können — gemessen 118,2. Leertaste und Enter halten ebenso, und eine unsichtbare Beschreibung
+nennt die Geste.
+
+Dauern werden so geschrieben, wie man sie sagt: `2h 40m`, `2h30`, `40m`, `45min`, `1:30`,
+`1,5h` oder eine nackte `90` für Minuten. Eine nackte Dezimalzahl bleibt abgewiesen, weil
+„1.5“ allein weder Minuten noch Stunden sagt; mit Einheit ist `1.5h` eindeutig. Angezeigt
+wird dieselbe Schreibweise, die das Feld annimmt, sodass Gelesenes unverändert wieder
+eingetippt werden kann.
+
+Timer-Schreibzugriffe tragen bewusst keine Ticketversion. Alles andere im Projekt nutzt
+optimistische Sperren, aber wer eine Stunde erfasst hat, hielte beim Pausieren längst eine
+veraltete Version, und ein Konflikt würde dort echte Arbeit verwerfen. Minuten zu addieren
+ist kein Ersetzen und kann mit keiner fremden Änderung kollidieren. Projektgrenzen gelten
+unverändert: Leserechte erlauben keine Zeitbuchung, und für Fremde bleibt das Ticket
+unauffindbar.
+
+Geprüft mit 70 MariaDB-, 70 PostgreSQL-, 95 HTTPS- und 25 Profilprüfungen, den Worker- und
+AI-Checks sowie der vollständigen Stilprüfung. Die Prüfungen decken Übertrag unter einer
+Minute, das Beenden eines Laufs beim Start eines anderen — auch projektübergreifend —,
+Pausieren mit veralteter Version, zwei Personen am selben Ticket, Skalenwechsel mit Erhalt
+und Abbildung sowie Spaltensummen gegen die tatsächlich gerenderten Karten ab.
+`/health/ready` meldet Schema `202609170002`.
+
+
 ## Eigenes Profil
 
 Der Avatar öffnet das Profil-Modal mit der aktuellen Projektrolle, Passwortwechsel,

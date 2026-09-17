@@ -1,8 +1,12 @@
 <?php
+use App\Domain\Estimation;
+
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
 
+$scale    = Estimation::scale($project['estimation_scale'] ?? null);
+$offScale = (int) ($offScale ?? 0);
 ?>
 <form method="post" data-enhanced action="<?= s(route('project.update', ['project' => $projectId])) ?>">
     <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
@@ -35,8 +39,29 @@ use function Naf\View\s;
                 <small><?= s(t('Steht vor jeder Ticketnummer und in ihrer Adresse.')) ?></small>
             </label>
         </div>
+        <label>
+            <?= s(t('Schätzung')) ?>
+            <select name="estimation_scale">
+                <?php foreach (Estimation::LABELS as $key => $label): ?>
+                    <option value="<?= s($key) ?>" <?= $scale === $key ? 'selected' : '' ?>>
+                        <?= s(t($label)) ?><?= Estimation::SCALES[$key] ? ' · ' . implode(', ', Estimation::SCALES[$key]) : '' ?>
+                    </option>
+                <?php endforeach ?>
+            </select>
+            <small><?= s(t('Gilt für alle Tickets des Projekts. Nur eine Skala gleichzeitig; das Board summiert sie über jeder Spalte.')) ?></small>
+        </label>
+        <?php if ($offScale): ?>
+            <p class="settings-hint">
+                <?= s(t(':count Tickets tragen eine Schätzung, die diese Skala nicht anbietet. Sie bleiben erhalten und sind markiert.', ['count' => $offScale])) ?>
+            </p>
+        <?php endif ?>
         <div class="form-errors" role="alert"></div>
         <button class="button primary">Projekt speichern</button>
+        <?php if ($offScale): ?>
+            <button class="button subtle" name="remap_estimates" value="1">
+                <?= s(t('Werte auf diese Skala abbilden')) ?>
+            </button>
+        <?php endif ?>
     </fieldset>
 </form>
 <?php if ($scope->role === 'owner'): ?>

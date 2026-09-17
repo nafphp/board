@@ -19,6 +19,7 @@ final class Ticket extends AbstractModel
     protected ?string $start_date       = null;
     protected ?int $estimate_minutes    = null;
     protected int $spent_minutes        = 0;
+    protected ?int $estimate_points     = null;
     protected string $priority          = '';
     protected string $color             = '';
     protected ?string $due_date         = null;

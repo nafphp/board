@@ -15,6 +15,7 @@ use App\Services\PreferenceService;
 use App\Services\ProjectService;
 use App\Services\RoleService;
 use App\Services\TicketService;
+use App\Services\TimerService;
 use App\Support\Input;
 use Naf\Auth\Auth;
 use Naf\Auth\Credentials\PasswordCredentials;
@@ -40,6 +41,7 @@ final class AppController
         private BoardQuery $query,
         private ProjectService $projects,
         private TicketService $tickets,
+        private TimerService $timers,
         private CommentService $comments,
         private Access $access,
         private PDO $pdo,
@@ -156,6 +158,7 @@ final class AppController
                 ...$boardData,
                 ...$details,
                 'fragment' => $fragment,
+                'timer'    => $this->timers->state($projectId, $details['ticket']['id']),
             ]);
         });
     }
@@ -180,13 +183,17 @@ final class AppController
     public function settings(string $project): ResponseInterface
     {
         return $this->read(function () use ($project) {
-            $id = Input::id($project);
-            $this->access->project($id);
+            $id    = Input::id($project);
+            $scope = $this->access->project($id);
 
             return $this->page('settings', [
                 'title'       => 'Einstellungen',
                 'customRoles' => $this->roles->list($id),
                 ...$this->query->board($id),
+                'offScale' => $this->projects->offScaleEstimates(
+                    $id,
+                    $scope->project['estimation_scale'] ?? null,
+                ),
             ]);
         });
     }
@@ -300,6 +307,23 @@ final class AppController
             $this->tickets->link($projectId, $this->tickets->resolve($projectId, $ticket), $data);
 
             return ['url' => \Naf\route('ticket', ['project' => $project, 'ticket' => $ticket])];
+        });
+    }
+
+    public function ticketTimer(string $project, string $ticket): ResponseInterface
+    {
+        return $this->mutation(function ($data) use ($project, $ticket) {
+            $projectId = Input::id($project);
+            $state     = $this->timers->act(
+                $projectId,
+                $this->tickets->resolve($projectId, $ticket),
+                $data,
+            );
+
+            return [
+                ...$state,
+                'url' => \Naf\route('ticket', ['project' => $project, 'ticket' => $ticket]),
+            ];
         });
     }
 
@@ -446,9 +470,10 @@ final class AppController
 
         return render($template, [
             ...$data,
-            'projects'    => $this->query->projects(),
-            'user'        => $this->auth->user(),
-            'preferences' => $preferences,
+            'projects'     => $this->query->projects(),
+            'runningTimer' => $this->timers->running(),
+            'user'         => $this->auth->user(),
+            'preferences'  => $preferences,
         ]);
     }
 

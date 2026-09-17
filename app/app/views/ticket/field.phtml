@@ -43,6 +43,17 @@ $creating ??= false;
                 <textarea id="edit-<?= s($name) ?>" name="<?= $creating ? 'description' : 'description_html' ?>" <?= $creating ? 'rows="8" maxlength="50000"' : 'hidden' ?>><?= s($value) ?></textarea>
             <?php elseif ($type === 'text'): ?>
                 <textarea id="edit-<?= s($name) ?>" name="<?= s($name) ?>" rows="1" required maxlength="200" <?= $creating ? 'placeholder="' . s(t('Was soll erledigt werden?')) . '"' : '' ?>><?= s($value) ?></textarea>
+            <?php elseif ($type === 'duration'): ?>
+                <input
+                    id="edit-<?= s($name) ?>"
+                    type="text"
+                    name="<?= s($name) ?>"
+                    value="<?= s($value ?? '') ?>"
+                    placeholder="2h 40m"
+                    autocomplete="off"
+                    spellcheck="false"
+                />
+                <span class="muted small"><?= s(t('Zum Beispiel 2h 40m, 90m oder 1:30')) ?></span>
             <?php else: ?>
                 <input id="edit-<?= s($name) ?>" type="<?= s($type) ?>" name="<?= s($name) ?>" value="<?= s($value ?? '') ?>" <?= $type === 'number' ? 'min="0" max="10000000" step="1"' : '' ?> />
                 <?php if ($type === 'number'): ?><span class="muted small"><?= s(t('Zeit in Minuten')) ?></span><?php endif ?>

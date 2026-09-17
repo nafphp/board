@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Estimation;
 use App\Domain\ProjectPermissions;
 use App\Support\Format;
 
@@ -35,18 +36,19 @@ $hintUrl = $current
         <meta name="csrf-token" content="<?= s($token) ?>" />
         <title><?= s(t($title ?? 'Board')) ?> · Nafinity</title>
         <script src="/assets/boot.js"></script>
-        <link rel="stylesheet" href="/assets/app.css?v=3" />
+        <link rel="stylesheet" href="/assets/app.css?v=5" />
         <script type="module" src="/assets/app.js"></script>
         <script type="module" src="/assets/settings.js?v=3"></script>
         <script type="module" src="/assets/profile.js?v=4"></script>
         <link rel="stylesheet" href="/assets/profile.css?v=3" />
         <script type="module" src="/assets/ai/chat.js?v=2"></script>
-        <link rel="stylesheet" href="/assets/settings.css?v=2" />
+        <link rel="stylesheet" href="/assets/settings.css?v=3" />
         <link rel="stylesheet" href="/assets/ai.css?v=2" />
         <link rel="stylesheet" href="/assets/board.css?v=1" />
         <link rel="stylesheet" href="/assets/cursor.css?v=2" />
         <link rel="stylesheet" href="/assets/ticket.css?v=2" />
         <script type="module" src="/assets/ticket.js?v=2"></script>
+        <script type="module" src="/assets/timer.js?v=1"></script>
     </head>
     <body>
         <div class="app-shell">
@@ -145,6 +147,22 @@ $hintUrl = $current
                         <strong><?= s($project['name'] ?? 'Nafinity') ?></strong>
                     </div>
                     <div class="topbar-right">
+                        <?php if ($runningTimer ?? null): ?>
+                            <a
+                                class="timer-chip"
+                                data-running-timer
+                                data-seconds="<?= (int) $runningTimer['seconds'] ?>"
+                                href="<?= s(route('ticket', [
+                                    'project' => $runningTimer['project_id'],
+                                    'ticket'  => Format::ticket($runningTimer['ticket_key'], $runningTimer['number']),
+                                ])) ?>"
+                                title="<?= s($runningTimer['title']) ?>"
+                            >
+                                <span class="timer-pulse" aria-hidden="true"></span>
+                                <span class="timer-ticket"><?= s(Format::ticket($runningTimer['ticket_key'], $runningTimer['number'])) ?></span>
+                                <time data-timer-readout><?= s(sprintf('%d:%02d', intdiv((int) $runningTimer['seconds'], 60), (int) $runningTimer['seconds'] % 60)) ?></time>
+                            </a>
+                        <?php endif ?>
                         <span class="account-role" title="<?= s($roleContext) ?>">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
                                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -214,6 +232,14 @@ $hintUrl = $current
                             pattern="[A-Za-z0-9]{1,6}"
                             placeholder="<?= s(t('Aus dem Namen')) ?>"
                         />
+                    </label>
+                    <label>
+                        <?= s(t('Schätzung')) ?>
+                        <select name="estimation_scale">
+                            <?php foreach (Estimation::LABELS as $key => $label): ?>
+                                <option value="<?= s($key) ?>"><?= s(t($label)) ?></option>
+                            <?php endforeach ?>
+                        </select>
                     </label>
                 </div>
                 <div class="form-errors" role="alert"></div>

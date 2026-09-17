@@ -15,6 +15,7 @@ final class BoardQuery
         private PDO $pdo,
         private Access $access,
         private TicketService $tickets,
+        private TimerService $timers,
     ) {
     }
 
@@ -169,13 +170,14 @@ final class BoardQuery
                 'SELECT * FROM swimlanes WHERE project_id=? ORDER BY position,id',
                 [$project],
             ),
-            'cards'       => $cards,
-            'labels'      => $labels,
-            'members'     => $members,
-            'assignments' => $assignments,
-            'tags'        => $tags,
-            'filters'     => $filters,
-            'total'       => $total,
+            'cards'          => $cards,
+            'labels'         => $labels,
+            'members'        => $members,
+            'assignments'    => $assignments,
+            'tags'           => $tags,
+            'filters'        => $filters,
+            'total'          => $total,
+            'running_timers' => $this->timers->runningIn($project),
         ];
     }
 

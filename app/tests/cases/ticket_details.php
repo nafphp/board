@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Support\Duration;
 use App\Support\Mentions;
 use App\Support\RichText;
 use Naf\Core\App;
@@ -70,6 +71,29 @@ test('planning dates and durations validate and persist', function () use ($tick
     $tickets->update($detailProject, $detailId, ['start_date' => '', 'due_date' => '', 'estimate_minutes' => '', 'spent_minutes' => 0] + $detailVersions());
     $row = $tickets->ticket($detailProject, $detailId);
     check($row['start_date'] === null && $row['estimate_minutes'] === null, 'optional fields not cleared');
+});
+
+test('durations are written the way people say them', function () use ($tickets, $detailProject, $detailId, $detailVersions) {
+    foreach (
+        [
+            '2h 40m' => 160, '2h40m' => 160, '2h' => 120, '40m' => 40, '45min' => 45,
+            '1:30'   => 90, '90' => 90, '1.5h' => 90, '1,5h' => 90, '2h30' => 150,
+            '0'      => 0, ' 3H 5M ' => 185, '2h 40' => 160,
+        ] as $written => $minutes
+    ) {
+        $tickets->update($detailProject, $detailId, ['spent_minutes' => $written] + $detailVersions());
+        check(
+            (int) $tickets->ticket($detailProject, $detailId)['spent_minutes'] === $minutes,
+            'not understood: ' . $written,
+        );
+    }
+    foreach (['1.5', 'zwei Stunden', '1:75', '-5m', '99999999h', '2h-3m', '2h 40x'] as $nonsense) {
+        denied(422, fn() => $tickets->update($detailProject, $detailId, ['spent_minutes' => $nonsense] + $detailVersions()));
+    }
+    // What is shown is what may be typed back in.
+    check(Duration::format(160) === '2h 40m', 'combined form wrong');
+    check(Duration::format(120) === '2h' && Duration::format(40) === '40m', 'single unit wrong');
+    check(Duration::format(0) === '0m', 'zero not written as minutes');
 });
 
 test('ticket links are bidirectional unique and confined to the project', function () use ($tickets, $query, $detailProject, $detailId, $detailOther, $detailVersions) {

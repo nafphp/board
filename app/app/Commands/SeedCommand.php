@@ -64,12 +64,13 @@ final class SeedCommand extends AbstractCommand
         $auth->setIdentity($users[0]);
         $projects = $c->make(ProjectService::class);
         $tickets  = $c->make(TicketService::class);
+        $purpose  = 'Ein klarer Ort für Ideen, Entscheidungen und die nächste gute Version.';
         $a        = $projects->create([
-            'name' => 'Nafinity',
-            'description'
-                    => 'Ein klarer Ort für Ideen, Entscheidungen und die nächste gute Version.',
-            'color' => '#6366f1',
-            'icon'  => 'N',
+            'name'             => 'Nafinity',
+            'description'      => $purpose,
+            'color'            => '#6366f1',
+            'icon'             => 'N',
+            'estimation_scale' => 'points',
         ]);
         $projects->member($a, ['email' => 'viewer@example.test', 'role' => 'viewer']);
         foreach (
@@ -95,6 +96,7 @@ final class SeedCommand extends AbstractCommand
                 0,
                 'normal',
                 0,
+                3,
             ],
             [
                 'Schneller zwischen Projekten wechseln',
@@ -103,6 +105,7 @@ final class SeedCommand extends AbstractCommand
                 0,
                 'low',
                 1,
+                5,
             ],
             [
                 'Das Board mit der Tastatur bedienen',
@@ -111,6 +114,7 @@ final class SeedCommand extends AbstractCommand
                 0,
                 'high',
                 1,
+                8,
             ],
             [
                 'Ticketdetails an einem Ort',
@@ -119,6 +123,7 @@ final class SeedCommand extends AbstractCommand
                 0,
                 'normal',
                 0,
+                2,
             ],
             [
                 'Zwei Ansichten, ein verlässlicher Stand',
@@ -127,6 +132,7 @@ final class SeedCommand extends AbstractCommand
                 0,
                 'high',
                 2,
+                13,
             ],
             [
                 'Projektgrenzen absichern',
@@ -135,6 +141,7 @@ final class SeedCommand extends AbstractCommand
                 0,
                 'urgent',
                 2,
+                3,
             ],
             [
                 'Weniger Ablenkung im Dark Mode',
@@ -142,6 +149,7 @@ final class SeedCommand extends AbstractCommand
                 1,
                 1,
                 'normal',
+                1,
                 1,
             ],
             [
@@ -151,21 +159,23 @@ final class SeedCommand extends AbstractCommand
                 1,
                 'low',
                 0,
+                5,
             ],
         ];
-        foreach ($cards as [$title, $description, $column, $lane, $priority, $label]) {
+        foreach ($cards as [$title, $description, $column, $lane, $priority, $label, $points]) {
             $b = $tickets->board($a);
             $tickets->create($a, [
-                'title'          => $title,
-                'description'    => $description,
-                'priority'       => $priority,
-                'color'          => '#6366f1',
-                'due_date'       => gmdate('Y-m-d', time() + 7 * 86400),
-                'column_id'      => $columns[$column],
-                'swimlane_id'    => $lanes[$lane],
-                'board_revision' => $b['revision'],
-                'label_ids'      => [$labels[$label]],
-                'assignee_ids'   => [$users[0]->getId()],
+                'title'           => $title,
+                'description'     => $description,
+                'priority'        => $priority,
+                'color'           => '#6366f1',
+                'due_date'        => gmdate('Y-m-d', time() + 7 * 86400),
+                'column_id'       => $columns[$column],
+                'swimlane_id'     => $lanes[$lane],
+                'board_revision'  => $b['revision'],
+                'estimate_points' => $points,
+                'label_ids'       => [$labels[$label]],
+                'assignee_ids'    => [$users[0]->getId()],
             ]);
         }
         $auth->setIdentity($users[1]);

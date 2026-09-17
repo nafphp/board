@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Estimation;
 use App\Support\Format;
 
 use function Naf\Form\csrf;
@@ -20,6 +21,17 @@ $labelMap     = array_column($labels, null, 'id');
 $memberMap    = array_column($members, null, 'id');
 $columnCounts = array_count_values(array_column($cards, 'column_id'));
 $laneCounts   = array_count_values(array_column($cards, 'swimlane_id'));
+
+// One estimate read through the project's scale. The sums describe what is on screen, so
+// a filtered board reports the filtered total and says so in its existing hint.
+$scale        = Estimation::scale($project['estimation_scale']);
+$estimating   = Estimation::active($scale);
+$estimateUnit = Estimation::UNITS[$scale] ?? '';
+$columnPoints = [];
+foreach ($cards as $card) {
+    $columnPoints[$card['column_id']] = ($columnPoints[$card['column_id']] ?? 0)
+        + (int) $card['estimate_points'];
+}
 
 $priorityLabels = [
     'urgent' => t('Dringend'),
@@ -175,6 +187,13 @@ $emptyCellHint = $filters
                 <?php if ($column['wip_limit']): ?>
                     <small>/ <?= (int) $column['wip_limit'] ?></small>
                 <?php endif ?>
+                <?php if ($estimating): ?>
+                    <span
+                        class="column-points"
+                        data-column-points="<?= (int) $column['id'] ?>"
+                        title="<?= s(t(Estimation::LABELS[$scale]) . ' · ' . $column['name']) ?>"
+                    ><span data-points-value><?= (int) ($columnPoints[$column['id']] ?? 0) ?></span><small><?= s($estimateUnit) ?></small></span>
+                <?php endif ?>
             </div>
         <?php endforeach ?>
     </div>
@@ -211,9 +230,13 @@ $emptyCellHint = $filters
                                 data-version="<?= (int) $card['version'] ?>"
                                 data-status="<?= s($card['status']) ?>"
                                 data-title="<?= s($card['title']) ?>"
+                                data-points="<?= (int) $card['estimate_points'] ?>"
                             >
                                 <div class="card-top">
                                     <span class="ticket-number"><?= s(Format::ticket($project['ticket_key'], $card['number'])) ?></span>
+                                    <?php if (in_array((int) $card['id'], $running_timers, true)): ?>
+                                        <span class="timer-pulse" title="<?= s(t('Deine Zeiterfassung läuft')) ?>"></span>
+                                    <?php endif ?>
                                     <div>
                                         <span
                                             class="priority priority-<?= s($card['priority']) ?>"
@@ -247,6 +270,16 @@ $emptyCellHint = $filters
                                 </div>
                                 <div class="card-bottom">
                                     <span class="due-date"><?= $card['due_date'] ? '◷ ' . s(date('d. M', strtotime($card['due_date']))) : 'Kein Termin' ?></span>
+                                    <?php if ($estimating && $card['estimate_points'] !== null): ?>
+                                        <span
+                                            class="card-points <?= Estimation::offScale($scale, (int) $card['estimate_points']) ? 'off-scale' : '' ?>"
+                                            title="<?= s(Estimation::offScale($scale, (int) $card['estimate_points'])
+                                                ? t('Wert außerhalb der Skala dieses Projekts')
+                                                : t(Estimation::LABELS[$scale])) ?>"
+                                        >
+                                            <?= (int) $card['estimate_points'] ?><small><?= s($estimateUnit) ?></small>
+                                        </span>
+                                    <?php endif ?>
                                     <div class="card-assignees">
                                         <?php foreach ($assignments[$card['id']] ?? [] as $userId): ?>
                                             <?php

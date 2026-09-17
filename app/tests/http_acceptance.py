@@ -509,8 +509,8 @@ ok(
     and "<h2>Modal plan</h2>" in created_fragment
     and "<strong>Formatted</strong>" in created_fragment
     and 'value="2026-10-01"' in created_fragment
-    and 'value="90"' in created_fragment
-    and 'value="15"' in created_fragment
+    and 'value="1h 30m"' in created_fragment
+    and 'value="15m"' in created_fragment
     and "data-ticket-create" not in created_fragment
     and "data-comment-composer" in created_fragment,
     "Created ticket returns the editable detail fragment with rich text and planning values",
@@ -524,10 +524,10 @@ ok(
 auto_markup = alice.page(url + "?fragment=1")
 auto_forms = re.findall(r"<form[^>]*data-auto-save[^>]*>.*?</form>", auto_markup, re.S)
 ok(
-    len(auto_forms) == 13
+    len(auto_forms) == 14
     and all('name="version"' in form and 'name="board_revision"' in form for form in auto_forms)
     and all('type="submit"' not in form for form in auto_forms),
-    "All thirteen inline editors use revision-protected auto-save without per-field save buttons",
+    "All fourteen inline editors use revision-protected auto-save without per-field save buttons",
 )
 ok(
     re.search(r'<textarea[^>]*name="title"[^>]*maxlength="200"', auto_markup) is not None
@@ -611,6 +611,107 @@ ok(
     choice_status == 200
     and re.search(r'name="assignee_ids\[\]"[^>]* checked', choice_updated) is None,
     "Unassigned option clears all assignments through the existing endpoint",
+)
+
+# Estimation: one scale per project, summed over each column and kept across a switch.
+project_form = {
+    "name": "Nafinity",
+    "description": "Ein klarer Ort für Ideen, Entscheidungen und die nächste gute Version.",
+    "ticket_key": "NAF",
+    "color": "#6366f1",
+    "icon": "N",
+}
+
+
+def set_scale(scale, remap=False):
+    body = {**project_form, "estimation_scale": scale}
+    if remap:
+        body["remap_estimates"] = "1"
+    status, _, _ = alice.post("/projects/1/settings", body)
+    assert status == 200, ("scale", scale, status)
+    return alice.page("/projects/1")
+
+
+board_page = alice.page("/projects/1")
+column_sums = [
+    int(value) for value in re.findall(r"<span data-points-value>(\d+)</span>", board_page)
+]
+card_points = [
+    int(value)
+    for value in re.findall(r'class="ticket-card"[^>]*data-points="(\d+)"', board_page, re.S)
+]
+ok(
+    len(column_sums) == 4 and sum(column_sums) == sum(card_points) and sum(card_points) > 0,
+    "Column sums account for exactly the estimates on the board",
+)
+ok("SP</small>" in board_page, "Story point unit is rendered beside the sum")
+
+# 8 and 13 have no place on a one-to-five scale; they stay until the remap is asked for.
+settings_page = set_scale("complexity") and alice.page("/projects/1/settings")
+ok('class="settings-hint"' in settings_page, "Switching scale reports the values it cannot offer")
+ok('name="remap_estimates"' in settings_page, "Off-scale values offer a one-off remap")
+ok(
+    "off-scale" in alice.page("/projects/1"),
+    "Off-scale estimates stay on their cards and are marked",
+)
+set_scale("complexity", remap=True)
+settings_page = alice.page("/projects/1/settings")
+ok(
+    'class="settings-hint"' not in settings_page and "off-scale" not in alice.page("/projects/1"),
+    "Remap moves every off-scale estimate onto the chosen scale",
+)
+set_scale("none")
+ok(
+    "data-points-value" not in alice.page("/projects/1"),
+    "Turning estimation off removes the counter without touching the numbers",
+)
+set_scale("points")
+ok(
+    sum(
+        int(value)
+        for value in re.findall(r"<span data-points-value>(\d+)</span>", alice.page("/projects/1"))
+    )
+    > 0,
+    "Estimates return when the scale is switched back on",
+)
+
+# Time tracking: the server holds the run, and a person counts one thing at a time.
+timer_status, timer_body, _ = alice.post("/projects/1/tickets/NAF-1/timer", {"action": "start"})
+ok(
+    timer_status == 200 and json.loads(timer_body)["state"] == "running",
+    "Starting a timer reports a running run",
+)
+board_page = alice.page("/projects/1")
+ok(
+    "data-running-timer" in board_page and 'class="timer-pulse"' in board_page,
+    "A running timer is visible on the board and in the bar without opening the ticket",
+)
+alice.post("/projects/1/tickets/NAF-2/timer", {"action": "start"})
+ok(
+    'data-state="paused"' in alice.page("/projects/1/tickets/NAF-1"),
+    "Starting elsewhere settles the run that was counting",
+)
+timer_status, timer_body, _ = alice.post("/projects/1/tickets/NAF-2/timer", {"action": "stop"})
+ok(
+    timer_status == 200 and json.loads(timer_body)["state"] == "stopped",
+    "Stopping closes the run and reports the ticket total",
+)
+ok(
+    "data-running-timer" not in alice.page("/projects/1"),
+    "The bar drops its marker once nothing is counting",
+)
+ok(
+    alice.post("/projects/1/tickets/NAF-1/timer", {"action": "rewind"})[0] == 422,
+    "Unknown timer actions are refused",
+)
+ok(
+    viewer.post("/projects/1/tickets/NAF-1/timer", {"action": "start"}, viewer.csrf())[0] == 403,
+    "Read access is not permission to book time",
+)
+ok(
+    bob.post("/projects/1/tickets/NAF-1/timer", {"action": "start"}, bob.csrf("/projects/2"))[0]
+    == 404,
+    "A stranger is not told the ticket exists",
 )
 
 print(json.dumps({"passed": len(results), "tests": results}, indent=2))
