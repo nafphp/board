@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Services\AiService;
+use App\Services\PreferenceService;
 use App\Services\RoleService;
+use App\Support\Locales;
 
 $roles = $c->make(RoleService::class);
 $ai    = $c->make(AiService::class);
@@ -69,6 +71,32 @@ test('AI tool catalog and execution enforce project and current role boundaries'
     denied(404, fn() => $ai->call($roleProject, ['name' => 'nafinity_board', 'arguments' => []]));
     $auth->setIdentity($users['alice']);
 });
+test('the language picker changes only the language', function () use ($c, $query) {
+    $prefs = $c->make(PreferenceService::class);
+    $prefs->save([
+        'theme'         => 'dark',
+        'locale'        => 'de',
+        'timezone'      => 'Europe/Lisbon',
+        'notify_in_app' => '1',
+        'notify_mail'   => '1',
+    ]);
+    $prefs->language('en');
+    $after = $query->preferences();
+    check($after['locale'] === 'en', 'language not switched');
+    // Everything else has to survive: the picker sends one field, and the full save would
+    // otherwise reset theme, timezone and both notification switches to their defaults.
+    check($after['theme'] === 'dark', 'theme reset by the language switch');
+    check($after['timezone'] === 'Europe/Lisbon', 'timezone reset by the language switch');
+    check((int) $after['notify_mail'] === 1, 'mail notifications reset by the language switch');
+    denied(422, fn() => $prefs->language('xx'));
+    denied(422, fn() => $prefs->language(null));
+    // Only languages with a translation file are on offer, never every code the framework knows.
+    $available = Locales::available();
+    check(array_keys($available) === ['de', 'en'], 'offered languages do not match the translation files');
+    check($available['de'] === 'Deutsch' && $available['en'] === 'English', 'names are not written in their own language');
+    $prefs->language('de');
+});
+
 test('AI writes require confirmation and use normal optimistic concurrency', function () use ($ai, $roleProject, $query, $tickets) {
     $board = $query->board($roleProject);
     $args  = ['title' => 'AI test', 'description' => 'Confirmed action', 'priority' => 'normal', 'column_id' => (int) $board['columns'][0]['id'], 'swimlane_id' => (int) $board['swimlanes'][0]['id'], 'board_revision' => (int) $board['board']['revision']];

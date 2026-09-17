@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Domain\Failure;
+use App\Support\Locales;
 use DateTimeZone;
 use PDO;
 
@@ -22,7 +23,7 @@ final class PreferenceService
         $zone   = $data['timezone'] ?? 'Europe/Berlin';
         if (
             !in_array($theme, ['light', 'dark', 'system'], true)
-            || !in_array($locale, ['de', 'en'], true)
+            || !Locales::supports($locale)
             || !is_string($zone)
             || !in_array($zone, DateTimeZone::listIdentifiers(), true)
         ) {
@@ -42,6 +43,26 @@ final class PreferenceService
                 ? ' ON DUPLICATE KEY UPDATE theme=VALUES(theme),locale=VALUES(locale),timezone=VALUES(timezone),notify_in_app=VALUES(notify_in_app),notify_mail=VALUES(notify_mail)'
                 : ' ON CONFLICT(user_id) DO UPDATE SET theme=excluded.theme,locale=excluded.locale,timezone=excluded.timezone,notify_in_app=excluded.notify_in_app,notify_mail=excluded.notify_mail';
         $this->pdo->prepare($sql)->execute($values);
+    }
+
+    /**
+     * Only the language, because the picker in the bar sends nothing else. Running it
+     * through save() would reset theme, timezone and both notification switches to their
+     * defaults, since that method writes every field it is given or not given.
+     */
+    public function language(mixed $locale): void
+    {
+        if (!Locales::supports($locale)) {
+            throw new Failure('Diese Sprache steht nicht zur Verfügung.');
+        }
+        $user = $this->access->actor();
+        $sql  = 'INSERT INTO user_preferences(theme,locale,timezone,notify_in_app,notify_mail,user_id)'
+            . " VALUES('system',?,'Europe/Berlin',1,0,?)";
+        $sql
+            .= $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql'
+                ? ' ON DUPLICATE KEY UPDATE locale=VALUES(locale)'
+                : ' ON CONFLICT(user_id) DO UPDATE SET locale=excluded.locale';
+        $this->pdo->prepare($sql)->execute([$locale, $user]);
     }
 
     public function mute(int $project, bool $muted): void

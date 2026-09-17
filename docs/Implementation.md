@@ -172,6 +172,24 @@ und Abbildung sowie Spaltensummen gegen die tatsächlich gerenderten Karten ab.
 `/health/ready` meldet Schema `202609170002`.
 
 
+## Sprache im Kopfbereich
+
+Neben dem Avatar stand die eigene Projektrolle — eine Angabe, die daneben in der Seitenleiste
+und über dem Board ohnehin steht. An ihrer Stelle wählt man dort jetzt die Sprache. Die Namen
+kommen aus `Naf\I18n\Support\Language`, wo jede Sprache in sich selbst geschrieben ist, damit
+sie auch erkennt, wer die gerade eingestellte nicht lesen kann. Angeboten wird nur, wofür eine
+Übersetzungsdatei existiert; `App\Support\Locales` leitet die Liste aus dem Verzeichnis ab,
+statt die 24 Sprachen des Frameworks zu versprechen. Flaggen stehen daneben als Wiedererkennung,
+nicht als Kennung — ein Land ist keine Sprache, deshalb trägt der geschriebene Name die Aussage.
+
+Bedient wird ein gewöhnliches `select`, nur die Hülle ist gestaltet: Tastatur, Bildschirmleser
+und das Menü des Betriebssystems bleiben damit unverändert. Auf schmalen Bildschirmen entfällt
+der geschriebene Name, die Flagge bleibt. Die Auswahl schreibt über einen eigenen, engen
+Endpunkt nur das Sprachfeld. Der vorhandene `save()` schreibt jedes Feld, ob mitgeschickt oder
+nicht, und hätte Thema, Zeitzone und beide Benachrichtigungsschalter auf die Vorgaben
+zurückgesetzt; ein Prüffall hält das fest.
+
+
 ## Eigenes Profil
 
 Der Avatar öffnet das Profil-Modal mit der aktuellen Projektrolle, Passwortwechsel,

@@ -310,6 +310,18 @@ final class AppController
         });
     }
 
+    public function saveLanguage(): ResponseInterface
+    {
+        return $this->mutation(function ($data) {
+            $locale = $data['locale'] ?? null;
+            $this->prefs->language($locale);
+
+            // No address is returned on purpose: the page the picker sits on reloads itself,
+            // and a destination taken from a request header would be an open redirect.
+            return ['locale' => $locale];
+        });
+    }
+
     public function ticketTimer(string $project, string $ticket): ResponseInterface
     {
         return $this->mutation(function ($data) use ($project, $ticket) {

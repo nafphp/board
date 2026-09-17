@@ -3,6 +3,7 @@
 use App\Domain\Estimation;
 use App\Domain\ProjectPermissions;
 use App\Support\Format;
+use App\Support\Locales;
 
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
@@ -49,6 +50,7 @@ $hintUrl = $current
         <link rel="stylesheet" href="/assets/ticket.css?v=2" />
         <script type="module" src="/assets/ticket.js?v=2"></script>
         <script type="module" src="/assets/timer.js?v=1"></script>
+        <script type="module" src="/assets/language.js?v=1"></script>
     </head>
     <body>
         <div class="app-shell">
@@ -163,13 +165,23 @@ $hintUrl = $current
                                 <time data-timer-readout><?= s(sprintf('%d:%02d', intdiv((int) $runningTimer['seconds'], 60), (int) $runningTimer['seconds'] % 60)) ?></time>
                             </a>
                         <?php endif ?>
-                        <span class="account-role" title="<?= s($roleContext) ?>">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="m12 3 8 4v5c0 5-8 9-8 9s-8-4-8-9V7l8-4Z" />
-                            </svg>
-                            <span><?= s($roleName) ?></span>
-                        </span>
+                        <form
+                            class="language-picker"
+                            method="post"
+                            action="<?= s(route('preferences.language')) ?>"
+                            data-language-picker
+                        >
+                            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                            <label class="sr-only" for="locale-picker"><?= s(t('Sprache wählen')) ?></label>
+                            <span class="language-flag" aria-hidden="true"><?= Locales::flag($preferences['locale']) ?></span>
+                            <select id="locale-picker" name="locale">
+                                <?php foreach (Locales::available() as $code => $name): ?>
+                                    <option value="<?= s($code) ?>" <?= $preferences['locale'] === $code ? 'selected' : '' ?>><?= Locales::flag($code) ?> <?= s($name) ?></option>
+                                <?php endforeach ?>
+                            </select>
+                            <span class="language-name" aria-hidden="true"><?= s(Locales::name($preferences['locale'])) ?></span>
+                            <noscript><button class="button subtle"><?= s(t('Wechseln')) ?></button></noscript>
+                        </form>
                         <button type="button" class="avatar avatar-small profile-trigger" data-profile-open
                             aria-label="<?= s(t('Mein Profil öffnen')) ?>" aria-haspopup="dialog"
                             aria-controls="profile-dialog" aria-expanded="false">

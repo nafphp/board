@@ -187,10 +187,16 @@ small,
 .workspace-caption,
 .section-caption,
 .eyebrow {
-  font-size: 10px;
   font-weight: 750;
   letter-spacing: 1.5px;
   color: var(--muted);
+}
+.eyebrow {
+  font-size: 10px;
+}
+.workspace-caption,
+.section-caption {
+  font-size: 12px;
 }
 .workspace-caption {
   margin: 43px 13px 12px;
@@ -211,7 +217,7 @@ small,
   padding: 10px 12px;
   border-radius: 8px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 550;
   border: 0;
   background: none;
@@ -264,7 +270,7 @@ small,
 }
 .side-count {
   margin-left: auto;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
 }
 .project-nav {
@@ -282,7 +288,7 @@ small,
   padding: 17px 14px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--muted);
   background: color-mix(in srgb, var(--surface) 40%, transparent);
   transition:
@@ -295,14 +301,14 @@ small,
 }
 .sidebar-note strong {
   display: block;
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.5;
   color: var(--text);
   font-weight: 600;
 }
 .sidebar-note p {
   margin: 6px 0 0;
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.6;
 }
 .mini-orbit {
@@ -344,13 +350,13 @@ small,
   white-space: nowrap;
 }
 .user-row strong {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 650;
   display: block;
 }
 .user-row small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
   display: block;
 }
 .user-chevron {
@@ -562,24 +568,62 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   gap: 21px;
   align-items: center;
 }
-.account-role {
-  font-size: 10px;
-  color: var(--muted);
-  display: flex;
+/* The picker keeps the native select as its control, so the keyboard, the screen reader and
+   the platform's own menu all stay; only the chip around it is styled. */
+.language-picker {
+  position: relative;
+  display: inline-flex;
   align-items: center;
   gap: 7px;
-  max-width: 220px;
+  padding: 5px 11px 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 45%, transparent);
+  font-size: 12px;
+  color: var(--muted);
+  transition:
+    border-color 0.18s,
+    color 0.18s,
+    background 0.18s;
 }
-.account-role svg {
-  width: 14px;
-  height: 14px;
-  flex: none;
-  color: var(--accent);
+.language-picker:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
 }
-.account-role > span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.language-picker:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.language-picker select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font: inherit;
+}
+.language-flag {
+  font-size: 14px;
+  line-height: 1;
+}
+.language-name {
+  font-weight: 550;
+}
+.language-picker::after {
+  content: '';
+  width: 5px;
+  height: 5px;
+  margin-left: 1px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-1px) rotate(45deg);
+  opacity: 0.7;
+}
+.language-picker[data-busy] {
+  opacity: 0.6;
+  pointer-events: none;
 }
 .mobile-menu {
   display: none !important;
@@ -1982,8 +2026,13 @@ fieldset:disabled select {
   .topbar-right {
     margin-left: auto;
   }
-  .topbar-right .account-role {
+  /* Narrow screens keep the picker but drop the written name; the flag and the native menu
+     are enough to reach it, and the menu itself still names every language in full. */
+  .topbar-right .language-name {
     display: none;
+  }
+  .topbar-right .language-picker {
+    padding: 5px 9px;
   }
   .breadcrumb {
     gap: 8px;
