@@ -75,11 +75,19 @@ final class CommentService
                 if ($remove) {
                     throw new Failure('Kommentar fehlt.');
                 }
+                $parent = ($data['parent_id'] ?? '') === '' ? null : Input::id($data['parent_id'], 'parent_id');
+                if ($parent !== null) {
+                    $statement = $this->pdo->prepare('SELECT id FROM comments WHERE project_id=? AND ticket_id=? AND id=? AND deleted_at IS NULL');
+                    $statement->execute([$project, $ticket, $parent]);
+                    if (!$statement->fetchColumn()) {
+                        throw new Failure('Der beantwortete Kommentar ist nicht mehr verfügbar.', 422);
+                    }
+                }
                 $this->pdo
                     ->prepare(
-                        'INSERT INTO comments(project_id,ticket_id,author_id,body,created_at,updated_at) VALUES(?,?,?,?,?,?)',
+                        'INSERT INTO comments(project_id,ticket_id,author_id,body,created_at,updated_at,parent_id) VALUES(?,?,?,?,?,?,?)',
                     )
-                    ->execute([$project, $ticket, $actor, $body, $now, $now]);
+                    ->execute([$project, $ticket, $actor, $body, $now, $now, $parent]);
             }
             $this->pdo
                 ->prepare('UPDATE boards SET revision=revision+1 WHERE project_id=?')

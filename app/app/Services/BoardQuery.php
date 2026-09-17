@@ -185,16 +185,33 @@ final class BoardQuery
         $row = $this->tickets->ticket($project, $ticket);
 
         return [
-            'ticket'   => $row,
+            'ticket'         => $row,
+            'creator'        => $this->rows('SELECT name FROM users WHERE id=?', [$row['created_by']])[0]['name'],
+            'linked_tickets' => $this->rows(
+                <<<'SQL'
+                SELECT t.id,
+                       t.number,
+                       t.title,
+                       t.status
+                FROM ticket_links l
+                JOIN tickets t ON t.project_id = l.project_id
+                    AND t.id = CASE WHEN l.ticket_id = ? THEN l.related_id ELSE l.ticket_id END
+                WHERE l.project_id = ?
+                    AND (l.ticket_id = ? OR l.related_id = ?)
+                ORDER BY t.number
+                SQL,
+                [$ticket, $project, $ticket, $ticket],
+            ),
             'comments' => $this->rows(
                 <<<'SQL'
-                SELECT c.*,
+                SELECT c.id, c.project_id, c.ticket_id, c.author_id, c.parent_id,
+                       c.created_at, c.updated_at, c.deleted_at, c.version,
+                       CASE WHEN c.deleted_at IS NULL THEN c.body ELSE '' END AS body,
                        u.name AS author_name
                 FROM comments c
                 JOIN users u ON u.id = c.author_id
                 WHERE c.project_id = ?
                     AND c.ticket_id = ?
-                    AND c.deleted_at IS NULL
                 ORDER BY c.id
                 SQL,
                 [$project, $ticket],

@@ -58,7 +58,7 @@ $emptyCellHint = $filters
             <?php endforeach ?>
         </div>
         <?php if ($canWrite): ?>
-            <a class="button primary" href="<?= s(route('ticket.new', ['project' => $projectId])) ?>"><?= s(t('+ Neues Ticket')) ?></a>
+            <a class="button primary" data-ticket-link data-ticket-create-link href="<?= s(route('ticket.new', ['project' => $projectId])) ?>"><?= s(t('+ Neues Ticket')) ?></a>
         <?php endif ?>
     </div>
 </section>

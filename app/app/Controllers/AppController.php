@@ -162,19 +162,19 @@ final class AppController
 
     public function newTicket(string $project): ResponseInterface
     {
-        return $this->read(
-            fn() => $this->page('ticket', [
+        return $this->read(function () use ($project) {
+            $projectId = Input::id($project);
+            $this->access->project($projectId, 'write');
+
+            return $this->page('ticket', [
                 'title' => 'Neues Ticket',
-                ...$this->query->board(Input::id($project)),
+                ...$this->query->board($projectId),
                 'ticket'             => null,
-                'fragment'           => false,
+                'fragment'           => (request()->getQueryParams()['fragment'] ?? '') === '1',
                 'selected_labels'    => [],
                 'selected_assignees' => [],
-                'comments'           => [],
-                'activity'           => [],
-                'attachments'        => [],
-            ]),
-        );
+            ]);
+        });
     }
 
     public function settings(string $project): ResponseInterface
@@ -284,6 +284,15 @@ final class AppController
             $this->tickets->update(Input::id($project), Input::id($ticket), $data);
 
             return ['url' => '/projects/' . $project . '/tickets/' . $ticket];
+        });
+    }
+
+    public function linkTicket(string $project, string $ticket): ResponseInterface
+    {
+        return $this->mutation(function ($data) use ($project, $ticket) {
+            $this->tickets->link(Input::id($project), Input::id($ticket), $data);
+
+            return ['url' => \Naf\route('ticket', ['project' => $project, 'ticket' => $ticket])];
         });
     }
 

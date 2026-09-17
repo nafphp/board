@@ -37,14 +37,16 @@ $hintUrl = $current
         <script src="/assets/boot.js"></script>
         <link rel="stylesheet" href="/assets/app.css?v=3" />
         <script type="module" src="/assets/app.js"></script>
-        <script type="module" src="/assets/settings.js?v=2"></script>
-        <script type="module" src="/assets/profile.js?v=3"></script>
+        <script type="module" src="/assets/settings.js?v=3"></script>
+        <script type="module" src="/assets/profile.js?v=4"></script>
         <link rel="stylesheet" href="/assets/profile.css?v=3" />
         <script type="module" src="/assets/ai/chat.js?v=2"></script>
         <link rel="stylesheet" href="/assets/settings.css?v=2" />
         <link rel="stylesheet" href="/assets/ai.css?v=2" />
         <link rel="stylesheet" href="/assets/board.css?v=1" />
         <link rel="stylesheet" href="/assets/cursor.css?v=2" />
+        <link rel="stylesheet" href="/assets/ticket.css?v=2" />
+        <script type="module" src="/assets/ticket.js?v=2"></script>
     </head>
     <body>
         <div class="app-shell">
@@ -214,6 +216,16 @@ $hintUrl = $current
         </dialog>
         <dialog id="ticket-drawer" class="ticket-drawer" aria-label="Ticketdetails">
             <div class="drawer-content"></div>
+        </dialog>
+        <dialog id="ticket-discard" class="modal" aria-labelledby="ticket-discard-title" aria-describedby="ticket-discard-description">
+            <form method="dialog">
+                <h2 id="ticket-discard-title"><?= s(t('Änderungen verwerfen?')) ?></h2>
+                <p id="ticket-discard-description" class="muted"><?= s(t('Deine ungespeicherten Eingaben gehen dabei verloren.')) ?></p>
+                <div class="ticket-create-actions">
+                    <button class="button subtle" value="keep" autofocus><?= s(t('Weiterbearbeiten')) ?></button>
+                    <button class="button primary" value="discard"><?= s(t('Verwerfen')) ?></button>
+                </div>
+            </form>
         </dialog>
         <?= \Naf\View\view('settings.chat', ['user' => $user, 'projectId' => $current]) ?>
         <div id="toast" class="toast" role="status" aria-live="polite"></div>

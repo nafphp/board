@@ -25,7 +25,9 @@
     "naf/storage": "^0.1.0",
     "naf/rate-limit": "^0.1.0",
     "naf/auth-ldap": "^0.1.0",
-    "naf/mcp": "^0.2.1"
+    "naf/mcp": "^0.2.1",
+    "symfony/html-sanitizer": "^7.4",
+    "ext-dom": "*"
   },
   "autoload": {
     "psr-4": {

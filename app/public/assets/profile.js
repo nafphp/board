@@ -130,20 +130,6 @@ if (dialog) {
     event.preventDefault();
     closeProfile();
   });
-  let backdropPress = false;
-  dialog.addEventListener('pointerdown', (event) => {
-    const rect = dialog.getBoundingClientRect();
-    backdropPress =
-      event.target === dialog &&
-      (event.clientX < rect.left ||
-        event.clientX > rect.right ||
-        event.clientY < rect.top ||
-        event.clientY > rect.bottom);
-  });
-  dialog.addEventListener('click', (event) => {
-    if (backdropPress && event.target === dialog) closeProfile();
-    backdropPress = false;
-  });
   dialog.addEventListener('close', () => {
     triggers.forEach((trigger) => trigger.setAttribute('aria-expanded', 'false'));
     document.body.classList.remove('profile-open');

@@ -52,6 +52,16 @@ einen optionalen Drawer, Bearbeitung, Verschieben, Schliessen/Wiederoeffnen und 
 Kommentare und Aktivitaeten folgen den Projektgrenzen. Veraltete Schreibzugriffe enden
 mit 409; die Oberflaeche bietet das Nachladen des aktuellen Stands an.
 
+Die [Ticketdetails](docs/Ticket-Details.md) bieten eine ruhige Leseansicht mit Inline-
+Bearbeitung mit Auto-Save, formatierbarer Beschreibung, Metadatenleiste, Startdatum und
+Zeitaufwand. Kompakte Eingaben behalten die Schriftgröße bei. Die ganze Boardkarte öffnet
+das Ticket; ihr Menü bleibt separat bedienbar.
+Verknüpfte Tickets erscheinen beidseitig; Kommentare unterstützen @-Erwähnungen und
+Antworten unter dem jeweiligen Kommentar. Die Nachrichteneingabe bleibt sichtbar.
+Spalten und Personen lassen sich über dasselbe durchsuchbare Dropdown direkt auswählen;
+mehrere Zuständige bleiben möglich und werden kompakt mit einem zusätzlichen Zähler angezeigt.
+Neue Tickets entstehen in einem Modal mit demselben Template, Editor und Metadatenfeldern.
+
 Filter und echte Volltextsuche, private Anhaenge ueber den benannten NAF-Storage-Datentraeger mit Quoten und Wiederanlauf,
 In-App-Benachrichtigungen, Einstellungen, Light/Dark und mobile Darstellung sind integriert.
 Die Settings öffnen sich als animierte Karten und enthalten eigene Projektrollen sowie einen

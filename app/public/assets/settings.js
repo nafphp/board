@@ -85,17 +85,7 @@ dialog?.addEventListener('cancel', (event) => {
   event.preventDefault();
   closeCard();
 });
-dialog?.addEventListener('click', (event) => {
-  const box = dialog.getBoundingClientRect();
-  if (
-    event.target === dialog &&
-    (event.clientX < box.left ||
-      event.clientX > box.right ||
-      event.clientY < box.top ||
-      event.clientY > box.bottom)
-  )
-    closeCard();
-});
+
 document
   .querySelector('[data-settings-project]')
   ?.addEventListener('change', (event) => location.assign(event.target.value));

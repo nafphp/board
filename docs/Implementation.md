@@ -18,6 +18,64 @@ Die im Browser angelegte Karte „Showcase-Abnahme im Browser“ hat eine eigene
 wurde über das Verschiebemenü nach Review bewegt und enthält eine private Testdatei.
 Die Demo enthält keine echten Kundendaten.
 
+## Ticketansicht mit Inline-Bearbeitung
+
+Die Ticketseite und der Board-Drawer zeigen Kürzel, Titel und formatierbare Beschreibung
+als normalen Inhalt. Klicken öffnet die passende Eingabe. Die rechte Seitenleiste bündelt
+Spalte und Verantwortliche, Details, Planung/Zeiterfassung und Systemdaten. Verknüpfte
+Tickets, Anhänge und Verlauf stehen vor den Kommentaren; deren Eingabe bleibt sichtbar.
+Antworten setzen das Handle ein und werden über die gespeicherte Eltern-ID eingeordnet.
+
+Quill 2.0.3 wird lokal ausgeliefert, Symfony HTML Sanitizer bereinigt die Beschreibung.
+NAFs Services, ORM, Projekt-Policies, Form/CSRF, Migrationen und Ereignisse bleiben die
+Grundlage. Teiländerungen behalten unberührte Daten, alte Versionen werden zurückgewiesen.
+Beide neuen Migrationen sind nach Backup `work/backups/20260916T193244Z` im Source-Betrieb
+angewendet; Worker und Ticker wurden neu gestartet, Readiness ist grün.
+
+60 MariaDB-, 60 PostgreSQL- und 73 HTTPS-Prüfungen bestehen. Stilprüfung, Composer-Validierung
+und die lesende Kontrolle der tatsächlichen lokalen Ticketseite/Assets sind grün.
+Die synthetische Browser-Vorschau bestätigt Desktop, Drawer, Hell/Dunkel, kleine Viewports,
+Formatierung, Konflikte, Entwurferhalt und Antworten. Sie ersetzt keine direkte Browser-
+Abnahme des HTTPS-Backends; diese ist durch CA-Vertrauen bzw. die native Browseransicht begrenzt.
+[Ticket-Details.md](Ticket-Details.md) beschreibt Bedienung, Datenmodell, Tests und Grenzen.
+
+Die Ticketerstellung verwendet nun dasselbe Ticket- und Feldtemplate in einem zentrierten
+nativen Dialog. Rich Text und Metadaten werden zusammen über den bestehenden Create-Service
+angelegt. Danach erscheint die Detailansicht im selben Modal. Der feste Aktionsbereich,
+Abbruch mit Entwurfschutz und die direkte URL mit nativem Formular-Fallback sind geprüft.
+Die Ergänzung wurde erneut mit 60 MariaDB- und jetzt 73 HTTPS-Prüfungen sowie Desktop-/Mobile-
+Browserchecks gegen synthetische Template-Daten verifiziert. Datenmodell und Paket-APIs
+bleiben dabei unverändert; die vorherigen PostgreSQL-Prüfungen wurden nicht erneut benötigt.
+
+Die anschließende Bedienungsrunde ergänzt Auto-Save nach 700 ms Schreibpause, sofortige
+Einzelauswahl und einen zentralen Speicherstatus. Anfragen werden mit aktualisierten Revisionen
+nacheinander gesendet; laufende Eingaben und Kommentare bleiben erhalten. Erstellung und
+Kommentare behalten ihre ausdrückliche Absendeaktion. Die ganze Karte öffnet das Ticket,
+während Menü und Drag-Geste getrennt funktionieren. Sidebar und Eingaben haben dezente Ecken,
+Titel und Beschreibung behalten beim Bearbeiten ihre Schriftgröße und Zeilenhöhe.
+60 MariaDB- und 76 HTTPS-Prüfungen sind erfolgreich. Synthetische Browserchecks decken zusätzlich
+verzögerte Antworten, weitere Eingaben während der Speicherung, 409, Schließen mit Auto-Save,
+Kartenklicks und mobile Darstellung ab. Details und Grenzen stehen im Ticketleitfaden.
+
+Spalte und Zuständigkeiten verwenden nun ein gemeinsames Dropdown, das beim ersten Klick
+alle Namen anbietet. Suche, Tastatursteuerung, Avatare und dezente Auswahlhaken ersetzen die
+bisherige zweistufige Select-/Checkbox-Bedienung. Die Zuständigkeit bleibt eine Mehrfachauswahl;
+der erste Name mit einem zusätzlichen Zähler hält die Leseansicht kompakt. Auswahl und Abwahl
+speichern sofort, beim Erstellen bleiben sie im Entwurf. Native Formwerte und bestehende
+NAF-Endpunkte bleiben erhalten. 60 MariaDB- und 79 HTTPS-Prüfungen sowie die vollständige
+Stilprüfung sind erfolgreich; Browserchecks umfassen Desktop, Modal, 390/320 Pixel und
+Versionskonflikte mit synthetischen Template-Daten.
+
+Alle nativen Modale verwenden für Hintergrundklicks jetzt den zentralen Schließweg in
+`app.js`. Er nutzt `requestClose()` und damit die vorhandenen Cancel-Handler; ältere Browser
+bekommen denselben abbrechbaren Cancel-Ablauf als Fallback. Profil und Einstellungen behalten
+ihre Animationen und Aufräumlogik, Tickets behalten Auto-Save und Entwurfschutz. Nur ein auf
+dem Hintergrund begonnener und beendeter Klick schließt den obersten Dialog. Innenklicks und
+Ziehen von innen nach außen tun dies nicht. Mit synthetischen NAF-Templates sind Ticketanlage,
+Entwurfschutz, gestapelte Dialoge, verzögertes Auto-Save, Verschieben, Projektanlage, Profil
+und persönliche Einstellungen geprüft. Vollständige Stilprüfung und JS-Syntax sind erfolgreich.
+
+
 ## Eigenes Profil
 
 Der Avatar öffnet das Profil-Modal mit der aktuellen Projektrolle, Passwortwechsel,

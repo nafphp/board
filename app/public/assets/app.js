@@ -102,6 +102,51 @@ document.addEventListener('click', (event) => {
     dialog.showModal();
   }
 });
+// Treat a backdrop click like Escape, so each modal keeps its own close guards.
+let backdropDialog = null;
+function onDialogBackdrop(event) {
+  const dialog = event.target;
+  if (!(dialog instanceof HTMLDialogElement) || !dialog.open || !dialog.matches(':modal'))
+    return false;
+  const rect = dialog.getBoundingClientRect();
+  return (
+    event.clientX < rect.left ||
+    event.clientX > rect.right ||
+    event.clientY < rect.top ||
+    event.clientY > rect.bottom
+  );
+}
+document.addEventListener(
+  'pointerdown',
+  (event) => {
+    backdropDialog =
+      event.isPrimary && event.button === 0 && onDialogBackdrop(event) ? event.target : null;
+  },
+  true,
+);
+document.addEventListener(
+  'pointercancel',
+  () => {
+    backdropDialog = null;
+  },
+  true,
+);
+document.addEventListener('click', (event) => {
+  const dialog = backdropDialog;
+  backdropDialog = null;
+  // Starting inside a dialog and releasing outside is a drag, not a dismiss action.
+  if (
+    !dialog ||
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.target !== dialog ||
+    !onDialogBackdrop(event)
+  )
+    return;
+  if (typeof dialog.requestClose === 'function') dialog.requestClose();
+  else if (dialog.dispatchEvent(new Event('cancel', { cancelable: true }))) dialog.close();
+});
+
 document.addEventListener('submit', async (event) => {
   const form = event.target;
   if (!form.matches('form[data-enhanced]')) return;
@@ -182,11 +227,13 @@ if (board) {
 const drawer = document.querySelector('#ticket-drawer');
 let drawerAbort = null;
 let drawerCloseFromHistory = false;
+let drawerUrl = '';
 document.addEventListener('click', async (event) => {
   const link = event.target.closest('a[data-ticket-link]');
   if (
     !link ||
     !drawer ||
+    event.defaultPrevented ||
     event.metaKey ||
     event.ctrlKey ||
     event.shiftKey ||
@@ -197,17 +244,24 @@ document.addEventListener('click', async (event) => {
   event.preventDefault();
   drawerAbort?.abort();
   drawerAbort = new AbortController();
+  const creating = link.hasAttribute('data-ticket-create-link');
+  drawer.classList.toggle('ticket-create-modal', creating);
+  drawer.setAttribute('aria-label', creating ? 'Neues Ticket' : 'Ticketdetails');
   drawer.querySelector('.drawer-content').textContent = 'Ticket wird geladen …';
   drawer.showModal();
   try {
-    const response = await fetch(link.href + '?fragment=1', { signal: drawerAbort.signal });
-    if (!response.ok) {
+    const url = new URL(link.href);
+    url.searchParams.set('fragment', '1');
+    const response = await fetch(url, { signal: drawerAbort.signal });
+    if (!response.ok || response.redirected) {
       location.assign(link.href);
       return;
     }
     drawer.querySelector('.drawer-content').innerHTML = await response.text();
+    drawerUrl = link.href;
     history.pushState({ nafinityDrawer: true }, '', link.href);
-    drawer.querySelector('button[data-close-drawer]')?.focus();
+    document.dispatchEvent(new CustomEvent('nafinity:ticket-opened'));
+    drawer.querySelector(creating ? '[name=title]' : 'button[data-close-drawer]')?.focus();
   } catch (error) {
     if (error.name !== 'AbortError') {
       drawer.close();
@@ -218,16 +272,26 @@ document.addEventListener('click', async (event) => {
 document.addEventListener('click', (event) => {
   if (event.target.closest('[data-close-drawer]')) {
     event.preventDefault();
-    drawer?.close();
+    if (drawer?.dispatchEvent(new Event('nafinity:ticket-before-close', { cancelable: true })))
+      drawer.close();
   }
 });
 drawer?.addEventListener('close', () => {
   drawerAbort?.abort();
+  drawer.querySelector('.drawer-content').replaceChildren();
   if (!drawerCloseFromHistory && history.state?.nafinityDrawer) history.back();
   drawerCloseFromHistory = false;
 });
 window.addEventListener('popstate', () => {
   if (drawer?.open) {
+    if (!drawer.dispatchEvent(new Event('nafinity:ticket-before-close', { cancelable: true }))) {
+      history.pushState(
+        { nafinityDrawer: true },
+        '',
+        drawer.querySelector('.ticket-workspace')?.dataset.ticketUrl || drawerUrl,
+      );
+      return;
+    }
     drawerCloseFromHistory = true;
     drawer.close();
   }

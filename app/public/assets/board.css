@@ -68,6 +68,23 @@
 .ticket-card .card-title {
   transition: color 0.18s;
 }
+/* Keep one native link (keyboard, new tab, context menu), stretched across the card.
+   The move control stays above it and does not navigate. */
+.ticket-card .card-title::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+.ticket-card .card-title:focus-visible::after {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.ticket-card .card-menu {
+  position: relative;
+  z-index: 2;
+}
 .ticket-card[draggable='true']:active {
   transform: translateY(-1px) scale(0.985);
   transition-duration: 0.09s;

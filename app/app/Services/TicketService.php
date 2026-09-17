@@ -8,6 +8,7 @@ use App\Domain\Change;
 use App\Domain\Failure;
 use App\Models\Ticket;
 use App\Support\Input;
+use App\Support\RichText;
 use Naf\ORM\Core\EntityManager;
 use PDO;
 
@@ -81,9 +82,14 @@ final class TicketService
 
     public function update(int $project, int $id, array $data): void
     {
-        $fields = $this->fields($data);
-        $this->access->write($project, 'write', function () use ($project, $id, $data, $fields) {
+        $this->access->write($project, 'write', function () use ($project, $id, $data) {
             $row = $this->ticket($project, $id);
+            // Partial updates retain all other attributes inside the existing project lock.
+            $merged = array_replace($row, $data);
+            if (array_key_exists('description', $data) && !array_key_exists('description_html', $data)) {
+                $merged['description_html'] = null;
+            }
+            $fields = $this->fields($merged);
             $this->version($row, $data);
             $this->revision($this->board($project), $data);
             if ($row['archived_at'] !== null) {
@@ -215,6 +221,38 @@ final class TicketService
         });
     }
 
+    public function link(int $project, int $id, array $data): void
+    {
+        $this->access->write($project, 'write', function () use ($project, $id, $data) {
+            $row = $this->ticket($project, $id);
+            $this->version($row, $data);
+            if ($row['archived_at'] !== null) {
+                throw new Failure('Ein archiviertes Ticket kann nicht bearbeitet werden.');
+            }
+            $number    = Input::id($data['number'] ?? null, 'number');
+            $statement = $this->pdo->prepare('SELECT id FROM tickets WHERE project_id=? AND number=?');
+            $statement->execute([$project, $number]);
+            $related = (int) $statement->fetchColumn();
+            if (!$related || $related === $id) {
+                throw new Failure('Wähle ein anderes Ticket aus diesem Projekt.');
+            }
+            $pair   = [$project, min($id, $related), max($id, $related)];
+            $remove = ($data['action'] ?? '') === 'delete';
+            if ($remove) {
+                $this->pdo->prepare('DELETE FROM ticket_links WHERE project_id=? AND ticket_id=? AND related_id=?')->execute($pair);
+            } else {
+                $statement = $this->pdo->prepare('SELECT COUNT(*) FROM ticket_links WHERE project_id=? AND ticket_id=? AND related_id=?');
+                $statement->execute($pair);
+                if (!(int) $statement->fetchColumn()) {
+                    $this->pdo->prepare('INSERT INTO ticket_links(project_id,ticket_id,related_id) VALUES(?,?,?)')->execute($pair);
+                }
+            }
+            $this->pdo->prepare('UPDATE tickets SET version=version+1,updated_at=? WHERE project_id=? AND id IN (?,?)')
+                ->execute([gmdate('Y-m-d H:i:s'), $project, $id, $related]);
+            $this->changed($project, $id, $remove ? 'ticket.unlinked' : 'ticket.linked', ['number' => $number]);
+        });
+    }
+
     public function ticket(int $project, int $id): array
     {
         $statement = $this->pdo->prepare('SELECT * FROM tickets WHERE project_id=? AND id=?');
@@ -258,6 +296,36 @@ final class TicketService
             Input::validate(['due_date' => $due], ['due_date' => 'date']);
         }
         $validated['due_date'] = $due;
+        $start                 = $data['start_date'] ?? null;
+        $start                 = $start === '' ? null : $start;
+        foreach (['start_date' => $start, 'due_date' => $due] as $field => $date) {
+            if ($date !== null && (!is_string($date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/D', $date)
+                || !checkdate((int) substr($date, 5, 2), (int) substr($date, 8, 2), (int) substr($date, 0, 4)))) {
+                throw new Failure('Bitte wähle ein gültiges Datum.', 422, [$field => ['Ungültiges Datum.']]);
+            }
+        }
+        if ($start !== null && $due !== null && $start > $due) {
+            throw new Failure('Das Startdatum darf nicht nach dem Fälligkeitsdatum liegen.');
+        }
+        $validated['start_date'] = $start;
+        foreach (['estimate_minutes' => null, 'spent_minutes' => 0] as $field => $default) {
+            $value = $data[$field] ?? $default;
+            $value = $value === '' ? $default : $value;
+            if ($value !== null && ((!is_string($value) && !is_int($value))
+                || filter_var($value, FILTER_VALIDATE_INT) === false || (int) $value < 0 || (int) $value > 10000000)) {
+                throw new Failure('Bitte gib eine Zeit in ganzen Minuten zwischen 0 und 10000000 ein.', 422, [$field => ['Ungültiger Zeitaufwand.']]);
+            }
+            $validated[$field] = $value === null ? null : (int) $value;
+        }
+        $html = $data['description_html'] ?? null;
+        if ($html !== null) {
+            Input::validate(['description_html' => $html], ['description_html' => 'string|max:100000']);
+            $html                     = RichText::clean($html);
+            $validated['description'] = RichText::plain($html);
+            Input::validate($validated, ['description' => 'string|max:50000']);
+        }
+        $validated['description_html'] = $html;
+        $validated['description'] ??= '';
 
         return $validated;
     }

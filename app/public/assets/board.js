@@ -520,13 +520,14 @@ function onCancel() {
 
 function onDown(event) {
   if (drag.started || event.button !== 0) return;
+  // A new pointer gesture must never inherit the click suppressed after a previous drag.
+  suppressClick = false;
   const card = event.target.closest('.ticket-card[draggable="true"]');
   if (!card || card.dataset.busy || event.target.closest('button')) return;
   drag.pointer = event.pointerId;
   drag.card = card;
   drag.x = event.clientX;
   drag.y = event.clientY;
-  suppressClick = false;
   addEventListener('pointermove', onMove, { passive: false });
   addEventListener('pointerup', onUp);
   addEventListener('pointercancel', onCancel);
@@ -582,7 +583,7 @@ if (board && board.dataset.filtered === '0') {
   board.addEventListener(
     'click',
     (event) => {
-      if (!suppressClick) return;
+      if (!suppressClick || event.detail === 0) return;
       suppressClick = false;
       event.preventDefault();
       event.stopPropagation();
