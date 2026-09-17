@@ -1,5 +1,7 @@
 <?php
 
+use App\Support\Format;
+
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
@@ -205,12 +207,13 @@ $emptyCellHint = $filters
                                 class="ticket-card"
                                 draggable="<?= $canDrag ? 'true' : 'false' ?>"
                                 data-ticket="<?= (int) $card['id'] ?>"
+                                data-key="<?= s(Format::ticket($project['ticket_key'], $card['number'])) ?>"
                                 data-version="<?= (int) $card['version'] ?>"
                                 data-status="<?= s($card['status']) ?>"
                                 data-title="<?= s($card['title']) ?>"
                             >
                                 <div class="card-top">
-                                    <span class="ticket-number">NAF-<?= (int) $card['number'] ?></span>
+                                    <span class="ticket-number"><?= s(Format::ticket($project['ticket_key'], $card['number'])) ?></span>
                                     <div>
                                         <span
                                             class="priority priority-<?= s($card['priority']) ?>"
@@ -223,14 +226,14 @@ $emptyCellHint = $filters
                                                 type="button"
                                                 class="card-menu"
                                                 data-move-card
-                                                aria-label="Ticket NAF-<?= (int) $card['number'] ?> verschieben"
+                                                aria-label="<?= s(t('Ticket :key verschieben', ['key' => Format::ticket($project['ticket_key'], $card['number'])])) ?>"
                                             >
                                                 ···
                                             </button>
                                         <?php endif ?>
                                     </div>
                                 </div>
-                                <a class="card-title" data-ticket-link href="<?= s(route('ticket', ['project' => $projectId, 'ticket' => $card['id']])) ?>">
+                                <a class="card-title" data-ticket-link href="<?= s(route('ticket', ['project' => $projectId, 'ticket' => Format::ticket($project['ticket_key'], $card['number'])])) ?>">
                                     <?= s($card['title']) ?>
                                 </a>
                                 <p class="card-description"><?= s(mb_strimwidth($card['description'], 0, 95, '…')) ?></p>

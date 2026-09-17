@@ -22,7 +22,7 @@ def request(path, data=None):
 
 
 status, body, _ = request("/health/ready")
-assert status == 200 and json.loads(body)["schema"] == "202609150002", ("ready", status)
+assert status == 200 and json.loads(body)["schema"] == "202609160003", ("ready", status)
 status, body, _ = request("/login")
 assert status == 200, ("login GET", status, body[:150])
 token = re.search(r'name="_csrf" value="([^"]+)"', body.decode())[1]
@@ -36,7 +36,7 @@ assert status == 200 and b"Ein guter Start" in body, ("authenticated board", sta
 checked = []
 for path in [
     "/projects/1",
-    "/projects/1/tickets/9",
+    "/projects/1/tickets/NAF-9",
     "/projects/1/settings",
     "/notifications",
     "/preferences",
@@ -50,7 +50,7 @@ assert (
 ), "profile read failed"
 checked.append("/profile")
 assert request("/projects/2")[0] == 404, "foreign project exposed"
-status, body, headers = request("/projects/1/tickets/9/attachments/1")
+status, body, headers = request("/projects/1/tickets/NAF-9/attachments/1")
 assert status == 200 and headers["Content-Disposition"].startswith(
     "attachment;"
 ), "private download failed"
@@ -58,7 +58,7 @@ print(
     json.dumps(
         {
             "mode": "unreleased-source-snapshot",
-            "schema": "202609150002",
+            "schema": "202609160003",
             "login": "passed",
             "authenticated_pages": checked,
             "foreign_project_status": 404,

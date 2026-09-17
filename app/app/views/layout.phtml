@@ -203,8 +203,17 @@ $hintUrl = $current
                         <input type="color" name="color" value="#6366f1" />
                     </label>
                     <label>
-                        Projektkürzel
+                        <?= s(t('Symbol')) ?>
                         <input name="icon" maxlength="2" value="N" />
+                    </label>
+                    <label>
+                        <?= s(t('Ticketkürzel')) ?>
+                        <input
+                            name="ticket_key"
+                            maxlength="6"
+                            pattern="[A-Za-z0-9]{1,6}"
+                            placeholder="<?= s(t('Aus dem Namen')) ?>"
+                        />
                     </label>
                 </div>
                 <div class="form-errors" role="alert"></div>

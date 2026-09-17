@@ -76,6 +76,33 @@ Entwurfschutz, gestapelte Dialoge, verzögertes Auto-Save, Verschieben, Projekta
 und persönliche Einstellungen geprüft. Vollständige Stilprüfung und JS-Syntax sind erfolgreich.
 
 
+## Ticketnummern je Projekt
+
+Die Adresse eines Tickets trägt jetzt Projektkürzel und laufende Nummer: `/projects/1/tickets/NAF-3`.
+Die Nummer zählt innerhalb des Projekts hoch, ein neues Projekt beginnt wieder bei 1. Dafür war
+keine neue Zählung nötig: `boards.next_number` vergibt die Nummern seit dem ersten Schema und
+`UNIQUE(project_id, number)` sichert sie ab. Die Zeilen-ID bleibt Primärschlüssel und interner
+Verweis, steht aber in keiner Adresse mehr.
+
+`M202609160003ProjectTicketKey` ergänzt `projects.ticket_key`. Die Spalte heißt nicht `key`, weil
+das in MySQL ein reserviertes Wort ist und in jeder Anweisung — je Treiber unterschiedlich — hätte
+maskiert werden müssen. Bestehende Projekte erhalten ihr Kürzel aus dem Namen (Nafinity → `NAF`,
+Studio Nord → `STU`), gleiche Anfänge bekommen eine Ziffer angehängt. Beim Anlegen und in den
+Projekteinstellungen ist das Kürzel änderbar; erlaubt sind ein bis sechs Buchstaben oder Ziffern,
+damit es ohne Maskierung in eine Adresse passt.
+
+`TicketService::resolve()` übersetzt die Referenz in die Zeilen-ID und weist eine nackte Zahl
+bewusst ab: Adressen trugen früher die Zeilen-ID, und würde `/tickets/3` weiter angenommen,
+öffnete ein altes Lesezeichen still ein anderes Ticket statt zu scheitern. Ein fremdes Kürzel
+wird ebenso abgewiesen, weil die Auflösung immer gegen das Projekt der Adresse läuft.
+
+Geprüft mit 60 MariaDB-, 60 PostgreSQL-, 79 HTTPS- und 25 Profilprüfungen, den Worker- und
+AI-Checks sowie der vollständigen Stilprüfung. Am laufenden Entwicklungssystem liefern `NAF-3`
+und `naf-3` die Seite, `3`, `NAF-999` und das fremde `STU-1` je 404. Ein neu angelegtes Projekt
+begann erwartungsgemäß bei `WEB-1`, während Projekt 1 bei 10 stand; diese Prüfdaten wurden danach
+wieder entfernt. `/health/ready` meldet Schema `202609160003`.
+
+
 ## Eigenes Profil
 
 Der Avatar öffnet das Profil-Modal mit der aktuellen Projektrolle, Passwortwechsel,

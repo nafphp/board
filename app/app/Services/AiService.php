@@ -142,9 +142,13 @@ final class AiService
                 . 'Read the board first for valid column, swimlane and revision IDs.',
             ['properties' => $ticketFields, 'required' => array_keys($ticketFields)],
             function ($args) use ($project) {
-                $id = $this->tickets->create($project, $args);
+                $id        = $this->tickets->create($project, $args);
+                $reference = $this->tickets->reference($project, $id);
 
-                return ['id' => $id, 'url' => '/projects/' . $project . '/tickets/' . $id];
+                return [
+                    'id'  => $reference,
+                    'url' => '/projects/' . $project . '/tickets/' . $reference,
+                ];
             },
             'Ticket erstellen',
             'write',

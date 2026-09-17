@@ -41,7 +41,7 @@ $unread = count(array_filter($notifications, static fn($item) => $item['read_at'
                 <span class="activity-dot" style="opacity: <?= $n['read_at'] ? '0.25' : '1' ?>"></span>
                 <div>
                     <strong><?= s($n['project_name']) ?></strong>
-                    <p><a href="<?= s($n['ticket_id'] ? route('ticket', ['project' => $n['project_id'], 'ticket' => $n['ticket_id']]) : route('project.activity', ['project' => $n['project_id']])) ?>"><?= s(ActivityLabel::for($n['title'])) ?></a></p>
+                    <p><a href="<?= s($n['ticket_id'] ? route('ticket', ['project' => $n['project_id'], 'ticket' => Format::ticket($n['ticket_key'], $n['ticket_number'])]) : route('project.activity', ['project' => $n['project_id']])) ?>"><?= s(ActivityLabel::for($n['title'])) ?></a></p>
                     <time><?= s(Format::dateTime($n['created_at'], $preferences)) ?></time>
                 </div>
             </li>

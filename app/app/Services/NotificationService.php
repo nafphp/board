@@ -84,9 +84,13 @@ final class NotificationService
         $statement = $this->pdo->prepare(
             <<<'SQL'
             SELECT n.*,
-                   p.name AS project_name
+                   p.name AS project_name,
+                   p.ticket_key,
+                   t.number AS ticket_number
             FROM notifications n
             JOIN projects p ON p.id = n.project_id
+            LEFT JOIN tickets t ON t.project_id = n.project_id
+            AND t.id = n.ticket_id
             JOIN project_members m ON m.project_id = n.project_id
             AND m.user_id = n.user_id
             LEFT JOIN user_preferences up ON up.user_id = n.user_id

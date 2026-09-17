@@ -74,8 +74,9 @@ test('AI writes require confirmation and use normal optimistic concurrency', fun
     $args  = ['title' => 'AI test', 'description' => 'Confirmed action', 'priority' => 'normal', 'column_id' => (int) $board['columns'][0]['id'], 'swimlane_id' => (int) $board['swimlanes'][0]['id'], 'board_revision' => (int) $board['board']['revision']];
     $call  = ['name' => 'nafinity_ticket_create', 'arguments' => $args];
     denied(422, fn() => $ai->call($roleProject, $call));
-    $result = $ai->call($roleProject, [...$call, 'confirmed' => true]);
-    check($tickets->ticket($roleProject, (int) $result['id'])['title'] === 'AI test', 'AI write missing');
+    $result  = $ai->call($roleProject, [...$call, 'confirmed' => true]);
+    $created = $tickets->resolve($roleProject, (string) $result['id']);
+    check($tickets->ticket($roleProject, $created)['title'] === 'AI test', 'AI write missing');
     denied(409, fn() => $ai->call($roleProject, [...$call, 'confirmed' => true]));
     denied(422, fn() => $ai->call($roleProject, ['name' => 'nafinity_board', 'arguments' => ['project_id' => 999]]));
 });

@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Domain\Change;
 use App\Domain\Failure;
 use App\Models\Ticket;
+use App\Support\Format;
 use App\Support\Input;
 use App\Support\RichText;
 use Naf\ORM\Core\EntityManager;
@@ -251,6 +252,57 @@ final class TicketService
                 ->execute([gmdate('Y-m-d H:i:s'), $project, $id, $related]);
             $this->changed($project, $id, $remove ? 'ticket.unlinked' : 'ticket.linked', ['number' => $number]);
         });
+    }
+
+    /**
+     * Turns a reference like NAF-3 into the row id. A bare number is refused on purpose:
+     * addresses used to carry the row id, and accepting those again would quietly open a
+     * different ticket instead of failing.
+     */
+    public function resolve(int $project, string $reference): int
+    {
+        $statement = $this->pdo->prepare('SELECT ticket_key FROM projects WHERE id=?');
+        $statement->execute([$project]);
+        $key = $statement->fetchColumn();
+        if ($key === false) {
+            throw new Failure('Projekt nicht gefunden.', 404);
+        }
+        $expected = '/^' . preg_quote((string) $key, '/') . '-([1-9][0-9]{0,17})$/i';
+        if (!preg_match($expected, trim($reference), $found)) {
+            throw new Failure('Unbekannte Ticketnummer: ' . $reference, 404);
+        }
+        $statement = $this->pdo->prepare('SELECT id FROM tickets WHERE project_id=? AND number=?');
+        $statement->execute([$project, (int) $found[1]]);
+        $id = $statement->fetchColumn();
+        if ($id === false) {
+            throw new Failure('Ticket nicht gefunden.', 404);
+        }
+
+        return (int) $id;
+    }
+
+    /**
+     * The visible reference of a stored ticket, for redirects after a change.
+     */
+    public function reference(int $project, int $id): string
+    {
+        $statement = $this->pdo->prepare(
+            <<<'SQL'
+            SELECT p.ticket_key,
+                   t.number
+            FROM tickets t
+            JOIN projects p ON p.id = t.project_id
+            WHERE t.project_id = ?
+                AND t.id = ?
+            SQL,
+        );
+        $statement->execute([$project, $id]);
+        $row = $statement->fetch();
+        if (!$row) {
+            throw new Failure('Ticket nicht gefunden.', 404);
+        }
+
+        return Format::ticket($row['ticket_key'], $row['number']);
     }
 
     public function ticket(int $project, int $id): array

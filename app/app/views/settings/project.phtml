@@ -21,8 +21,18 @@ use function Naf\View\s;
                 <input type="color" name="color" value="<?= s($project['color']) ?>" />
             </label>
             <label>
-                Kürzel
+                <?= s(t('Symbol')) ?>
                 <input name="icon" maxlength="2" value="<?= s($project['icon']) ?>" />
+            </label>
+            <label>
+                <?= s(t('Ticketkürzel')) ?>
+                <input
+                    name="ticket_key"
+                    maxlength="6"
+                    pattern="[A-Za-z0-9]{1,6}"
+                    value="<?= s($project['ticket_key']) ?>"
+                />
+                <small><?= s(t('Steht vor jeder Ticketnummer und in ihrer Adresse.')) ?></small>
             </label>
         </div>
         <div class="form-errors" role="alert"></div>

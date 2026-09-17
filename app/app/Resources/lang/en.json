@@ -228,5 +228,10 @@
   "Personen suchen": "Search people",
   "Spalten suchen …": "Search columns …",
   "Personen suchen …": "Search people …",
-  "Keine Treffer": "No results"
+  "Keine Treffer": "No results",
+  "Symbol": "Icon",
+  "Ticketkürzel": "Ticket key",
+  "Steht vor jeder Ticketnummer und in ihrer Adresse.": "Appears before every ticket number and in its address.",
+  "Ticket :key verschieben": "Move ticket :key",
+  "Aus dem Namen": "From the name"
 }

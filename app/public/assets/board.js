@@ -361,7 +361,7 @@ async function persist(card, cell) {
     right_id: right?.dataset.ticket ?? null,
   };
   const response = await fetch(
-    `/projects/${board.dataset.project}/tickets/${card.dataset.ticket}/move`,
+    `/projects/${board.dataset.project}/tickets/${card.dataset.key}/move`,
     {
       method: 'POST',
       headers: {

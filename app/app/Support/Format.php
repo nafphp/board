@@ -19,6 +19,14 @@ final class Format
     }
 
     /**
+     * How a ticket is named everywhere: in the interface and in its address.
+     */
+    public static function ticket(string $key, int|string $number): string
+    {
+        return $key . '-' . (int) $number;
+    }
+
+    /**
      * Counts read as sentences, and the translator has no plural forms of its own.
      */
     public static function count(int $value, string $singular, string $plural): string

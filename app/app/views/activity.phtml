@@ -33,7 +33,7 @@ $this->block('content');
                         <?= s(ActivityLabel::for($item['event_type'])) ?>
                         <?php if ($item['ticket_id']): ?>
                             ·
-                            <a href="<?= s(route('ticket', ['project' => $project['id'], 'ticket' => $item['ticket_id']])) ?>">NAF-<?= (int) $item['ticket_number'] ?></a>
+                            <a href="<?= s(route('ticket', ['project' => $project['id'], 'ticket' => Format::ticket($project['ticket_key'], $item['ticket_number'])])) ?>"><?= s(Format::ticket($project['ticket_key'], $item['ticket_number'])) ?></a>
                         <?php endif ?>
                     </p>
                     <time><?= s(Format::dateTime($item['created_at'], $preferences)) ?></time>

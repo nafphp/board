@@ -80,7 +80,7 @@ final class ProjectService
         $fields = $this->projectFields($data);
         $this->access->write($project, 'manage', function () use ($project, $fields) {
             $this->pdo
-                ->prepare('UPDATE projects SET name=?,description=?,color=?,icon=? WHERE id=?')
+                ->prepare('UPDATE projects SET name=?,description=?,ticket_key=?,color=?,icon=? WHERE id=?')
                 ->execute([...array_values($fields), $project]);
             $this->changed($project, 'project.updated', ['name' => $fields['name']]);
         });
@@ -347,10 +347,23 @@ final class ProjectService
         if (!is_string($icon) || mb_strlen($icon) > 2) {
             throw new Failure('Das Icon darf höchstens zwei Zeichen haben.');
         }
+        // The key names every ticket of the project and rides in its address, so it stays
+        // within the characters an address can carry without escaping.
+        $key = strtoupper(trim((string) ($data['ticket_key'] ?? '')));
+        if ($key === '') {
+            $key = strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $name));
+            $key = substr($key, 0, 3) ?: 'P';
+        }
+        if (!preg_match('/^[A-Z0-9]{1,6}$/', $key)) {
+            throw new Failure('Das Ticketkürzel darf nur ein bis sechs Buchstaben oder Ziffern haben.', 422, [
+                'ticket_key' => ['Ein bis sechs Buchstaben oder Ziffern.'],
+            ]);
+        }
 
         return [
             'name'        => $name,
             'description' => $validated['description'],
+            'ticket_key'  => $key,
             'color'       => $this->color($data['color'] ?? '#6366f1'),
             'icon'        => $icon,
         ];

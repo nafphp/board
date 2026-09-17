@@ -148,7 +148,7 @@ final class AppController
         return $this->read(function () use ($project, $ticket) {
             $projectId = Input::id($project);
             $boardData = $this->query->board($projectId);
-            $details   = $this->query->detail($projectId, Input::id($ticket));
+            $details   = $this->query->detail($projectId, $this->tickets->resolve($projectId, $ticket));
             $fragment  = (request()->getQueryParams()['fragment'] ?? '') === '1';
 
             return $this->page('ticket', [
@@ -272,16 +272,22 @@ final class AppController
     public function createTicket(string $project): ResponseInterface
     {
         return $this->mutation(function ($data) use ($project) {
-            $id = $this->tickets->create(Input::id($project), $data);
+            $projectId = Input::id($project);
+            $id        = $this->tickets->create($projectId, $data);
+            $reference = $this->tickets->reference($projectId, $id);
 
-            return ['url' => '/projects/' . $project . '/tickets/' . $id, 'id' => (string) $id];
+            return [
+                'url' => '/projects/' . $project . '/tickets/' . $reference,
+                'id'  => $reference,
+            ];
         });
     }
 
     public function updateTicket(string $project, string $ticket): ResponseInterface
     {
         return $this->mutation(function ($data) use ($project, $ticket) {
-            $this->tickets->update(Input::id($project), Input::id($ticket), $data);
+            $projectId = Input::id($project);
+            $this->tickets->update($projectId, $this->tickets->resolve($projectId, $ticket), $data);
 
             return ['url' => '/projects/' . $project . '/tickets/' . $ticket];
         });
@@ -290,7 +296,8 @@ final class AppController
     public function linkTicket(string $project, string $ticket): ResponseInterface
     {
         return $this->mutation(function ($data) use ($project, $ticket) {
-            $this->tickets->link(Input::id($project), Input::id($ticket), $data);
+            $projectId = Input::id($project);
+            $this->tickets->link($projectId, $this->tickets->resolve($projectId, $ticket), $data);
 
             return ['url' => \Naf\route('ticket', ['project' => $project, 'ticket' => $ticket])];
         });
@@ -300,7 +307,7 @@ final class AppController
     {
         return $this->mutation(function ($data) use ($project, $ticket) {
             $id       = Input::id($project);
-            $ticketId = Input::id($ticket);
+            $ticketId = $this->tickets->resolve($id, $ticket);
             $this->tickets->move($id, $ticketId, $data);
             $moved = $this->tickets->ticket($id, $ticketId);
 
@@ -317,7 +324,8 @@ final class AppController
     public function ticketState(string $project, string $ticket): ResponseInterface
     {
         return $this->mutation(function ($data) use ($project, $ticket) {
-            $this->tickets->state(Input::id($project), Input::id($ticket), $data);
+            $projectId = Input::id($project);
+            $this->tickets->state($projectId, $this->tickets->resolve($projectId, $ticket), $data);
 
             return ['url' => '/projects/' . $project . '/tickets/' . $ticket];
         });
@@ -326,7 +334,8 @@ final class AppController
     public function comment(string $project, string $ticket): ResponseInterface
     {
         return $this->mutation(function ($data) use ($project, $ticket) {
-            $this->comments->save(Input::id($project), Input::id($ticket), $data);
+            $projectId = Input::id($project);
+            $this->comments->save($projectId, $this->tickets->resolve($projectId, $ticket), $data);
 
             return ['url' => '/projects/' . $project . '/tickets/' . $ticket . '#comments'];
         });
@@ -381,7 +390,8 @@ final class AppController
             if (!($file instanceof UploadedFileInterface)) {
                 throw new Failure('Bitte wähle eine Datei.');
             }
-            $this->attachments->upload(Input::id($project), Input::id($ticket), $file);
+            $projectId = Input::id($project);
+            $this->attachments->upload($projectId, $this->tickets->resolve($projectId, $ticket), $file);
 
             return ['url' => \Naf\route('ticket', ['project' => $project, 'ticket' => $ticket])];
         });
@@ -393,9 +403,10 @@ final class AppController
         string $attachment,
     ): ResponseInterface {
         return $this->mutation(function () use ($project, $ticket, $attachment) {
+            $projectId = Input::id($project);
             $this->attachments->remove(
-                Input::id($project),
-                Input::id($ticket),
+                $projectId,
+                $this->tickets->resolve($projectId, $ticket),
                 Input::id($attachment),
             );
 
@@ -406,9 +417,10 @@ final class AppController
     public function download(string $project, string $ticket, string $attachment): ResponseInterface
     {
         return $this->read(function () use ($project, $ticket, $attachment) {
-            $file = $this->attachments->download(
-                Input::id($project),
-                Input::id($ticket),
+            $projectId = Input::id($project);
+            $file      = $this->attachments->download(
+                $projectId,
+                $this->tickets->resolve($projectId, $ticket),
                 Input::id($attachment),
             );
             $downloadName = rawurlencode($file['original_name']);

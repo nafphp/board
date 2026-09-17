@@ -75,18 +75,18 @@ for path in [
     "/projects/1/settings",
     "/projects/1/activity",
     "/projects/1/state",
-    "/projects/1/tickets/1",
+    "/projects/1/tickets/NAF-1",
 ]:
     ok(bob.request(path)[0] == 404, "Bob denied " + path)
 # Stable CSRF across two tabs; fake Bearer and malformed CSRF cannot bypass checks.
 token = alice.csrf()
-ok(token == alice.csrf("/projects/1/tickets/1"), "CSRF stable across tabs")
+ok(token == alice.csrf("/projects/1/tickets/NAF-1"), "CSRF stable across tabs")
 for method, headers, data in [
     ("POST", {}, {}),
     ("PATCH", {"Authorization": "Bearer invented"}, {}),
     ("POST", {}, {"_csrf": [token]}),
 ]:
-    status, _, _ = alice.request("/projects/1/tickets/1", method, data, headers)
+    status, _, _ = alice.request("/projects/1/tickets/NAF-1", method, data, headers)
     ok(
         status == 400,
         "CSRF rejects " + method + " " + ("Bearer" if headers else "malformed/missing token"),

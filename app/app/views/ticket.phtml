@@ -25,9 +25,10 @@ if (!$fragment) {
     $this->block('content');
 }
 $projectId = $project['id'];
+$key       = $project['ticket_key'];
 $params    = [
     'project' => $projectId,
-    'ticket'  => $isNew ? 'new' : $ticket['id'],
+    'ticket'  => $isNew ? 'new' : Format::ticket($key, $ticket['number']),
 ];
 $editable      = $scope->allows('write') && !$ticket['archived_at'];
 $token         = csrf()->token();
@@ -77,7 +78,7 @@ foreach ($labels as $label) {
         <div class="ticket-main">
             <header class="ticket-heading">
                 <?php if ($isNew): ?><div class="ticket-kicker"><span class="ticket-key"><?= s(t('Neues Ticket')) ?></span></div><?php else: ?>
-                <div class="ticket-kicker"><span class="ticket-key">NAF-<?= (int) $ticket['number'] ?></span><span class="ticket-status" data-ticket-readonly="status"><?= s($ticket['archived_at'] ? t('Archiviert') : ($ticket['status'] === 'closed' ? t('Geschlossen') : t('Offen'))) ?></span></div><?php endif ?>
+                <div class="ticket-kicker"><span class="ticket-key"><?= s(Format::ticket($key, $ticket['number'])) ?></span><span class="ticket-status" data-ticket-readonly="status"><?= s($ticket['archived_at'] ? t('Archiviert') : ($ticket['status'] === 'closed' ? t('Geschlossen') : t('Offen'))) ?></span></div><?php endif ?>
                 <?= $field('title', 'Titel', 'text', $ticket['title'], '<h1>' . s($ticket['title']) . '</h1>', [], ['class' => 'ticket-title']) ?>
             </header>
             <section class="ticket-description detail-section">
@@ -89,7 +90,7 @@ foreach ($labels as $label) {
                 <h2><?= s(t('Verknüpfte Tickets')) ?><span class="count"><?= count($linked_tickets) ?></span></h2>
                 <?php foreach ($linked_tickets as $linked): ?>
                     <div class="ticket-link-row">
-                        <a href="<?= s(route('ticket', ['project' => $projectId, 'ticket' => $linked['id']])) ?>"><span class="ticket-key">NAF-<?= (int) $linked['number'] ?></span><span><?= s($linked['title']) ?></span><span class="muted"><?= $linked['status'] === 'closed' ? '✓' : '○' ?></span></a>
+                        <a href="<?= s(route('ticket', ['project' => $projectId, 'ticket' => Format::ticket($key, $linked['number'])])) ?>"><span class="ticket-key"><?= s(Format::ticket($key, $linked['number'])) ?></span><span><?= s($linked['title']) ?></span><span class="muted"><?= $linked['status'] === 'closed' ? '✓' : '○' ?></span></a>
                         <?php if ($editable): ?>
                             <form method="post" action="<?= s(route('ticket.links', $params)) ?>" data-ticket-form data-refresh-section="links">
                                 <input type="hidden" name="_csrf" value="<?= s($token) ?>" /><input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" /><input type="hidden" name="number" value="<?= (int) $linked['number'] ?>" /><input type="hidden" name="action" value="delete" />
@@ -103,7 +104,7 @@ foreach ($labels as $label) {
                     <details class="ticket-link-add"><summary class="text-button"><?= s(t('Ticket verknüpfen')) ?></summary>
                         <form method="post" action="<?= s(route('ticket.links', $params)) ?>" data-ticket-form data-refresh-section="links">
                             <input type="hidden" name="_csrf" value="<?= s($token) ?>" /><input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" />
-                            <label><?= s(t('Ticketnummer in diesem Projekt')) ?><span class="ticket-link-input"><span>NAF-</span><input type="number" name="number" min="1" required placeholder="42" /></span></label>
+                            <label><?= s(t('Ticketnummer in diesem Projekt')) ?><span class="ticket-link-input"><span><?= s($key) ?>-</span><input type="number" name="number" min="1" required placeholder="42" /></span></label>
                             <button class="button subtle"><?= s(t('Verknüpfen')) ?></button><div class="form-errors" role="alert"></div>
                         </form>
                     </details>
