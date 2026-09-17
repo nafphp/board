@@ -249,9 +249,8 @@
   "Zeiterfassung fortsetzen": "Resume tracking time",
   "Zeiterfassung pausieren": "Pause tracking time",
   "Gedrückt halten beendet die Erfassung": "Hold to stop tracking",
-  "Timer": "Timer",
-  "Zum Beispiel 2h 40m, 90m oder 1:30": "For example 2h 40m, 90m or 1:30",
   "Gedrückt halten beendet die Erfassung. Sie läuft auf dem Server weiter, auch wenn du den Tab schließt. Beim Pausieren und Beenden werden die vollen Minuten unter Erfasst gebucht.": "Hold to stop tracking. It keeps running on the server, even if you close the tab. Pausing and stopping both book the whole minutes under Logged.",
   "Sprache wählen": "Choose language",
-  "Wechseln": "Switch"
+  "Wechseln": "Switch",
+  "z. B. 2h 40m oder 1:30": "e.g. 2h 40m or 1:30"
 }

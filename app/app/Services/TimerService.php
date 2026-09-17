@@ -15,6 +15,10 @@ use function Naf\event;
  * Elapsed time is derived from a stored start instant rather than counted in the browser:
  * a closed tab, a reload or a sleeping laptop can then neither lose nor invent minutes.
  *
+ * Pausing holds the clock without writing anything; only stopping books what it shows. Time
+ * that is never stopped therefore never reaches the ticket — it waits on the run instead of
+ * being lost, and the clock still shows it on the next visit.
+ *
  * Timer writes deliberately carry no ticket version. Every other write uses optimistic
  * locking, but someone who tracked an hour would hold a stale version by the time they
  * pause, and a conflict there would throw away real work. Accumulating minutes is an
@@ -188,15 +192,21 @@ final class TimerService
 
         foreach ($runs as $run) {
             $live    = $this->live($run);
-            $pending = (int) $run['carry_seconds'] + $live;
-            $minutes = intdiv($pending, 60);
-            // Whole minutes go to the ticket; the seconds below one stay here and count
-            // towards the next minute, so repeated short bursts are not rounded away. What
-            // the clock shows is a separate, only ever growing number — an elapsed time that
-            // drops when you pause reads as a broken timer, however correct the bookkeeping.
-            $tracked = $state === 'stopped' ? 0 : (int) $run['tracked_seconds'] + $live;
+            $tracked = (int) $run['tracked_seconds'] + $live;
+            $carry   = (int) $run['carry_seconds'];
+            $minutes = 0;
+            // Only ending a run puts its time on the ticket. Pausing holds the clock and
+            // writes nothing, which is what gives stopping a meaning of its own. Whole
+            // minutes go over and the seconds below one stay behind for the next run, so
+            // repeated short sessions are not rounded away.
+            if ($state === 'stopped') {
+                $pending = $carry + $tracked;
+                $minutes = intdiv($pending, 60);
+                $carry   = $pending % 60;
+                $tracked = 0;
+            }
             $update->execute([
-                $pending % 60, $tracked, $state, $now,
+                $carry, $tracked, $state, $now,
                 $run['project_id'], $run['ticket_id'], $run['user_id'],
             ]);
             if ($minutes > 0) {

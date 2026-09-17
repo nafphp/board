@@ -249,9 +249,8 @@
   "Zeiterfassung fortsetzen": "Zeiterfassung fortsetzen",
   "Zeiterfassung pausieren": "Zeiterfassung pausieren",
   "Gedrückt halten beendet die Erfassung": "Gedrückt halten beendet die Erfassung",
-  "Timer": "Timer",
-  "Zum Beispiel 2h 40m, 90m oder 1:30": "Zum Beispiel 2h 40m, 90m oder 1:30",
   "Gedrückt halten beendet die Erfassung. Sie läuft auf dem Server weiter, auch wenn du den Tab schließt. Beim Pausieren und Beenden werden die vollen Minuten unter Erfasst gebucht.": "Gedrückt halten beendet die Erfassung. Sie läuft auf dem Server weiter, auch wenn du den Tab schließt. Beim Pausieren und Beenden werden die vollen Minuten unter Erfasst gebucht.",
   "Sprache wählen": "Sprache wählen",
-  "Wechseln": "Wechseln"
+  "Wechseln": "Wechseln",
+  "z. B. 2h 40m oder 1:30": "z. B. 2h 40m oder 1:30"
 }

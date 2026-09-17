@@ -53,7 +53,7 @@ $creating ??= false;
                     autocomplete="off"
                     spellcheck="false"
                 />
-                <span class="muted small"><?= s(t('Zum Beispiel 2h 40m, 90m oder 1:30')) ?></span>
+                <span class="muted small"><?= s(t('z. B. 2h 40m oder 1:30')) ?></span>
             <?php else: ?>
                 <input id="edit-<?= s($name) ?>" type="<?= s($type) ?>" name="<?= s($name) ?>" value="<?= s($value ?? '') ?>" <?= $type === 'number' ? 'min="0" max="10000000" step="1"' : '' ?> />
                 <?php if ($type === 'number'): ?><span class="muted small"><?= s(t('Zeit in Minuten')) ?></span><?php endif ?>

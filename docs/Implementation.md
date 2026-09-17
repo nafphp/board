@@ -139,17 +139,43 @@ die Bedienung. Ein Aufklappbereich stand vorher davor und war die unruhigste Ste
 Ansicht; als gewöhnliche Zeile braucht er weder Animation noch Zustand und steht neben
 Startdatum, Fälligkeit und Erfasst, wohin er gehört.
 
-Bedient wird der Timer über eine einzige Schaltfläche, ein abgerundetes Quadrat: ein Tippen
-startet und pausiert, langes Drücken beendet. Doppelklick wäre hier falsch — der erste Klick
-müsste rund eine Viertelsekunde abwarten, ob ein zweiter folgt, und Start und Pause würden
-träge. Die ersten 160 ms eines Drucks passiert nichts; erst danach schließt sich in 620 ms
-eine Kontur um die Schaltfläche. Damit bleibt ein normaler Klick vollkommen still. Die Kontur
-trägt die Farbe der Schaltfläche selbst, nicht die Warnfarbe, und liest sich so als Aufladen
-statt als Alarm. Außerhalb des Haltens ist sie ganz ausgeblendet: eine runde Strichkappe
-zeichnet sonst auch bei Strichlänge null noch einen Punkt. Ihre Länge wird aus den Maßen des
-Rechtecks gerechnet statt eingetragen, damit Form und Animation nicht auseinanderlaufen
-können — gemessen 118,2. Leertaste und Enter halten ebenso, und eine unsichtbare Beschreibung
-nennt die Geste.
+Bedient wird der Timer über eine einzige Schaltfläche, und die steht in der Zeile `Erfasst`
+hinter der gebuchten Summe. Eine eigene Timer-Zeile gibt es nicht mehr; die laufende Uhr
+gehört neben die Zahl, die sie verändert. Die Schaltfläche trägt beides: Läuft sie, zeigt sie
+die Uhr, und sie sagt, was ein Druck täte, wenn der Zeiger ankommt und für 1,2 Sekunden nach
+jeder Zustandsänderung. Der Weg zurück zur Uhr fragt den Zeiger bewusst nicht: Nach einem
+Klick steht er noch auf der Schaltfläche, und darauf zu warten, dass er sie verlässt, ließ das
+Symbol so lange stehen, wie die Hand ruhte. Sie wächst dafür in der Breite, und die Kontur wird an der
+Schaltfläche gemessen, wie sie gerade ist, statt an festen Maßen.
+
+Ein Tippen startet und pausiert, langes Drücken beendet. Doppelklick wäre hier falsch — der
+erste Klick müsste rund eine Viertelsekunde abwarten, ob ein zweiter folgt, und Start und
+Pause würden träge. Die ersten 160 ms eines Drucks passiert nichts; erst danach schließt sich
+in 620 ms eine Kontur. Damit bleibt ein normaler Klick vollkommen still. Die Kontur trägt die
+Farbe der Schaltfläche selbst, nicht die Warnfarbe, und liest sich so als Aufladen statt als
+Alarm. Außerhalb des Haltens ist sie ganz ausgeblendet: eine runde Strichkappe zeichnet sonst
+auch bei Strichlänge null noch einen Punkt. Leertaste und Enter halten ebenso.
+
+Pausieren hält die Uhr an und schreibt nichts; erst Beenden bucht, was sie zeigt. Sonst hätte
+Beenden keine eigene Bedeutung. Die Folge davon ist auszusprechen: Zeit, die nie beendet wird,
+erreicht das Ticket nicht. Sie ist nicht verloren — sie wartet am Lauf und steht beim nächsten
+Besuch wieder auf der Uhr —, aber sie zählt eben noch nicht. Der Rest unter einer Minute bleibt
+über das Beenden hinaus liegen, damit mehrere kurze Sitzungen nicht weggerundet werden.
+
+Ein Druck auf einen laufenden Timer hält die Uhr sofort an und nicht erst am Ende der Geste.
+Sonst würden die 780 ms, die das Halten dauert, mitgebucht. Losgelassen bleibt sie pausiert —
+das ist ohnehin, was ein Tippen bedeutet — und wer weiterhält, macht daraus ein Beenden, bei
+dem nichts mehr hinzukommt. Ein Prüfdurchlauf im Browser zeigt genau diese Folge: `start`,
+`pause` beim Druck, `stop` am Ende des Haltens, und dazwischen keine weitere Anfrage.
+
+Was der Server nach einem Lauf zurückgibt, wird auch angezeigt, statt bis zum nächsten Laden
+zu warten. Die Zeile `Erfasst` übernimmt die neue Summe in derselben Schreibweise, die das Feld
+annimmt, und leuchtet einmal auf — das ist das Signal, dass gebucht wurde. Es erscheint also
+beim Beenden und nicht beim Pausieren. Bucht ein Lauf nichts, weil er unter einer Minute blieb,
+leuchtet auch nichts; ein Signal ohne Anlass wäre eine Lüge. Während das Feld bearbeitet wird,
+tritt die Schaltfläche zur Seite: Die Zeile wird dabei zum Stapel, und ein Knopf neben einem
+zweizeiligen Formular hilft niemandem. Der grüne Punkt auf der Karte und die Marke in der Kopfleiste werden ebenso
+mitgeführt: Startet eine Erfassung, erscheinen sie sofort, endet sie, verschwinden sie.
 
 Dauern werden so geschrieben, wie man sie sagt: `2h 40m`, `2h30`, `40m`, `45min`, `1:30`,
 `1,5h` oder eine nackte `90` für Minuten. Eine nackte Dezimalzahl bleibt abgewiesen, weil
