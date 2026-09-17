@@ -2,6 +2,7 @@
 use App\Domain\Estimation;
 use App\Domain\ProjectPermissions;
 use App\Support\Format;
+use App\Support\Icon;
 
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
@@ -80,23 +81,22 @@ $viewData = [
     'user'           => $user,
 ];
 $icons = [
-    'user'     => '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
-    'users'    => '<circle cx="9" cy="8" r="3"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M17 5a3 3 0 0 1 0 6m2 4a6 6 0 0 1 3 5"/>',
-    'spark'    => '<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5ZM20 2v4m-2-2h4"/>',
-    'shield'   => '<path d="M12 3 3 7v5c0 5 9 9 9 9s9-4 9-9V7Z"/><path d="m8 12 3 3 5-6"/>',
-    'sliders'  => '<path d="M4 3v8m0 4v6M12 3v3m0 4v11M20 3v11m0 4v3M1 11h6m2-5h6m2 8h6"/>',
-    'column'   => '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16M15 4v16"/>',
-    'swimlane' => '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 10h18M3 15h18"/>',
-    'label'    => '<path d="M3 3h8l10 10-8 8L3 11Z"/><circle cx="7.5" cy="7.5" r="1"/>',
-];
-?>
+    'user'     => 'person',
+    'users'    => 'group',
+    'spark'    => 'auto_awesome',
+    'shield'   => 'shield',
+    'sliders'  => 'tune',
+    'column'   => 'view_week',
+    'swimlane' => 'table_rows',
+    'label'    => 'label',
+];?>
 <section class="page-heading settings-heading">
     <div>
         <span class="eyebrow"><?= s(t($projectId ? 'KONTO & PROJEKT' : 'DEIN KONTO')) ?></span>
         <h1>Einstellungen</h1>
     </div>
     <?php if ($projectId): ?>
-        <a class="button subtle" href="<?= s(route('board', ['project' => $projectId])) ?>">← Zum Board</a>
+        <a class="button subtle" href="<?= s(route('board', ['project' => $projectId])) ?>"><?= Icon::mark('arrow_back', 'sm') ?> Zum Board</a>
     <?php endif ?>
 </section>
 <div class="settings-context">
@@ -130,24 +130,12 @@ $icons = [
             aria-haspopup="dialog"
             aria-controls="settings-detail"
         >
-            <span class="settings-icon">
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.6"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                >
-                    <?= $icons[$icon] ?>
-                </svg>
-            </span>
+            <span class="settings-icon"><?= Icon::mark($icons[$icon], 'lg') ?></span>
             <span class="settings-tile-text">
                 <strong><?= s($label) ?></strong>
                 <small data-settings-summary="<?= s($id) ?>"><?= s($description) ?></small>
             </span>
-            <span class="settings-arrow" aria-hidden="true">↗</span>
+            <span class="settings-arrow"><?= Icon::mark('open_in_new', 'sm') ?></span>
         </button>
         <section
             hidden
@@ -180,8 +168,7 @@ $icons = [
             data-settings-close
             aria-label="Einstellungen schließen"
         >
-            ×
-        </button>
+<?= Icon::mark('close') ?></button>
     </header>
     <div class="settings-detail-body"></div>
 </dialog>

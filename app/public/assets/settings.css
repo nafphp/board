@@ -73,9 +73,8 @@
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 9%, transparent);
 }
-.settings-icon svg {
-  width: 24px;
-  height: 24px;
+.settings-icon .mi {
+  font-size: 24px;
 }
 .settings-tile-text {
   display: grid;

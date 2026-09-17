@@ -39,8 +39,8 @@ Formatierung, Konflikte, Entwurferhalt und Antworten. Sie ersetzt keine direkte 
 Abnahme des HTTPS-Backends; diese ist durch CA-Vertrauen bzw. die native Browseransicht begrenzt.
 [Ticket-Details.md](Ticket-Details.md) beschreibt Bedienung, Datenmodell, Tests und Grenzen.
 
-Die Ticketerstellung verwendet nun dasselbe Ticket- und Feldtemplate in einem zentrierten
-nativen Dialog. Rich Text und Metadaten werden zusammen über den bestehenden Create-Service
+Die Ticketerstellung verwendet nun dasselbe Ticket- und Feldtemplate in einem nativen
+Dialog. Rich Text und Metadaten werden zusammen über den bestehenden Create-Service
 angelegt. Danach erscheint die Detailansicht im selben Modal. Der feste Aktionsbereich,
 Abbruch mit Entwurfschutz und die direkte URL mit nativem Formular-Fallback sind geprüft.
 Die Ergänzung wurde erneut mit 60 MariaDB- und jetzt 73 HTTPS-Prüfungen sowie Desktop-/Mobile-
@@ -170,7 +170,7 @@ dem nichts mehr hinzukommt. Ein Prüfdurchlauf im Browser zeigt genau diese Folg
 
 Was der Server nach einem Lauf zurückgibt, wird auch angezeigt, statt bis zum nächsten Laden
 zu warten. Die Zeile `Erfasst` übernimmt die neue Summe in derselben Schreibweise, die das Feld
-annimmt, und leuchtet einmal auf — das ist das Signal, dass gebucht wurde. Es erscheint also
+annimmt, und die Zahl selbst leuchtet einmal auf — die Schrift, nicht der Hintergrund — das ist das Signal, dass gebucht wurde. Es erscheint also
 beim Beenden und nicht beim Pausieren. Bucht ein Lauf nichts, weil er unter einer Minute blieb,
 leuchtet auch nichts; ein Signal ohne Anlass wäre eine Lüge. Während das Feld bearbeitet wird,
 tritt die Schaltfläche zur Seite: Die Zeile wird dabei zum Stapel, und ein Knopf neben einem
@@ -214,6 +214,65 @@ der geschriebene Name, die Flagge bleibt. Die Auswahl schreibt über einen eigen
 Endpunkt nur das Sprachfeld. Der vorhandene `save()` schreibt jedes Feld, ob mitgeschickt oder
 nicht, und hätte Thema, Zeitzone und beide Benachrichtigungsschalter auf die Vorgaben
 zurückgesetzt; ein Prüffall hält das fest.
+
+
+## Symbole und aufklappbare Bereiche
+
+Die Oberfläche mischte Schriftzeichen als Symbole — ▦, ◉, ⚙, ◐ — mit einzelnen Inline-SVGs.
+Jetzt zeichnet durchgängig Material Symbols Outlined. Die Schrift liegt im Projekt unter
+`app/public/assets/vendor/material-symbols`, weil die Content-Security-Policy Schriften nur
+von dieser Herkunft erlaubt und die Oberfläche nicht darauf warten soll, dass ein Dritter
+erreichbar ist. Ausgeliefert wird nur, was benutzt wird: 60 Glyphen in 6,4 kB statt der
+vollständigen Familie in mehreren Megabyte; `README.md` daneben nennt die Namen und den
+Befehl, mit dem die Teilmenge neu erzeugt wird. `App\Support\Icon` setzt sie und versteckt
+jedes Symbol vor Bildschirmlesern, denn die Ligatur trägt den Namen als Text und der gehört
+nicht vorgelesen — die Beschriftung sitzt am umgebenden Bedienelement.
+
+Ein `details` springt beim Öffnen und Schließen in einem Frame und verschiebt damit alles
+darunter um eine ganze Bereichshöhe. `disclosure.js` gibt jedem Aufklappbereich der Anwendung
+dieselbe gemessene Bewegung; animiert wird die Höhe des Elements selbst und kein Hüllelement,
+weil mehrere Ansichten den Inhalt eines `details` austauschen und eine Hülle dabei verlören.
+Die Kurve bremst ab statt zu federn. Führt eine geöffnete Stelle unter den Fensterrand, wird
+sie gerade so weit hereingeholt; war sie ohnehin sichtbar, bewegt sich nichts. Bleibt ein
+Frame aus, schließt ein Zeitlimit den Bereich trotzdem.
+
+Die Informationen am Fuß der Ticket-Seitenleiste klappen damit zu. Die Zeitzeile richtet sich
+jetzt an der Wertespalte aus — erst die verstrichene Zeit, dann die Schaltfläche am Zeilenrand,
+damit `18:42` unter `0m` steht und nicht daneben. Die Spaltenauswahl heißt `Status`, weil sie
+im Kanban genau das ist; die Auswahl offen/geschlossen daneben heißt `Abschluss`, sonst
+trügen zwei Dinge in derselben Leiste denselben Namen.
+
+
+## Die Ticketleiste fährt ein
+
+Lesen und Anlegen benutzen jetzt dieselbe Leiste am rechten Rand; das Anlegen stand vorher
+mittig, was zu einer Bewegung von rechts nicht gepasst hätte. Sie fährt von dort ein, wo sie
+verankert ist, und wieder dorthin zurück.
+
+Beide Richtungen macht das Stylesheet allein: `display` und `overlay` werden als diskrete
+Eigenschaften mitübergeben, wodurch der Dialog bis zum Ende der Bewegung in der obersten
+Ebene bleibt. Das deckt auch das Schließen per Escape ab, das kein Skript von uns zu sehen
+bekäme, ohne den vorhandenen Schließweg mit seinem Entwurfschutz anzufassen. Browser ohne
+`@starting-style` zeigen die Leiste ohne Bewegung; nichts geht dabei verloren.
+
+Gemessen: Beim Öffnen steht die Leiste auf `translateX(983px)`, also vollständig außerhalb
+des rechten Rands, und liegt am Ende bündig an ihm — rechte Kante 1024 bei 1024 Pixeln
+Fensterbreite.
+
+
+## Die Aktionen eines Tickets
+
+„Ticket archivieren“ stand als einzelner Link am Fuß der Seitenleiste und die Auswahl
+offen/geschlossen als eigene Zeile darüber. Beides liegt jetzt hinter einem Punktemenü in der
+oberen rechten Ecke der Seitenleiste, wo weitere Aktionen Platz haben, ohne je eine Zeile zu
+belegen. Die Zeile `Abschluss` entfällt damit; der Zustand steht ohnehin im Kopf des Tickets.
+
+Ein Menü ist kein Aufklappbereich: Es legt sich über die Seite, statt sie auseinanderzuschieben,
+und behält deshalb den nativen Umschalter statt der gemessenen Höhenbewegung. Es schließt, wie
+Menüs schließen — durch einen Klick daneben oder Escape, das den Fokus zurückgibt.
+
+Der Rückweg oben heißt außerhalb der Leiste jetzt „Zurück zum Board“ statt des Projektnamens;
+in der Leiste bleibt der Name, weil der Klick dort die Leiste schließt und nirgendwo hinführt.
 
 
 ## Eigenes Profil

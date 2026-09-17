@@ -4,6 +4,7 @@ use App\Domain\Estimation;
 use App\Support\ActivityLabel;
 use App\Support\Duration;
 use App\Support\Format;
+use App\Support\Icon;
 use App\Support\Mentions;
 use App\Support\RichText;
 
@@ -91,9 +92,9 @@ foreach ($labels as $label) {
 ?>
 <div class="ticket-detail ticket-workspace <?= $fragment ? 'in-drawer' : '' ?> <?= $isNew ? 'ticket-creating' : '' ?>" data-ticket-url="<?= s(route('ticket', $params)) ?>" data-version="<?= (int) $ticket['version'] ?>" data-revision="<?= (int) $board['revision'] ?>">
     <div class="detail-topline">
-        <a href="<?= s(route('board', ['project' => $projectId])) ?>" <?= $fragment ? 'data-close-drawer' : '' ?>>← <?= s($project['name']) ?></a>
+        <a class="back-link" href="<?= s(route('board', ['project' => $projectId])) ?>" <?= $fragment ? 'data-close-drawer' : '' ?>><?= Icon::mark('arrow_back', 'sm') ?><span><?= $fragment ? s($project['name']) : s(t('Zurück zum Board')) ?></span></a>
         <span class="ticket-save-state" role="status" aria-live="polite"></span>
-        <?php if ($fragment): ?><button type="button" class="icon-button" data-close-drawer aria-label="<?= s(t('Ticket schließen')) ?>">×</button><?php endif ?>
+        <?php if ($fragment): ?><button type="button" class="icon-button" data-close-drawer aria-label="<?= s(t('Ticket schließen')) ?>"><?= Icon::mark('close') ?></button><?php endif ?>
     </div>
     <?php if ($isNew): ?>
         <form method="post" action="<?= s(route('ticket.create', ['project' => $projectId])) ?>" data-ticket-form data-ticket-create>
@@ -116,11 +117,11 @@ foreach ($labels as $label) {
                 <h2><?= s(t('Verknüpfte Tickets')) ?><span class="count"><?= count($linked_tickets) ?></span></h2>
                 <?php foreach ($linked_tickets as $linked): ?>
                     <div class="ticket-link-row">
-                        <a href="<?= s(route('ticket', ['project' => $projectId, 'ticket' => Format::ticket($key, $linked['number'])])) ?>"><span class="ticket-key"><?= s(Format::ticket($key, $linked['number'])) ?></span><span><?= s($linked['title']) ?></span><span class="muted"><?= $linked['status'] === 'closed' ? '✓' : '○' ?></span></a>
+                        <a href="<?= s(route('ticket', ['project' => $projectId, 'ticket' => Format::ticket($key, $linked['number'])])) ?>"><span class="ticket-key"><?= s(Format::ticket($key, $linked['number'])) ?></span><span><?= s($linked['title']) ?></span><span class="muted"><?= $linked['status'] === 'closed' ? Icon::mark('check_circle', 'sm') : Icon::mark('radio_button_unchecked', 'sm') ?></span></a>
                         <?php if ($editable): ?>
                             <form method="post" action="<?= s(route('ticket.links', $params)) ?>" data-ticket-form data-refresh-section="links">
                                 <input type="hidden" name="_csrf" value="<?= s($token) ?>" /><input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" /><input type="hidden" name="number" value="<?= (int) $linked['number'] ?>" /><input type="hidden" name="action" value="delete" />
-                                <button class="text-button muted" aria-label="<?= s(t('Verknüpfung entfernen')) ?>">×</button><div class="form-errors" role="alert"></div>
+                                <button class="text-button muted" aria-label="<?= s(t('Verknüpfung entfernen')) ?>"><?= Icon::mark('close', 'sm') ?></button><div class="form-errors" role="alert"></div>
                             </form>
                         <?php endif ?>
                     </div>
@@ -136,7 +137,7 @@ foreach ($labels as $label) {
                     </details>
                 <?php endif ?>
             </section>
-                <section class="detail-section">
+                <section class="detail-section" data-ticket-section="attachments">
                     <h2>
                         <?= s(t('Anhänge')) ?>
                         <span class="count"><?= count($attachments) ?></span>
@@ -144,7 +145,7 @@ foreach ($labels as $label) {
                     <?php foreach ($attachments as $file): ?>
                         <div class="attachment-row">
                             <?php if ($file['state'] === 'ready'): ?>
-                                <a href="<?= s(route('attachment.download', ['project' => $projectId, 'ticket' => $params['ticket'], 'attachment' => $file['id']])) ?>">↧ <?= s($file['original_name']) ?></a>
+                                <a href="<?= s(route('attachment.download', ['project' => $projectId, 'ticket' => $params['ticket'], 'attachment' => $file['id']])) ?>"><?= Icon::mark('download', 'sm') ?> <?= s($file['original_name']) ?></a>
                             <?php else: ?>
                                 <span><?= s($file['original_name']) ?> · Wird verarbeitet …</span>
                             <?php endif ?>
@@ -155,9 +156,7 @@ foreach ($labels as $label) {
                                     <button
                                         class="text-button muted"
                                         aria-label="Anhang <?= s($file['original_name']) ?> löschen"
-                                    >
-                                        ×
-                                    </button>
+                                    ><?= Icon::mark('close', 'sm') ?></button>
                                     <div class="form-errors" role="alert"></div>
                                 </form>
                             <?php endif ?>
@@ -242,7 +241,7 @@ while ($stack) {
             <?php if ($scope->allows('comment')): ?>
                 <form class="comment-composer" method="post" action="<?= s(route('ticket.comments', $params)) ?>" data-ticket-form data-comment-composer data-refresh-section="comments">
                     <input type="hidden" name="_csrf" value="<?= s($token) ?>" /><input type="hidden" name="parent_id" value="" />
-                    <div class="reply-context" hidden><span></span><button type="button" class="text-button" data-cancel-reply aria-label="<?= s(t('Antwort abbrechen')) ?>">×</button></div>
+                    <div class="reply-context" hidden><span></span><button type="button" class="text-button" data-cancel-reply aria-label="<?= s(t('Antwort abbrechen')) ?>"><?= Icon::mark('close', 'sm') ?></button></div>
                     <label for="new-comment" class="sr-only"><?= s(t('Kommentar')) ?></label>
                     <textarea id="new-comment" name="body" rows="2" required maxlength="20000" placeholder="<?= s(t('Kommentar schreiben … Mit @ jemanden erwähnen')) ?>" aria-controls="mention-list" aria-expanded="false" aria-autocomplete="list"></textarea>
                     <div class="mention-list" id="mention-list" role="listbox" aria-label="<?= s(t('Projektmitglieder')) ?>" hidden></div>
@@ -255,15 +254,39 @@ while ($stack) {
         </div>
         <aside class="ticket-context ticket-sidebar" aria-label="<?= s(t('Ticketdetails')) ?>">
             <div class="ticket-sidebar-group ticket-primary-meta">
+                <?php if (!$isNew && $editable): ?>
+                    <details class="ticket-menu" data-menu>
+                        <summary aria-label="<?= s(t('Weitere Aktionen')) ?>"><?= Icon::mark('more_horiz') ?></summary>
+                        <div class="menu-sheet">
+                            <form method="post" data-ticket-form action="<?= s(route('ticket.state', $params)) ?>">
+                                <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                                <input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" />
+                                <button name="action" value="<?= $ticket['status'] === 'closed' ? 'reopen' : 'close' ?>">
+                                    <?= Icon::mark($ticket['status'] === 'closed' ? 'radio_button_unchecked' : 'check_circle', 'sm') ?>
+                                    <?= s($ticket['status'] === 'closed' ? t('Ticket wieder öffnen') : t('Ticket schließen')) ?>
+                                </button>
+                                <div class="form-errors" role="alert"></div>
+                            </form>
+                            <form method="post" data-ticket-form action="<?= s(route('ticket.state', $params)) ?>">
+                                <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                                <input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" />
+                                <button name="action" value="<?= $ticket['archived_at'] ? 'restore' : 'archive' ?>">
+                                    <?= Icon::mark($ticket['archived_at'] ? 'folder_open' : 'delete', 'sm') ?>
+                                    <?= s($ticket['archived_at'] ? t('Aus Archiv wiederherstellen') : t('Ticket archivieren')) ?>
+                                </button>
+                                <div class="form-errors" role="alert"></div>
+                            </form>
+                        </div>
+                    </details>
+                <?php endif ?>
                 <div class="meta-caption"><?= s(t('Status')) ?></div>
-                <?= $field('column_id', 'Spalte', 'select', $ticket['column_id'], '<span class="column-value">' . s(array_column($columns, 'name', 'id')[$ticket['column_id']]) . '<span aria-hidden="true">⌄</span></span>', array_column($columns, 'name', 'id'), ['action' => route('ticket.move', $params), 'hidden' => ['swimlane_id' => $ticket['swimlane_id']]]) ?>
+                <?= $field('column_id', 'Spalte', 'select', $ticket['column_id'], '<span class="column-value">' . s(array_column($columns, 'name', 'id')[$ticket['column_id']]) . '' . Icon::mark('expand_more', 'sm') . '</span>', array_column($columns, 'name', 'id'), ['action' => route('ticket.move', $params), 'hidden' => ['swimlane_id' => $ticket['swimlane_id']]]) ?>
                 <div class="meta-caption"><?= s(t('Verantwortliche')) ?></div>
                 <?= $field('assignee_ids', 'Verantwortliche', 'multiple', $selected_assignees, $assigneeDisplay ?: '<span class="muted">' . s(t('Nicht zugewiesen')) . '</span>', $memberNames) ?>
             </div>
             <section class="ticket-sidebar-group">
                 <h2><?= s(t('Details')) ?></h2>
                 <dl class="ticket-meta">
-                    <?php if (!$isNew): ?><dt><?= s(t('Abschluss')) ?></dt><dd><?= $field('action', 'Abschluss', 'select', $ticket['status'] === 'closed' ? 'close' : 'reopen', s($ticket['status'] === 'closed' ? t('Geschlossen') : t('Offen')), ['reopen' => t('Offen'), 'close' => t('Geschlossen')], ['action' => route('ticket.state', $params)]) ?></dd><?php endif ?>
                     <dt><?= s(t('Priorität')) ?></dt><dd><?= $field('priority', 'Priorität', 'select', $ticket['priority'], '<span class="priority-value priority-' . s($ticket['priority']) . '">● ' . s($priorities[$ticket['priority']]) . '</span>', $priorities) ?></dd>
                     <dt><?= s(t('Swimlane')) ?></dt><dd><?= $field('swimlane_id', 'Swimlane', 'select', $ticket['swimlane_id'], s(array_column($swimlanes, 'name', 'id')[$ticket['swimlane_id']]), array_column($swimlanes, 'name', 'id'), ['action' => route('ticket.move', $params), 'hidden' => ['column_id' => $ticket['column_id']]]) ?></dd>
                     <dt>Labels</dt><dd><?= $field('label_ids', 'Labels', 'multiple', $selected_labels, $labelDisplay ?: $empty, array_column($labels, 'name', 'id')) ?></dd>
@@ -327,17 +350,16 @@ while ($stack) {
                 </div>
             </section>
             <?php if (!$isNew): ?>
-            <section class="ticket-sidebar-group ticket-audit" data-ticket-readonly="audit">
-                <h2><?= s(t('Informationen')) ?></h2>
+            <details class="ticket-sidebar-group ticket-audit" data-ticket-readonly="audit">
+                <summary><h2><?= s(t('Informationen')) ?></h2><?= Icon::mark('expand_more', 'sm', 'mi-turn') ?></summary>
                 <dl class="ticket-meta"><dt><?= s(t('Ersteller')) ?></dt><dd><?= s($creator) ?></dd><dt><?= s(t('Projekt')) ?></dt><dd><?= s($project['name']) ?></dd>
                     <?php foreach (['created_at' => 'Erstellt', 'updated_at' => 'Geändert', 'closed_at' => 'Geschlossen', 'archived_at' => 'Archiviert'] as $key => $caption): ?>
                         <?php if ($ticket[$key]): ?><dt><?= s(t($caption)) ?></dt><dd><time><?= s(Format::dateTime($ticket[$key], $preferences)) ?></time></dd><?php endif ?>
                     <?php endforeach ?>
                     <dt><?= s(t('Stand')) ?></dt><dd><?= (int) $ticket['version'] ?></dd>
                 </dl>
-            </section>
+            </details>
             <?php if ($scope->allows('write')): ?>
-                <form class="ticket-archive" data-ticket-readonly="archive" method="post" data-ticket-form action="<?= s(route('ticket.state', $params)) ?>"><input type="hidden" name="_csrf" value="<?= s($token) ?>" /><input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" /><button class="text-button muted" name="action" value="<?= $ticket['archived_at'] ? 'restore' : 'archive' ?>"><?= s($ticket['archived_at'] ? t('Aus Archiv wiederherstellen') : t('Ticket archivieren')) ?></button><div class="form-errors" role="alert"></div></form>
             <?php endif ?>
             <?php endif ?>
         </aside>

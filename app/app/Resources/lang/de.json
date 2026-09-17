@@ -252,5 +252,9 @@
   "Gedrückt halten beendet die Erfassung. Sie läuft auf dem Server weiter, auch wenn du den Tab schließt. Beim Pausieren und Beenden werden die vollen Minuten unter Erfasst gebucht.": "Gedrückt halten beendet die Erfassung. Sie läuft auf dem Server weiter, auch wenn du den Tab schließt. Beim Pausieren und Beenden werden die vollen Minuten unter Erfasst gebucht.",
   "Sprache wählen": "Sprache wählen",
   "Wechseln": "Wechseln",
-  "z. B. 2h 40m oder 1:30": "z. B. 2h 40m oder 1:30"
+  "Abschluss": "Abschluss",
+  "z. B. 2h 40m oder 1:30": "z. B. 2h 40m oder 1:30",
+  "Weitere Aktionen": "Weitere Aktionen",
+  "Ticket wieder öffnen": "Ticket wieder öffnen",
+  "Zurück zum Board": "Zurück zum Board"
 }

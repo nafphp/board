@@ -1,0 +1,57 @@
+/* Material Symbols, served from this project. The content security policy allows fonts from
+   this origin only, and the interface should not wait on a third party to draw its icons. */
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 400;
+  /* Nothing is drawn until the font is here, so the ligature text ("settings") is never
+     shown as itself. The file is a few kilobytes and comes from the same origin. */
+  font-display: block;
+  src: url('/assets/vendor/material-symbols/material-symbols-outlined.woff2') format('woff2');
+}
+
+.mi {
+  font-family: 'Material Symbols Outlined';
+  font-weight: 400;
+  font-style: normal;
+  font-size: inherit;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+}
+
+/* Sizes are named rather than set per place, so icons stay in step with one another. */
+.mi-sm {
+  font-size: 16px;
+}
+.mi-md {
+  font-size: 19px;
+}
+.mi-lg {
+  font-size: 22px;
+}
+
+/* A chevron that states whether its section is open, and turns rather than jumps. */
+.mi-turn {
+  transition: transform 0.24s cubic-bezier(0.22, 0.7, 0.26, 1);
+}
+[open] > summary .mi-turn,
+[aria-expanded='true'] .mi-turn {
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mi-turn {
+    transition: none;
+  }
+}

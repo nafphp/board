@@ -1107,19 +1107,27 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 .timer-chip time {
   font-variant-numeric: tabular-nums;
 }
+/* Held only while a section is opening or closing, so normal layout is untouched after. */
+details[data-sweeping] {
+  overflow: hidden;
+}
+/* The timer is a row of the planning list like any other: its label on the left, one control
+   on the right. That control is the whole timer — it shows the clock while it runs and says
+   what a press would do whenever the pointer is on it or the state just changed. A tap starts
+   and pauses, holding it stops, and the outline drawn while holding explains how long. */
 /* One quiet flare on the number that just grew, so booking is visible without a banner. */
 @keyframes booked-flash {
   from {
-    background: color-mix(in srgb, #2fbf8f 32%, transparent);
-    color: var(--text);
+    color: #2fbf8f;
+    font-weight: 700;
   }
   to {
-    background: transparent;
+    color: inherit;
+    font-weight: inherit;
   }
 }
 .inline-display.just-booked {
-  animation: booked-flash 1.2s ease-out;
-  border-radius: 5px;
+  animation: booked-flash 1.4s ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
   .inline-display.just-booked {
@@ -1666,6 +1674,10 @@ fieldset:disabled select {
   font-size: 8px;
   color: var(--muted);
 }
+/* The panel is anchored to the right edge, so it arrives from there. Both directions are
+   done in CSS: transitioning display and overlay as discrete properties keeps the dialog in
+   the top layer until the slide is over, which also covers the native Escape close that no
+   script of ours would see. Browsers without it simply show the panel at once. */
 .ticket-drawer {
   position: fixed;
   inset: 0 0 0 auto;
@@ -1680,6 +1692,43 @@ fieldset:disabled select {
   color: var(--text);
   padding: 32px;
   overflow: auto;
+  transform: translateX(100%);
+  transition:
+    transform 0.34s cubic-bezier(0.22, 0.7, 0.26, 1),
+    overlay 0.34s allow-discrete,
+    display 0.34s allow-discrete;
+}
+.ticket-drawer[open] {
+  transform: none;
+}
+@starting-style {
+  .ticket-drawer[open] {
+    transform: translateX(100%);
+  }
+}
+.ticket-drawer::backdrop {
+  opacity: 0;
+  transition:
+    opacity 0.34s ease-out,
+    overlay 0.34s allow-discrete,
+    display 0.34s allow-discrete;
+}
+.ticket-drawer[open]::backdrop {
+  opacity: 1;
+}
+@starting-style {
+  .ticket-drawer[open]::backdrop {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticket-drawer,
+  .ticket-drawer::backdrop {
+    transition: none;
+  }
+  .ticket-drawer {
+    transform: none;
+  }
 }
 .ticket-drawer .ticket-detail-grid {
   grid-template-columns: minmax(0, 1fr) 240px;

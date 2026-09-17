@@ -2,6 +2,7 @@
 
 use App\Domain\Estimation;
 use App\Support\Format;
+use App\Support\Icon;
 
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
@@ -39,8 +40,13 @@ $priorityLabels = [
     'normal' => t('Normal'),
     'low'    => t('Niedrig'),
 ];
-$prioritySymbols = ['urgent' => '↑↑', 'high' => '↑', 'normal' => '−', 'low' => '↓'];
-$boardHint       = match (true) {
+$prioritySymbols = [
+    'urgent' => Icon::mark('keyboard_double_arrow_up', 'sm'),
+    'high'   => Icon::mark('arrow_upward', 'sm'),
+    'normal' => Icon::mark('remove', 'sm'),
+    'low'    => Icon::mark('arrow_downward', 'sm'),
+];
+$boardHint = match (true) {
     $project['archived_at'] !== null => t('Archiviertes Projekt · Tickets können gelesen, aber nicht geändert werden'),
     !$canWrite                       => t('Du hast Lesezugriff auf dieses Board'),
     (bool) $filters                  => t('Gefilterte Ansicht · Verschieben über das Kartenmenü'),
@@ -78,19 +84,19 @@ $emptyCellHint = $filters
 </section>
 <nav class="tabs" aria-label="Projektansichten">
     <a class="active" href="<?= s(route('board', ['project' => $projectId])) ?>">
-        ▥ &nbsp; Board
+        <?= Icon::mark('view_kanban') ?> Board
         <span><?= $total ?></span>
     </a>
-    <a href="<?= s(route('project.activity', ['project' => $projectId])) ?>">◷ &nbsp; Aktivität</a>
+    <a href="<?= s(route('project.activity', ['project' => $projectId])) ?>"><?= Icon::mark('history') ?> Aktivität</a>
     <?php if ($canManage): ?>
-        <a href="<?= s(route('project.settings', ['project' => $projectId])) ?>">⚙ &nbsp; Einstellungen</a>
+        <a href="<?= s(route('project.settings', ['project' => $projectId])) ?>"><?= Icon::mark('settings') ?> Einstellungen</a>
     <?php endif ?>
     <div class="tabs-spacer"></div>
     <span class="role-badge" title="<?= s($scope->roleName ?? ucfirst($scope->role)) ?>"><?= s($scope->roleName ?? ucfirst($scope->role)) ?></span>
 </nav>
 <form method="get" class="filterbar" action="<?= s(route('board', ['project' => $projectId])) ?>">
     <label class="search-field">
-        <span>⌕</span>
+        <?= Icon::mark('search') ?>
         <input
             name="q"
             aria-label="<?= s(t('Tickets durchsuchen')) ?>"
@@ -162,7 +168,7 @@ $emptyCellHint = $filters
 </div>
 <div id="board-update" class="update-banner" hidden>
     Es gibt Änderungen im Projekt.
-    <button type="button" data-reload>Board aktualisieren ↻</button>
+    <button type="button" data-reload>Board aktualisieren <?= Icon::mark('refresh', 'sm') ?></button>
 </div>
 <?php if ($isLimited): ?>
     <div class="update-banner">
@@ -200,7 +206,7 @@ $emptyCellHint = $filters
     <?php foreach ($swimlanes as $lane): ?>
         <section class="swimlane" data-lane="<?= (int) $lane['id'] ?>">
             <div class="lane-heading">
-                <span>⌄</span>
+                <?= Icon::mark('expand_more', 'md', 'mi-turn') ?>
                 <h3><?= s($lane['name']) ?></h3>
                 <span class="lane-count"><?= $laneCounts[$lane['id']] ?? 0 ?></span>
                 <i></i>
@@ -251,8 +257,7 @@ $emptyCellHint = $filters
                                                 data-move-card
                                                 aria-label="<?= s(t('Ticket :key verschieben', ['key' => Format::ticket($project['ticket_key'], $card['number'])])) ?>"
                                             >
-                                                ···
-                                            </button>
+<?= Icon::mark('more_horiz') ?>                                            </button>
                                         <?php endif ?>
                                     </div>
                                 </div>
@@ -269,7 +274,7 @@ $emptyCellHint = $filters
                                     <?php endforeach ?>
                                 </div>
                                 <div class="card-bottom">
-                                    <span class="due-date"><?= $card['due_date'] ? '◷ ' . s(date('d. M', strtotime($card['due_date']))) : 'Kein Termin' ?></span>
+                                    <span class="due-date"><?= $card['due_date'] ? Icon::mark('schedule', 'sm') . ' ' . s(date('d. M', strtotime($card['due_date']))) : 'Kein Termin' ?></span>
                                     <?php if ($estimating && $card['estimate_points'] !== null): ?>
                                         <span
                                             class="card-points <?= Estimation::offScale($scale, (int) $card['estimate_points']) ? 'off-scale' : '' ?>"

@@ -1,4 +1,6 @@
 <?php
+use App\Support\Icon;
+
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
@@ -47,7 +49,7 @@ use function Naf\View\s;
                 value="up"
                 aria-label="<?= s($item['name']) ?> nach oben"
             >
-                ↑
+                <?= Icon::mark('arrow_upward', 'sm') ?>
             </button>
             <button
                 class="button subtle"
@@ -55,7 +57,7 @@ use function Naf\View\s;
                 value="down"
                 aria-label="<?= s($item['name']) ?> nach unten"
             >
-                ↓
+                <?= Icon::mark('arrow_downward', 'sm') ?>
             </button>
         <?php endif ?>
         <?php if ($kind !== 'swimlane' || !(int) $item['is_default']): ?>

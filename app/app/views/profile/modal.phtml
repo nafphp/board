@@ -1,4 +1,5 @@
 <?php
+use App\Support\Icon;
 
 use function Naf\I18n\t;
 use function Naf\route;
@@ -18,7 +19,7 @@ use function Naf\View\s;
             aria-label="Profil schließen"
             autofocus
         >
-            ×
+            <?= Icon::mark('close') ?>
         </button>
         <div class="profile-identity">
             <span class="avatar profile-avatar" aria-hidden="true"><?= s(mb_substr($profile->name ?? 'U', 0, 1)) ?></span>
@@ -72,7 +73,7 @@ use function Naf\View\s;
                             <strong><?= s(t('Passwort ändern')) ?></strong>
                             <small><?= s(t('Meldet dich auf allen Geräten neu an')) ?></small>
                         </span>
-                        <span class="profile-chevron" aria-hidden="true">⌄</span>
+                        <span class="profile-chevron" aria-hidden="true"><?= Icon::mark('expand_more', 'sm') ?></span>
                     </summary>
                     <form
                         method="post"
@@ -101,7 +102,7 @@ use function Naf\View\s;
                         </p>
                         <p class="profile-error" data-profile-error role="alert" tabindex="-1" hidden></p>
                         <button class="button primary" type="submit">
-                            Neues Passwort speichern <span aria-hidden="true">→</span>
+                            Neues Passwort speichern <span aria-hidden="true"><?= Icon::mark('arrow_forward', 'sm') ?></span>
                         </button>
                     </form>
                 </details>
@@ -117,7 +118,7 @@ use function Naf\View\s;
                             <strong><?= s(t('E-Mail-Adresse ändern')) ?></strong>
                             <small data-profile-email-state><?= s($profile->email) ?></small>
                         </span>
-                        <span class="profile-chevron" aria-hidden="true">⌄</span>
+                        <span class="profile-chevron" aria-hidden="true"><?= Icon::mark('expand_more', 'sm') ?></span>
                     </summary>
                     <div data-profile-email-request>
                         <form
@@ -141,7 +142,7 @@ use function Naf\View\s;
                             </p>
                             <p class="profile-error" data-profile-error role="alert" tabindex="-1" hidden></p>
                             <button class="button primary" type="submit">
-                                Bestätigungscode senden <span aria-hidden="true">→</span>
+                                Bestätigungscode senden <span aria-hidden="true"><?= Icon::mark('arrow_forward', 'sm') ?></span>
                             </button>
                         </form>
                     </div>

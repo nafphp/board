@@ -524,10 +524,10 @@ ok(
 auto_markup = alice.page(url + "?fragment=1")
 auto_forms = re.findall(r"<form[^>]*data-auto-save[^>]*>.*?</form>", auto_markup, re.S)
 ok(
-    len(auto_forms) == 14
+    len(auto_forms) == 13
     and all('name="version"' in form and 'name="board_revision"' in form for form in auto_forms)
     and all('type="submit"' not in form for form in auto_forms),
-    "All fourteen inline editors use revision-protected auto-save without per-field save buttons",
+    "All thirteen inline editors use revision-protected auto-save without per-field save buttons",
 )
 ok(
     re.search(r'<textarea[^>]*name="title"[^>]*maxlength="200"', auto_markup) is not None

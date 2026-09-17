@@ -1,4 +1,6 @@
 <?php
+use App\Support\Icon;
+
 use function Naf\I18n\t;
 use function Naf\View\s;
 
@@ -21,11 +23,11 @@ use function Naf\View\s;
     <?php endif ?>
     </div>
     <button type="button" class="choice-trigger" data-choice-trigger aria-label="<?= s(t($label)) ?>" aria-haspopup="listbox" aria-expanded="false" aria-controls="choice-list-<?= s($name) ?>" hidden>
-        <span data-choice-value></span><span class="choice-chevron" aria-hidden="true">⌄</span>
+        <span data-choice-value></span><span class="choice-chevron" aria-hidden="true"><?= Icon::mark('expand_more', 'sm') ?></span>
     </button>
     <div class="choice-popup" data-choice-popup popover="manual" hidden>
         <div class="choice-search-wrap">
-            <span aria-hidden="true">⌕</span>
+            <span aria-hidden="true"><?= Icon::mark('search', 'sm') ?></span>
             <input type="search" data-choice-search role="combobox" aria-label="<?= s(t($name === 'column_id' ? 'Spalten suchen' : 'Personen suchen')) ?>" placeholder="<?= s(t($name === 'column_id' ? 'Spalten suchen …' : 'Personen suchen …')) ?>" autocomplete="off" aria-autocomplete="list" aria-expanded="false" aria-controls="choice-list-<?= s($name) ?>" />
         </div>
         <div class="choice-list" id="choice-list-<?= s($name) ?>" role="listbox" <?= $type === 'multiple' ? 'aria-multiselectable="true"' : '' ?> aria-label="<?= s(t($label)) ?>"></div>

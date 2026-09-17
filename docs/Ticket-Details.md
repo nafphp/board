@@ -11,7 +11,7 @@ unterstützt weiterhin Tastatur, Kontextmenü und Öffnen in einem neuen Tab.
 
 ## Neues Ticket im Modal
 
-**+ Neues Ticket** im Board öffnet ein zentriertes Modal. Es rendert dasselbe
+**+ Neues Ticket** im Board öffnet die rechte Ticketleiste. Sie rendert dasselbe
 `app/app/views/ticket.phtml` und dieselben Feld-Komponenten wie die Detailansicht:
 Titel und Quill-Beschreibung links, Spalte, Verantwortliche und weitere Metadaten rechts.
 Startdatum, Fälligkeit, Schätzung, erfasste Minuten, Labels und Farbe stehen bereits beim

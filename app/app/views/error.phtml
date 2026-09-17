@@ -1,4 +1,6 @@
 <?php
+use App\Support\Icon;
+
 use function Naf\I18n\t;
 use function Naf\View\s;
 
@@ -17,7 +19,7 @@ use function Naf\View\s;
             <span class="eyebrow"><?= (int) $status ?></span>
             <h1><?= s($message) ?></h1>
             <p><?= s(t('Öffne deine Projektübersicht oder kehre zur vorherigen Seite zurück.')) ?></p>
-            <a class="button primary" href="/projects">Zu meinen Projekten →</a>
+            <a class="button primary" href="/projects">Zu meinen Projekten <?= Icon::mark('arrow_forward', 'sm') ?></a>
         </main>
     </body>
 </html>

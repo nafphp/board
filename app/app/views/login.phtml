@@ -1,4 +1,5 @@
 <?php
+use App\Support\Icon;
 
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
@@ -85,7 +86,7 @@ use function Naf\View\s;
                     <?php endif ?>
                     <button class="button primary full-width">
                         <?= s(t('Anmelden')) ?>
-                        <span>→</span>
+                        <span><?= Icon::mark('arrow_forward', 'sm') ?></span>
                     </button>
                 </form>
                 <?php foreach ((array) \Naf\config('auth:logins', []) as $key => $login): ?>

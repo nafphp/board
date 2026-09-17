@@ -5,6 +5,36 @@
   margin-bottom: 26px;
   gap: 16px;
 }
+/* The arrow sits on the text rather than beside it, so the two read as one control. */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px 4px 6px;
+  margin-left: -6px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 550;
+  transition:
+    color 0.18s,
+    background 0.18s;
+}
+.back-link:hover {
+  color: var(--text);
+  background: var(--hover);
+}
+.back-link .mi {
+  transition: transform 0.18s cubic-bezier(0.22, 0.7, 0.26, 1);
+}
+.back-link:hover .mi {
+  transform: translateX(-2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .back-link .mi {
+    transition: none;
+  }
+}
 .ticket-workspace .ticket-detail-grid {
   grid-template-columns: minmax(0, 1fr) 310px;
   gap: clamp(24px, 4vw, 64px);
@@ -243,6 +273,110 @@
   margin: 0;
   min-width: 0;
   overflow-wrap: anywhere;
+}
+/* The ticket's own actions sit behind one control in the corner of the sidebar, so they are
+   reachable without taking a row of their own for each. */
+.ticket-primary-meta {
+  position: relative;
+}
+.ticket-menu {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+.ticket-menu > summary {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--muted);
+  transition:
+    color 0.18s,
+    background 0.18s;
+}
+.ticket-menu > summary::-webkit-details-marker {
+  display: none;
+}
+.ticket-menu > summary:hover,
+.ticket-menu[open] > summary {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+}
+.menu-sheet {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 5;
+  min-width: 212px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface);
+  box-shadow: 0 18px 44px -18px #00000059;
+  animation: menu-drop 0.16s cubic-bezier(0.22, 0.7, 0.26, 1);
+}
+@keyframes menu-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+}
+.menu-sheet button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.14s;
+}
+.menu-sheet button:hover {
+  background: var(--hover);
+}
+.menu-sheet .form-errors:empty {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu-sheet {
+    animation: none;
+  }
+}
+
+/* A folding sidebar group: its heading is the control, with the chevron at the far edge. */
+.ticket-sidebar-group > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--muted);
+  transition: color 0.18s;
+}
+.ticket-sidebar-group > summary::-webkit-details-marker {
+  display: none;
+}
+.ticket-sidebar-group > summary:hover {
+  color: var(--text);
+}
+.ticket-sidebar-group > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.ticket-sidebar-group > summary h2 {
+  margin: 0;
+}
+.ticket-sidebar-group > summary .mi-turn {
+  margin-left: auto;
 }
 .ticket-audit .ticket-meta {
   font-size: 10px;
@@ -658,13 +792,7 @@
 }
 
 .ticket-drawer.ticket-create-modal {
-  inset: 0;
-  margin: auto;
-  height: auto;
-  max-height: calc(100dvh - 48px);
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  box-shadow: 0 28px 100px #0004;
+  box-shadow: -28px 0 100px #0004;
 }
 .ticket-creating .ticket-title textarea {
   font-size: clamp(23px, 2.7vw, 32px);
@@ -725,12 +853,6 @@
   }
 }
 @media (max-width: 480px) {
-  .ticket-drawer.ticket-create-modal {
-    height: 100dvh;
-    max-height: 100dvh;
-    border-radius: 0;
-    border: 0;
-  }
   .ticket-create-actions > span {
     width: 100%;
   }

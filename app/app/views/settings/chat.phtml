@@ -1,4 +1,6 @@
 <?php
+use App\Support\Icon;
+
 use function Naf\I18n\t;
 use function Naf\View\s;
 
@@ -121,7 +123,7 @@ $suggestions = $projectId ? [
                     <button type="button" class="ai-suggestion" data-ai-prompt="<?= s($prompt) ?>">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="<?= s($icon) ?>" /></svg>
                         <span><?= s(t($label)) ?></span>
-                        <span class="ai-suggestion-arrow" aria-hidden="true">↗</span>
+                        <span class="ai-suggestion-arrow" aria-hidden="true"><?= Icon::mark('open_in_new', 'sm') ?></span>
                     </button>
                 <?php endforeach ?>
             </div>
