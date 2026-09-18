@@ -93,7 +93,7 @@ final class ExtensionBProvider implements ExtensionProviderInterface
             null,
             860,
             ExtensionAProvider::PERMISSION,
-            'fact_check',
+            'check_circle',
         ));
 
         // Exactly one definition moves to another card; its scope, type,

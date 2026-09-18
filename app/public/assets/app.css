@@ -143,6 +143,13 @@ small,
   white-space: nowrap;
   border: 0;
 }
+/* A hidden field inside a label is still a field, and the rule below stretches
+   every one of those to the full width. That made the attachment form's file
+   input 390 pixels wide and pushed the whole page sideways on a phone, so the
+   hidden ones say again that they are one pixel. */
+label > .sr-only:not([type='checkbox']) {
+  width: 1px;
+}
 .app-shell {
   display: grid;
   grid-template-columns: 244px minmax(0, 1fr);

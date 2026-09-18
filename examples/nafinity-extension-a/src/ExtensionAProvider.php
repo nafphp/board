@@ -87,7 +87,7 @@ final class ExtensionAProvider implements ExtensionProviderInterface
             'Berichte',
             'example.reports',
             static fn(UiContext $uiContext) => ['project' => $uiContext->projectId()],
-            'insights',
+            'view_kanban',
             ['example.reports'],
             150,
             self::PERMISSION,
@@ -104,7 +104,7 @@ final class ExtensionAProvider implements ExtensionProviderInterface
             null,
             850,
             self::PERMISSION,
-            'insights',
+            'view_kanban',
         ));
 
         $context->settings()->add(new SettingDefinition(

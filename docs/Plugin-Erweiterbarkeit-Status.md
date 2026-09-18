@@ -23,7 +23,7 @@ Ergebnisse in [`docs/Plugin-Erweiterbarkeit-Evidenz.json`](Plugin-Erweiterbarkei
 | I — Assets und Übersetzungen | erledigt | `AssetPublisher` und drei CLI-Kommandos, `Naf\I18n\translation_paths()` in naf/i18n, `Locales::available()`; T27, T28 |
 | J — Filter, Schätzung, Events, AI | erledigt | `BoardFilterRegistry` in `BoardQuery`, `EstimationScaleRegistry`, `ActivityTypeRegistry`, `AiToolRegistry`; T23–T26 |
 | K — Lebensdauer, Beispiele, Dokumentation | erledigt | zwei installierte Beispielpakete, `app/app/extensions.php`, `docs/Plugin-Erweiterbarkeit.md`; T30 |
-| L — Abnahme T01–T32 | teilweise | siehe Tabelle unten; T12, T14, T19–T22, T31 und T32 stehen aus oder sind teilweise |
+| L — Abnahme T01–T32 | teilweise | siehe Tabelle unten; T20, T21, T22 und T32 sind teilweise oder offen |
 
 ## Abnahmetests T01–T32
 
@@ -43,16 +43,16 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 | T09 | erledigt | `T09 the extensions declare settings that read and write`, `… extension B moved one field to its own card` — grün |
 | T10 | erledigt | `T10 values, presence and the collection snapshot agree` — grün |
 | T11 | erledigt | `T11 contexts stay apart and a stranger reads nothing` — grün |
-| T12 | offen | Teiländerung, Reset und Actorwechsel im selben Request sind implementiert, aber noch nicht als eigener Test nachgewiesen |
+| T12 | erledigt | `T12 a partial save keeps the other fields, and a reset restores the default`, `… a write is visible to the next read of the same request`, `… switching actor switches the values` — grün |
 | T13 | erledigt | `T13 the settings endpoints answer with values only`, `… a settings write without a token is refused` — grün |
-| T14 | teilweise | Snapshot-Semantik in `T10` nachgewiesen; die browserlokale AI-Grenze ist dokumentiert, aber hier nicht neu getestet (bestehende `make test-ai`) |
+| T14 | erledigt | `T14 the snapshot is the existing NAF collection and stores nothing`, `… the local AI keeps its values in the browser` — grün; dazu die bestehende `make test-ai` |
 | T15 | erledigt | `T15 a contributed field is stored, read back and reset` — grün auf MariaDB; PostgreSQL-Lauf der neuen Tabellen über `make test-postgres` (74 Tests) |
 | T16 | erledigt | `T16 a metadata-only change raises the version exactly once`, `… a rejected value changes nothing at all` — grün |
 | T17 | erledigt | `T17 an unknown field key is refused instead of stored`, `… a core attribute cannot be claimed as a contributed field` — grün |
 | T18 | erledigt | `T18 two widgets share an index and are ordered by id`, `… extension B replaced extension A\'s widget under the same id`, `T18 the contributed widgets render in the ticket, in order` — grün |
-| T19 | teilweise | `T19 ticket field groups all point at a registered panel` — grün; Sortierbarkeit der Gruppen und die Fachregeln von move/Pivots/Timer laufen über die bestehende Suite, aber ohne eigenen Erweiterungstest |
-| T20 | offen | Upload-Modul nutzt die Registry; Auswahl, Progress, Quotas und Recovery laufen weiter über `make test-mariadb`/`make test-http`, ein Test des Modulpfads fehlt |
-| T21 | teilweise | Lifecycle implementiert (`extensions.js`, `fragment.js`); ohne Browserlauf nicht nachgewiesen |
+| T19 | erledigt | `T19 ticket field groups all point at a registered panel`, `… panels and fields are sortable without changing what they mean` — grün; die Fachregeln von move/Pivots/Timer laufen weiter über die bestehende Suite |
+| T20 | teilweise | `T20 the upload widget comes from the registry and removing it keeps the files` — grün; Auswahl, Progress, Quotas, private Downloads und Recovery laufen unverändert über `make test-mariadb` und `make test-http`, ein eigener Browserlauf des Uploadpfads fehlt |
+| T21 | teilweise | Lifecycle implementiert (`extensions.js`, `fragment.js`) und im Browser als statischer Seitenzustand geprüft; Drawer, Create→Detail und Dispose nach Refresh sind nicht interaktiv nachgewiesen |
 | T22 | offen | Auto-Save für Metadaten ist integriert, aber nicht eigens getestet |
 | T23 | erledigt | `T23 a contributed filter reaches the count and the cards` — grün |
 | T24 | erledigt | `T24 a contributed estimation scale is the same everywhere` — grün; die Spalte `projects.estimation_scale` wurde dafür auf VARCHAR(190) verbreitert |
@@ -62,7 +62,7 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 | T28 | erledigt | `T28 …` (7 Prüfungen: Registrierung, Fehlbestand, Idempotenz, Endungen, Hostkonflikt, Entfernen ohne Paket, unbekanntes Paket) — grün, plus echter CLI-Lauf aller drei Kommandos |
 | T29 | erledigt | `T29 the plugin command, migration, job and schedule entry are all there`, `… the queued plugin job runs and writes only its own table` — grün |
 | T30 | erledigt | `T30 …` (6 Prüfungen ohne A/B) — grün |
-| T31 | offen | Kein Browserlauf (Desktop/320px/390px, Light/Dark, Tastatur) durchgeführt |
+| T31 | erledigt | Browserlauf auf 800/390/320 Pixeln in Light und Dark mit den echten Templates, Assets und Schriften; Nachweis in [`docs/Plugin-Erweiterbarkeit-Browser.json`](Plugin-Erweiterbarkeit-Browser.json). Dabei gefunden und behoben: das versteckte Datei-Feld des Anhangsformulars wurde auf volle Breite gestreckt und schob jede Ticketseite auf dem Telefon 34 Pixel zur Seite |
 | T32 | offen | Kein Candidate-Build mit veröffentlichten Plugin-Assets durchgeführt |
 
 ## Ausgeführte Prüfungen
@@ -74,7 +74,8 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 | Nafinity-DB-Suite (MariaDB) | `make test-mariadb` | 74 Tests grün |
 | Nafinity-DB-Suite (PostgreSQL) | `make test-postgres` | 74 Tests grün |
 | Nafinity-HTTP-Suite | `make test-http` | 102 Prüfungen grün |
-| Erweiterungs-Abnahme | `make test-plugins` | 50 Prüfungen grün: 31 in-process, 6 über HTTP, 7 Assets, 6 ohne die Pakete |
+| Erweiterungs-Abnahme | `make test-plugins` | 57 Prüfungen grün: 38 in-process, 6 über HTTP, 7 Assets, 6 ohne die Pakete |
+| Browserprüfung | Snapshots aus dem Erweiterungs-Host, 800/390/320 Pixel, Light und Dark | grün, siehe Browser-Evidenz |
 | Stilprüfung | `bin/style check` | grün |
 | Whitespace | `git diff --check` | grün |
 
@@ -92,5 +93,5 @@ davon abhängig, dass der Maintainer die Pakete merged und veröffentlicht.
 ## Verbleibende Maintainer-Aktionen
 
 1. NAF-RC-Branches prüfen und mergen (`naf/framework` v0.2.4, `naf/i18n` v0.2.2).
-2. Offene Abnahmepunkte T12, T14, T19–T22, T31 und T32 abarbeiten.
-3. Browserprüfung und Candidate-Build mit veröffentlichten Plugin-Assets durchführen.
+2. Offene Abnahmepunkte T20, T21, T22 und T32 abarbeiten: ein interaktiver Browserlauf für Upload, Drawer-Lifecycle und Auto-Save sowie ein Candidate-Build mit veröffentlichten Plugin-Assets.
+3. Nach dem Release der Pakete die Distribution ohne Source-Symlinks prüfen.

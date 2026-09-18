@@ -5,7 +5,7 @@
       "example.reports",
       "example.review"
     ],
-    "passed": 31,
+    "passed": 38,
     "failed": [],
     "tests": [
       "T01 both extensions boot after the application defaults, in index order",
@@ -38,6 +38,13 @@
       "T29 the plugin command, migration, job and schedule entry are all there",
       "T29 the queued plugin job runs and writes only its own table",
       "T24 a contributed estimation scale is the same everywhere",
+      "T12 a partial save keeps the other fields, and a reset restores the default",
+      "T12 a write is visible to the next read of the same request",
+      "T12 switching actor switches the values",
+      "T14 the snapshot is the existing NAF collection and stores nothing",
+      "T14 the local AI keeps its values in the browser",
+      "T19 panels and fields are sortable without changing what they mean",
+      "T20 the upload widget comes from the registry and removing it keeps the files",
       "T19 ticket field groups all point at a registered panel"
     ]
   },
@@ -81,6 +88,6 @@
       "T30 a personal value of a missing extension is neither read nor lost"
     ]
   },
-  "passed": 50,
+  "passed": 57,
   "failed": []
 }

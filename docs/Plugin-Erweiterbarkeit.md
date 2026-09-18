@@ -344,6 +344,19 @@ ausgewertet, damit keine Projekt- oder Ticket-ID beim Boot festgehalten wird.
 Beide Beitragsarten werden gemeinsam nach Index und ID sortiert; kollidierende
 IDs werden abgewiesen. Icons kommen aus dem vorhandenen `Icon::mark()`.
 
+> Die mitgelieferte Material-Symbols-Datei ist ein **Subset** der Symbole, die
+> diese Anwendung selbst verwendet. Ein Name außerhalb davon wird als eigener
+> Ligaturtext gezeichnet — statt eines Symbols steht dann `rate_review` auf dem
+> Bildschirm. Ein Beitrag verwendet deshalb eines der vorhandenen Symbole
+> (`add`, `arrow_back`, `arrow_downward`, `arrow_forward`, `arrow_upward`,
+> `attach_file`, `auto_awesome`, `check_circle`, `close`, `contrast`,
+> `download`, `drive_file_move`, `expand_less`, `expand_more`, `folder_open`,
+> `grid_view`, `group`, `history`, `info`, `keyboard_double_arrow_up`, `label`,
+> `left_panel_close`, `menu`, `more_horiz`, `notifications`, `open_in_new`,
+> `person`, `radio_button_unchecked`, `refresh`, `remove`, `schedule`, `search`,
+> `settings`, `shield`, `table_rows`, `tune`, `view_kanban`, `view_week`) oder
+> bringt seine eigene Grafik als veröffentlichtes Asset mit.
+
 Die dynamische Projektliste bleibt ein `BoardQuery`-Ergebnis und wird nicht zur
 Registry.
 

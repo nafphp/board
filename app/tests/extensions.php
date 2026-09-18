@@ -20,11 +20,14 @@ use Naf\Database\Support\MigrationRegistry;
 use Naf\ORM\Core\EntityManager;
 use Naf\Queue\Core\Queue;
 use Naf\Schedule\Core\JobRepository;
+use Naf\Support\Collection;
 use Nafinity\Contracts\AccessInterface;
 use Nafinity\Contracts\AiServiceInterface;
+use Nafinity\Contracts\AttachmentServiceInterface;
 use Nafinity\Contracts\BoardQueryInterface;
 use Nafinity\Contracts\ExtensionProviderInterface;
 use Nafinity\Contracts\PageRendererInterface;
+use Nafinity\Contracts\PreferenceServiceInterface;
 use Nafinity\Contracts\ProjectServiceInterface;
 use Nafinity\Contracts\RoleServiceInterface;
 use Nafinity\Contracts\TicketMetadataReaderInterface;
@@ -676,6 +679,149 @@ test('T24 a contributed estimation scale is the same everywhere', function () us
         ) === 'example.tshirt',
         'the project did not keep the scale',
     );
+});
+
+test('T12 a partial save keeps the other fields, and a reset restores the default', function () use (
+    $container,
+    $project,
+) {
+    settings()->save(['theme' => 'dark', 'timezone' => 'UTC']);
+    settings()->save(['theme' => 'light']);
+
+    $values = settings()->all();
+    check($values['theme'] === 'light', 'theme: ' . var_export($values['theme'], true));
+    check($values['timezone'] === 'UTC', 'the untouched field was reset to ' . $values['timezone']);
+
+    // The language picker has always written only the language.
+    $container->get(PreferenceServiceInterface::class)->language('en');
+    $afterLanguage = settings()->all();
+    check($afterLanguage['locale'] === 'en', 'language save did not take');
+    check($afterLanguage['theme'] === 'light', 'language save reset the theme');
+    check($afterLanguage['timezone'] === 'UTC', 'language save reset the timezone');
+
+    settings()->save([], ['theme']);
+    check(settings()->get('theme') === 'system', 'reset did not restore the default');
+    check(settings()->get('timezone') === 'UTC', 'reset touched another field');
+
+    settings()->save(['locale' => 'de', 'timezone' => 'Europe/Berlin']);
+});
+
+test('T12 a write is visible to the next read of the same request', function () {
+    settings()->save(['example.reports.compact' => false]);
+    check(settings()->get('example.reports.compact') === false, 'stale value after write');
+
+    settings()->save(['example.reports.compact' => true]);
+    check(settings()->get('example.reports.compact') === true, 'stale value after second write');
+    check(settings()->all()['example.reports.compact'] === true, 'all() is stale');
+});
+
+test('T12 switching actor switches the values', function () use ($auth, $users) {
+    settings()->save(['theme' => 'dark']);
+    check(settings()->get('theme') === 'dark', 'own value not stored');
+
+    $auth->setIdentity($users['reviewer']);
+    check(settings()->get('theme') === 'system', 'another person saw the first one\'s value');
+    settings()->save(['theme' => 'light']);
+
+    $auth->setIdentity($users['alice']);
+    check(settings()->get('theme') === 'dark', 'the value changed under the first person');
+    settings()->save([], ['theme']);
+});
+
+test('T14 the snapshot is the existing NAF collection and stores nothing', function () {
+    $snapshot = settings()->collection();
+
+    check($snapshot instanceof Collection, 'not a NAF collection');
+    check($snapshot->all() === settings()->all(), 'snapshot differs from all()');
+
+    $snapshot->add('timezone', 'Antarctica/Troll');
+    check(settings()->get('timezone') !== 'Antarctica/Troll', 'the snapshot wrote through');
+
+    // The collection reads null as absent; the settings API has its own presence check.
+    check($snapshot->get('example.never', 'fallback') === 'fallback', 'collection default lost');
+});
+
+test('T14 the local AI keeps its values in the browser', function () {
+    $keys = array_keys(extensions()->settings()->forScope('user'));
+
+    foreach ($keys as $key) {
+        check(
+            !str_contains($key, 'ai.') && !str_contains($key, 'model'),
+            'an AI value was declared as a server setting: ' . $key,
+        );
+    }
+
+    check(
+        extensions()->settingSections()->get('ai')?->template === 'settings/ai',
+        'the AI card lost its own form',
+    );
+});
+
+test('T19 panels and fields are sortable without changing what they mean', function () {
+    $panels = array_keys(array_filter(
+        extensions()->ui()->all(),
+        static fn($contribution) => $contribution->slot === 'ticket.sidebar.panels',
+    ));
+    check($panels === [
+        'core.ticket.primary',
+        'core.ticket.details',
+        'core.ticket.planning',
+        'core.ticket.information',
+    ], 'panel order: ' . implode(', ', $panels));
+
+    $original = extensions()->ui()->get('core.ticket.information');
+    extensions()->ui()->add(new UiContribution(
+        $original->id,
+        $original->slot,
+        $original->template,
+        50,
+        $original->provider,
+        $original->permission,
+        $original->modes,
+    ), true);
+
+    $resorted = array_keys(array_filter(
+        extensions()->ui()->all(),
+        static fn($contribution) => $contribution->slot === 'ticket.sidebar.panels',
+    ));
+    check($resorted[0] === 'core.ticket.information', 'reordering did not take');
+
+    extensions()->ui()->add($original, true);
+
+    // A core field keeps its adapter, so reordering it never turns it into a
+    // metadata field that would bypass move, the pivots or the timer.
+    $column = extensions()->ticketFields()->get('column_id');
+    check($column !== null && !$column->isMetadata(), 'column_id became metadata');
+    check(extensions()->ticketFields()->get('spent_minutes')?->isMetadata() === false, 'spent_minutes became metadata');
+});
+
+test('T20 the upload widget comes from the registry and removing it keeps the files', function () use (
+    $pdo,
+    $project,
+    $ticketId,
+) {
+    $widget = extensions()->ui()->get('core.ticket.attachments');
+    check($widget !== null, 'the upload widget is not registered');
+    check($widget->permission === 'read', 'reading the list needs more than read');
+
+    $before = (int) $pdo->query('SELECT COUNT(*) FROM attachments')->fetchColumn();
+
+    check(extensions()->ui()->remove('core.ticket.attachments') === true, 'removal reported nothing');
+    check(extensions()->ui()->get('core.ticket.attachments') === null, 'the widget survived');
+
+    // The surface is gone; the route, the service and the files are not.
+    check(isset(route()->all()['attachment.upload']), 'the upload route was removed');
+    check(isset(route()->all()['attachment.download']), 'the download route was removed');
+    check(
+        app()->container()->get(AttachmentServiceInterface::class) !== null,
+        'the attachment service was removed',
+    );
+    check(
+        (int) $pdo->query('SELECT COUNT(*) FROM attachments')->fetchColumn() === $before,
+        'removing the widget deleted attachments',
+    );
+
+    extensions()->ui()->add($widget);
 });
 
 test('T19 ticket field groups all point at a registered panel', function () {

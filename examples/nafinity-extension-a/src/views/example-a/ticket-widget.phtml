@@ -19,7 +19,7 @@ use function Naf\View\s;
     data-extension-id="<?= s($contribution->id) ?>"
     <?= $contribution->module === null ? '' : 'data-extension-module="' . s($contribution->module) . '"' ?>
 >
-    <h2><?= Icon::mark('fact_check', 'sm') ?> <?= s(t('Prüfung')) ?></h2>
+    <h2><?= Icon::mark('check_circle', 'sm') ?> <?= s(t('Prüfung')) ?></h2>
     <p>
         <?= $review['reviewed']
             ? s(t('Dieses Ticket ist geprüft.'))
