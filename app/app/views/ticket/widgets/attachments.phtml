@@ -17,19 +17,19 @@ use function Naf\View\s;
 <section class="detail-section" data-ticket-section="attachments" data-extension-id="<?= s($contribution->id) ?>"<?= $contribution->module === null ? '' : ' data-extension-module="' . s($contribution->module) . '"' ?>>
     <h2>
         <?= s(t('Anhänge')) ?>
-        <span class="count"><?= count($attachments) ?></span>
+        <span class="count"><?= count($slot->attachments) ?></span>
     </h2>
-    <?php foreach ($attachments as $file): ?>
+    <?php foreach ($slot->attachments as $file): ?>
         <div class="attachment-row">
             <?php if ($file['state'] === 'ready'): ?>
-                <a href="<?= s(route('attachment.download', ['project' => $projectId, 'ticket' => $params['ticket'], 'attachment' => $file['id']])) ?>"><?= Icon::mark('download', 'sm') ?> <?= s($file['original_name']) ?></a>
+                <a href="<?= s(route('attachment.download', ['project' => $slot->projectId(), 'ticket' => $slot->params['ticket'], 'attachment' => $file['id']])) ?>"><?= Icon::mark('download', 'sm') ?> <?= s($file['original_name']) ?></a>
             <?php else: ?>
                 <span><?= s($file['original_name']) ?> · Wird verarbeitet …</span>
             <?php endif ?>
             <span class="muted small"><?= number_format((int) $file['byte_size'] / 1024, 1, ',', '.') ?> KiB</span>
-            <?php if ($scope->allows('upload')): ?>
-                <form method="post" data-enhanced action="<?= s(route('attachment.delete', ['project' => $projectId, 'ticket' => $params['ticket'], 'attachment' => $file['id']])) ?>">
-                    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+            <?php if ($slot->scope->allows('upload')): ?>
+                <form method="post" data-enhanced action="<?= s(route('attachment.delete', ['project' => $slot->projectId(), 'ticket' => $slot->params['ticket'], 'attachment' => $file['id']])) ?>">
+                    <input type="hidden" name="_csrf" value="<?= s($slot->token) ?>" />
                     <button
                         class="text-button muted"
                         aria-label="Anhang <?= s($file['original_name']) ?> löschen"
@@ -39,15 +39,15 @@ use function Naf\View\s;
             <?php endif ?>
         </div>
     <?php endforeach ?>
-    <?php if ($scope->allows('upload') && !$ticket['archived_at']): ?>
+    <?php if ($slot->scope->allows('upload') && !$slot->ticket['archived_at']): ?>
         <form
             class="upload-form"
             method="post"
             enctype="multipart/form-data"
             data-upload
-            action="<?= s(route('attachment.upload', ['project' => $projectId, 'ticket' => $params['ticket']])) ?>"
+            action="<?= s(route('attachment.upload', ['project' => $slot->projectId(), 'ticket' => $slot->params['ticket']])) ?>"
         >
-            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+            <input type="hidden" name="_csrf" value="<?= s($slot->token) ?>" />
             <label class="dropzone" data-dropzone>
                 <input
                     type="file"

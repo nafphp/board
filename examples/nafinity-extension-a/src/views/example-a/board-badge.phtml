@@ -6,12 +6,13 @@ use function Naf\View\s;
 /**
  * The board badge for a reviewed ticket.
  *
- * The card's metadata was loaded with the board in one query, so this reads
- * what is already there instead of asking per card.
+ * Everything this needs is in the slot's own context: the board loaded every
+ * card's metadata in one query, so `value()` reads what is already here instead
+ * of asking again per card.
+ *
+ * @var \Nafinity\Support\BoardSlotContext $slot
  */
-$values = $card_metadata[(int) $card['id']] ?? [];
-
-if (($values['example.reviewed'] ?? false) !== true) {
+if ($slot->value('example.reviewed') !== true) {
     return;
 }
 ?>

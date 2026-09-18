@@ -50,7 +50,11 @@ use Nafinity\Definition\UiContribution;
 use Nafinity\Definition\ViewOverride;
 use Nafinity\ExtensionContext;
 use Nafinity\ExtensionRegistry;
+use Nafinity\Support\BoardSlotContext;
+use Nafinity\Support\InlineFieldRenderer;
+use Nafinity\Support\PageSlotContext;
 use Nafinity\Support\Resolver;
+use Nafinity\Support\TicketSlotContext;
 use Nafinity\Support\UiContext;
 
 use function Naf\app;
@@ -562,6 +566,90 @@ test('T18 two widgets share an index and are ordered by id', function () use ($p
         'core.ticket.attachments',
         'core.ticket.activity',
     ], 'order: ' . implode(', ', $ids));
+});
+
+test('E a slot hands its contributions a context that says what it holds', function () use (
+    $container,
+    $project,
+    $ticketId,
+    $tickets,
+    $query,
+) {
+    $scope   = $container->get(AccessInterface::class)->project($project);
+    $detail  = $query->detail($project, $ticketId);
+    $board   = $query->board($project);
+    $context = new UiContext(1, $scope, UiContext::MODE_DETAIL, 'ticket', $ticketId);
+
+    $ticketSlot = new TicketSlotContext(
+        ui: $context,
+        ticket: $detail['ticket'],
+        project: $board['project'],
+        scope: $scope,
+        board: $board['board'],
+        params: ['project' => $project, 'ticket' => $tickets->reference($project, $ticketId)],
+        token: 'token',
+        editable: true,
+        isNew: false,
+        columns: $board['columns'],
+        swimlanes: $board['swimlanes'],
+        labels: $board['labels'],
+        members: $board['members'],
+        metadata: $detail['metadata'],
+        fields: $detail['metaDefinitions'],
+        links: $detail['linked_tickets'],
+        attachments: $detail['attachments'],
+        activity: $detail['activity'],
+        timer: [],
+        preferences: $query->preferences(),
+        creator: $detail['creator'],
+        field: new InlineFieldRenderer(static fn() => ''),
+    );
+
+    check($ticketSlot->ui() === $context, 'the authorized context is not reachable');
+    check($ticketSlot->ticketId() === $ticketId, 'ticketId()');
+    check($ticketSlot->projectId() === $project, 'projectId()');
+
+    // A value that is stored, one that only has a default, and one nobody knows.
+    check($ticketSlot->value('example.reviewed') === true, 'a stored value was not returned');
+    check(
+        $ticketSlot->value('example.external_id') === $detail['metadata']['example.external_id'],
+        'a stored text value was not returned',
+    );
+    check($ticketSlot->value('example.invented', 'fallback') === 'fallback', 'unknown key');
+
+    $details = $ticketSlot->fieldsIn('details');
+    check(array_key_exists('example.reviewed', $details), 'fieldsIn missed a field of the group');
+    check($ticketSlot->fieldsIn('planning') === [], 'fieldsIn returned a foreign group');
+
+    $boardSlot = new BoardSlotContext(
+        $context,
+        $board['project'],
+        $scope,
+        $board['labels'],
+        $board['members'],
+        $board['card_metadata'],
+        'token',
+    );
+
+    check($boardSlot->card === null, 'a board slot started with a card');
+    $withCard = $boardSlot->withCard(['id' => $ticketId]);
+    check($withCard->card['id'] === $ticketId, 'withCard did not take');
+    check($boardSlot->card === null, 'withCard changed the original');
+    check($withCard->value('example.reviewed') === true, 'the card metadata was not reachable');
+    check($withCard->value('example.invented', 'fallback') === 'fallback', 'unknown card key');
+
+    // A slot that offers nothing of its own still accepts a bare authorized
+    // context, which is what every page slot is handed.
+    $page = new PageSlotContext($context);
+    check($page->ui() === $context, 'the page context lost its authorization');
+
+    // Rendering itself is checked over HTTP: NAF registers the output guards
+    // only outside the CLI, and the built-in widgets now read nothing but this
+    // context, so the fact that they render at all is the proof it suffices.
+    check(
+        $container->get(SlotRenderer::class)->items('ticket.main.widgets', $context) !== [],
+        'the slot offered no contributions at all',
+    );
 });
 
 test('T18 extension B replaced extension A\'s widget under the same id', function () {

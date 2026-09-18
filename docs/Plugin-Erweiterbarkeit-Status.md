@@ -16,7 +16,7 @@ Ergebnisse in [`docs/Plugin-Erweiterbarkeit-Evidenz.json`](Plugin-Erweiterbarkei
 | B — Zeitpunkt der Erweiterungsregistrierung | erledigt | `Nafinity\extensions()`, `ExtensionRegistry`, `ExtensionContext`, Reihenfolge in `app/bootstrap.php`; T01 |
 | C — Routen, Controller, Services, Seitenrenderer | erledigt | `Route::remove()` und Dispatcher-Binding in naf/framework; 17 Contracts, jeder mit produktivem Konsumenten geprüft; `ServiceDefaults`; `PageRenderer`; `ViewRegistry`; T02–T05, T08 |
 | D — Plugin-Rechte | erledigt | `PermissionRegistry`, `Access::permissions()`, `RoleService`, Rolleneditor; T07 |
-| E — UI-Beiträge und linkes Menü | erledigt | `UiRegistry`, `NavigationRegistry`, `SlotRenderer`, alle Slots der Auftragstabelle in den echten Views; T06, T18 |
+| E — UI-Beiträge und linkes Menü | erledigt | `UiRegistry`, `NavigationRegistry`, `SlotRenderer`, alle Slots der Auftragstabelle in den echten Views; je Slot-Familie ein typisierter Kontext (`PageSlotContext`, `ProjectSlotContext`, `BoardSlotContext`, `TicketSlotContext`); T06, T18 |
 | F — Settings | erledigt | `settings()`, `SettingsService`, `DatabaseSettingsStore`, `PreferenceStore`, Migration, Karten, Feldtypen, HTTP-API; T09–T14 teilweise |
 | G — Ticket-Metadaten | erledigt | `ticket_metadata`, `TicketMetadataWriter`/`-Reader`, `TicketService`, `BoardQuery::detail()`; T15–T17, T19 teilweise |
 | H — Ticket-Widgets und Upload-Modul | erledigt | drei Default-Widgets, `AttachmentsModule`, `fragment.js`, `extensions.js`; T18, T20, T22, T21 bis auf die Dispose-Beobachtung |
@@ -74,7 +74,7 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 | Nafinity-DB-Suite (MariaDB) | `make test-mariadb` | 74 Tests grün |
 | Nafinity-DB-Suite (PostgreSQL) | `make test-postgres` | 74 Tests grün |
 | Nafinity-HTTP-Suite | `make test-http` | 102 Prüfungen grün |
-| Erweiterungs-Abnahme | `make test-plugins` | 64 Prüfungen grün: 41 in-process, 6 über HTTP, 4 mit vertauschter Auflistung, 7 Assets, 6 ohne die Pakete |
+| Erweiterungs-Abnahme | `make test-plugins` | 65 Prüfungen grün: 42 in-process, 6 über HTTP, 4 mit vertauschter Auflistung, 7 Assets, 6 ohne die Pakete |
 | Composer-Manifeste | `composer validate` im Container für `app/composer.json`, das generierte `app/composer.dev.json`, beide Beispielpakete und das generierte Testmanifest | alle gültig |
 | Ausgangsregression | Audit-Probe `nafinity-probe.php`, unverändert | grün; nur die beiden beabsichtigten Änderungen, siehe Probe-Evidenz |
 | Browserprüfung | Snapshots aus dem Erweiterungs-Host, 800/390/320 Pixel, Light und Dark | grün, siehe Browser-Evidenz |

@@ -12,24 +12,24 @@ use function Naf\View\s;
  */
 ?>
 <section class="detail-section" data-ticket-section="links" data-extension-id="<?= s($contribution->id) ?>"<?= $contribution->module === null ? '' : ' data-extension-module="' . s($contribution->module) . '"' ?>>
-    <h2><?= s(t('Verknüpfte Tickets')) ?><span class="count"><?= count($linked_tickets) ?></span></h2>
-    <?php foreach ($linked_tickets as $linked): ?>
+    <h2><?= s(t('Verknüpfte Tickets')) ?><span class="count"><?= count($slot->links) ?></span></h2>
+    <?php foreach ($slot->links as $linked): ?>
         <div class="ticket-link-row">
-            <a href="<?= s(route('ticket', ['project' => $projectId, 'ticket' => Format::ticket($key, $linked['number'])])) ?>"><span class="ticket-key"><?= s(Format::ticket($key, $linked['number'])) ?></span><span><?= s($linked['title']) ?></span><span class="muted"><?= $linked['status'] === 'closed' ? Icon::mark('check_circle', 'sm') : Icon::mark('radio_button_unchecked', 'sm') ?></span></a>
-            <?php if ($editable): ?>
-                <form method="post" action="<?= s(route('ticket.links', $params)) ?>" data-ticket-form data-refresh-section="links">
-                    <input type="hidden" name="_csrf" value="<?= s($token) ?>" /><input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" /><input type="hidden" name="number" value="<?= (int) $linked['number'] ?>" /><input type="hidden" name="action" value="delete" />
+            <a href="<?= s(route('ticket', ['project' => $slot->projectId(), 'ticket' => Format::ticket($slot->project['ticket_key'], $linked['number'])])) ?>"><span class="ticket-key"><?= s(Format::ticket($slot->project['ticket_key'], $linked['number'])) ?></span><span><?= s($linked['title']) ?></span><span class="muted"><?= $linked['status'] === 'closed' ? Icon::mark('check_circle', 'sm') : Icon::mark('radio_button_unchecked', 'sm') ?></span></a>
+            <?php if ($slot->editable): ?>
+                <form method="post" action="<?= s(route('ticket.links', $slot->params)) ?>" data-ticket-form data-refresh-section="links">
+                    <input type="hidden" name="_csrf" value="<?= s($slot->token) ?>" /><input type="hidden" name="version" value="<?= (int) $slot->ticket['version'] ?>" /><input type="hidden" name="number" value="<?= (int) $linked['number'] ?>" /><input type="hidden" name="action" value="delete" />
                     <button class="text-button muted" aria-label="<?= s(t('Verknüpfung entfernen')) ?>"><?= Icon::mark('close', 'sm') ?></button><div class="form-errors" role="alert"></div>
                 </form>
             <?php endif ?>
         </div>
     <?php endforeach ?>
-    <?php if (!$linked_tickets): ?><p class="muted small"><?= s(t('Keine verknüpften Tickets.')) ?></p><?php endif ?>
-    <?php if ($editable): ?>
+    <?php if (!$slot->links): ?><p class="muted small"><?= s(t('Keine verknüpften Tickets.')) ?></p><?php endif ?>
+    <?php if ($slot->editable): ?>
         <details class="ticket-link-add"><summary class="text-button"><?= s(t('Ticket verknüpfen')) ?></summary>
-            <form method="post" action="<?= s(route('ticket.links', $params)) ?>" data-ticket-form data-refresh-section="links">
-                <input type="hidden" name="_csrf" value="<?= s($token) ?>" /><input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" />
-                <label><?= s(t('Ticketnummer in diesem Projekt')) ?><span class="ticket-link-input"><span><?= s($key) ?>-</span><input type="number" name="number" min="1" required placeholder="42" /></span></label>
+            <form method="post" action="<?= s(route('ticket.links', $slot->params)) ?>" data-ticket-form data-refresh-section="links">
+                <input type="hidden" name="_csrf" value="<?= s($slot->token) ?>" /><input type="hidden" name="version" value="<?= (int) $slot->ticket['version'] ?>" />
+                <label><?= s(t('Ticketnummer in diesem Projekt')) ?><span class="ticket-link-input"><span><?= s($slot->project['ticket_key']) ?>-</span><input type="number" name="number" min="1" required placeholder="42" /></span></label>
                 <button class="button subtle"><?= s(t('Verknüpfen')) ?></button><div class="form-errors" role="alert"></div>
             </form>
         </details>

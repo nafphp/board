@@ -8,6 +8,7 @@ use LogicException;
 use Nafinity\Contracts\PageRendererInterface;
 use Nafinity\Definition\NavigationItem;
 use Nafinity\Definition\UiContribution;
+use Nafinity\Support\SlotContextInterface;
 use Nafinity\Support\UiContext;
 
 use function Nafinity\extensions;
@@ -73,20 +74,22 @@ final class SlotRenderer
     /**
      * Render a slot into HTML
      *
-     * A view that already holds the data its own contributions need passes it
-     * as $extra; a contribution's own provider still wins over it.
+     * The slot's own context is what a contribution is written against; it says
+     * what this place offers. $extra carries whatever the surrounding view needs
+     * for its own built-in templates, and a contribution's data provider still
+     * wins over both.
      *
-     * @param string    $slot    Slot name
-     * @param UiContext $context The authorized rendering context
-     * @param array     $extra   Data the surrounding view already has
+     * @param string               $slot    Slot name
+     * @param SlotContextInterface $context What this slot hands its contributions
+     * @param array                $extra   Data the surrounding view's own templates need
      */
-    public function render(string $slot, UiContext $context, array $extra = []): string
+    public function render(string $slot, SlotContextInterface $context, array $extra = []): string
     {
         $html = '';
 
-        foreach ($this->items($slot, $context) as $entry) {
+        foreach ($this->items($slot, $context->ui()) as $entry) {
             $html .= $entry['kind'] === 'navigation'
-                ? $this->navigation($entry['item'], $context)
+                ? $this->navigation($entry['item'], $context->ui())
                 : $this->template($entry['item'], [...$extra, ...$entry['data']], $context);
         }
 
@@ -102,12 +105,16 @@ final class SlotRenderer
         ]);
     }
 
-    private function template(UiContribution $contribution, array $data, UiContext $context): string
-    {
+    private function template(
+        UiContribution $contribution,
+        array $data,
+        SlotContextInterface $context,
+    ): string {
         return $this->pages->fragment($contribution->template, [
             ...$data,
             'contribution' => $contribution,
-            'uiContext'    => $context,
+            'slot'         => $context,
+            'uiContext'    => $context->ui(),
         ]);
     }
 

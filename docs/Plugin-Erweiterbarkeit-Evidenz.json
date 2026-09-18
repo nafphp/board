@@ -5,7 +5,7 @@
       "example.reports",
       "example.review"
     ],
-    "passed": 41,
+    "passed": 42,
     "failed": [],
     "tests": [
       "T01 both extensions boot after the application defaults, in index order",
@@ -25,6 +25,7 @@
       "T17 a core attribute cannot be claimed as a contributed field",
       "E the fixed ticket areas cannot be replaced or removed",
       "T18 two widgets share an index and are ordered by id",
+      "E a slot hands its contributions a context that says what it holds",
       "T18 extension B replaced extension A's widget under the same id",
       "T07 a plugin grant is stored, loaded and refused without it",
       "T07 a grant of a missing extension survives a role save",
@@ -123,6 +124,6 @@
       "T30 a personal value of a missing extension is neither read nor lost"
     ]
   },
-  "passed": 64,
+  "passed": 65,
   "failed": []
 }

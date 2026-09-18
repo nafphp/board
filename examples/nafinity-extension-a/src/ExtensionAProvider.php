@@ -10,7 +10,6 @@ use Example\ExtensionA\Jobs\ReviewReminderJob;
 use App\Domain\Change;
 use Example\ExtensionA\Support\ReportTools;
 use Example\ExtensionA\Support\ReviewListener;
-use Example\ExtensionA\Support\ReviewBadgeProvider;
 use Example\ExtensionA\Support\ReviewWidgetProvider;
 use Naf\CLI\Support\CommandRegistry;
 use Naf\Schedule\Core\JobRepository;
@@ -173,7 +172,9 @@ final class ExtensionAProvider implements ExtensionProviderInterface
             'board.card.badges',
             'example-a/board-badge',
             150,
-            ReviewBadgeProvider::class,
+            // No provider: the board's own context already carries every card's
+            // metadata, so there is nothing left to fetch.
+            null,
             'read',
             [UiContext::MODE_PAGE],
         ));

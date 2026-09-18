@@ -3,6 +3,7 @@
 use App\Domain\Estimation;
 use App\Support\Format;
 use App\Support\Icon;
+use Nafinity\Support\BoardSlotContext;
 
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
@@ -25,17 +26,18 @@ $memberMap    = array_column($members, null, 'id');
 $columnCounts = array_count_values(array_column($cards, 'column_id'));
 $laneCounts   = array_count_values(array_column($cards, 'swimlane_id'));
 
-// The board loaded every card's metadata in one query; contributions to a card
-// read from that instead of asking again per card.
-$cardSlotData = [
-    'project'       => $project,
-    'projectId'     => $projectId,
-    'scope'         => $scope,
-    'card_metadata' => $card_metadata ?? [],
-    'labelMap'      => $labelMap,
-    'memberMap'     => $memberMap,
-    'token'         => $token,
-];
+// What the board offers its contributions. The metadata of every card was
+// loaded with the board in one query, so a badge reads from here rather than
+// asking again per card.
+$boardSlot = new BoardSlotContext(
+    $uiContext,
+    $project,
+    $scope,
+    $labelMap,
+    $memberMap,
+    $card_metadata ?? [],
+    $token,
+);
 
 // One estimate read through the project's scale. The sums describe what is on screen, so
 // a filtered board reports the filtered total and says so in its existing hint.
@@ -86,7 +88,7 @@ $emptyCellHint = $filters
         <p><?= s($project['description']) ?></p>
     </div>
     <div class="heading-actions">
-        <?= slot('board.actions', $uiContext, $cardSlotData) ?>
+        <?= slot('board.actions', $boardSlot) ?>
         <div class="avatar-stack">
             <?php foreach (array_slice($members, 0, 4) as $member): ?>
                 <span class="avatar avatar-small" title="<?= s($member['name']) ?>"><?= s(mb_substr($member['name'], 0, 1)) ?></span>
@@ -215,7 +217,7 @@ $emptyCellHint = $filters
                         title="<?= s(t(Estimation::label($scale)) . ' · ' . $column['name']) ?>"
                     ><span data-points-value><?= (int) ($columnPoints[$column['id']] ?? 0) ?></span><small><?= s($estimateUnit) ?></small></span>
                 <?php endif ?>
-                <?= slot('board.column.summary', $uiContext, [...$cardSlotData, 'column' => $column]) ?>
+                <?= slot('board.column.summary', $boardSlot->withColumn($column)) ?>
             </div>
         <?php endforeach ?>
     </div>
@@ -275,7 +277,7 @@ $emptyCellHint = $filters
                                             >
 <?= Icon::mark('more_horiz') ?>                                            </button>
                                         <?php endif ?>
-                                        <?= slot('board.card.actions', $uiContext, [...$cardSlotData, 'card' => $card]) ?>
+                                        <?= slot('board.card.actions', $boardSlot->withCard($card)) ?>
                                     </div>
                                 </div>
                                 <a class="card-title" data-ticket-link href="<?= s(route('ticket', ['project' => $projectId, 'ticket' => Format::ticket($project['ticket_key'], $card['number'])])) ?>">
@@ -289,9 +291,9 @@ $emptyCellHint = $filters
                                             <?= s($label['name']) ?>
                                         </span>
                                     <?php endforeach ?>
-                                    <?= slot('board.card.badges', $uiContext, [...$cardSlotData, 'card' => $card]) ?>
+                                    <?= slot('board.card.badges', $boardSlot->withCard($card)) ?>
                                 </div>
-                                <?= slot('board.card.details', $uiContext, [...$cardSlotData, 'card' => $card]) ?>
+                                <?= slot('board.card.details', $boardSlot->withCard($card)) ?>
                                 <div class="card-bottom">
                                     <span class="due-date"><?= $card['due_date'] ? Icon::mark('schedule', 'sm') . ' ' . s(date('d. M', strtotime($card['due_date']))) : 'Kein Termin' ?></span>
                                     <?php if ($estimating && $card['estimate_points'] !== null): ?>

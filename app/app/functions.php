@@ -6,6 +6,8 @@ namespace Nafinity;
 
 use App\Services\SlotRenderer;
 use Nafinity\Contracts\PageRendererInterface;
+use Nafinity\Support\PageSlotContext;
+use Nafinity\Support\SlotContextInterface;
 use Nafinity\Support\UiContext;
 
 use function Naf\app;
@@ -69,13 +71,22 @@ if (!function_exists('Nafinity\slot')) {
     /**
      * Render everything contributed to a named slot
      *
-     * @param string    $slot    Slot name
-     * @param UiContext $context The authorized rendering context
-     * @param array     $extra   Data the surrounding view already has
+     * The slot's own context says what this place offers a contribution; see
+     * the SlotContextInterface implementations. A bare UiContext is accepted and
+     * wrapped, for the slots that hand out nothing of their own.
+     *
+     * @param string                          $slot    Slot name
+     * @param SlotContextInterface|UiContext  $context What this slot offers
+     * @param array                           $extra   Data for the view's own templates
      */
-    function slot(string $slot, UiContext $context, array $extra = []): string
-    {
-        return app()->container()->get(SlotRenderer::class)->render($slot, $context, $extra);
+    function slot(
+        string $slot,
+        SlotContextInterface|UiContext $context,
+        array $extra = [],
+    ): string {
+        $slotContext = $context instanceof UiContext ? new PageSlotContext($context) : $context;
+
+        return app()->container()->get(SlotRenderer::class)->render($slot, $slotContext, $extra);
     }
 }
 

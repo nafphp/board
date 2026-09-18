@@ -8,10 +8,16 @@ use function Naf\View\s;
 /**
  * This extension's own widget, between the links and the attachments.
  *
- * It only shows what it knows; the values themselves are edited through the
- * registered ticket fields in the sidebar, which already go through Nafinity's
- * auto-save and its version check.
+ * It reads its values straight from the slot's context rather than from a data
+ * provider, because they are already there. The values themselves are edited
+ * through the registered ticket fields in the sidebar, which go through
+ * Nafinity's auto-save and its version check.
+ *
+ * @var \Nafinity\Support\TicketSlotContext    $slot
+ * @var \Nafinity\Definition\UiContribution    $contribution
  */
+$reviewed   = $slot->value('example.reviewed') === true;
+$externalId = $slot->value('example.external_id');
 ?>
 <section
     class="detail-section"
@@ -21,13 +27,18 @@ use function Naf\View\s;
 >
     <h2><?= Icon::mark('check_circle', 'sm') ?> <?= s(t('Prüfung')) ?></h2>
     <p>
-        <?= $review['reviewed']
+        <?= $reviewed
             ? s(t('Dieses Ticket ist geprüft.'))
             : s(t('Dieses Ticket ist noch nicht geprüft.')) ?>
     </p>
-    <?php if ($review['external_id']): ?>
+    <?php if ($lastRun ?? null): ?>
         <p class="muted small">
-            <?= s(t('Externe Nummer: :id', ['id' => $review['external_id']])) ?>
+            <?= s(t('Zuletzt gezählt: :when', ['when' => $lastRun])) ?>
+        </p>
+    <?php endif ?>
+    <?php if ($externalId): ?>
+        <p class="muted small">
+            <?= s(t('Externe Nummer: :id', ['id' => $externalId])) ?>
         </p>
     <?php endif ?>
 </section>

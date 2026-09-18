@@ -313,7 +313,57 @@ Feste Slots:
 | `profile.panels` | Profil-Dialog |
 | `notifications.actions`, `activity.actions` | Benachrichtigungen und Verlauf |
 
-Ein Datenprovider liefert die Templatedaten:
+### Was ein Slot mitgibt
+
+Jeder Slot übergibt einen **typisierten Kontext**, der sagt, was an dieser Stelle
+verfügbar ist. Ein Beitragstemplate wird dagegen geschrieben — nicht gegen
+Variablen, die die umgebende Ansicht zufällig im Gültigkeitsbereich hat. Der
+Kontext liegt im Template als `$slot`.
+
+| Kontext | Slots | Inhalt |
+|---|---|---|
+| `PageSlotContext` | `sidebar.*`, `topbar.actions`, `projects.actions`, `notifications.actions`, `activity.actions`, `profile.panels` | nur `ui()` |
+| `ProjectSlotContext` | `projects.card.badges` | `project`, `projectId()` |
+| `BoardSlotContext` | `board.*` | `project`, `scope`, `labels`, `members`, `metadata`, `token`, `card`, `column`, `value()` |
+| `TicketSlotContext` | `ticket.actions`, `ticket.main.widgets`, `ticket.sidebar.panels` | `ticket`, `project`, `scope`, `board`, `params`, `token`, `editable`, `isNew`, `columns`, `swimlanes`, `labels`, `members`, `metadata`, `fields`, `links`, `attachments`, `activity`, `timer`, `preferences`, `creator`, `field`, `value()`, `fieldsIn()` |
+
+Alle implementieren `SlotContextInterface` und geben über `ui()` den geprüften
+`UiContext` heraus. Die Werte sind bereits autorisiert: `metadata` enthält nur,
+was dieser Actor lesen darf, `fields` nur die Definitionen, die er sehen darf.
+
+```php
+<?php
+/** @var \Nafinity\Support\TicketSlotContext $slot */
+
+if ($slot->value('example.reviewed') !== true) {
+    return;
+}
+?>
+<p><?= s(t('Geprüft von :who', ['who' => $slot->creator])) ?></p>
+```
+
+Auf dem Board ist der Kontext unveränderlich und wird je Karte oder Spalte
+abgeleitet:
+
+```php
+<?= slot('board.card.badges', $boardSlot->withCard($card)) ?>
+```
+
+`TicketSlotContext::field` ist der vorhandene Inline-Editor. Ein Beitrag, der
+einen bearbeitbaren Wert zeigen will, baut **kein** eigenes Formular:
+
+```php
+<?= $slot->field->render('metadata[example.external_id]', 'Externe Nummer', 'line', $value, $display) ?>
+```
+
+Damit gelten Auto-Save, Entwurfserhalt, Tastaturbedienung und Versionsprüfung
+unverändert.
+
+### Eigene Daten
+
+Ein Datenprovider liefert, was der Slot-Kontext **nicht** hat — etwas aus der
+eigenen Tabelle des Pakets zum Beispiel. Was ohnehin schon da ist, wird nicht
+noch einmal geholt:
 
 ```php
 interface UiDataProviderInterface

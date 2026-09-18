@@ -15,16 +15,16 @@ use function Nafinity\partial;
 <section class="ticket-sidebar-group">
     <h2><?= s(t('Details')) ?></h2>
     <dl class="ticket-meta">
-        <dt><?= s(t('Priorität')) ?></dt><dd><?= $field('priority', 'Priorität', 'select', $ticket['priority'], '<span class="priority-value priority-' . s($ticket['priority']) . '">● ' . s($priorities[$ticket['priority']]) . '</span>', $priorities) ?></dd>
-        <dt><?= s(t('Swimlane')) ?></dt><dd><?= $field('swimlane_id', 'Swimlane', 'select', $ticket['swimlane_id'], s(array_column($swimlanes, 'name', 'id')[$ticket['swimlane_id']]), array_column($swimlanes, 'name', 'id'), ['action' => route('ticket.move', $params), 'hidden' => ['column_id' => $ticket['column_id']]]) ?></dd>
-        <dt>Labels</dt><dd><?= $field('label_ids', 'Labels', 'multiple', $selected_labels, $labelDisplay ?: $empty, array_column($labels, 'name', 'id')) ?></dd>
-        <dt><?= s(t('Akzentfarbe')) ?></dt><dd><?= $field('color', 'Akzentfarbe', 'color', $ticket['color'], '<span class="ticket-color" style="background:' . s($ticket['color']) . '"></span><span class="muted small">' . s($ticket['color']) . '</span>') ?></dd>
-    <?php foreach ($metaFields['details'] ?? [] as $metaKey => $metaField): ?>
+        <dt><?= s(t('Priorität')) ?></dt><dd><?= $slot->field->render('priority', 'Priorität', 'select', $slot->ticket['priority'], '<span class="priority-value priority-' . s($slot->ticket['priority']) . '">● ' . s($priorities[$slot->ticket['priority']]) . '</span>', $priorities) ?></dd>
+        <dt><?= s(t('Swimlane')) ?></dt><dd><?= $slot->field->render('swimlane_id', 'Swimlane', 'select', $slot->ticket['swimlane_id'], s(array_column($slot->swimlanes, 'name', 'id')[$slot->ticket['swimlane_id']]), array_column($slot->swimlanes, 'name', 'id'), ['action' => route('ticket.move', $slot->params), 'hidden' => ['column_id' => $slot->ticket['column_id']]]) ?></dd>
+        <dt>Labels</dt><dd><?= $slot->field->render('label_ids', 'Labels', 'multiple', $selected_labels, $labelDisplay ?: $empty, array_column($slot->labels, 'name', 'id')) ?></dd>
+        <dt><?= s(t('Akzentfarbe')) ?></dt><dd><?= $slot->field->render('color', 'Akzentfarbe', 'color', $slot->ticket['color'], '<span class="ticket-color" style="background:' . s($slot->ticket['color']) . '"></span><span class="muted small">' . s($slot->ticket['color']) . '</span>') ?></dd>
+    <?php foreach ($slot->fieldsIn('details') as $metaKey => $metaField): ?>
         <?= partial('ticket/metadata', [
             'definition' => $metaField,
-            'value'      => $metadata[$metaKey] ?? $metaField->default,
-            'field'      => $field,
-            'editable'   => $editable,
+            'value'      => $slot->value($metaKey),
+            'field'      => $slot->field,
+            'editable'   => $slot->editable,
         ]) ?>
     <?php endforeach ?>
     </dl>

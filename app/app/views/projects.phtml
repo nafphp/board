@@ -1,6 +1,7 @@
 <?php
 
 use App\Support\Format;
+use Nafinity\Support\ProjectSlotContext;
 
 use function Naf\I18n\t;
 use function Naf\route;
@@ -36,7 +37,7 @@ $archived    = count(array_filter($projects, static fn($item) => $item['archived
             <h2><?= s($projectItem['name']) ?></h2>
             <p><?= s($projectItem['description']) ?></p>
             <span><?= (int) $projectItem['open_count'] ?> offene Tickets · <?= s($projectItem['role']) ?><?= $projectItem['archived_at'] ? ' · Archiviert' : '' ?></span>
-            <?= slot('projects.card.badges', $uiContext, ['project' => $projectItem]) ?>
+            <?= slot('projects.card.badges', new ProjectSlotContext($uiContext, $projectItem)) ?>
         </a>
     <?php endforeach ?>
     <?php if (!$projects): ?>

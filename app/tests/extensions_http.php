@@ -202,6 +202,11 @@ test('T13 a settings write without a token is refused', function () use ($projec
     check($refused['status'] === 400, 'status ' . $refused['status']);
 });
 
+/**
+ * This is also the proof that the ticket slot context carries what it must: the
+ * built-in widgets and panels read nothing else any more, so if the context
+ * were missing something, they would not render at all.
+ */
 test('T18 the contributed widgets render in the ticket, in order', function () use ($project) {
     login('reviewer@example.test');
     $board = request('/projects/' . $project)['body'];

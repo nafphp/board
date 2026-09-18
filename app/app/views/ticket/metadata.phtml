@@ -1,14 +1,20 @@
 <?php
 
+use Nafinity\Definition\TicketFieldDefinition;
+use Nafinity\Support\InlineFieldRenderer;
+
 use function Naf\I18n\t;
 use function Naf\View\s;
 
 /**
  * One contributed ticket field, in the sidebar group it belongs to.
  *
- * It uses the same inline field partial as the core fields, so auto-save,
+ * It uses the same inline field renderer as the core fields, so auto-save,
  * drafts, keyboard handling and the version check are the ones that already
  * exist rather than a second, parallel implementation.
+ *
+ * @var TicketFieldDefinition $definition
+ * @var InlineFieldRenderer      $field
  */
 $display = $value === null || $value === ''
     ? '<span class="muted">' . s(t('Nicht festgelegt')) . '</span>'
@@ -38,7 +44,7 @@ if ($definition->type === 'boolean') {
 ?>
 <dt data-extension-id="<?= s($definition->key) ?>"><?= s(t($definition->label)) ?></dt>
 <dd>
-    <?= $field(
+    <?= $field->render(
         'metadata[' . $definition->key . ']',
         $definition->label,
         $type,

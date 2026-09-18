@@ -11,10 +11,10 @@ use function Naf\View\s;
  */
 ?>
 <details class="detail-section ticket-history" data-ticket-section="activity" data-extension-id="<?= s($contribution->id) ?>"<?= $contribution->module === null ? '' : ' data-extension-module="' . s($contribution->module) . '"' ?>>
-    <summary><?= s(t('Verlauf')) ?><span class="count"><?= count($activity) ?></span></summary>
+    <summary><?= s(t('Verlauf')) ?><span class="count"><?= count($slot->activity) ?></span></summary>
     <ol class="activity-list">
-        <?php foreach ($activity as $item): ?>
-            <li><span class="activity-dot"></span><div><strong><?= s($item['actor_name']) ?></strong><p><?= s(ActivityLabel::for($item['event_type'])) ?></p><time><?= s(Format::dateTime($item['created_at'], $preferences)) ?></time></div></li>
+        <?php foreach ($slot->activity as $item): ?>
+            <li><span class="activity-dot"></span><div><strong><?= s($item['actor_name']) ?></strong><p><?= s(ActivityLabel::for($item['event_type'])) ?></p><time><?= s(Format::dateTime($item['created_at'], $slot->preferences)) ?></time></div></li>
         <?php endforeach ?>
     </ol>
 </details>

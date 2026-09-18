@@ -14,22 +14,22 @@ use function Nafinity\partial;
  * in the order the registry gives them.
  */
 ?>
-<?php if ($isNew): ?>
+<?php if ($slot->isNew): ?>
 <?php return; ?>
 <?php endif ?>
 <details class="ticket-sidebar-group ticket-audit" data-ticket-readonly="audit">
     <summary><h2><?= s(t('Informationen')) ?></h2><?= Icon::mark('expand_more', 'sm', 'mi-turn') ?></summary>
-    <dl class="ticket-meta"><dt><?= s(t('Ersteller')) ?></dt><dd><?= s($creator) ?></dd><dt><?= s(t('Projekt')) ?></dt><dd><?= s($project['name']) ?></dd>
-        <?php foreach (['created_at' => 'Erstellt', 'updated_at' => 'Geändert', 'closed_at' => 'Geschlossen', 'archived_at' => 'Archiviert'] as $key => $caption): ?>
-            <?php if ($ticket[$key]): ?><dt><?= s(t($caption)) ?></dt><dd><time><?= s(Format::dateTime($ticket[$key], $preferences)) ?></time></dd><?php endif ?>
+    <dl class="ticket-meta"><dt><?= s(t('Ersteller')) ?></dt><dd><?= s($slot->creator) ?></dd><dt><?= s(t('Projekt')) ?></dt><dd><?= s($slot->project['name']) ?></dd>
+        <?php foreach (['created_at' => 'Erstellt', 'updated_at' => 'Geändert', 'closed_at' => 'Geschlossen', 'archived_at' => 'Archiviert'] as $stamp => $caption): ?>
+            <?php if ($slot->ticket[$stamp]): ?><dt><?= s(t($caption)) ?></dt><dd><time><?= s(Format::dateTime($slot->ticket[$stamp], $slot->preferences)) ?></time></dd><?php endif ?>
         <?php endforeach ?>
-        <dt><?= s(t('Stand')) ?></dt><dd><?= (int) $ticket['version'] ?></dd>
-    <?php foreach ($metaFields['information'] ?? [] as $metaKey => $metaField): ?>
+        <dt><?= s(t('Stand')) ?></dt><dd><?= (int) $slot->ticket['version'] ?></dd>
+    <?php foreach ($slot->fieldsIn('information') as $metaKey => $metaField): ?>
         <?= partial('ticket/metadata', [
             'definition' => $metaField,
-            'value'      => $metadata[$metaKey] ?? $metaField->default,
-            'field'      => $field,
-            'editable'   => $editable,
+            'value'      => $slot->value($metaKey),
+            'field'      => $slot->field,
+            'editable'   => $slot->editable,
         ]) ?>
     <?php endforeach ?>
     </dl>

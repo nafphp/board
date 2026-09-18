@@ -6,6 +6,8 @@ use App\Support\Format;
 use App\Support\Icon;
 use App\Support\Mentions;
 use App\Support\RichText;
+use Nafinity\Support\InlineFieldRenderer;
+use Nafinity\Support\TicketSlotContext;
 
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
@@ -100,45 +102,51 @@ foreach ($labels as $label) {
     }
 }
 
-// Everything the built-in panels already hold, handed to the slot so that no
-// contribution has to load it again. A contribution's own provider still wins.
+// What the ticket offers its contributions: the data, once, with names that are
+// declared rather than inherited from whatever this view happens to have in
+// scope. The presentational helpers below stay out of it — they belong to the
+// built-in panels, not to the contract.
+$ticketSlot = new TicketSlotContext(
+    ui: $uiContext,
+    ticket: $ticket,
+    project: $project,
+    scope: $scope,
+    board: $board,
+    params: $params,
+    token: $token,
+    editable: $editable,
+    isNew: $isNew,
+    columns: $columns,
+    swimlanes: $swimlanes,
+    labels: $labels,
+    members: $members,
+    metadata: $metadata ?? [],
+    fields: $metaDefinitions ?? [],
+    links: $linked_tickets ?? [],
+    attachments: $attachments ?? [],
+    activity: $activity ?? [],
+    timer: $timer ?? [],
+    preferences: $preferences,
+    creator: (string) ($creator ?? ''),
+    field: new InlineFieldRenderer($field),
+);
+
+// Only what the built-in panels need to draw themselves.
 $panelData = [
-    'activity'           => $activity ?? [],
     'assigneeDisplay'    => $assigneeDisplay,
-    'attachments'        => $attachments ?? [],
-    'board'              => $board,
-    'columns'            => $columns,
-    'creator'            => $creator ?? '',
     'duration'           => $duration,
-    'editable'           => $editable,
     'empty'              => $empty,
     'estimating'         => $estimating,
-    'field'              => $field,
-    'isNew'              => $isNew,
-    'key'                => $key,
     'labelDisplay'       => $labelDisplay,
-    'labels'             => $labels,
-    'linked_tickets'     => $linked_tickets ?? [],
     'memberNames'        => $memberNames,
-    'metaFields'         => $metaFields,
-    'metadata'           => $metadata ?? [],
-    'params'             => $params,
     'pointDisplay'       => $pointDisplay,
     'pointOptions'       => $pointOptions,
     'points'             => $points,
-    'preferences'        => $preferences,
     'priorities'         => $priorities,
-    'project'            => $project,
-    'projectId'          => $projectId,
     'scale'              => $scale,
-    'scope'              => $scope,
     'selected_assignees' => $selected_assignees,
     'selected_labels'    => $selected_labels,
-    'swimlanes'          => $swimlanes,
     'targets'            => $targets,
-    'ticket'             => $ticket,
-    'timer'              => $timer ?? [],
-    'token'              => $token,
 ];
 ?>
 <div class="ticket-detail ticket-workspace <?= $fragment ? 'in-drawer' : '' ?> <?= $isNew ? 'ticket-creating' : '' ?>" data-ticket-url="<?= s(route('ticket', $params)) ?>" data-version="<?= (int) $ticket['version'] ?>" data-revision="<?= (int) $board['revision'] ?>" data-mode="<?= $isNew ? 'create' : 'detail' ?>" data-project="<?= (int) $projectId ?>" data-ticket="<?= (int) ($ticket['id'] ?? 0) ?>">
@@ -165,7 +173,7 @@ $panelData = [
             </section>
             <?php if (!$isNew): ?>
             <div data-widget-slot="ticket.main.widgets">
-                <?= slot('ticket.main.widgets', $uiContext, $panelData) ?>
+                <?= slot('ticket.main.widgets', $ticketSlot, $panelData) ?>
             </div>
             <section id="comments" class="detail-section ticket-comments">
                 <div data-ticket-section="comments">
@@ -226,7 +234,7 @@ $panelData = [
             <?php endif ?>
         </div>
         <aside class="ticket-context ticket-sidebar" aria-label="<?= s(t('Ticketdetails')) ?>">
-            <?= slot('ticket.sidebar.panels', $uiContext, $panelData) ?>
+            <?= slot('ticket.sidebar.panels', $ticketSlot, $panelData) ?>
         </aside>
     </div>
     <?php if ($isNew): ?>
