@@ -7,7 +7,9 @@ namespace Example\ExtensionA;
 use Example\ExtensionA\Commands\ReportCommand;
 use Example\ExtensionA\Controllers\ReportController;
 use Example\ExtensionA\Jobs\ReviewReminderJob;
+use App\Domain\Change;
 use Example\ExtensionA\Support\ReportTools;
+use Example\ExtensionA\Support\ReviewListener;
 use Example\ExtensionA\Support\ReviewBadgeProvider;
 use Example\ExtensionA\Support\ReviewWidgetProvider;
 use Naf\CLI\Support\CommandRegistry;
@@ -16,6 +18,7 @@ use Nafinity\Contracts\ExtensionProviderInterface;
 use Nafinity\Definition\AiToolProviderDefinition;
 use Nafinity\Definition\AssetPackage;
 use Nafinity\Definition\BoardFilterDefinition;
+use Nafinity\Definition\EstimationScale;
 use Nafinity\Definition\NavigationItem;
 use Nafinity\Definition\PermissionDefinition;
 use Nafinity\Definition\SettingDefinition;
@@ -24,9 +27,11 @@ use Nafinity\Definition\TicketFieldDefinition;
 use Nafinity\Definition\UiContribution;
 use Nafinity\ExtensionContext;
 use Nafinity\Support\BoardFilterContext;
+use Nafinity\Support\Resolver;
 use Nafinity\Support\SqlCondition;
 use Nafinity\Support\UiContext;
 
+use function Naf\event;
 use function Naf\I18n\translation_paths;
 use function Naf\route;
 
@@ -209,5 +214,22 @@ final class ExtensionAProvider implements ExtensionProviderInterface
         // never depends on which package Composer happened to load first.
         $context->container()->get(JobRepository::class)->add(ReviewReminderJob::class, []);
         $context->container()->get(CommandRegistry::class)->add(ReportCommand::class);
+
+        // The change event runs inside the domain transaction. The listener only
+        // enqueues; the job does the work once the change is committed.
+        $container = $context->container();
+        event()->listen(
+            'nafinity.changed',
+            static fn(Change $change) => Resolver::service($container, ReviewListener::class)
+                ->record($change),
+        );
+
+        $context->estimationScales()->add(new EstimationScale(
+            'example.tshirt',
+            'T-Shirt-Größen',
+            'TS',
+            [1, 2, 3, 5, 8, 13],
+            400,
+        ));
     }
 }

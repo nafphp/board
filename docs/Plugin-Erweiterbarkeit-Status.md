@@ -21,9 +21,9 @@ Ergebnisse in [`docs/Plugin-Erweiterbarkeit-Evidenz.json`](Plugin-Erweiterbarkei
 | G — Ticket-Metadaten | erledigt | `ticket_metadata`, `TicketMetadataWriter`/`-Reader`, `TicketService`, `BoardQuery::detail()`; T15–T17, T19 teilweise |
 | H — Ticket-Widgets und Upload-Modul | erledigt | drei Default-Widgets, `AttachmentsModule`, `fragment.js`, `extensions.js`; T18, T21 teilweise |
 | I — Assets und Übersetzungen | erledigt | `AssetPublisher` und drei CLI-Kommandos, `Naf\I18n\translation_paths()` in naf/i18n, `Locales::available()`; T27, T28 |
-| J — Filter, Schätzung, Events, AI | erledigt | `BoardFilterRegistry` in `BoardQuery`, `EstimationScaleRegistry`, `ActivityTypeRegistry`, `AiToolRegistry`; T23, T26 |
+| J — Filter, Schätzung, Events, AI | erledigt | `BoardFilterRegistry` in `BoardQuery`, `EstimationScaleRegistry`, `ActivityTypeRegistry`, `AiToolRegistry`; T23–T26 |
 | K — Lebensdauer, Beispiele, Dokumentation | erledigt | zwei installierte Beispielpakete, `app/app/extensions.php`, `docs/Plugin-Erweiterbarkeit.md`; T30 |
-| L — Abnahme T01–T32 | teilweise | siehe Tabelle unten; T20, T22, T24, T25, T29, T31, T32 stehen aus |
+| L — Abnahme T01–T32 | teilweise | siehe Tabelle unten; T12, T14, T19–T22, T31 und T32 stehen aus oder sind teilweise |
 
 ## Abnahmetests T01–T32
 
@@ -55,12 +55,12 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 | T21 | teilweise | Lifecycle implementiert (`extensions.js`, `fragment.js`); ohne Browserlauf nicht nachgewiesen |
 | T22 | offen | Auto-Save für Metadaten ist integriert, aber nicht eigens getestet |
 | T23 | erledigt | `T23 a contributed filter reaches the count and the cards` — grün |
-| T24 | offen | Skalenregistry ist implementiert und wird überall konsumiert; ein Test mit einer Plugin-Skala fehlt |
-| T25 | offen | `nafinity.changed` bleibt unverändert transaktional; ein Plugin-Listener mit Queue-Job ist nicht Teil der Beispiele |
+| T24 | erledigt | `T24 a contributed estimation scale is the same everywhere` — grün; die Spalte `projects.estimation_scale` wurde dafür auf VARCHAR(190) verbreitert |
+| T25 | erledigt | `T25 a plugin listener enqueues in the same transaction, and a rollback takes it back` — grün; Beispiel A bringt Listener und Queue-Job mit |
 | T26 | erledigt | `T26 the contributed tool appears only with its grant` — grün |
 | T27 | erledigt | `T27 the plugin translation is available and the application wins` — grün; naf/i18n: `TranslationPathRegistryTest` (7 Tests) |
 | T28 | erledigt | `T28 …` (7 Prüfungen: Registrierung, Fehlbestand, Idempotenz, Endungen, Hostkonflikt, Entfernen ohne Paket, unbekanntes Paket) — grün, plus echter CLI-Lauf aller drei Kommandos |
-| T29 | teilweise | Command, Migration, Job und Scheduler-Eintrag von Beispiel A sind registriert und die Migration läuft im Harness; ein Lauf von Command und Job im Worker fehlt |
+| T29 | erledigt | `T29 the plugin command, migration, job and schedule entry are all there`, `… the queued plugin job runs and writes only its own table` — grün |
 | T30 | erledigt | `T30 …` (6 Prüfungen ohne A/B) — grün |
 | T31 | offen | Kein Browserlauf (Desktop/320px/390px, Light/Dark, Tastatur) durchgeführt |
 | T32 | offen | Kein Candidate-Build mit veröffentlichten Plugin-Assets durchgeführt |
@@ -74,7 +74,7 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 | Nafinity-DB-Suite (MariaDB) | `make test-mariadb` | 74 Tests grün |
 | Nafinity-DB-Suite (PostgreSQL) | `make test-postgres` | 74 Tests grün |
 | Nafinity-HTTP-Suite | `make test-http` | 102 Prüfungen grün |
-| Erweiterungs-Abnahme | `make test-plugins` | siehe Evidenz-JSON |
+| Erweiterungs-Abnahme | `make test-plugins` | 50 Prüfungen grün: 31 in-process, 6 über HTTP, 7 Assets, 6 ohne die Pakete |
 | Stilprüfung | `bin/style check` | grün |
 | Whitespace | `git diff --check` | grün |
 
@@ -92,5 +92,5 @@ davon abhängig, dass der Maintainer die Pakete merged und veröffentlicht.
 ## Verbleibende Maintainer-Aktionen
 
 1. NAF-RC-Branches prüfen und mergen (`naf/framework` v0.2.4, `naf/i18n` v0.2.2).
-2. Offene Abnahmepunkte T12, T14, T19–T22, T24, T25, T29, T31, T32 abarbeiten.
+2. Offene Abnahmepunkte T12, T14, T19–T22, T31 und T32 abarbeiten.
 3. Browserprüfung und Candidate-Build mit veröffentlichten Plugin-Assets durchführen.

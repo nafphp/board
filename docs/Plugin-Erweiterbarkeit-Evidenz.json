@@ -5,7 +5,7 @@
       "example.reports",
       "example.review"
     ],
-    "passed": 27,
+    "passed": 31,
     "failed": [],
     "tests": [
       "T01 both extensions boot after the application defaults, in index order",
@@ -34,6 +34,10 @@
       "T08 a mapping cycle is reported",
       "T26 the contributed tool appears only with its grant",
       "T27 the plugin translation is available and the application wins",
+      "T25 a plugin listener enqueues in the same transaction, and a rollback takes it back",
+      "T29 the plugin command, migration, job and schedule entry are all there",
+      "T29 the queued plugin job runs and writes only its own table",
+      "T24 a contributed estimation scale is the same everywhere",
       "T19 ticket field groups all point at a registered panel"
     ]
   },
@@ -77,6 +81,6 @@
       "T30 a personal value of a missing extension is neither read nor lost"
     ]
   },
-  "passed": 46,
+  "passed": 50,
   "failed": []
 }

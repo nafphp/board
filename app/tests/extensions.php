@@ -2,17 +2,24 @@
 
 declare(strict_types=1);
 
+use App\Domain\Estimation;
 use App\Domain\Failure;
 use App\Models\User;
 use App\Modules\CoreTicket;
 use App\Services\SlotRenderer;
 use App\Support\Locales;
 use Example\ExtensionA\ExtensionAProvider;
+use Example\ExtensionA\Jobs\ReviewReminderJob;
+use Example\ExtensionA\Migrations\M202609180101ExampleReports;
 use Example\ExtensionB\Services\CountingTicketService;
 use Naf\Auth\Auth;
+use Naf\CLI\Core\Output;
+use Naf\CLI\Support\CommandRegistry;
 use Naf\Database\Core\MigrationRunner;
 use Naf\Database\Support\MigrationRegistry;
 use Naf\ORM\Core\EntityManager;
+use Naf\Queue\Core\Queue;
+use Naf\Schedule\Core\JobRepository;
 use Nafinity\Contracts\AccessInterface;
 use Nafinity\Contracts\AiServiceInterface;
 use Nafinity\Contracts\BoardQueryInterface;
@@ -562,6 +569,113 @@ test('T27 the plugin translation is available and the application wins', functio
     $translator->setLanguage('fr');
     check($translator->translate('Prüfung') === 'Vérification', 'plugin translation not used');
     $translator->setLanguage((string) $before);
+});
+
+test('T25 a plugin listener enqueues in the same transaction, and a rollback takes it back', function () use (
+    $pdo,
+    $tickets,
+    $project,
+    $ticketId,
+    $current,
+) {
+    $pdo->exec('DELETE FROM naf_queue_jobs');
+
+    $version = $tickets->ticket($project, $ticketId)['version'];
+    $tickets->update($project, $ticketId, [
+        'metadata' => ['example.reviewed' => false],
+        'version'  => $version,
+        ...$current(),
+    ]);
+
+    $queued = $pdo->query(
+        "SELECT COUNT(*) FROM naf_queue_jobs WHERE job_class LIKE '%ReviewNoticeJob%'",
+    )->fetchColumn();
+    check((int) $queued === 1, 'the listener enqueued ' . $queued . ' jobs');
+
+    // A change that is refused must leave no job behind, because the listener
+    // runs inside the very transaction that is rolled back.
+    denied(422, fn() => $tickets->update($project, $ticketId, [
+        'metadata' => ['example.reviewed' => 'perhaps'],
+        'version'  => $tickets->ticket($project, $ticketId)['version'],
+        ...$current(),
+    ]));
+
+    $after = $pdo->query(
+        "SELECT COUNT(*) FROM naf_queue_jobs WHERE job_class LIKE '%ReviewNoticeJob%'",
+    )->fetchColumn();
+    check((int) $after === 1, 'a rejected change left ' . ($after - $queued) . ' extra jobs');
+});
+
+test('T29 the plugin command, migration, job and schedule entry are all there', function () use (
+    $container,
+    $pdo,
+) {
+    $commands = array_keys($container->get(CommandRegistry::class)->all());
+    check(in_array('example:reports', $commands, true), 'command missing');
+
+    $applied = $pdo->query('SELECT name FROM migrations')->fetchAll(PDO::FETCH_COLUMN);
+    check(
+        in_array(M202609180101ExampleReports::class, $applied, true),
+        'migration not applied',
+    );
+    check(
+        $pdo->query('SELECT COUNT(*) FROM example_report_runs')->fetchColumn() !== false,
+        'the extension table is missing',
+    );
+
+    $scheduled = $container->get(JobRepository::class)->all();
+    check(
+        array_key_exists(ReviewReminderJob::class, $scheduled),
+        'schedule entry missing: ' . implode(', ', array_keys($scheduled)),
+    );
+});
+
+test('T29 the queued plugin job runs and writes only its own table', function () use ($container, $pdo) {
+    $queue = $container->get(Queue::class);
+    $job   = $queue->pop();
+    check($job !== null, 'nothing was queued');
+
+    $before = (int) $pdo->query('SELECT COUNT(*) FROM tickets')->fetchColumn();
+    $output = new Output();
+    $class  = $job['class'] ?? $job['job_class'] ?? null;
+    check(is_string($class) && str_contains($class, 'ReviewNoticeJob'), 'wrong job: ' . json_encode($job));
+
+    $payload  = is_string($job['payload'] ?? null) ? json_decode($job['payload'], true) : ($job['payload'] ?? []);
+    $instance = app()->container()->make($class, is_array($payload) ? $payload : []);
+    ob_start();
+    $instance->execute($output);
+    ob_end_clean();
+
+    check(
+        (int) $pdo->query('SELECT COUNT(*) FROM example_report_runs')->fetchColumn() === 1,
+        'the job wrote nothing',
+    );
+    check(
+        (int) $pdo->query('SELECT COUNT(*) FROM tickets')->fetchColumn() === $before,
+        'the job touched the tickets',
+    );
+});
+
+test('T24 a contributed estimation scale is the same everywhere', function () use ($projects, $project) {
+    check(extensions()->estimationScales()->has('example.tshirt'), 'scale not registered');
+    check(Estimation::values('example.tshirt') === [1, 2, 3, 5, 8, 13], 'values differ');
+    check(Estimation::unit('example.tshirt') === 'TS', 'unit differs');
+
+    $projects->update($project, [
+        'name'             => 'Extensions',
+        'description'      => 'Host for the examples',
+        'color'            => '#6366f1',
+        'icon'             => 'N',
+        'ticket_key'       => 'EXT',
+        'estimation_scale' => 'example.tshirt',
+    ]);
+
+    check(
+        Estimation::scale(
+            app()->container()->get(AccessInterface::class)->project($project)->project['estimation_scale'],
+        ) === 'example.tshirt',
+        'the project did not keep the scale',
+    );
 });
 
 test('T19 ticket field groups all point at a registered panel', function () {
