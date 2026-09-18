@@ -7,7 +7,7 @@
   /* Nothing is drawn until the font is here, so the ligature text ("settings") is never
      shown as itself. The file is a few kilobytes and comes from the same origin. */
   font-display: block;
-  src: url('/assets/vendor/material-symbols/material-symbols-outlined.woff2') format('woff2');
+  src: url('/assets/vendor/material-symbols/material-symbols-outlined.woff2?v=2') format('woff2');
 }
 
 .mi {

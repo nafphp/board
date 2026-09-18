@@ -34,6 +34,7 @@ $params    = [
     'ticket'  => $isNew ? 'new' : Format::ticket($key, $ticket['number']),
 ];
 $editable      = $scope->allows('write') && !$ticket['archived_at'];
+$targets       = $targets ?? [];
 $token         = csrf()->token();
 $members       = Mentions::members($members);
 $memberNames   = array_column($members, 'name', 'id');
@@ -297,6 +298,26 @@ while ($stack) {
                                 </button>
                                 <div class="form-errors" role="alert"></div>
                             </form>
+                            <?php if ($targets): ?>
+                                <details class="menu-move">
+                                    <summary><?= Icon::mark('drive_file_move', 'sm') ?><?= s(t('In ein anderes Projekt verschieben')) ?></summary>
+                                    <form method="post" data-ticket-form data-leaves-page action="<?= s(route('ticket.transfer', $params)) ?>">
+                                        <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                                        <input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" />
+                                        <label><span class="meta-caption"><?= s(t('Zielprojekt')) ?></span>
+                                            <select name="project_id" required>
+                                                <?php foreach ($targets as $target): ?>
+                                                    <option value="<?= (int) $target['id'] ?>"><?= s($target['name']) ?> · <?= s($target['ticket_key']) ?></option>
+                                                <?php endforeach ?>
+                                            </select>
+                                        </label>
+                                        <p class="muted small"><?= s(t('Neue Nummer, gleicher Inhalt: Kommentare, Anhänge, Verlauf und erfasste Zeit kommen mit.')) ?></p>
+                                        <p class="muted small"><?= s(t('Labels, Verknüpfungen und Zuständige ohne Zugriff bleiben zurück.')) ?></p>
+                                        <button class="button subtle"><?= s(t('Verschieben')) ?></button>
+                                        <div class="form-errors" role="alert"></div>
+                                    </form>
+                                </details>
+                            <?php endif ?>
                         </div>
                     </details>
                 <?php endif ?>

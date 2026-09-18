@@ -257,5 +257,10 @@
   "Auswahl aufheben": "Auswahl aufheben",
   "Weitere Aktionen": "Weitere Aktionen",
   "Ticket wieder öffnen": "Ticket wieder öffnen",
-  "Zurück zum Board": "Zurück zum Board"
+  "Zurück zum Board": "Zurück zum Board",
+  "In ein anderes Projekt verschieben": "In ein anderes Projekt verschieben",
+  "Zielprojekt": "Zielprojekt",
+  "Neue Nummer, gleicher Inhalt: Kommentare, Anhänge, Verlauf und erfasste Zeit kommen mit.": "Neue Nummer, gleicher Inhalt: Kommentare, Anhänge, Verlauf und erfasste Zeit kommen mit.",
+  "Labels, Verknüpfungen und Zuständige ohne Zugriff bleiben zurück.": "Labels, Verknüpfungen und Zuständige ohne Zugriff bleiben zurück.",
+  "Ticket aus einem anderen Projekt verschoben": "Ticket aus einem anderen Projekt verschoben"
 }

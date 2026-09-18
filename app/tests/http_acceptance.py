@@ -714,4 +714,63 @@ ok(
     "A stranger is not told the ticket exists",
 )
 
+# Moving a ticket to another project: it answers at a new address, and what only meant
+# something in the project it left stays behind.
+token = alice.csrf()
+away = json.loads(
+    alice.post(
+        "/projects",
+        {
+            "name": "Ablage",
+            "description": "Wohin verschobene Tickets gehen",
+            "color": "#10b981",
+            "icon": "A",
+        },
+        token,
+    )[1]
+)["url"]
+move_payload = {
+    **payload,
+    "title": "Zieht um",
+    "board_revision": json.loads(alice.request("/projects/1/state")[1])["revision"],
+}
+moving = json.loads(alice.post("/projects/1/tickets", move_payload, token)[1])["id"]
+moving_url = "/projects/1/tickets/" + moving
+moving_page = alice.page(moving_url)
+ok(
+    'name="project_id"' in moving_page and "Ablage" in moving_page,
+    "The ticket menu offers the projects a move could go to",
+)
+ok(
+    'name="project_id"' not in alice.page("/projects/1/tickets/new"),
+    "A ticket that does not exist yet is offered nowhere to move to",
+)
+status, body, _ = alice.post(
+    moving_url + "/transfer",
+    {
+        "project_id": away.rsplit("/", 1)[1],
+        "version": re.search(r'data-version="(\d+)"', moving_page)[1],
+    },
+    token,
+)
+moved_url = json.loads(body)["url"]
+ok(
+    status == 200 and moved_url.startswith(away + "/tickets/"),
+    "A ticket moves to another project and is answered for at a new address",
+)
+ok(alice.request(moving_url)[0] == 404, "The ticket no longer answers where it used to be")
+moved_page = alice.page(moved_url)
+ok(
+    "Zieht um" in moved_page and "label-tag" not in moved_page,
+    "The moved ticket opens under its new reference without the labels it left behind",
+)
+ok(
+    alice.post(moved_url + "/transfer", {"project_id": "1", "version": "1"}, token)[0] == 409,
+    "A move carrying a stale version is refused",
+)
+ok(
+    bob.post(moving_url + "/transfer", {"project_id": "2"}, bob.csrf("/projects/2"))[0] == 404,
+    "A stranger cannot move a ticket out of a project they cannot see",
+)
+
 print(json.dumps({"passed": len(results), "tests": results}, indent=2))

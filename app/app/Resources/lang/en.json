@@ -257,5 +257,10 @@
   "Auswahl aufheben": "Clear selection",
   "Weitere Aktionen": "More actions",
   "Ticket wieder öffnen": "Reopen ticket",
-  "Zurück zum Board": "Back to the board"
+  "Zurück zum Board": "Back to the board",
+  "In ein anderes Projekt verschieben": "Move to another project",
+  "Zielprojekt": "Destination project",
+  "Neue Nummer, gleicher Inhalt: Kommentare, Anhänge, Verlauf und erfasste Zeit kommen mit.": "A new number, the same content: comments, attachments, history and tracked time come along.",
+  "Labels, Verknüpfungen und Zuständige ohne Zugriff bleiben zurück.": "Labels, links and assignees without access stay behind.",
+  "Ticket aus einem anderen Projekt verschoben": "Ticket moved in from another project"
 }

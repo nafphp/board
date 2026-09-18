@@ -553,6 +553,12 @@ async function performSave(form, submitter) {
       toast('Ticket erstellt');
       return;
     }
+    // A ticket that has moved away no longer answers at the address this page was read
+    // from, so there is nothing here to refresh: the whole page follows it.
+    if (form.hasAttribute('data-leaves-page')) {
+      location.assign(result.url);
+      return true;
+    }
     await refresh(workspace, field, form.dataset.refreshSection);
     if (automatic) {
       inlineState(form).baseline = submittedValues;
