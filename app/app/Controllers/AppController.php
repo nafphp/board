@@ -159,6 +159,7 @@ final class AppController
                 ...$details,
                 'fragment' => $fragment,
                 'timer'    => $this->timers->state($projectId, $details['ticket']['id']),
+                'targets'  => $this->query->transferTargets($projectId),
             ]);
         });
     }
@@ -353,6 +354,26 @@ final class AppController
                 'revision' => (string) $this->tickets->board($id)['revision'],
                 'version'  => (string) $moved['version'],
                 'status'   => $moved['status'],
+            ];
+        });
+    }
+
+    public function transferTicket(string $project, string $ticket): ResponseInterface
+    {
+        return $this->mutation(function ($data) use ($project, $ticket) {
+            $projectId = Input::id($project);
+            $moved     = $this->tickets->transfer(
+                $projectId,
+                $this->tickets->resolve($projectId, $ticket),
+                $data,
+            );
+
+            // The address it was read from no longer answers, so the whole page follows it.
+            return [
+                'url' => \Naf\route('ticket', [
+                    'project' => $moved['project'],
+                    'ticket'  => $moved['reference'],
+                ]),
             ];
         });
     }

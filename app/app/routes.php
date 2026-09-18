@@ -14,6 +14,7 @@ use App\Migrations\M202609160002RichTextStorage;
 use App\Migrations\M202609160003ProjectTicketKey;
 use App\Migrations\M202609170001EstimationScale;
 use App\Migrations\M202609170002TicketTimers;
+use App\Migrations\M202609180001TicketTransfer;
 use App\Services\AttachmentService;
 
 use function Naf\json;
@@ -37,6 +38,7 @@ route()->add(
                 M202609160003ProjectTicketKey::class,
                 M202609170001EstimationScale::class,
                 M202609170002TicketTimers::class,
+                M202609180001TicketTransfer::class,
             ];
             $applied = $pdo->query('SELECT name FROM migrations')->fetchAll(PDO::FETCH_COLUMN);
             if (array_diff($required, $applied)) {
@@ -46,7 +48,7 @@ route()->add(
             $pdo->query('SELECT 1 FROM naf_rate_limits LIMIT 1');
             \Naf\app()->container()->make(AttachmentService::class);
 
-            return json(['status' => 'ready', 'schema' => '202609170002']);
+            return json(['status' => 'ready', 'schema' => '202609180001']);
         } catch (Throwable) {
             return json(['status' => 'not-ready'], 503);
         }
@@ -103,6 +105,7 @@ $routes = [
     ['PATCH', '/projects/{project}/tickets/{ticket}', 'updateTicket', 'ticket.patch'],
     ['POST', '/projects/{project}/tickets/{ticket}/move', 'moveTicket', 'ticket.move'],
     ['POST', '/projects/{project}/tickets/{ticket}/state', 'ticketState', 'ticket.state'],
+    ['POST', '/projects/{project}/tickets/{ticket}/transfer', 'transferTicket', 'ticket.transfer'],
     ['POST', '/projects/{project}/tickets/{ticket}/comments', 'comment', 'ticket.comments'],
     ['POST', '/projects/{project}/tickets/{ticket}/links', 'linkTicket', 'ticket.links'],
     ['POST', '/projects/{project}/tickets/{ticket}/timer', 'ticketTimer', 'ticket.timer'],

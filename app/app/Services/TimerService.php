@@ -133,6 +133,25 @@ final class TimerService
         return array_map('intval', $statement->fetchAll(PDO::FETCH_COLUMN));
     }
 
+    /**
+     * Ends every run on a ticket, whoever started it, and then forgets them.
+     *
+     * A ticket leaving its project cannot take its clocks along: a run belongs to a person's
+     * membership, and that is what it is about to lose. So each one is settled exactly as
+     * stopping it would, the counted minutes reach the ticket, and only the clock is dropped.
+     */
+    public function clear(int $project, int $ticket): int
+    {
+        $statement = $this->pdo->prepare('SELECT * FROM ticket_timers WHERE project_id=? AND ticket_id=?');
+        $statement->execute([$project, $ticket]);
+        $minutes = $this->fold($statement->fetchAll(), 'stopped');
+        $this->pdo
+            ->prepare('DELETE FROM ticket_timers WHERE project_id=? AND ticket_id=?')
+            ->execute([$project, $ticket]);
+
+        return $minutes;
+    }
+
     private function begin(int $project, int $ticket, int $actor): void
     {
         $now       = gmdate('Y-m-d H:i:s');
@@ -175,7 +194,16 @@ final class TimerService
         }
         $statement = $this->pdo->prepare("SELECT * FROM ticket_timers WHERE $where");
         $statement->execute($params);
-        $runs = $statement->fetchAll();
+
+        return $this->fold($statement->fetchAll(), $state);
+    }
+
+    /**
+     * Writes a set of runs back in the given state and hands the ticket whatever they have
+     * earned, which is the one place the rule about stopping and pausing lives.
+     */
+    private function fold(array $runs, string $state): int
+    {
         if (!$runs) {
             return 0;
         }

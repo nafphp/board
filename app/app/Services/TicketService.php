@@ -14,6 +14,7 @@ use App\Support\Input;
 use App\Support\RichText;
 use Naf\ORM\Core\EntityManager;
 use PDO;
+use Throwable;
 
 use function Naf\event;
 
@@ -24,6 +25,7 @@ final class TicketService
         private EntityManager $entityManager,
         private Access $access,
         private ProjectService $projects,
+        private TimerService $timers,
     ) {
     }
 
@@ -199,6 +201,108 @@ final class TicketService
                 'swimlane' => $lane['name'],
             ]);
         });
+    }
+
+    /**
+     * Moves a ticket into another project, where it takes a new number and a new reference.
+     *
+     * What belongs to the ticket travels with it: its text, its comments, its attachments,
+     * its history, and the people assigned to it who are members over there as well. What
+     * belonged to the project it leaves stays behind, because it would mean nothing on the
+     * other side — the labels, the links to its former neighbours, and the notifications
+     * pointing at it. Clocks are stopped before the move, so the time already worked reaches
+     * the ticket even though the runs themselves cannot come along.
+     *
+     * @return array{project:int, reference:string}
+     */
+    public function transfer(int $project, int $id, array $data): array
+    {
+        $target = Input::id($data['project_id'] ?? null, 'project_id');
+        if ($target === $project) {
+            throw new Failure('Das Ticket liegt bereits in diesem Projekt.');
+        }
+        $this->entityManager->begin();
+
+        try {
+            // Both projects are locked, lower id first, so two moves in opposite directions
+            // wait for each other instead of deadlocking.
+            $lock = $this->pdo->prepare('SELECT id FROM projects WHERE id=? FOR UPDATE');
+            foreach ($project < $target ? [$project, $target] : [$target, $project] as $held) {
+                $lock->execute([$held]);
+            }
+            $origin      = $this->access->project($project, 'write', true)->project;
+            $destination = $this->access->project($target, 'write', true)->project;
+            $row         = $this->ticket($project, $id);
+            $this->version($row, $data);
+            if ($row['archived_at'] !== null) {
+                throw new Failure('Ein archiviertes Ticket kann nicht verschoben werden.');
+            }
+            $board  = $this->board($target);
+            $column = $this->firstOf($target, (int) $board['id'], 'board_columns', 'position,id');
+            $lane   = $this->firstOf($target, (int) $board['id'], 'swimlanes', 'is_default DESC,position,id');
+
+            $this->timers->clear($project, $id);
+            $this->detach($project, $id, $target);
+            $threads = $this->unthread($project, $id);
+
+            $now    = gmdate('Y-m-d H:i:s');
+            $closes = (int) $column['closes_tickets'] === 1;
+            $number = (int) $board['next_number'];
+            // The version is raised in the statement rather than from the row read earlier,
+            // because stopping the clocks may already have raised it once.
+            $this->pdo->prepare(
+                <<<'SQL'
+                UPDATE tickets
+                SET project_id = ?,
+                    board_id = ?,
+                    column_id = ?,
+                    swimlane_id = ?,
+                    number = ?,
+                    position = ?,
+                    status = ?,
+                    closed_at = ?,
+                    version = version + 1,
+                    updated_at = ?
+                WHERE project_id = ?
+                    AND id = ?
+                SQL,
+            )->execute([
+                $target,
+                $board['id'],
+                $column['id'],
+                $lane['id'],
+                $number,
+                $this->appendPosition($target, (int) $column['id'], (int) $lane['id']),
+                $closes ? 'closed' : 'open',
+                $closes ? $row['closed_at'] ?? $now : null,
+                $now,
+                $project,
+                $id,
+            ]);
+            $this->rethread($target, $threads);
+            $this->pdo
+                ->prepare('UPDATE boards SET next_number=next_number+1 WHERE project_id=?')
+                ->execute([$target]);
+
+            // The board it left is one card shorter; the arrival is recorded on the other.
+            $this->pdo
+                ->prepare('UPDATE boards SET revision=revision+1 WHERE project_id=?')
+                ->execute([$project]);
+            $this->changed($target, $id, 'ticket.transferred', [
+                'from'   => $origin['name'],
+                'to'     => $destination['name'],
+                'number' => (string) $number,
+            ]);
+            $this->entityManager->commit();
+
+            return [
+                'project'   => $target,
+                'reference' => Format::ticket($destination['ticket_key'], $number),
+            ];
+        } catch (Throwable $exception) {
+            $this->entityManager->rollback();
+            throw $exception;
+        }
     }
 
     public function state(int $project, int $id, array $data): void
@@ -425,6 +529,98 @@ final class TicketService
             foreach ($ids as $id) {
                 $statement->execute([$project, $ticket, $id]);
             }
+        }
+    }
+
+    /** Where a ticket lands on a board it has never been on: the first column and lane. */
+    private function firstOf(int $project, int $board, string $table, string $order): array
+    {
+        $statement = $this->pdo->prepare(
+            "SELECT * FROM $table WHERE project_id=? AND board_id=? ORDER BY $order",
+        );
+        $statement->execute([$project, $board]);
+
+        return $statement->fetch() ?: throw new Failure('Dem Zielprojekt fehlt ein Board.', 422);
+    }
+
+    /**
+     * Everything that only meant something in the project the ticket is leaving. These rows
+     * keep a plain foreign key on purpose, so that forgetting one of them stops the move
+     * rather than dragging it somewhere it does not belong.
+     */
+    private function detach(int $project, int $id, int $target): void
+    {
+        $this->pdo
+            ->prepare('DELETE FROM ticket_labels WHERE project_id=? AND ticket_id=?')
+            ->execute([$project, $id]);
+
+        // The neighbours stay behind, and their half of the link goes with the ticket, so
+        // they are touched too and anyone looking at them is told to reload.
+        $statement = $this->pdo->prepare(
+            'SELECT CASE WHEN ticket_id=? THEN related_id ELSE ticket_id END'
+            . ' FROM ticket_links WHERE project_id=? AND (ticket_id=? OR related_id=?)',
+        );
+        $statement->execute([$id, $project, $id, $id]);
+        $neighbours = $statement->fetchAll(PDO::FETCH_COLUMN);
+        $this->pdo
+            ->prepare('DELETE FROM ticket_links WHERE project_id=? AND (ticket_id=? OR related_id=?)')
+            ->execute([$project, $id, $id]);
+        $touch = $this->pdo->prepare(
+            'UPDATE tickets SET version=version+1,updated_at=? WHERE project_id=? AND id=?',
+        );
+        foreach ($neighbours as $neighbour) {
+            $touch->execute([gmdate('Y-m-d H:i:s'), $project, $neighbour]);
+        }
+
+        // A notification is a pointer held by someone in this project, and it cannot follow
+        // the ticket out of it.
+        $this->pdo->prepare(
+            'DELETE FROM notification_deliveries WHERE notification_id IN'
+            . ' (SELECT id FROM notifications WHERE project_id=? AND ticket_id=?)',
+        )->execute([$project, $id]);
+        $this->pdo
+            ->prepare('DELETE FROM notifications WHERE project_id=? AND ticket_id=?')
+            ->execute([$project, $id]);
+
+        // Being assigned is work still to do, not a record of work done: it needs a
+        // membership on the other side, and without one the assignment ends here.
+        $this->pdo->prepare(
+            'DELETE FROM ticket_assignees WHERE project_id=? AND ticket_id=? AND user_id NOT IN'
+            . ' (SELECT user_id FROM project_members WHERE project_id=? AND active=1)',
+        )->execute([$project, $id, $target]);
+    }
+
+    /**
+     * A reply points at the comment above it through the ticket's project, and the database
+     * checks that for each row as it changes rather than once the statement is done. So the
+     * thread is taken apart before the move and put back together after it; the gap exists
+     * only inside the transaction and nobody ever reads it.
+     *
+     * @return list<array{0:int,1:int}>
+     */
+    private function unthread(int $project, int $id): array
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT id,parent_id FROM comments WHERE project_id=? AND ticket_id=? AND parent_id IS NOT NULL',
+        );
+        $statement->execute([$project, $id]);
+        $threads = array_map(
+            static fn(array $row) => [(int) $row['id'], (int) $row['parent_id']],
+            $statement->fetchAll(),
+        );
+        $this->pdo->prepare(
+            'UPDATE comments SET parent_id=NULL WHERE project_id=? AND ticket_id=? AND parent_id IS NOT NULL',
+        )->execute([$project, $id]);
+
+        return $threads;
+    }
+
+    /** @param list<array{0:int,1:int}> $threads */
+    private function rethread(int $project, array $threads): void
+    {
+        $statement = $this->pdo->prepare('UPDATE comments SET parent_id=? WHERE project_id=? AND id=?');
+        foreach ($threads as [$comment, $parent]) {
+            $statement->execute([$parent, $project, $comment]);
         }
     }
 

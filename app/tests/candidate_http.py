@@ -22,7 +22,7 @@ def request(path, data=None):
 
 
 status, body, _ = request("/health/ready")
-assert status == 200 and json.loads(body)["schema"] == "202609170002", ("ready", status)
+assert status == 200 and json.loads(body)["schema"] == "202609180001", ("ready", status)
 status, body, _ = request("/login")
 assert status == 200, ("login GET", status, body[:150])
 token = re.search(r'name="_csrf" value="([^"]+)"', body.decode())[1]
@@ -58,7 +58,7 @@ print(
     json.dumps(
         {
             "mode": "unreleased-source-snapshot",
-            "schema": "202609170002",
+            "schema": "202609180001",
             "login": "passed",
             "authenticated_pages": checked,
             "foreign_project_status": 404,

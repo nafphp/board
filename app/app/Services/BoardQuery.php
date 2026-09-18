@@ -48,6 +48,42 @@ final class BoardQuery
         return $statement->fetchAll();
     }
 
+    /**
+     * The projects a ticket could be moved into: every other project the person is an active
+     * member of and may write in. Rights are read per project because a custom role can
+     * grant less than its name suggests.
+     */
+    public function transferTargets(int $exclude): array
+    {
+        $rows = $this->rows(
+            <<<'SQL'
+            SELECT p.id,
+                   p.name,
+                   p.ticket_key,
+                   m.role,
+                   m.custom_role_id
+            FROM projects p
+            JOIN project_members m ON m.project_id = p.id
+            WHERE m.user_id = ?
+                AND m.active = 1
+                AND p.archived_at IS NULL
+                AND p.id <> ?
+            ORDER BY p.name
+            SQL,
+            [$this->access->actor(), $exclude],
+        );
+
+        return array_values(array_filter($rows, fn(array $row) => in_array(
+            'write',
+            $this->access->permissions(
+                (int) $row['id'],
+                $row['role'],
+                $row['custom_role_id'] === null ? null : (int) $row['custom_role_id'],
+            ),
+            true,
+        )));
+    }
+
     public function board(int $project, array $query = []): array
     {
         $scope   = $this->access->project($project);

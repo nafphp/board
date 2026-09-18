@@ -21,6 +21,7 @@ final class ActivityLabel
                 'ticket.created'          => 'Ticket erstellt',
                 'ticket.updated'          => 'Ticket bearbeitet',
                 'ticket.moved'            => 'Ticket verschoben',
+                'ticket.transferred'      => 'Ticket aus einem anderen Projekt verschoben',
                 'ticket.linked'           => 'Ticket verknüpft',
                 'ticket.unlinked'         => 'Ticketverknüpfung entfernt',
                 'ticket.close'            => 'Ticket geschlossen',
