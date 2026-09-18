@@ -4,24 +4,25 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Ai\ProjectTool;
 use App\Domain\Failure;
+use App\Domain\ProjectScope;
 use App\Support\Input;
 use Naf\MCP\Support\ToolRegistry;
 use Naf\RateLimit\PdoLimiter;
 use Nafinity\Contracts\AccessInterface;
 use Nafinity\Contracts\AiServiceInterface;
-use Nafinity\Contracts\BoardQueryInterface;
-use Nafinity\Contracts\CommentServiceInterface;
-use Nafinity\Contracts\TicketServiceInterface;
+use Nafinity\Contracts\AiToolProviderInterface;
+use Nafinity\Contracts\ProjectToolInterface;
+use Nafinity\Support\AiToolContext;
+use Nafinity\Support\Resolver;
+
+use function Naf\app;
+use function Nafinity\extensions;
 
 final class AiService implements AiServiceInterface
 {
     public function __construct(
         private AccessInterface $access,
-        private BoardQueryInterface $query,
-        private TicketServiceInterface $tickets,
-        private CommentServiceInterface $comments,
         private PdoLimiter $limiter,
     ) {
     }
@@ -33,11 +34,11 @@ final class AiService implements AiServiceInterface
         foreach ($definitions as &$definition) {
             $tool               = $registry->getTool($definition['name']);
             $definition['meta'] = [
-                'title'    => $tool->title,
-                'risk'     => $tool->permission === 'read' ? 'read' : 'write',
-                'autoRun'  => $tool->permission === 'read',
-                'requires' => $tool->requires,
-                'keywords' => $tool->keywords,
+                'title'    => $tool->title(),
+                'risk'     => $tool->permission() === 'read' ? 'read' : 'write',
+                'autoRun'  => $tool->permission() === 'read',
+                'requires' => $tool->requires(),
+                'keywords' => $tool->keywords(),
             ];
         }
 
@@ -60,165 +61,76 @@ final class AiService implements AiServiceInterface
             throw new Failure('Dieses Werkzeug ist für dich hier nicht verfügbar.', 403);
         }
         $tool = $registry->getTool($name);
-        if ($tool->permission !== 'read' && ($data['confirmed'] ?? false) !== true) {
+        if ($tool->permission() !== 'read' && ($data['confirmed'] ?? false) !== true) {
             throw new Failure('Bitte bestätige die Änderung zuerst im Chat.', 422);
+        }
+
+        // Checked again right before running: the catalogue may be a moment old,
+        // and a right can be taken away between asking and doing.
+        if (!$this->permitted($tool, $project === null ? null : $this->access->project($project))) {
+            throw new Failure('Dieses Werkzeug ist für dich hier nicht verfügbar.', 403);
         }
 
         return $registry->call($name, $arguments);
     }
 
+    /**
+     * Build this request's tool registry from every registered provider
+     *
+     * Rights are filtered here, before the catalogue is handed out, and again
+     * before a tool runs. Two providers cannot claim the same tool name by
+     * accident: replacing one takes saying so in the provider's definition.
+     *
+     * @param int|null $project The project the chat is about, when there is one
+     */
     private function registry(?int $project): ToolRegistry
     {
-        $this->access->actor();
+        $actor    = $this->access->actor();
         $scope    = $project === null ? null : $this->access->project($project);
+        $context  = new AiToolContext($actor, $scope);
         $registry = new ToolRegistry();
-        $add      = static function (ProjectTool $tool) use ($registry, $scope) {
-            if ($tool->permission === 'read' || $scope?->allows($tool->permission)) {
-                $registry->register($tool);
+        $owners   = [];
+
+        foreach (extensions()->aiTools()->all() as $definition) {
+            $provider = Resolver::service(app()->container(), $definition->provider);
+
+            if (!$provider instanceof AiToolProviderInterface) {
+                throw new Failure(
+                    'Der AI-Werkzeuganbieter "' . $definition->id . '" ist ungültig.',
+                    500,
+                );
             }
-        };
-        if ($project === null) {
-            $projectFields = array_flip(['id', 'name', 'description', 'open_count']);
-            $add(new ProjectTool(
-                'nafinity_projects',
-                'List the signed-in user\'s visible projects. No other projects are accessible.',
-                ['properties' => []],
-                fn() => array_map(
-                    static fn($item) => array_intersect_key($item, $projectFields),
-                    $this->query->projects(),
-                ),
-                'Meine Projekte',
-                keywords: ['Projekte', 'Übersicht', 'Arbeitsbereiche'],
-            ));
 
-            return $registry;
+            foreach ($provider->tools($context) as $tool) {
+                $name = $tool->name();
+
+                if (isset($owners[$name]) && !in_array($name, $definition->replaceNames, true)) {
+                    throw new Failure(
+                        'Das Werkzeug "' . $name . '" ist bereits von "' . $owners[$name]
+                        . '" belegt. Nenne es in replaceNames, um es zu ersetzen.',
+                        500,
+                    );
+                }
+
+                $owners[$name] = $definition->id;
+
+                if ($this->permitted($tool, $scope)) {
+                    $registry->register($tool);
+                }
+            }
         }
-        $identifier = ['type' => 'integer', 'minimum' => 1];
-        $text       = ['type' => 'string'];
-        $add(new ProjectTool(
-            'nafinity_board',
-            'Read the current project, its board revision, columns, swimlanes, labels and up to 300 tickets. '
-                . 'Use returned IDs and versions for later actions.',
-            ['properties' => []],
-            function () use ($project) {
-                $board = $this->query->board($project);
-
-                return [
-                    'project'        => ['id' => $project, 'name' => $board['project']['name']],
-                    'board_revision' => (int) $board['board']['revision'],
-                    'columns'        => $board['columns'],
-                    'swimlanes'      => $board['swimlanes'],
-                    'labels'         => $board['labels'],
-                    'tickets'        => $board['cards'],
-                    'total'          => $board['total'],
-                ];
-            },
-            'Board ansehen',
-            keywords: ['Spalten', 'Swimlanes', 'Labels', 'Aufgaben', 'Übersicht', 'Tickets'],
-        ));
-        $add(new ProjectTool(
-            'nafinity_ticket',
-            'Read a ticket with comments, activity, labels and attachment metadata from this project. '
-                . 'ticket_id is the database ID, not its displayed number.',
-            ['properties' => ['ticket_id' => $identifier], 'required' => ['ticket_id']],
-            fn($args) => $this->query->detail($project, Input::id($args['ticket_id'])),
-            'Ticket lesen',
-            keywords: ['Aufgabe', 'Beschreibung', 'Kommentare', 'Anhänge', 'Details'],
-        ));
-        $add(new ProjectTool(
-            'nafinity_activity',
-            'Read the recent activity of the current project.',
-            ['properties' => []],
-            fn() => $this->query->activity($project),
-            'Aktivität lesen',
-            keywords: ['Änderungen', 'Verlauf', 'Aktivitäten'],
-        ));
-        $ticketFields = [
-            'title'          => $text,
-            'description'    => $text,
-            'priority'       => ['type' => 'string', 'enum' => ['low', 'normal', 'high', 'urgent']],
-            'column_id'      => $identifier,
-            'swimlane_id'    => $identifier,
-            'board_revision' => $identifier,
-        ];
-        $add(new ProjectTool(
-            'nafinity_ticket_create',
-            'Create a ticket in the current project after user confirmation. '
-                . 'Read the board first for valid column, swimlane and revision IDs.',
-            ['properties' => $ticketFields, 'required' => array_keys($ticketFields)],
-            function ($args) use ($project) {
-                $id        = $this->tickets->create($project, $args);
-                $reference = $this->tickets->reference($project, $id);
-
-                return [
-                    'id'  => $reference,
-                    'url' => '/projects/' . $project . '/tickets/' . $reference,
-                ];
-            },
-            'Ticket erstellen',
-            'write',
-            requires: ['nafinity_board'],
-        ));
-        $editFields = [
-            'ticket_id'      => $identifier,
-            'version'        => $identifier,
-            'board_revision' => $identifier,
-            'title'          => $text,
-            'description'    => $text,
-            'priority'       => $ticketFields['priority'],
-        ];
-        $add(new ProjectTool(
-            'nafinity_ticket_update',
-            'Update title, description and priority of a ticket. Read ticket and board first. '
-                . 'Keep unchanged values. Concurrent changes return a conflict; read again and ask before retrying.',
-            ['properties' => $editFields, 'required' => array_keys($editFields)],
-            function ($args) use ($project) {
-                $id = Input::id($args['ticket_id']);
-                $this->access->project($project, 'write');
-                $old = $this->tickets->ticket($project, $id);
-                $this->tickets->update($project, $id, [...$old, ...$args]);
-
-                return ['updated' => true, 'id' => $id];
-            },
-            'Ticket bearbeiten',
-            'write',
-            requires: ['nafinity_board', 'nafinity_ticket'],
-        ));
-        $moveFields = [
-            'ticket_id'      => $identifier,
-            'version'        => $identifier,
-            'board_revision' => $identifier,
-            'column_id'      => $identifier,
-            'swimlane_id'    => $identifier,
-        ];
-        $add(new ProjectTool(
-            'nafinity_ticket_move',
-            'Move a ticket to the end of a column and swimlane after confirmation. '
-                . 'Read the board and ticket to obtain IDs and current versions.',
-            ['properties' => $moveFields, 'required' => array_keys($moveFields)],
-            function ($args) use ($project) {
-                $this->tickets->move($project, Input::id($args['ticket_id']), $args);
-
-                return ['moved' => true];
-            },
-            'Ticket verschieben',
-            'write',
-            requires: ['nafinity_board', 'nafinity_ticket'],
-        ));
-        $add(new ProjectTool(
-            'nafinity_comment',
-            'Add a new comment to a ticket after user confirmation.',
-            ['properties' => ['ticket_id' => $identifier, 'body' => $text], 'required' => ['ticket_id', 'body']],
-            function ($args) use ($project) {
-                $this->comments->save($project, Input::id($args['ticket_id']), $args);
-
-                return ['commented' => true];
-            },
-            'Kommentar schreiben',
-            'comment',
-            requires: ['nafinity_board', 'nafinity_ticket'],
-        ));
 
         return $registry;
+    }
+
+    /**
+     * Whether the actor may see and run a tool right now
+     *
+     * @param ProjectToolInterface $tool  The tool being offered
+     * @param ProjectScope|null    $scope The authorized project, when there is one
+     */
+    private function permitted(ProjectToolInterface $tool, ?ProjectScope $scope): bool
+    {
+        return $tool->permission() === 'read' || (bool) $scope?->allows($tool->permission());
     }
 }

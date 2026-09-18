@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Domain\Failure;
-use App\Support\Input;
-use App\Support\TicketFilter;
 use Nafinity\Contracts\AccessInterface;
 use Nafinity\Contracts\BoardQueryInterface;
 use Nafinity\Contracts\TicketServiceInterface;
 use Nafinity\Contracts\TimerServiceInterface;
+use Nafinity\Support\BoardFilterContext;
 use PDO;
 
 use function Nafinity\extensions;
@@ -93,64 +92,41 @@ final class BoardQuery implements BoardQueryInterface
 
     public function board(int $project, array $query = []): array
     {
-        $scope   = $this->access->project($project);
-        $board   = $this->tickets->board($project);
-        $query   = TicketFilter::from($query)->values;
-        $filters = [];
-        $where   = [
+        $scope = $this->access->project($project);
+        $board = $this->tickets->board($project);
+
+        // The archive rule decides which tickets exist at all, so it stays out of
+        // the filter registry and is applied before any fragment.
+        $archived = ($query['status'] ?? '') === 'archived';
+        $where    = [
             't.project_id=?',
-            ($query['status'] ?? '') === 'archived'
-                ? 't.archived_at IS NOT NULL'
-                : 't.archived_at IS NULL',
+            $archived ? 't.archived_at IS NOT NULL' : 't.archived_at IS NULL',
         ];
-        $params = [$project];
-        if (($query['status'] ?? '') === 'archived') {
+        $params  = [$project];
+        $filters = [];
+
+        if ($archived) {
             $filters['status'] = 'archived';
             unset($query['status']);
         }
-        foreach (['column' => 'column_id', 'swimlane' => 'swimlane_id'] as $filter => $column) {
-            if (isset($query[$filter]) && $query[$filter] !== '') {
-                $filters[$filter] = Input::id($query[$filter], $filter);
-                $where[]          = 't.' . $column . '=?';
-                $params[]         = $filters[$filter];
-            }
-        }
-        $relationFilters = [
-            'assignee' => ['ticket_assignees', 'user_id'],
-            'label'    => ['ticket_labels', 'label_id'],
-        ];
 
-        foreach ($relationFilters as $filter => [$table, $column]) {
-            if (isset($query[$filter]) && $query[$filter] !== '') {
-                $filters[$filter] = Input::id($query[$filter], $filter);
-                $where[]          = "EXISTS(SELECT 1 FROM $table f WHERE f.project_id=t.project_id AND f.ticket_id=t.id AND f.$column=?)";
-                $params[]         = $filters[$filter];
-            }
-        }
-        $choiceFilters = [
-            'status'   => ['open', 'closed'],
-            'priority' => ['low', 'normal', 'high', 'urgent'],
-        ];
+        foreach ($this->requested($query) as $id => $value) {
+            $definition = extensions()->boardFilters()->get($id);
 
-        foreach ($choiceFilters as $filter => $allowed) {
-            if (isset($query[$filter]) && $query[$filter] !== '') {
-                if (!is_string($query[$filter]) || !in_array($query[$filter], $allowed, true)) {
-                    throw new Failure('Ungültiger Filter: ' . $filter);
-                }
-                $filters[$filter] = $query[$filter];
-                $where[]          = 't.' . $filter . '=?';
-                $params[]         = $query[$filter];
+            if ($definition === null) {
+                throw new Failure('Unbekannter Filter: ' . $id, 422);
             }
+
+            $normalized   = $definition->normalize($value);
+            $filters[$id] = $normalized;
+            $condition    = $definition->condition(
+                $normalized,
+                new BoardFilterContext($project, $scope),
+            );
+            $where[] = '(' . $condition->sql . ')';
+            $params  = [...$params, ...$condition->parameters];
         }
-        if (isset($query['q']) && $query['q'] !== '') {
-            $search       = Input::validate($query, ['q' => 'string|max:200'])['q'];
-            $filters['q'] = $search;
-            $isMysql      = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql';
-            $where[]      = $isMysql
-                ? 'MATCH(t.title,t.description) AGAINST(? IN NATURAL LANGUAGE MODE)'
-                : "to_tsvector('simple',t.title || ' ' || t.description) @@ plainto_tsquery('simple',?)";
-            $params[] = $search;
-        }
+
         $clause    = implode(' AND ', $where);
         $statement = $this->pdo->prepare('SELECT COUNT(*) FROM tickets t WHERE ' . $clause);
         $statement->execute($params);
@@ -221,7 +197,53 @@ final class BoardQuery implements BoardQueryInterface
             'filters'        => $filters,
             'total'          => $total,
             'running_timers' => $this->timers->runningIn($project),
+            'card_metadata'  => $this->metadata->readable(
+                $scope,
+                $project,
+                array_map('intval', array_column($cards, 'id')),
+            ),
         ];
+    }
+
+    /**
+     * The filters a request actually asks for, core names and plugin ids alike
+     *
+     * Core query parameters keep their own names; a contributed filter arrives
+     * as filters[<id>]. An id nobody registered is reported rather than ignored.
+     *
+     * @param array $query The request's query parameters
+     *
+     * @return array<string, mixed>
+     */
+    private function requested(array $query): array
+    {
+        $requested = [];
+
+        foreach (extensions()->boardFilters()->all() as $id => $definition) {
+            if (isset($query[$id]) && $query[$id] !== '') {
+                $requested[$id] = $query[$id];
+            }
+        }
+
+        $contributed = $query['filters'] ?? [];
+
+        if (!is_array($contributed)) {
+            throw new Failure('Ungültige Filter.', 422);
+        }
+
+        foreach ($contributed as $id => $value) {
+            if ($value === '' || $value === null) {
+                continue;
+            }
+
+            if (!is_string($id)) {
+                throw new Failure('Ungültiger Filtername.', 422);
+            }
+
+            $requested[$id] = $value;
+        }
+
+        return $requested;
     }
 
     public function detail(int $project, int $ticket): array
