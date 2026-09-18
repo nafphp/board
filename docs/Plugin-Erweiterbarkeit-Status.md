@@ -23,7 +23,7 @@ Ergebnisse in [`docs/Plugin-Erweiterbarkeit-Evidenz.json`](Plugin-Erweiterbarkei
 | I — Assets und Übersetzungen | erledigt | `AssetPublisher` und drei CLI-Kommandos, Veröffentlichung im Candidate-Build, `Naf\I18n\translation_paths()` in naf/i18n, `Locales::available()`; T27, T28, T32 |
 | J — Filter, Schätzung, Events, AI | erledigt | `BoardFilterRegistry` in `BoardQuery`, `EstimationScaleRegistry`, `ActivityTypeRegistry`, `AiToolRegistry`; T23–T26 |
 | K — Lebensdauer, Beispiele, Dokumentation | erledigt | zwei installierte Beispielpakete, `app/app/extensions.php`, `docs/Plugin-Erweiterbarkeit.md`; T30 |
-| L — Abnahme T01–T32 | teilweise | siehe Tabelle unten; offen bleibt allein die Dispose-Beobachtung beim Schließen des Drawers in T21, weil der verwendete Vorschaubrowser das `close`-Ereignis eines `<dialog>` nicht feuert |
+| L — Abnahme T01–T32 | teilweise | T01–T20 und T22–T32 erledigt; offen bleibt allein die Dispose-Beobachtung beim Schließen des Drawers in T21, weil der verwendete Vorschaubrowser das `close`-Ereignis eines `<dialog>` nicht feuert |
 
 ## Abnahmetests T01–T32
 
@@ -93,6 +93,17 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 Beide Pakete sind **nicht veröffentlicht**. Nafinity fordert `naf/i18n: ^0.2.2`
 und arbeitet im Source-Modus gegen die RC-Branches. Die stabile Distribution ist
 davon abhängig, dass der Maintainer die Pakete merged und veröffentlicht.
+
+## Nicht getan
+
+- Kein Merge und kein Release der NAF-Pakete oder der Anwendung; das bleibt
+  ausdrücklich dem Maintainer.
+- Keine echte Mailzustellung, keine externen Webhooks und kein laufendes Modell
+  in der automatisierten Abnahme; es gelten die vorhandenen lokalen Transporte.
+- Keine Änderung an `vendor/`, keine produktiven Datenbank-Resets, keine
+  Secrets oder generierten Manifeste/Locks im Commit.
+- Kein Umbau auf CMS, Laravel, einen zweiten Container, Router, Event-Bus, ORM
+  oder ein Plugin-Metaframework.
 
 ## Verbleibende Maintainer-Aktionen
 
