@@ -5,7 +5,7 @@
       "example.reports",
       "example.review"
     ],
-    "passed": 39,
+    "passed": 41,
     "failed": [],
     "tests": [
       "T01 both extensions boot after the application defaults, in index order",
@@ -16,6 +16,8 @@
       "T03 a later route of the same name replaces, and remove takes it back",
       "T03 the same path under another name does not replace anything",
       "T05 extension B decorates the bound ticket service for every consumer",
+      "T05 every contract reaches a productive consumer, not just the container",
+      "T05 the background jobs run through the replacement",
       "T15 a contributed field is stored, read back and reset",
       "T16 a metadata-only change raises the version exactly once",
       "T16 a rejected value changes nothing at all",
@@ -121,6 +123,6 @@
       "T30 a personal value of a missing extension is neither read nor lost"
     ]
   },
-  "passed": 62,
+  "passed": 64,
   "failed": []
 }

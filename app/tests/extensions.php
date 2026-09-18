@@ -2,10 +2,19 @@
 
 declare(strict_types=1);
 
+use App\Controllers\AiController;
+use App\Controllers\AppController;
 use App\Domain\Estimation;
 use App\Domain\Failure;
+use App\Events\ActivityListener;
+use App\Jobs\FinalizeAttachmentJob;
+use App\Jobs\MaintenanceJob;
 use App\Models\User;
 use App\Modules\CoreTicket;
+use App\Services\BoardQuery;
+use App\Services\CommentService;
+use App\Services\PageRenderer;
+use App\Services\RoleService;
 use App\Services\SlotRenderer;
 use App\Support\Locales;
 use Example\ExtensionA\ExtensionAProvider;
@@ -22,21 +31,26 @@ use Naf\Queue\Core\Queue;
 use Naf\Schedule\Core\JobRepository;
 use Naf\Support\Collection;
 use Nafinity\Contracts\AccessInterface;
+use Nafinity\Contracts\AccountServiceInterface;
 use Nafinity\Contracts\AiServiceInterface;
 use Nafinity\Contracts\AttachmentServiceInterface;
 use Nafinity\Contracts\BoardQueryInterface;
+use Nafinity\Contracts\CommentServiceInterface;
 use Nafinity\Contracts\ExtensionProviderInterface;
+use Nafinity\Contracts\NotificationServiceInterface;
 use Nafinity\Contracts\PageRendererInterface;
 use Nafinity\Contracts\PreferenceServiceInterface;
 use Nafinity\Contracts\ProjectServiceInterface;
 use Nafinity\Contracts\RoleServiceInterface;
 use Nafinity\Contracts\TicketMetadataReaderInterface;
 use Nafinity\Contracts\TicketServiceInterface;
+use Nafinity\Contracts\TimerServiceInterface;
 use Nafinity\Definition\TicketFieldDefinition;
 use Nafinity\Definition\UiContribution;
 use Nafinity\Definition\ViewOverride;
 use Nafinity\ExtensionContext;
 use Nafinity\ExtensionRegistry;
+use Nafinity\Support\Resolver;
 use Nafinity\Support\UiContext;
 
 use function Naf\app;
@@ -246,6 +260,158 @@ test('T05 extension B decorates the bound ticket service for every consumer', fu
     check(
         $container->get(BoardQueryInterface::class) !== null,
         'board query could not be resolved',
+    );
+});
+
+/**
+ * Build a decorator class for any contract, from the contract itself.
+ *
+ * A stand-in has to satisfy the consumer's type hint, so it is generated from
+ * the interface rather than hand-written thirteen times. It forwards everything
+ * and adds nothing, which is exactly what a decorator an extension writes would
+ * be free to do.
+ *
+ * @param class-string $contract The interface to wrap
+ */
+function decorator(string $contract): string
+{
+    static $built = [];
+
+    if (isset($built[$contract])) {
+        return $built[$contract];
+    }
+
+    $reflection = new ReflectionClass($contract);
+    $name       = 'Decorated' . str_replace('\\', '', $contract);
+    $methods    = '';
+
+    foreach ($reflection->getMethods() as $method) {
+        $parameters = [];
+        $arguments  = [];
+
+        foreach ($method->getParameters() as $parameter) {
+            $type     = $parameter->getType();
+            $declared = $type === null ? '' : ltrim((string) $type, '?');
+            // `mixed` already includes null; marking it nullable is a parse error.
+            $nullable = $type !== null
+                && $type->allowsNull()
+                && !str_contains($declared, 'null')
+                && $declared !== 'mixed';
+            $piece = ($type === null ? '' : ($nullable ? '?' : '') . $declared . ' ')
+                . '$' . $parameter->getName();
+
+            if ($parameter->isDefaultValueAvailable()) {
+                $piece .= ' = ' . var_export($parameter->getDefaultValue(), true);
+            }
+
+            $parameters[] = $piece;
+            $arguments[]  = '$' . $parameter->getName();
+        }
+
+        $returnType = $method->getReturnType();
+        $returns    = $returnType === null ? '' : ': ' . (string) $returnType;
+        $call       = '$this->inner->' . $method->getName() . '(' . implode(', ', $arguments) . ')';
+        $body       = (string) $returnType === 'void' ? $call . ';' : 'return ' . $call . ';';
+
+        $methods .= sprintf(
+            "    public function %s(%s)%s { \$this->calls[] = '%s'; %s }\n",
+            $method->getName(),
+            implode(', ', $parameters),
+            $returns,
+            $method->getName(),
+            $body,
+        );
+    }
+
+    eval(sprintf(
+        'final class %s implements %s { public array $calls = []; '
+        . 'public function __construct(private %s $inner) {} %s }',
+        $name,
+        $contract,
+        $contract,
+        $methods,
+    ));
+
+    return $built[$contract] = $name;
+}
+
+test('T05 every contract reaches a productive consumer, not just the container', function () use (
+    $container,
+) {
+    // Each contract is wrapped in a decorator and the consumer that actually
+    // uses it in production is then built the way the application builds it.
+    // What is checked is that the consumer ends up holding the decorator: a
+    // replacement that only satisfies container->get() would prove nothing.
+    $consumers = [
+        AccessInterface::class              => BoardQuery::class,
+        AccountServiceInterface::class      => MaintenanceJob::class,
+        AiServiceInterface::class           => AiController::class,
+        AttachmentServiceInterface::class   => MaintenanceJob::class,
+        BoardQueryInterface::class          => PageRenderer::class,
+        CommentServiceInterface::class      => AppController::class,
+        NotificationServiceInterface::class => ActivityListener::class,
+        PageRendererInterface::class        => AppController::class,
+        PreferenceServiceInterface::class   => AppController::class,
+        ProjectServiceInterface::class      => RoleService::class,
+        RoleServiceInterface::class         => AppController::class,
+        TicketServiceInterface::class       => CommentService::class,
+        TimerServiceInterface::class        => PageRenderer::class,
+    ];
+
+    foreach ($consumers as $contract => $consumer) {
+        $original  = $container->get($contract);
+        $className = decorator($contract);
+        $standIn   = new $className($original);
+
+        $container->set($contract, static fn() => $standIn);
+
+        try {
+            $built = Resolver::build($container, $consumer);
+            $found = false;
+
+            foreach ((new ReflectionClass($built))->getProperties() as $property) {
+                if ($property->getValue($built) === $standIn) {
+                    $found = true;
+                    break;
+                }
+            }
+
+            check($found, $consumer . ' did not receive the replacement of ' . $contract);
+        } finally {
+            $container->set($contract, static fn() => $original);
+        }
+    }
+});
+
+test('T05 the background jobs run through the replacement', function () use ($container) {
+    $contract  = AttachmentServiceInterface::class;
+    $original  = $container->get($contract);
+    $className = decorator($contract);
+    $standIn   = new $className($original);
+
+    $container->set($contract, static fn() => $standIn);
+
+    try {
+        $output = new Output();
+
+        ob_start();
+
+        try {
+            $container->make(FinalizeAttachmentJob::class, ['attachmentId' => 1])
+                ->execute($output);
+        } catch (Throwable) {
+            // There is no attachment 1; what matters is which object was asked.
+        }
+
+        $container->make(MaintenanceJob::class)->execute($output);
+        ob_end_clean();
+    } finally {
+        $container->set($contract, static fn() => $original);
+    }
+
+    check(
+        in_array('finalize', $standIn->calls, true) && in_array('cleanup', $standIn->calls, true),
+        'the jobs did not go through the replacement: ' . implode(', ', $standIn->calls),
     );
 });
 
