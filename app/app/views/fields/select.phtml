@@ -1,0 +1,17 @@
+<?php
+
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+$choices = $definition->options['choices'] ?? [];
+?>
+<select name="<?= s($name) ?>" id="<?= s($id) ?>" <?= $disabled ? 'disabled' : '' ?>>
+    <?php if (($definition->options['nullable'] ?? false) === true): ?>
+        <option value="" <?= $value === null ? 'selected' : '' ?>><?= s(t('Nicht gesetzt')) ?></option>
+    <?php endif ?>
+    <?php foreach ($choices as $key => $label): ?>
+        <option value="<?= s((string) $key) ?>" <?= (string) $value === (string) $key ? 'selected' : '' ?>>
+            <?= s(t((string) $label)) ?>
+        </option>
+    <?php endforeach ?>
+</select>

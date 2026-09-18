@@ -6,14 +6,14 @@ namespace App\Services;
 
 use App\Domain\Failure;
 use App\Support\Locales;
+use App\Support\Settings\PreferenceStore;
 use DateTimeZone;
 use Nafinity\Contracts\AccessInterface;
 use Nafinity\Contracts\PreferenceServiceInterface;
-use PDO;
 
 final class PreferenceService implements PreferenceServiceInterface
 {
-    public function __construct(private PDO $pdo, private AccessInterface $access)
+    public function __construct(private AccessInterface $access, private PreferenceStore $store)
     {
     }
 
@@ -31,20 +31,13 @@ final class PreferenceService implements PreferenceServiceInterface
         ) {
             throw new Failure('Ungültige Einstellungen.');
         }
-        $values = [
-            $theme,
-            $locale,
-            $zone,
-            isset($data['notify_in_app']) ? 1 : 0,
-            isset($data['notify_mail']) ? 1 : 0,
-            $user,
-        ];
-        $sql = 'INSERT INTO user_preferences(theme,locale,timezone,notify_in_app,notify_mail,user_id) VALUES(?,?,?,?,?,?)';
-        $sql
-            .= $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql'
-                ? ' ON DUPLICATE KEY UPDATE theme=VALUES(theme),locale=VALUES(locale),timezone=VALUES(timezone),notify_in_app=VALUES(notify_in_app),notify_mail=VALUES(notify_mail)'
-                : ' ON CONFLICT(user_id) DO UPDATE SET theme=excluded.theme,locale=excluded.locale,timezone=excluded.timezone,notify_in_app=excluded.notify_in_app,notify_mail=excluded.notify_mail';
-        $this->pdo->prepare($sql)->execute($values);
+        $this->store->writeUser($user, [
+            'theme'         => $theme,
+            'locale'        => $locale,
+            'timezone'      => $zone,
+            'notify_in_app' => isset($data['notify_in_app']) ? 1 : 0,
+            'notify_mail'   => isset($data['notify_mail']) ? 1 : 0,
+        ]);
     }
 
     /**
@@ -57,24 +50,12 @@ final class PreferenceService implements PreferenceServiceInterface
         if (!Locales::supports($locale)) {
             throw new Failure('Diese Sprache steht nicht zur Verfügung.');
         }
-        $user = $this->access->actor();
-        $sql  = 'INSERT INTO user_preferences(theme,locale,timezone,notify_in_app,notify_mail,user_id)'
-            . " VALUES('system',?,'Europe/Berlin',1,0,?)";
-        $sql
-            .= $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql'
-                ? ' ON DUPLICATE KEY UPDATE locale=VALUES(locale)'
-                : ' ON CONFLICT(user_id) DO UPDATE SET locale=excluded.locale';
-        $this->pdo->prepare($sql)->execute([$locale, $user]);
+        $this->store->writeUser($this->access->actor(), ['locale' => $locale]);
     }
 
     public function mute(int $project, bool $muted): void
     {
         $this->access->project($project);
-        $sql = 'INSERT INTO project_preferences(project_id,user_id,muted) VALUES(?,?,?)';
-        $sql
-            .= $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql'
-                ? ' ON DUPLICATE KEY UPDATE muted=VALUES(muted)'
-                : ' ON CONFLICT(project_id,user_id) DO UPDATE SET muted=excluded.muted';
-        $this->pdo->prepare($sql)->execute([$project, $this->access->actor(), $muted ? 1 : 0]);
+        $this->store->writeProjectUser($project, $this->access->actor(), ['muted' => $muted ? 1 : 0]);
     }
 }

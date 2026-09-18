@@ -1,0 +1,16 @@
+<?php
+
+use function Naf\View\s;
+
+// A checkbox that is not ticked sends nothing, so the hidden field states the
+// explicit false the type expects. Both carry the same name; the later value wins.
+?>
+<input type="hidden" name="<?= s($name) ?>" value="0" />
+<input
+    type="checkbox"
+    name="<?= s($name) ?>"
+    id="<?= s($id) ?>"
+    value="1"
+    <?= $value ? 'checked' : '' ?>
+    <?= $disabled ? 'disabled' : '' ?>
+/>

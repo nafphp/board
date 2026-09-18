@@ -1,0 +1,13 @@
+<?php
+
+use function Naf\View\s;
+
+?>
+<textarea
+    name="<?= s($name) ?>"
+    id="<?= s($id) ?>"
+    rows="3"
+    <?= ($definition->options['max'] ?? null) ? 'maxlength="' . (int) $definition->options['max'] . '"' : '' ?>
+    <?= $required ? 'required' : '' ?>
+    <?= $disabled ? 'disabled' : '' ?>
+><?= s((string) ($value ?? '')) ?></textarea>

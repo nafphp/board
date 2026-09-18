@@ -1,0 +1,16 @@
+<?php
+
+use function Naf\View\s;
+
+?>
+<input
+    type="number"
+    step="1"
+    name="<?= s($name) ?>"
+    id="<?= s($id) ?>"
+    <?= isset($definition->options['min']) ? 'min="' . (int) $definition->options['min'] . '"' : '' ?>
+    <?= isset($definition->options['max']) ? 'max="' . (int) $definition->options['max'] . '"' : '' ?>
+    <?= $required ? 'required' : '' ?>
+    <?= $disabled ? 'disabled' : '' ?>
+    value="<?= $value === null ? '' : (int) $value ?>"
+/>

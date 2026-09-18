@@ -4,6 +4,7 @@ declare(strict_types=1);
 use App\Controllers\AiController;
 use App\Controllers\AppController as C;
 use App\Controllers\ProfileController;
+use App\Controllers\SettingsApiController as S;
 use App\Migrations\M202609140001Nafinity;
 use App\Migrations\M202609140002Queue;
 use App\Migrations\M202609140003RateLimits;
@@ -15,6 +16,7 @@ use App\Migrations\M202609160003ProjectTicketKey;
 use App\Migrations\M202609170001EstimationScale;
 use App\Migrations\M202609170002TicketTimers;
 use App\Migrations\M202609180001TicketTransfer;
+use App\Migrations\M202609180002PluginSettings;
 use Nafinity\Contracts\AttachmentServiceInterface;
 
 use function Naf\json;
@@ -39,6 +41,7 @@ route()->add(
                 M202609170001EstimationScale::class,
                 M202609170002TicketTimers::class,
                 M202609180001TicketTransfer::class,
+                M202609180002PluginSettings::class,
             ];
             $applied = $pdo->query('SELECT name FROM migrations')->fetchAll(PDO::FETCH_COLUMN);
             if (array_diff($required, $applied)) {
@@ -48,12 +51,38 @@ route()->add(
             $pdo->query('SELECT 1 FROM naf_rate_limits LIMIT 1');
             \Naf\app()->container()->get(AttachmentServiceInterface::class);
 
-            return json(['status' => 'ready', 'schema' => '202609180001']);
+            return json(['status' => 'ready', 'schema' => '202609180002']);
         } catch (Throwable) {
             return json(['status' => 'not-ready'], 503);
         }
     },
     'health.ready',
+);
+route()->add('GET', '/api/settings/user', [S::class, 'readUser'], 'api.settings.user.read');
+route()->add('POST', '/api/settings/user', [S::class, 'writeUser'], 'api.settings.user.write');
+route()->add(
+    'GET',
+    '/api/projects/{project}/settings',
+    [S::class, 'readProject'],
+    'api.settings.project.read',
+);
+route()->add(
+    'POST',
+    '/api/projects/{project}/settings',
+    [S::class, 'writeProject'],
+    'api.settings.project.write',
+);
+route()->add(
+    'GET',
+    '/api/projects/{project}/settings/user',
+    [S::class, 'readProjectUser'],
+    'api.settings.project_user.read',
+);
+route()->add(
+    'POST',
+    '/api/projects/{project}/settings/user',
+    [S::class, 'writeProjectUser'],
+    'api.settings.project_user.write',
 );
 route()->add('GET', '/ai/tools', [AiController::class, 'tools'], 'ai.tools');
 route()->add('POST', '/ai/tools/call', [AiController::class, 'call'], 'ai.call');

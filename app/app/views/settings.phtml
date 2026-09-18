@@ -1,13 +1,15 @@
 <?php
-use App\Domain\Estimation;
 use App\Domain\ProjectPermissions;
 use App\Support\Format;
 use App\Support\Icon;
+use Nafinity\Support\Resolver;
 
+use function Naf\app;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\extensions;
 use function Nafinity\partial;
 use function Nafinity\template;
 
@@ -28,47 +30,8 @@ foreach ($customRoles ?? [] as $role) {
 }
 $availableRoles['remove'] = 'Zugriff entziehen';
 
-// Every card shows what is set right now instead of listing the fields it contains.
-$themeLabels     = ['system' => t('Wie mein Gerät'), 'light' => t('Hell'), 'dark' => t('Dunkel')];
-$personalSummary = implode(' · ', [
-    $themeLabels[$preferences['theme']] ?? $preferences['theme'],
-    $preferences['locale'] === 'de' ? 'Deutsch' : 'English',
-    $preferences['timezone'],
-]);
-$names = static fn(array $items): string => implode(', ', array_slice(array_column($items, 'name'), 0, 4))
-    . (count($items) > 4 ? ' +' . (count($items) - 4) : '');
-
-$cards = [
-    ['personal', 'Persönlich', $personalSummary, 'user', 'settings.personal', []],
-    ['ai', 'Lokale AI', t('Noch nicht eingerichtet'), 'spark', 'settings.ai', []],
-];
-if ($projectId !== null) {
-    $customCount = count($customRoles ?? []);
-    if ($scope->allows('manage') || $scope->allows('restore')) {
-        $cards[] = [
-            'general',
-            'Allgemein',
-            ($project['archived_at'] ? t('Archiviert') : t('Aktiv'))
-                . ' · ' . $project['ticket_key'] . '-1'
-                . ' · ' . t(Estimation::LABELS[Estimation::scale($project['estimation_scale'] ?? null)]),
-            'sliders',
-            'settings.project',
-            [],
-        ];
-    }
-    $rolesDescription = $customCount
-        ? Format::count($customCount, 'eigene Rolle', 'eigene Rollen') . ' · ' . t('vier Standardrollen')
-        : t('Vier Standardrollen, keine eigenen');
-    $cards[] = ['roles', 'Rollen & Rechte', $rolesDescription, 'shield', 'settings.roles', []];
-    if ($scope->allows('members')) {
-        $cards[] = ['users', 'Mitglieder', $names($members), 'users', 'settings.members', []];
-    }
-    if ($scope->allows('structure')) {
-        foreach (['column' => ['Spalten', $columns], 'swimlane' => ['Swimlanes', $swimlanes], 'label' => ['Labels', $labels]] as $kind => [$heading, $items]) {
-            $cards[] = [$kind, $heading, $items ? $names($items) : t('Noch keine angelegt'), $kind, 'settings.structure', compact('kind', 'items')];
-        }
-    }
-}
+// Cards come from the registry, so an extension adds one without this page
+// learning its name. Each card says for itself what it currently holds.
 $viewData = [
     'projectId'      => $projectId,
     'offScale'       => $offScale ?? 0,
@@ -80,17 +43,35 @@ $viewData = [
     'members'        => $members ?? [],
     'availableRoles' => $availableRoles,
     'user'           => $user,
+    'projects'       => $projects,
 ];
-$icons = [
-    'user'     => 'person',
-    'users'    => 'group',
-    'spark'    => 'auto_awesome',
-    'shield'   => 'shield',
-    'sliders'  => 'tune',
-    'column'   => 'view_week',
-    'swimlane' => 'table_rows',
-    'label'    => 'label',
-];?>
+$cards = [];
+foreach (['user', 'project', 'project_user'] as $cardScope) {
+    if ($cardScope !== 'user' && $projectId === null) {
+        continue;
+    }
+    foreach (extensions()->settingSections()->forScope($cardScope) as $id => $section) {
+        if (!$uiContext->allows($section->permission)) {
+            continue;
+        }
+        $data = $section->provider === null
+            ? []
+            : Resolver::service(app()->container(), $section->provider)
+                ->data($section, $uiContext, $viewData);
+        if (($data['visible'] ?? true) === false) {
+            continue;
+        }
+        $cards[] = [
+            $id,
+            t($section->label),
+            (string) ($data['description'] ?? ''),
+            $section->icon ?? 'tune',
+            $section->template ?? 'settings/fields',
+            [...$data, 'section' => $section, 'scope' => $scope ?? null],
+        ];
+    }
+}
+?>
 <section class="page-heading settings-heading">
     <div>
         <span class="eyebrow"><?= s(t($projectId ? 'KONTO & PROJEKT' : 'DEIN KONTO')) ?></span>
@@ -131,7 +112,7 @@ $icons = [
             aria-haspopup="dialog"
             aria-controls="settings-detail"
         >
-            <span class="settings-icon"><?= Icon::mark($icons[$icon], 'lg') ?></span>
+            <span class="settings-icon"><?= Icon::mark($icon, 'lg') ?></span>
             <span class="settings-tile-text">
                 <strong><?= s($label) ?></strong>
                 <small data-settings-summary="<?= s($id) ?>"><?= s($description) ?></small>

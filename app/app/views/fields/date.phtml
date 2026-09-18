@@ -1,0 +1,13 @@
+<?php
+
+use function Naf\View\s;
+
+?>
+<input
+    type="date"
+    name="<?= s($name) ?>"
+    id="<?= s($id) ?>"
+    <?= $required ? 'required' : '' ?>
+    <?= $disabled ? 'disabled' : '' ?>
+    value="<?= s((string) ($value ?? '')) ?>"
+/>

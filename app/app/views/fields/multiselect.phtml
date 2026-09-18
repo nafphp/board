@@ -1,0 +1,21 @@
+<?php
+
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+$choices  = $definition->options['choices'] ?? [];
+$selected = is_array($value) ? array_map('strval', $value) : [];
+?>
+<select
+    name="<?= s($name) ?>[]"
+    id="<?= s($id) ?>"
+    multiple
+    size="<?= min(6, max(2, count($choices))) ?>"
+    <?= $disabled ? 'disabled' : '' ?>
+>
+    <?php foreach ($choices as $key => $label): ?>
+        <option value="<?= s((string) $key) ?>" <?= in_array((string) $key, $selected, true) ? 'selected' : '' ?>>
+            <?= s(t((string) $label)) ?>
+        </option>
+    <?php endforeach ?>
+</select>

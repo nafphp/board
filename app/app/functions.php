@@ -77,3 +77,17 @@ if (!function_exists('Nafinity\slot')) {
         return app()->container()->get(SlotRenderer::class)->render($slot, $context);
     }
 }
+
+if (!function_exists('Nafinity\settings')) {
+    /**
+     * Declared settings for the signed-in person
+     *
+     * Other contexts are chosen explicitly: `settings()->forProject($id)`,
+     * `->forProjectUser($id)` and `->forApplication()` each return their own
+     * instance, so no URL parameter can quietly change which values are meant.
+     */
+    function settings(): Settings
+    {
+        return new Settings();
+    }
+}

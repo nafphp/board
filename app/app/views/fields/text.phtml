@@ -1,0 +1,15 @@
+<?php
+
+use function Naf\View\s;
+
+?>
+<input
+    type="<?= $definition->sensitive ? 'password' : 'text' ?>"
+    name="<?= s($name) ?>"
+    id="<?= s($id) ?>"
+    <?= ($definition->options['max'] ?? null) ? 'maxlength="' . (int) $definition->options['max'] . '"' : '' ?>
+    <?= $required ? 'required' : '' ?>
+    <?= $disabled ? 'disabled' : '' ?>
+    value="<?= $definition->sensitive ? '' : s((string) ($value ?? '')) ?>"
+    <?= $definition->sensitive ? 'autocomplete="new-password" placeholder="••••••"' : '' ?>
+/>
