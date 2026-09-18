@@ -3,7 +3,7 @@ use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
-use function Nafinity\partial;
+use function Nafinity\choice;
 
 $zones = ['Europe/Berlin', 'Europe/London', 'America/New_York', 'UTC'];
 ?>
@@ -11,7 +11,7 @@ $zones = ['Europe/Berlin', 'Europe/London', 'America/New_York', 'UTC'];
     <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
     <label>
         <?= s(t('Darstellung')) ?>
-        <?= partial('components/choice', [
+        <?= choice([
             'name'    => 'theme',
             'label'   => 'Darstellung',
             'value'   => $preferences['theme'],
@@ -20,7 +20,7 @@ $zones = ['Europe/Berlin', 'Europe/London', 'America/New_York', 'UTC'];
     </label>
     <label>
         <?= s(t('Sprache')) ?>
-        <?= partial('components/choice', [
+        <?= choice([
             'name'    => 'locale',
             'label'   => 'Sprache',
             'value'   => $preferences['locale'],
@@ -29,7 +29,7 @@ $zones = ['Europe/Berlin', 'Europe/London', 'America/New_York', 'UTC'];
     </label>
     <label>
         <?= s(t('Zeitzone')) ?>
-        <?= partial('components/choice', [
+        <?= choice([
             'name'        => 'timezone',
             'label'       => 'Zeitzone',
             'value'       => $preferences['timezone'],

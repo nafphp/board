@@ -2,7 +2,7 @@
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
-use function Nafinity\partial;
+use function Nafinity\choice;
 
 ?>
 <table class="member-table">
@@ -32,7 +32,7 @@ use function Nafinity\partial;
     </label>
     <label>
         <?= s(t('Rolle')) ?>
-        <?= partial('components/choice', [
+        <?= choice([
             'name'        => 'role',
             'label'       => 'Rolle',
             'value'       => '',

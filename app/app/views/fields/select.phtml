@@ -1,7 +1,7 @@
 <?php
 
 use function Naf\I18n\t;
-use function Nafinity\partial;
+use function Nafinity\choice;
 
 $choices = $definition->options['choices'] ?? [];
 $options = [];
@@ -12,7 +12,7 @@ foreach ($choices as $key => $label) {
     $options[(string) $key] = t((string) $label);
 }
 ?>
-<?= partial('components/choice', [
+<?= choice([
     'name'     => $name,
     'label'    => $definition->label ?: $name,
     'value'    => $value === null ? '' : (string) $value,

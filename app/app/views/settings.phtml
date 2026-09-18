@@ -9,6 +9,7 @@ use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\choice;
 use function Nafinity\extensions;
 use function Nafinity\partial;
 use function Nafinity\template;
@@ -102,7 +103,7 @@ foreach (['user', 'project', 'project_user'] as $cardScope) {
     </div>
     <label>
         Projekt wechseln
-        <?= partial('components/choice', [
+        <?= choice([
             'name'        => 'settings_project',
             'label'       => 'Projekt für Einstellungen',
             'value'       => $currentProject,

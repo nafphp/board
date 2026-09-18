@@ -136,8 +136,10 @@ final class SettingsApiController
      * Turn a native form's strings into what the declared types expect
      *
      * A form sends everything as text, so a boolean arrives as `0` or `1` and a
-     * multiselect as a list. Anything unknown is passed through untouched and
-     * rejected by the type, never silently corrected.
+     * multiselect as a list. A multiselect with nothing ticked sends only its
+     * empty clear field, which is an empty list rather than a list holding an
+     * empty string. Anything unknown is passed through untouched and rejected by
+     * the type, never silently corrected.
      *
      * @param SettingsContext $context Scope and owner
      * @param array           $values  The submitted values
@@ -154,11 +156,13 @@ final class SettingsApiController
         foreach ($values as $key => $value) {
             $definition = is_string($key) ? $registry->find($context->scope, $key) : null;
 
-            $coerced[$key] = $definition instanceof SettingDefinition
+            $isLooseMultiselect = $definition instanceof SettingDefinition
                 && $definition->type === 'multiselect'
-                && !is_array($value)
-                    ? [$value]
-                    : $value;
+                && !is_array($value);
+
+            $coerced[$key] = $isLooseMultiselect
+                ? ($value === '' ? [] : [$value])
+                : $value;
         }
 
         return $coerced;

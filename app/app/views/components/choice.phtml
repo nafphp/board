@@ -52,6 +52,7 @@ $disabled ??= false;
 
 $listId   = 'choice-list-' . preg_replace('/[^A-Za-z0-9_-]/', '-', $name);
 $selected = $multiple ? array_map('strval', (array) $value) : [];
+$loop     = 0;
 ?>
 <div
     class="choice <?= s($class) ?>"
@@ -63,10 +64,16 @@ $selected = $multiple ? array_map('strval', (array) $value) : [];
 >
     <div data-choice-native>
     <?php if ($multiple): ?>
+        <?php // The clear field comes first on purpose: PHP turns name and name[]
+              // into one array when the bare name is parsed before the list, and a
+              // submission with nothing ticked then carries the empty value alone.?>
         <input type="hidden" name="<?= s($name) ?>" value="" />
         <div class="ticket-options" role="group" aria-label="<?= s(t($label)) ?>">
             <?php foreach ($options as $key => $text): ?>
-                <label><input type="checkbox" name="<?= s($name) ?>[]" value="<?= s($key) ?>" <?= in_array((string) $key, $selected, true) ? 'checked' : '' ?> /> <?= s($text) ?></label>
+                <?php // A wrapping <label for> needs one labelable target, and the
+                      // first option is the one it would reach anyway.?>
+                <label><input type="checkbox" <?= $loop === 0 ? 'id="' . s($id) . '" ' : '' ?>name="<?= s($name) ?>[]" value="<?= s($key) ?>" <?= in_array((string) $key, $selected, true) ? 'checked' : '' ?> <?= $disabled ? 'disabled' : '' ?> /> <?= s($text) ?></label>
+                <?php $loop++ ?>
             <?php endforeach ?>
             <?php if (!$options): ?><span class="muted"><?= s(t('Keine Einträge vorhanden.')) ?></span><?php endif ?>
         </div>

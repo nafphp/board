@@ -5,6 +5,7 @@ use App\Support\Icon;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\choice;
 use function Nafinity\partial;
 use function Nafinity\slot;
 
@@ -45,7 +46,7 @@ use function Nafinity\slot;
                             <input type="hidden" name="_csrf" value="<?= s($slot->token) ?>" />
                             <input type="hidden" name="version" value="<?= (int) $slot->ticket['version'] ?>" />
                             <label><span class="meta-caption"><?= s(t('Zielprojekt')) ?></span>
-                                <?= partial('components/choice', [
+                                <?= choice([
                                     'name'    => 'project_id',
                                     'label'   => 'Zielprojekt',
                                     'value'   => '',

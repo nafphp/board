@@ -8,6 +8,7 @@ use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\asset;
 use function Naf\View\s;
+use function Nafinity\choice;
 use function Nafinity\extensions;
 use function Nafinity\partial;
 use function Nafinity\slot;
@@ -176,7 +177,7 @@ $hintUrl = $current
                     </label>
                     <label>
                         <?= s(t('Schätzung')) ?>
-                        <?= partial('components/choice', [
+                        <?= choice([
                             'name'    => 'estimation_scale',
                             'label'   => 'Schätzung',
                             'value'   => '',

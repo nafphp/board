@@ -67,6 +67,36 @@ if (!function_exists('Nafinity\partial')) {
     }
 }
 
+if (!function_exists('Nafinity\choice')) {
+    /**
+     * Render the reusable select
+     *
+     * The native control inside stays the form value and the fallback without
+     * JavaScript; see docs/Extensibility.md for every argument.
+     *
+     * @param array $arguments At least name, label and options
+     */
+    function choice(array $arguments): string
+    {
+        return partial('components/choice', $arguments);
+    }
+}
+
+if (!function_exists('Nafinity\field')) {
+    /**
+     * Render a labelled form field
+     *
+     * One entry point for the ordinary controls; `select` and `multiselect`
+     * hand over to choice(). A package uses the same helper as the host.
+     *
+     * @param array $arguments At least label and name
+     */
+    function field(array $arguments): string
+    {
+        return partial('components/field', $arguments);
+    }
+}
+
 if (!function_exists('Nafinity\slot')) {
     /**
      * Render everything contributed to a named slot

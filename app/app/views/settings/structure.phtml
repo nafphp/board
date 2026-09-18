@@ -4,7 +4,7 @@ use App\Support\Icon;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
-use function Nafinity\partial;
+use function Nafinity\choice;
 
 ?>
 <?php foreach ($items as $item): ?>
@@ -30,7 +30,7 @@ use function Nafinity\partial;
             <div class="form-grid">
                 <label>
                     Ticketstatus beim Verschieben
-                    <?= partial('components/choice', [
+                    <?= choice([
                         'name'    => 'closes_tickets',
                         'label'   => 'Wirkung',
                         'value'   => (string) (int) $item['closes_tickets'],

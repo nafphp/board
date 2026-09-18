@@ -129,6 +129,25 @@ final class ExtensionAProvider implements ExtensionProviderInterface
             false,
             900,
         ));
+        // A multiselect, so the generic form's list control is exercised by the
+        // acceptance run rather than only existing as a field type.
+        $context->settings()->add(new SettingDefinition(
+            'example.reports.columns',
+            'project',
+            'example.reports',
+            'Spalten im Bericht',
+            'multiselect',
+            ['title', 'assignee'],
+            200,
+            ['choices' => [
+                'title'    => 'Titel',
+                'assignee' => 'Verantwortliche',
+                'due'      => 'Fällig',
+                'points'   => 'Schätzung',
+            ]],
+            null,
+            self::PERMISSION,
+        ));
     }
 
     private function ticket(ExtensionContext $context): void

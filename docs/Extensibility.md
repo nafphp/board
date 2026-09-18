@@ -19,7 +19,7 @@ acceptance run: [`examples/nafinity-extension-a`](../examples/nafinity-extension
 7. [Settings](#settings)
 8. [Ticket metadata](#ticket-metadata)
 9. [Ticket widgets and the browser lifecycle](#ticket-widgets-and-the-browser-lifecycle)
-10. [The select component](#the-select-component)
+10. [Form components](#form-components)
 11. [Views](#views)
 12. [Board filters](#board-filters)
 13. [Estimation, activity and AI](#estimation-activity-and-ai)
@@ -642,12 +642,12 @@ export function mount(root, context, api) {
 ([`fragment.js`](../app/public/assets/fragment.js)). Widgets are reconciled **by their ids**, so
 new ones appear and removed ones disappear; a node with an open draft stays mounted.
 
-## The select component
+## Form components
 
 Every select in the application is one partial, and a contributed template can use it too:
 
 ```php
-<?= partial('components/choice', [
+<?= choice([
     'name'        => 'example.region',
     'label'       => 'Region',
     'value'       => $slot->value('example.region'),
@@ -676,6 +676,32 @@ A list shorter than `searchFrom` gets no search box, and keyboard focus then lan
 popup instead of the hidden input. Inside a ticket's inline fields the trigger renders
 compact and wraps; everywhere else it presents itself exactly like the native control it
 covers.
+
+A whole labelled field — label, control and hint — is `field()`, which hands `select` and
+`multiselect` straight to `choice()`:
+
+```php
+<?= field([
+    'label'      => 'Region',
+    'name'       => 'example.region',
+    'type'       => 'select',
+    'value'      => $current,
+    'options'    => ['eu' => 'Europe', 'us' => 'United States'],
+    'hint'       => 'Decides which holidays the report skips.',
+    'attributes' => ['maxlength' => 40],
+    'choice'     => ['searchLabel' => 'Search regions'],
+]) ?>
+```
+
+Its `type` covers `text`, `email`, `url`, `password`, `number`, `color`, `date`, `search`,
+`textarea`, `checkbox`, `select` and `multiselect`; `attributes` passes anything else through to
+the control, and `choice` passes further arguments to the select. Both helpers live in
+`Nafinity\`, so a package writes the same call the host does.
+
+A `multiselect` renders checkboxes preceded by an empty field of the same name. PHP folds
+`name` and `name[]` into one array when the bare name is parsed first, so a submission with
+nothing ticked arrives as an empty string, and the settings controller reads that as an empty
+list rather than a list holding an empty string.
 
 The browser side is `app/public/assets/choice.js`. It enhances every `[data-choice]` on load,
 and exports `enhanceChoices(scope)`, `openChoice(root)`, `closeChoices(scope)` and

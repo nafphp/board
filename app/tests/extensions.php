@@ -725,6 +725,21 @@ test('T09 the extensions declare settings that read and write', function () use 
     denied(403, fn() => settings()->forProject($project)->save(['example.reports.limit' => 50]));
 });
 
+test('T09 a multiselect stores a list, and an empty submission clears it', function () use ($project) {
+    $definition = extensions()->settings()->find('project', 'example.reports.columns');
+
+    check($definition !== null, 'multiselect definition missing');
+    check($definition->default === ['title', 'assignee'], 'default wrong');
+
+    // The generic form posts the list plus an empty clear field, so PHP hands the
+    // controller an array when something is ticked and an empty string when not.
+    $reader = settings()->forProject($project);
+    check($reader->get('example.reports.columns') === ['title', 'assignee'], 'default not read back');
+
+    // Writing needs the extension's own right, exactly as the other project value.
+    denied(403, fn() => $reader->save(['example.reports.columns' => ['due']]));
+});
+
 test('T09 extension B moved one field to its own card', function () {
     $definition = extensions()->settings()->find('project', 'example.reports.limit');
 

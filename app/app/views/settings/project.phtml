@@ -5,7 +5,7 @@ use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
 use function Nafinity\extensions;
-use function Nafinity\partial;
+use function Nafinity\field;
 
 $scale    = Estimation::scale($project['estimation_scale'] ?? null);
 $offScale = (int) ($offScale ?? 0);
@@ -27,45 +27,34 @@ if (!$knownScale) {
 <form method="post" data-enhanced action="<?= s(route('project.update', ['project' => $projectId])) ?>">
     <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
     <fieldset <?= !$scope->allows('manage') ? 'disabled' : '' ?>>
-        <label>
-            <?= s(t('Name')) ?>
-            <input name="name" required maxlength="120" value="<?= s($project['name']) ?>" />
-        </label>
-        <label>
-            <?= s(t('Beschreibung')) ?>
-            <textarea name="description" rows="3"><?= s($project['description']) ?></textarea>
-        </label>
+        <?= field(['label' => 'Name', 'name' => 'name', 'value' => $project['name'], 'required' => true, 'attributes' => ['maxlength' => 120]]) ?>
+        <?= field([
+            'label'      => 'Beschreibung',
+            'name'       => 'description',
+            'type'       => 'textarea',
+            'value'      => $project['description'],
+            'attributes' => ['rows' => 3],
+        ]) ?>
         <div class="form-grid">
-            <label>
-                <?= s(t('Farbe')) ?>
-                <input type="color" name="color" value="<?= s($project['color']) ?>" />
-            </label>
-            <label>
-                <?= s(t('Symbol')) ?>
-                <input name="icon" maxlength="2" value="<?= s($project['icon']) ?>" />
-            </label>
-            <label>
-                <?= s(t('Ticketkürzel')) ?>
-                <input
-                    name="ticket_key"
-                    maxlength="6"
-                    pattern="[A-Za-z0-9]{1,6}"
-                    value="<?= s($project['ticket_key']) ?>"
-                />
-                <small><?= s(t('Steht vor jeder Ticketnummer und in ihrer Adresse.')) ?></small>
-            </label>
-        </div>
-        <label>
-            <?= s(t('Schätzung')) ?>
-            <?= partial('components/choice', [
-                'name'        => 'estimation_scale',
-                'label'       => 'Schätzung',
-                'value'       => $selectedScale,
-                'options'     => $scaleOptions,
-                'searchLabel' => 'Skalen suchen',
+            <?= field(['label' => 'Farbe', 'name' => 'color', 'type' => 'color', 'value' => $project['color']]) ?>
+            <?= field(['label' => 'Symbol', 'name' => 'icon', 'value' => $project['icon'], 'attributes' => ['maxlength' => 2]]) ?>
+            <?= field([
+                'label'      => 'Ticketkürzel',
+                'name'       => 'ticket_key',
+                'value'      => $project['ticket_key'],
+                'hint'       => 'Steht vor jeder Ticketnummer und in ihrer Adresse.',
+                'attributes' => ['maxlength' => 6, 'pattern' => '[A-Za-z0-9]{1,6}'],
             ]) ?>
-            <small><?= s(t('Gilt für alle Tickets des Projekts. Nur eine Skala gleichzeitig; das Board summiert sie über jeder Spalte.')) ?></small>
-        </label>
+        </div>
+        <?= field([
+            'label'   => 'Schätzung',
+            'name'    => 'estimation_scale',
+            'type'    => 'select',
+            'value'   => $selectedScale,
+            'options' => $scaleOptions,
+            'hint'    => 'Gilt für alle Tickets des Projekts. Nur eine Skala gleichzeitig; das Board summiert sie über jeder Spalte.',
+            'choice'  => ['searchLabel' => 'Skalen suchen'],
+        ]) ?>
         <?php if ($offScale): ?>
             <p class="settings-hint">
                 <?= s(t(':count Tickets tragen eine Schätzung, die diese Skala nicht anbietet. Sie bleiben erhalten und sind markiert.', ['count' => $offScale])) ?>

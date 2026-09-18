@@ -1,7 +1,7 @@
 <?php
 use function Naf\I18n\t;
 use function Naf\View\s;
-use function Nafinity\partial;
+use function Nafinity\choice;
 
 $creating ??= false;
 ?>
@@ -23,7 +23,7 @@ $creating ??= false;
         <?php endif ?>
             <label class="sr-only" for="edit-<?= s($name) ?>"><?= s(t($label)) ?></label>
             <?php if ($type === 'select' || in_array($name, ['column_id', 'assignee_ids'], true)): ?>
-                <?= partial('components/choice', [
+                <?= choice([
                     'name'        => $name,
                     'label'       => $label,
                     'value'       => $value,

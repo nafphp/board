@@ -1,6 +1,6 @@
 <?php use function Naf\I18n\t;
 use function Naf\View\s;
-use function Nafinity\partial;
+use function Nafinity\choice;
 
 ?>
 <form data-ai-settings data-user="<?= s($user->getIdentifier()) ?>" data-project="<?= (int) ($projectId ?? 0) ?>">
@@ -23,7 +23,7 @@ use function Nafinity\partial;
     </div>
     <label>
         Chat-Modell
-        <?= partial('components/choice', [
+        <?= choice([
             'name'        => 'model',
             'label'       => 'Chat-Modell',
             'value'       => '',
@@ -36,7 +36,7 @@ use function Nafinity\partial;
     </label>
     <label>
         Embedding-Modell (optional)
-        <?= partial('components/choice', [
+        <?= choice([
             'name'        => 'embedding_model',
             'label'       => 'Embedding-Modell',
             'value'       => '',

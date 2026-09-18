@@ -194,6 +194,35 @@ test('T13 the settings endpoints answer with values only', function () use ($pro
     check($unknown['status'] === 404, 'unknown key status ' . $unknown['status']);
 });
 
+test('T13 a native form clears a multiselect with its empty field alone', function () use ($project) {
+    $csrf = login('reviewer@example.test');
+    $json = ['Accept: application/json', 'Content-Type: application/json', 'X-CSRF-Token: ' . $csrf];
+    $form = ['Content-Type: application/x-www-form-urlencoded'];
+
+    $set = request(
+        '/api/projects/' . $project . '/settings',
+        ['values' => ['example.reports.columns' => ['due', 'points']]],
+        $json,
+    );
+    check($set['status'] === 200, 'set status ' . $set['status']);
+
+    // With nothing ticked the generic form sends only the empty clear field, so
+    // the controller sees a string where the type wants a list.
+    $cleared = request(
+        '/api/projects/' . $project . '/settings',
+        ['_csrf' => $csrf, 'values' => ['example.reports.columns' => '']],
+        $form,
+    );
+    check(in_array($cleared['status'], [200, 303], true), 'clear status ' . $cleared['status']);
+
+    $read   = request('/api/projects/' . $project . '/settings?key=example.reports.columns', null, $json);
+    $values = json_decode($read['body'], true)['values'] ?? [];
+    check(
+        ($values['example.reports.columns'] ?? null) === [],
+        'the empty submission did not clear the list: ' . json_encode($values),
+    );
+});
+
 test('T13 a settings write without a token is refused', function () use ($project) {
     login('reviewer@example.test');
     $json    = ['Accept: application/json', 'Content-Type: application/json'];
