@@ -119,6 +119,13 @@ function error(form, message, conflict = false) {
   }
   box.classList.add('visible');
 }
+// A contributed field is named metadata[example.external_id]; the dots and
+// brackets are fine inside a quoted attribute selector, a quote or a backslash
+// is not, so both are escaped before the name goes into one.
+function attributeValue(name) {
+  return String(name).replace(/["\\]/g, '\\$&');
+}
+
 async function beginEdit(field) {
   const workspace = field.closest('.ticket-workspace');
   if (!field.querySelector('form') || field.classList.contains('is-editing')) return;
@@ -129,7 +136,7 @@ async function beginEdit(field) {
   if (active && !(await finishEdit(active, true))) return;
   if (saving.has(workspace)) await saving.get(workspace);
   if (editIntents.get(workspace) !== intent || !workspace.isConnected) return;
-  field = workspace.querySelector(`[data-inline-field="${name}"]`);
+  field = workspace.querySelector(`[data-inline-field="${attributeValue(name)}"]`);
   if (!field) return;
   const form = field.querySelector('form');
   field.classList.add('is-editing');

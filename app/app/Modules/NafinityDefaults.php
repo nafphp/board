@@ -25,6 +25,7 @@ final class NafinityDefaults implements ExtensionProviderInterface
         CoreActivity::class,
         CoreNavigation::class,
         CoreSettings::class,
+        CoreTicket::class,
     ];
 
     public function register(ExtensionContext $context): void

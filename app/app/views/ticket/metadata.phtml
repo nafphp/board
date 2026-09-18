@@ -1,0 +1,54 @@
+<?php
+
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+/**
+ * One contributed ticket field, in the sidebar group it belongs to.
+ *
+ * It uses the same inline field partial as the core fields, so auto-save,
+ * drafts, keyboard handling and the version check are the ones that already
+ * exist rather than a second, parallel implementation.
+ */
+$display = $value === null || $value === ''
+    ? '<span class="muted">' . s(t('Nicht festgelegt')) . '</span>'
+    : s(is_array($value) ? implode(', ', array_map('strval', $value)) : (string) $value);
+$choices = $definition->options['choices'] ?? [];
+// The title's own rules — required, at most 200 characters — belong to the title,
+// so a contributed text field uses the plain single-line input instead.
+$type = match ($definition->type) {
+    'boolean'     => 'select',
+    'integer'     => 'number',
+    'date'        => 'date',
+    'select'      => 'select',
+    'multiselect' => 'multiple',
+    'textarea'    => 'longtext',
+    default       => 'line',
+};
+
+if ($definition->type === 'boolean') {
+    $choices = ['0' => t('Nein'), '1' => t('Ja')];
+    $value   = $value ? '1' : '0';
+    $display = s($choices[$value]);
+} elseif ($choices) {
+    $display = $value === null || !isset($choices[$value])
+        ? $display
+        : s(t((string) $choices[$value]));
+}
+?>
+<dt data-extension-id="<?= s($definition->key) ?>"><?= s(t($definition->label)) ?></dt>
+<dd>
+    <?= $field(
+        'metadata[' . $definition->key . ']',
+        $definition->label,
+        $type,
+        $value,
+        $display,
+        $choices,
+        [
+            'editable'  => $editable && !$definition->readOnly,
+            'required'  => $definition->required,
+            'maxlength' => $definition->options['max'] ?? null,
+        ],
+    ) ?>
+</dd>

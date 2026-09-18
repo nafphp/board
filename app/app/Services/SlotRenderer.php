@@ -73,17 +73,21 @@ final class SlotRenderer
     /**
      * Render a slot into HTML
      *
+     * A view that already holds the data its own contributions need passes it
+     * as $extra; a contribution's own provider still wins over it.
+     *
      * @param string    $slot    Slot name
      * @param UiContext $context The authorized rendering context
+     * @param array     $extra   Data the surrounding view already has
      */
-    public function render(string $slot, UiContext $context): string
+    public function render(string $slot, UiContext $context, array $extra = []): string
     {
         $html = '';
 
         foreach ($this->items($slot, $context) as $entry) {
             $html .= $entry['kind'] === 'navigation'
                 ? $this->navigation($entry['item'], $context)
-                : $this->template($entry['item'], $entry['data'], $context);
+                : $this->template($entry['item'], [...$extra, ...$entry['data']], $context);
         }
 
         return $html;

@@ -18,9 +18,11 @@ use App\Services\RoleService;
 use App\Services\SettingsService;
 use App\Services\SlotRenderer;
 use App\Services\TicketMetadataReader;
+use App\Services\TicketMetadataWriter;
 use App\Services\TicketService;
 use App\Services\TimerService;
 use App\Support\Settings\DatabaseSettingsStore;
+use App\Support\Settings\PreferenceStore;
 use App\Support\Ticket\DatabaseTicketMetadataStore;
 use Nafinity\Contracts\AccessInterface;
 use Nafinity\Contracts\AccountServiceInterface;
@@ -78,7 +80,9 @@ final class ServiceDefaults
 
     /** Services that have no contract of their own but are still shared. */
     private const array SHARED = [
+        PreferenceStore::class,
         SlotRenderer::class,
+        TicketMetadataWriter::class,
     ];
 
     /**

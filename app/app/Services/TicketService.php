@@ -30,6 +30,7 @@ final class TicketService implements TicketServiceInterface
         private AccessInterface $access,
         private ProjectServiceInterface $projects,
         private TimerServiceInterface $timers,
+        private TicketMetadataWriter $metadata,
     ) {
     }
 
@@ -37,8 +38,9 @@ final class TicketService implements TicketServiceInterface
     {
         $fields = $this->fields($data);
 
-        return $this->access->write($project, 'write', function () use ($project, $data, $fields) {
-            $board = $this->board($project);
+        return $this->access->write($project, 'write', function ($scope) use ($project, $data, $fields) {
+            $metadata = $this->metadata->prepare($scope, $data, true);
+            $board    = $this->board($project);
             $this->revision($board, $data);
             $column = $this->target(
                 $project,
@@ -76,13 +78,15 @@ final class TicketService implements TicketServiceInterface
             ]);
             $this->entityManager->save($ticket);
             $id = (int) $ticket->getId();
+            $this->metadata->write($project, $id, $metadata);
             $this->pivots($project, $id, $data);
             $this->pdo
                 ->prepare('UPDATE boards SET next_number=next_number+1 WHERE id=?')
                 ->execute([$board['id']]);
             $this->changed($project, $id, 'ticket.created', [
-                'title'  => $fields['title'],
-                'number' => (string) $board['next_number'],
+                'title'    => $fields['title'],
+                'number'   => (string) $board['next_number'],
+                'metadata' => array_keys($metadata['values']),
             ]);
 
             return $id;
@@ -91,7 +95,7 @@ final class TicketService implements TicketServiceInterface
 
     public function update(int $project, int $id, array $data): void
     {
-        $this->access->write($project, 'write', function () use ($project, $id, $data) {
+        $this->access->write($project, 'write', function ($scope) use ($project, $id, $data) {
             $row = $this->ticket($project, $id);
             // Partial updates retain all other attributes inside the existing project lock.
             $merged = array_replace($row, $data);
@@ -104,7 +108,10 @@ final class TicketService implements TicketServiceInterface
             if ($row['archived_at'] !== null) {
                 throw new Failure('Ein archiviertes Ticket kann nicht bearbeitet werden.');
             }
-            $changed = [];
+            // Metadata is validated before anything is written, so an invalid value
+            // stops the whole change instead of leaving half a ticket behind.
+            $metadata = $this->metadata->prepare($scope, $data, false);
+            $changed  = [];
             foreach ($fields as $key => $value) {
                 if ($row[$key] !== $value) {
                     $changed[] = $key;
@@ -117,8 +124,12 @@ final class TicketService implements TicketServiceInterface
                 'updated_at' => gmdate('Y-m-d H:i:s'),
             ]);
             $this->entityManager->save($ticket);
+            $this->metadata->write($project, $id, $metadata);
             $this->pivots($project, $id, $data);
-            $this->changed($project, $id, 'ticket.updated', ['fields' => $changed]);
+            $this->changed($project, $id, 'ticket.updated', [
+                'fields'   => $changed,
+                'metadata' => [...array_keys($metadata['values']), ...$metadata['resetKeys']],
+            ]);
         });
     }
 

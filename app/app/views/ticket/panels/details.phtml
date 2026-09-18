@@ -1,0 +1,31 @@
+<?php
+
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+use function Nafinity\partial;
+
+/**
+ * The details group: priority, swimlane, labels and the accent colour.
+ *
+ * Contributed fields of this group are rendered after the ones Nafinity brings,
+ * in the order the registry gives them.
+ */
+?>
+<section class="ticket-sidebar-group">
+    <h2><?= s(t('Details')) ?></h2>
+    <dl class="ticket-meta">
+        <dt><?= s(t('Priorität')) ?></dt><dd><?= $field('priority', 'Priorität', 'select', $ticket['priority'], '<span class="priority-value priority-' . s($ticket['priority']) . '">● ' . s($priorities[$ticket['priority']]) . '</span>', $priorities) ?></dd>
+        <dt><?= s(t('Swimlane')) ?></dt><dd><?= $field('swimlane_id', 'Swimlane', 'select', $ticket['swimlane_id'], s(array_column($swimlanes, 'name', 'id')[$ticket['swimlane_id']]), array_column($swimlanes, 'name', 'id'), ['action' => route('ticket.move', $params), 'hidden' => ['column_id' => $ticket['column_id']]]) ?></dd>
+        <dt>Labels</dt><dd><?= $field('label_ids', 'Labels', 'multiple', $selected_labels, $labelDisplay ?: $empty, array_column($labels, 'name', 'id')) ?></dd>
+        <dt><?= s(t('Akzentfarbe')) ?></dt><dd><?= $field('color', 'Akzentfarbe', 'color', $ticket['color'], '<span class="ticket-color" style="background:' . s($ticket['color']) . '"></span><span class="muted small">' . s($ticket['color']) . '</span>') ?></dd>
+    <?php foreach ($metaFields['details'] ?? [] as $metaKey => $metaField): ?>
+        <?= partial('ticket/metadata', [
+            'definition' => $metaField,
+            'value'      => $metadata[$metaKey] ?? $metaField->default,
+            'field'      => $field,
+            'editable'   => $editable,
+        ]) ?>
+    <?php endforeach ?>
+    </dl>
+</section>

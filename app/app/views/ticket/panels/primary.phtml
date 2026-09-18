@@ -1,0 +1,75 @@
+<?php
+
+use App\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+use function Nafinity\partial;
+
+/**
+ * The status group: which column a ticket sits in and who is on it.
+ *
+ * Contributed fields of this group are rendered after the ones Nafinity brings,
+ * in the order the registry gives them.
+ */
+?>
+<div class="ticket-sidebar-group ticket-primary-meta">
+    <?php if (!$isNew && $editable): ?>
+        <details class="ticket-menu" data-menu>
+            <summary aria-label="<?= s(t('Weitere Aktionen')) ?>"><?= Icon::mark('more_horiz') ?></summary>
+            <div class="menu-sheet">
+                <form method="post" data-ticket-form action="<?= s(route('ticket.state', $params)) ?>">
+                    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                    <input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" />
+                    <button name="action" value="<?= $ticket['status'] === 'closed' ? 'reopen' : 'close' ?>">
+                        <?= Icon::mark($ticket['status'] === 'closed' ? 'radio_button_unchecked' : 'check_circle', 'sm') ?>
+                        <?= s($ticket['status'] === 'closed' ? t('Ticket wieder öffnen') : t('Ticket schließen')) ?>
+                    </button>
+                    <div class="form-errors" role="alert"></div>
+                </form>
+                <form method="post" data-ticket-form action="<?= s(route('ticket.state', $params)) ?>">
+                    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                    <input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" />
+                    <button name="action" value="<?= $ticket['archived_at'] ? 'restore' : 'archive' ?>">
+                        <?= Icon::mark($ticket['archived_at'] ? 'folder_open' : 'delete', 'sm') ?>
+                        <?= s($ticket['archived_at'] ? t('Aus Archiv wiederherstellen') : t('Ticket archivieren')) ?>
+                    </button>
+                    <div class="form-errors" role="alert"></div>
+                </form>
+                <?php if ($targets): ?>
+                    <details class="menu-move">
+                        <summary><?= Icon::mark('drive_file_move', 'sm') ?><?= s(t('In ein anderes Projekt verschieben')) ?></summary>
+                        <form method="post" data-ticket-form data-leaves-page action="<?= s(route('ticket.transfer', $params)) ?>">
+                            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                            <input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" />
+                            <label><span class="meta-caption"><?= s(t('Zielprojekt')) ?></span>
+                                <select name="project_id" required>
+                                    <?php foreach ($targets as $target): ?>
+                                        <option value="<?= (int) $target['id'] ?>"><?= s($target['name']) ?> · <?= s($target['ticket_key']) ?></option>
+                                    <?php endforeach ?>
+                                </select>
+                            </label>
+                            <p class="muted small"><?= s(t('Neue Nummer, gleicher Inhalt: Kommentare, Anhänge, Verlauf und erfasste Zeit kommen mit.')) ?></p>
+                            <p class="muted small"><?= s(t('Labels, Verknüpfungen und Zuständige ohne Zugriff bleiben zurück.')) ?></p>
+                            <button class="button subtle"><?= s(t('Verschieben')) ?></button>
+                            <div class="form-errors" role="alert"></div>
+                        </form>
+                    </details>
+                <?php endif ?>
+            </div>
+        </details>
+    <?php endif ?>
+    <div class="meta-caption"><?= s(t('Status')) ?></div>
+    <?= $field('column_id', 'Spalte', 'select', $ticket['column_id'], '<span class="column-value">' . s(array_column($columns, 'name', 'id')[$ticket['column_id']]) . '' . Icon::mark('expand_more', 'sm') . '</span>', array_column($columns, 'name', 'id'), ['action' => route('ticket.move', $params), 'hidden' => ['swimlane_id' => $ticket['swimlane_id']]]) ?>
+    <div class="meta-caption"><?= s(t('Verantwortliche')) ?></div>
+    <?= $field('assignee_ids', 'Verantwortliche', 'multiple', $selected_assignees, $assigneeDisplay ?: '<span class="muted">' . s(t('Nicht zugewiesen')) . '</span>', $memberNames) ?>
+<?php foreach ($metaFields['primary'] ?? [] as $metaKey => $metaField): ?>
+    <?= partial('ticket/metadata', [
+        'definition' => $metaField,
+        'value'      => $metadata[$metaKey] ?? $metaField->default,
+        'field'      => $field,
+        'editable'   => $editable,
+    ]) ?>
+<?php endforeach ?>
+</div>

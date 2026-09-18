@@ -34,6 +34,7 @@ use function Naf\json;
 use function Naf\redirect;
 use function Naf\request;
 use function Naf\View\render;
+use function Nafinity\extensions;
 use function Nafinity\template;
 
 final class AppController
@@ -160,6 +161,7 @@ final class AppController
                 'title' => 'Ticket',
                 ...$boardData,
                 ...$details,
+                'mode'     => 'detail',
                 'fragment' => $fragment,
                 'timer'    => $this->timers->state($projectId, $details['ticket']['id']),
                 'targets'  => $this->query->transferTargets($projectId),
@@ -176,10 +178,17 @@ final class AppController
             return $this->page('ticket', [
                 'title' => 'Neues Ticket',
                 ...$this->query->board($projectId),
+                'mode'               => 'create',
                 'ticket'             => null,
                 'fragment'           => (request()->getQueryParams()['fragment'] ?? '') === '1',
                 'selected_labels'    => [],
                 'selected_assignees' => [],
+                'metadata'           => [],
+                'metaDefinitions'    => array_filter(
+                    extensions()->ticketFields()->metadata(),
+                    static fn($field) => $field->showOnCreate,
+                ),
+                'metaUnknown' => [],
             ]);
         });
     }

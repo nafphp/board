@@ -42,7 +42,8 @@ final readonly class TicketFieldDefinition
      * @param string      $writePermission Project action required to write
      * @param array       $options         Type options
      * @param bool        $showOnCreate    Whether the create form offers it
-     * @param string|null $adapter         Container id of a TicketFieldAdapterInterface
+     * @param string|null $adapter         Existing source this field reads from; null
+     *                                     means the field is stored as ticket metadata
      */
     public function __construct(
         public string $key,

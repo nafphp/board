@@ -1,0 +1,81 @@
+<?php
+
+use App\Domain\Estimation;
+use App\Support\Duration;
+
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+use function Nafinity\partial;
+
+/**
+ * The planning group: estimate, dates and the time actually counted.
+ *
+ * Contributed fields of this group are rendered after the ones Nafinity brings,
+ * in the order the registry gives them.
+ */
+?>
+<section class="ticket-sidebar-group">
+    <h2><?= s(t('Planung & Zeit')) ?></h2>
+    <dl class="ticket-meta">
+        <?php if ($estimating): ?><dt><?= s(t(Estimation::LABELS[$scale])) ?></dt><dd><?= $field('estimate_points', Estimation::LABELS[$scale], 'select', $points, $pointDisplay, $pointOptions) ?></dd><?php endif ?>
+        <dt><?= s(t('Startdatum')) ?></dt><dd><?= $field('start_date', 'Startdatum', 'date', $ticket['start_date'], $ticket['start_date'] ? s(date('d.m.Y', strtotime($ticket['start_date']))) : $empty) ?></dd>
+        <dt><?= s(t('Fällig am')) ?></dt><dd><?= $field('due_date', 'Fällig am', 'date', $ticket['due_date'], $ticket['due_date'] ? s(date('d.m.Y', strtotime($ticket['due_date']))) : $empty) ?></dd>
+        <dt><?= s(t('Geschätzt')) ?></dt><dd><?= $field('estimate_minutes', 'Geschätzt', 'duration', $ticket['estimate_minutes'] === null ? '' : Duration::format((int) $ticket['estimate_minutes']), s($duration($ticket['estimate_minutes'] === null ? null : (int) $ticket['estimate_minutes']))) ?></dd>
+        <dt><?= s(t('Erfasst')) ?></dt>
+        <dd class="ticket-spent">
+            <?= $field('spent_minutes', 'Erfasst', 'duration', Duration::format((int) $ticket['spent_minutes']), s($duration((int) $ticket['spent_minutes']))) ?>
+            <?php if (!$isNew && $editable): ?>
+            <?php $timerState = $timer['state'] ?? 'stopped'; ?>
+                <div
+                    class="ticket-timer"
+                    data-ticket-timer
+                    data-action="<?= s(route('ticket.timer', $params)) ?>"
+                    data-token="<?= s($token) ?>"
+                    data-state="<?= s($timerState) ?>"
+                    data-seconds="<?= (int) ($timer['seconds'] ?? 0) ?>"
+                    data-label-start="<?= s(t('Zeiterfassung starten')) ?>"
+                    data-label-resume="<?= s(t('Zeiterfassung fortsetzen')) ?>"
+                    data-label-pause="<?= s(t('Zeiterfassung pausieren')) ?>"
+                >
+                    <button
+                        type="button"
+                        class="timer-button"
+                        data-timer-toggle
+                        aria-describedby="timer-hold-hint"
+                        title="<?= s(t('Gedrückt halten beendet die Erfassung')) ?>"
+                    >
+                        <svg class="timer-ring" viewBox="0 0 36 36" aria-hidden="true" preserveAspectRatio="none">
+                            <rect class="timer-track" x="1.3" y="1.3" width="33.4" height="33.4" rx="9.7" />
+                            <rect class="timer-hold" x="1.3" y="1.3" width="33.4" height="33.4" rx="9.7" />
+                        </svg>
+                        <span class="timer-face">
+                            <span class="timer-glyph" aria-hidden="true">
+                                <svg viewBox="0 0 14 14">
+                                    <path class="glyph-play" d="M4.6 2.7 11.2 7 4.6 11.3Z" />
+                                    <path class="glyph-pause" d="M4.9 3.2v7.6M9.1 3.2v7.6" />
+                                </svg>
+                            </span>
+                            <time class="timer-readout" data-timer-readout><?= s(sprintf('%d:%02d', intdiv((int) ($timer['seconds'] ?? 0), 60), (int) ($timer['seconds'] ?? 0) % 60)) ?></time>
+                        </span>
+                    </button>
+                    <span id="timer-hold-hint" class="sr-only">
+                        <?= s(t('Gedrückt halten beendet die Erfassung. Sie läuft auf dem Server weiter, auch wenn du den Tab schließt. Beim Pausieren und Beenden werden die vollen Minuten unter Erfasst gebucht.')) ?>
+                    </span>
+                    <div class="form-errors" role="alert"></div>
+                </div>
+            <?php endif ?>
+        </dd>
+    <?php foreach ($metaFields['planning'] ?? [] as $metaKey => $metaField): ?>
+        <?= partial('ticket/metadata', [
+            'definition' => $metaField,
+            'value'      => $metadata[$metaKey] ?? $metaField->default,
+            'field'      => $field,
+            'editable'   => $editable,
+        ]) ?>
+    <?php endforeach ?>
+    </dl>
+    <div data-ticket-readonly="progress" class="ticket-time-progress">
+        <?php if ((int) $ticket['estimate_minutes'] > 0): ?><progress value="<?= min((int) $ticket['spent_minutes'], (int) $ticket['estimate_minutes']) ?>" max="<?= (int) $ticket['estimate_minutes'] ?>" aria-label="<?= s(t('Erfasster Zeitaufwand')) ?>"></progress><span class="muted small"><?= s($duration(abs((int) $ticket['estimate_minutes'] - (int) $ticket['spent_minutes']))) ?> <?= s(t((int) $ticket['spent_minutes'] > (int) $ticket['estimate_minutes'] ? 'über Schätzung' : 'verbleibend')) ?></span><?php endif ?>
+    </div>
+</section>

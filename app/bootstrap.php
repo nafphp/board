@@ -7,6 +7,7 @@ use App\Domain\Change;
 use App\Domain\ProjectScope;
 use App\Events\ActivityListener;
 use App\Jobs\MaintenanceJob;
+use App\Modules\CoreTicket;
 use App\Modules\NafinityDefaults;
 use App\Policies\ProjectPolicy;
 use App\Support\AccountStateStore;
@@ -113,6 +114,10 @@ Resolver::service($container, NafinityDefaults::class)->register($context);
 // Extensions noted during Composer plugin boot run now, ascending by index and
 // id. Nothing registered here is overwritten by an application default.
 $extensions->initialize($container);
+
+// The provider pass is over, so every group a ticket field points at must now
+// have a panel. Saying which field and which group beats a later missing panel.
+$extensions->ticketFields()->assertGroups(CoreTicket::groups($context));
 
 // The host has the last word: an optional file that may replace or remove any
 // definition, including one an extension just registered.

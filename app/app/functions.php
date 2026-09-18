@@ -71,10 +71,11 @@ if (!function_exists('Nafinity\slot')) {
      *
      * @param string    $slot    Slot name
      * @param UiContext $context The authorized rendering context
+     * @param array     $extra   Data the surrounding view already has
      */
-    function slot(string $slot, UiContext $context): string
+    function slot(string $slot, UiContext $context, array $extra = []): string
     {
-        return app()->container()->get(SlotRenderer::class)->render($slot, $context);
+        return app()->container()->get(SlotRenderer::class)->render($slot, $context, $extra);
     }
 }
 

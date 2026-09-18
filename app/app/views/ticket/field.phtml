@@ -43,6 +43,23 @@ $creating ??= false;
                 <textarea id="edit-<?= s($name) ?>" name="<?= $creating ? 'description' : 'description_html' ?>" <?= $creating ? 'rows="8" maxlength="50000"' : 'hidden' ?>><?= s($value) ?></textarea>
             <?php elseif ($type === 'text'): ?>
                 <textarea id="edit-<?= s($name) ?>" name="<?= s($name) ?>" rows="1" required maxlength="200" <?= $creating ? 'placeholder="' . s(t('Was soll erledigt werden?')) . '"' : '' ?>><?= s($value) ?></textarea>
+            <?php elseif ($type === 'line'): ?>
+                <input
+                    id="edit-<?= s($name) ?>"
+                    type="text"
+                    name="<?= s($name) ?>"
+                    value="<?= s((string) ($value ?? '')) ?>"
+                    <?= isset($maxlength) ? 'maxlength="' . (int) $maxlength . '"' : '' ?>
+                    <?= ($required ?? false) ? 'required' : '' ?>
+                />
+            <?php elseif ($type === 'longtext'): ?>
+                <textarea
+                    id="edit-<?= s($name) ?>"
+                    name="<?= s($name) ?>"
+                    rows="3"
+                    <?= isset($maxlength) ? 'maxlength="' . (int) $maxlength . '"' : '' ?>
+                    <?= ($required ?? false) ? 'required' : '' ?>
+                ><?= s((string) ($value ?? '')) ?></textarea>
             <?php elseif ($type === 'duration'): ?>
                 <input
                     id="edit-<?= s($name) ?>"

@@ -13,6 +13,8 @@ use Nafinity\Contracts\TicketServiceInterface;
 use Nafinity\Contracts\TimerServiceInterface;
 use PDO;
 
+use function Nafinity\extensions;
+
 final class BoardQuery implements BoardQueryInterface
 {
     public function __construct(
@@ -20,6 +22,7 @@ final class BoardQuery implements BoardQueryInterface
         private AccessInterface $access,
         private TicketServiceInterface $tickets,
         private TimerServiceInterface $timers,
+        private TicketMetadataWriter $metadata,
     ) {
     }
 
@@ -223,11 +226,19 @@ final class BoardQuery implements BoardQueryInterface
 
     public function detail(int $project, int $ticket): array
     {
-        $this->access->project($project);
-        $row = $this->tickets->ticket($project, $ticket);
+        $scope = $this->access->project($project);
+        $row   = $this->tickets->ticket($project, $ticket);
 
         return [
-            'ticket'         => $row,
+            'ticket'   => $row,
+            'metadata' => $this->metadata->readable($scope, $project, [$ticket])[$ticket] ?? [],
+            // Only definitions this actor may read; an unknown stored key is
+            // reported as a missing extension, never as a value.
+            'metaDefinitions' => array_filter(
+                extensions()->ticketFields()->metadata(),
+                static fn($field) => $scope->allows($field->readPermission),
+            ),
+            'metaUnknown'    => $this->metadata->unknownKeys($project, $ticket),
             'creator'        => $this->rows('SELECT name FROM users WHERE id=?', [$row['created_by']])[0]['name'],
             'linked_tickets' => $this->rows(
                 <<<'SQL'
