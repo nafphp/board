@@ -7,6 +7,7 @@ namespace Nafinity\Registry;
 use LogicException;
 use Nafinity\Contracts\UiDataProviderInterface;
 use Nafinity\Definition\UiContribution;
+use Nafinity\Support\Resolver;
 use Nafinity\Support\UiContext;
 
 use function Naf\app;
@@ -87,7 +88,7 @@ final class UiRegistry extends DefinitionRegistry
             return [];
         }
 
-        $provider = app()->container()->get($contribution->provider);
+        $provider = Resolver::service(app()->container(), $contribution->provider);
 
         if (!$provider instanceof UiDataProviderInterface) {
             throw new LogicException(sprintf(

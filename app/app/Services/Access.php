@@ -13,6 +13,8 @@ use Nafinity\Contracts\AccessInterface;
 use PDO;
 use Throwable;
 
+use function Nafinity\extensions;
+
 final class Access implements AccessInterface
 {
     public function __construct(private PDO $pdo, private Auth $auth, private EntityManager $entityManager)
@@ -63,7 +65,13 @@ final class Access implements AccessInterface
         return $scope;
     }
 
-    /** Resolve rights for both authenticated requests and the background upload worker. */
+    /**
+     * Resolve rights for both authenticated requests and the background upload worker.
+     *
+     * A stored grant counts once a definition for it exists, so a plugin's own
+     * permission works as soon as the plugin is installed. A grant whose plugin
+     * is gone stays in the database and simply does not authorize anything.
+     */
     public function permissions(int $project, string $role, ?int $customRoleId = null): array
     {
         if ($customRoleId === null) {
@@ -72,7 +80,10 @@ final class Access implements AccessInterface
         $statement = $this->pdo->prepare('SELECT permission FROM project_role_permissions WHERE project_id=? AND role_id=?');
         $statement->execute([$project, $customRoleId]);
 
-        return array_values(array_intersect($statement->fetchAll(PDO::FETCH_COLUMN), array_keys(ProjectPermissions::LABELS)));
+        return array_values(array_intersect(
+            $statement->fetchAll(PDO::FETCH_COLUMN),
+            extensions()->permissions()->names(),
+        ));
     }
 
     public function write(int $projectId, string $action, callable $operation): mixed

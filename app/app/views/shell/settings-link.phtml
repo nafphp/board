@@ -1,0 +1,17 @@
+<?php
+
+use App\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$project = $uiContext->projectId();
+$url     = $project === null
+    ? route('preferences')
+    : route('project.settings', ['project' => $project]);
+?>
+<a class="side-link <?= route()->active(['preferences', 'project.settings']) ?>" href="<?= s($url) ?>" title="<?= s(t('Einstellungen')) ?>">
+    <span class="nav-icon"><?= Icon::mark('settings', 'lg') ?></span>
+    <span class="link-label"><?= s(t('Einstellungen')) ?></span>
+</a>

@@ -1,16 +1,16 @@
 <?php
 
 use App\Domain\Estimation;
-use App\Domain\ProjectPermissions;
 use App\Support\Format;
 use App\Support\Icon;
-use App\Support\Locales;
 
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\extensions;
 use function Nafinity\partial;
+use function Nafinity\slot;
 
 $profile  = $user->getProfile();
 $token    = csrf()->token();
@@ -24,7 +24,7 @@ $hintText    = $current
     ? t(':role · :count von :total Rechten', [
         'role'  => $roleName,
         'count' => count($scope->permissions),
-        'total' => count(ProjectPermissions::LABELS) + 4,
+        'total' => count(extensions()->permissions()->all()),
     ])
     : Format::count(count($projects), 'Projekt verfügbar', 'Projekte verfügbar');
 $hintUrl = $current
@@ -66,14 +66,7 @@ $hintUrl = $current
                     <span class="brand-dot"></span>
                 </a>
                 <div class="workspace-caption"><?= s(t('DEIN WORKSPACE')) ?></div>
-                <a class="side-link" href="<?= s(route('projects')) ?>" title="<?= s(t('Alle Projekte')) ?>">
-                    <span class="nav-icon"><?= Icon::mark('grid_view', 'lg') ?></span>
-                    <span class="link-label"><?= s(t('Alle Projekte')) ?></span>
-                </a>
-                <a class="side-link" href="<?= s(route('notifications')) ?>" title="<?= s(t('Benachrichtigungen')) ?>">
-                    <span class="nav-icon"><?= Icon::mark('notifications', 'lg') ?></span>
-                    <span class="link-label"><?= s(t('Benachrichtigungen')) ?></span>
-                </a>
+                <?= slot('sidebar.workspace', $uiContext) ?>
                 <div class="section-caption">
                     <span class="caption-label"><?= s(t('PROJEKTE')) ?></span>
                     <button
@@ -96,36 +89,14 @@ $hintUrl = $current
                         </a>
                     <?php endforeach ?>
                 </nav>
+                <?= slot('sidebar.project', $uiContext) ?>
                 <a class="sidebar-note" href="<?= s($hintUrl) ?>">
                     <span class="mini-orbit"><?= Icon::mark('info', 'lg') ?></span>
                     <strong><?= s($hintTitle) ?></strong>
                     <p><?= s($hintText) ?></p>
                 </a>
                 <div class="sidebar-bottom">
-                    <button class="side-link sidebar-pin" type="button" data-sidebar-pin>
-                        <span class="nav-icon"><?= Icon::mark('left_panel_close', 'lg') ?></span>
-                        <span class="link-label" data-pin-on><?= s(t('Leiste anheften')) ?></span>
-                        <span class="link-label" data-pin-off><?= s(t('Leiste lösen')) ?></span>
-                    </button>
-                    <button class="side-link theme-toggle" type="button" title="<?= s(t('Darstellung wechseln')) ?>">
-                        <span class="nav-icon"><?= Icon::mark('contrast', 'lg') ?></span>
-                        <span class="link-label"><?= s(t('Darstellung wechseln')) ?></span>
-                    </button>
-                    <a class="side-link" href="<?= s($current ? route('project.settings', ['project' => $current]) : route('preferences')) ?>" title="<?= s(t('Einstellungen')) ?>">
-                        <span class="nav-icon"><?= Icon::mark('settings', 'lg') ?></span>
-                        <span class="link-label"><?= s(t('Einstellungen')) ?></span>
-                    </a>
-                    <button type="button" class="user-row" data-profile-open
-                        aria-label="<?= s(t('Mein Profil öffnen')) ?>" aria-haspopup="dialog"
-                        aria-controls="profile-dialog" aria-expanded="false"
-                        title="<?= s(t('Profil und Kontoeinstellungen öffnen')) ?>">
-                        <span class="avatar" aria-hidden="true"><?= s(mb_substr($profile->name ?? 'U', 0, 1)) ?></span>
-                        <span class="user-identity">
-                            <strong><?= s($profile->name) ?></strong>
-                            <small title="<?= s($roleContext) ?>"><?= s($roleName) ?></small>
-                        </span>
-                        <?= Icon::mark('expand_less', 'md', 'user-chevron') ?>
-                    </button>
+                    <?= slot('sidebar.footer', $uiContext) ?>
                 </div>
             </aside>
             <div class="main-shell">
@@ -142,44 +113,7 @@ $hintUrl = $current
                         <strong><?= s($project['name'] ?? 'Nafinity') ?></strong>
                     </div>
                     <div class="topbar-right">
-                        <?php if ($runningTimer ?? null): ?>
-                            <a
-                                class="timer-chip"
-                                data-running-timer
-                                data-seconds="<?= (int) $runningTimer['seconds'] ?>"
-                                href="<?= s(route('ticket', [
-                                    'project' => $runningTimer['project_id'],
-                                    'ticket'  => Format::ticket($runningTimer['ticket_key'], $runningTimer['number']),
-                                ])) ?>"
-                                title="<?= s($runningTimer['title']) ?>"
-                            >
-                                <span class="timer-pulse" aria-hidden="true"></span>
-                                <span class="timer-ticket"><?= s(Format::ticket($runningTimer['ticket_key'], $runningTimer['number'])) ?></span>
-                                <time data-timer-readout><?= s(sprintf('%d:%02d', intdiv((int) $runningTimer['seconds'], 60), (int) $runningTimer['seconds'] % 60)) ?></time>
-                            </a>
-                        <?php endif ?>
-                        <form
-                            class="language-picker"
-                            method="post"
-                            action="<?= s(route('preferences.language')) ?>"
-                            data-language-picker
-                        >
-                            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-                            <label class="sr-only" for="locale-picker"><?= s(t('Sprache wählen')) ?></label>
-                            <span class="language-flag" aria-hidden="true"><?= Locales::flag($preferences['locale']) ?></span>
-                            <select id="locale-picker" name="locale">
-                                <?php foreach (Locales::available() as $code => $name): ?>
-                                    <option value="<?= s($code) ?>" <?= $preferences['locale'] === $code ? 'selected' : '' ?>><?= Locales::flag($code) ?> <?= s($name) ?></option>
-                                <?php endforeach ?>
-                            </select>
-                            <span class="language-name" aria-hidden="true"><?= s(Locales::name($preferences['locale'])) ?></span>
-                            <noscript><button class="button subtle"><?= s(t('Wechseln')) ?></button></noscript>
-                        </form>
-                        <button type="button" class="avatar avatar-small profile-trigger" data-profile-open
-                            aria-label="<?= s(t('Mein Profil öffnen')) ?>" aria-haspopup="dialog"
-                            aria-controls="profile-dialog" aria-expanded="false">
-                            <?= s(mb_substr($profile->name ?? 'U', 0, 1)) ?>
-                        </button>
+                        <?= slot('topbar.actions', $uiContext) ?>
                     </div>
                 </header>
                 <main id="main-content"><?= $this->renderBlock('content') ?></main>

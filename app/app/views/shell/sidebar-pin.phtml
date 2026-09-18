@@ -1,0 +1,13 @@
+<?php
+
+use App\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+?>
+<button class="side-link sidebar-pin" type="button" data-sidebar-pin>
+    <span class="nav-icon"><?= Icon::mark('left_panel_close', 'lg') ?></span>
+    <span class="link-label" data-pin-on><?= s(t('Leiste anheften')) ?></span>
+    <span class="link-label" data-pin-off><?= s(t('Leiste lösen')) ?></span>
+</button>

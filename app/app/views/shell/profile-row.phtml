@@ -1,0 +1,19 @@
+<?php
+
+use App\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+?>
+<button type="button" class="user-row" data-profile-open
+    aria-label="<?= s(t('Mein Profil öffnen')) ?>" aria-haspopup="dialog"
+    aria-controls="profile-dialog" aria-expanded="false"
+    title="<?= s(t('Profil und Kontoeinstellungen öffnen')) ?>">
+    <span class="avatar" aria-hidden="true"><?= s(mb_substr($profile->name ?? 'U', 0, 1)) ?></span>
+    <span class="user-identity">
+        <strong><?= s($profile->name) ?></strong>
+        <small title="<?= s($roleContext) ?>"><?= s($roleName) ?></small>
+    </span>
+    <?= Icon::mark('expand_less', 'md', 'user-chevron') ?>
+</button>

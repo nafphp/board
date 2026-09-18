@@ -1,0 +1,11 @@
+<?php
+
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+?>
+<button type="button" class="avatar avatar-small profile-trigger" data-profile-open
+    aria-label="<?= s(t('Mein Profil öffnen')) ?>" aria-haspopup="dialog"
+    aria-controls="profile-dialog" aria-expanded="false">
+    <?= s(mb_substr($profile->name ?? 'U', 0, 1)) ?>
+</button>

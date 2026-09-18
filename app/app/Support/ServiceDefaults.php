@@ -16,6 +16,7 @@ use App\Services\PreferenceService;
 use App\Services\ProjectService;
 use App\Services\RoleService;
 use App\Services\SettingsService;
+use App\Services\SlotRenderer;
 use App\Services\TicketMetadataReader;
 use App\Services\TicketService;
 use App\Services\TimerService;
@@ -75,6 +76,11 @@ final class ServiceDefaults
         TimerServiceInterface::class         => TimerService::class,
     ];
 
+    /** Services that have no contract of their own but are still shared. */
+    private const array SHARED = [
+        SlotRenderer::class,
+    ];
+
     /**
      * Bind every default; callers get one shared instance per class
      *
@@ -82,6 +88,10 @@ final class ServiceDefaults
      */
     public static function register(ContainerInterface $container): void
     {
+        foreach (self::SHARED as $shared) {
+            $container->set($shared, static fn() => Resolver::build($container, $shared));
+        }
+
         // The base container hands a closure the inner container, not this
         // decorator, so the one that can build services is captured here.
         foreach (self::SERVICES as $contract => $default) {

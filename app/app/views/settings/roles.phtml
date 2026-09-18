@@ -2,8 +2,10 @@
 use App\Domain\ProjectPermissions;
 use App\Support\Format;
 
+use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\extensions;
 
 ?>
 <div class="settings-note">
@@ -67,18 +69,28 @@ use function Naf\View\s;
                     />
                 </label>
                 <div class="permission-grid">
-                    <?php foreach (ProjectPermissions::LABELS as $permission => $label): ?>
-                        <label>
+                    <?php foreach (extensions()->permissions()->assignable() as $permission => $definition): ?>
+                        <label title="<?= s(t($definition->description)) ?>">
                             <input
                                 type="checkbox"
                                 name="permissions[]"
                                 value="<?= s($permission) ?>"
                                 <?= in_array($permission, $role['permissions'] ?? [], true) ? 'checked' : '' ?>
                             />
-                            <span><?= s($label) ?></span>
+                            <span><?= s(t($definition->label)) ?></span>
                         </label>
                     <?php endforeach ?>
                 </div>
+                <?php if ($role['unavailable'] ?? []): ?>
+                    <p class="settings-hint">
+                        <?= s(t(
+                            'Diese Rolle hält :count Recht(e) einer Erweiterung, die gerade nicht '
+                            . 'installiert ist. Sie bleiben gespeichert und wirken erst wieder, '
+                            . 'wenn die Erweiterung zurück ist.',
+                            ['count' => count($role['unavailable'])],
+                        )) ?>
+                    </p>
+                <?php endif ?>
                 <?php if ($scope->allows('roles')): ?>
                     <div class="form-errors" role="alert"></div>
                     <button class="button primary"><?= $role ? 'Rolle speichern' : 'Rolle anlegen' ?></button>

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Nafinity;
 
+use App\Services\SlotRenderer;
 use Nafinity\Contracts\PageRendererInterface;
+use Nafinity\Support\UiContext;
 
 use function Naf\app;
 
@@ -60,5 +62,18 @@ if (!function_exists('Nafinity\partial')) {
     function partial(string $template, array $data = []): string
     {
         return app()->container()->get(PageRendererInterface::class)->fragment($template, $data);
+    }
+}
+
+if (!function_exists('Nafinity\slot')) {
+    /**
+     * Render everything contributed to a named slot
+     *
+     * @param string    $slot    Slot name
+     * @param UiContext $context The authorized rendering context
+     */
+    function slot(string $slot, UiContext $context): string
+    {
+        return app()->container()->get(SlotRenderer::class)->render($slot, $context);
     }
 }

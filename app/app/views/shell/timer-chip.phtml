@@ -1,0 +1,26 @@
+<?php
+
+use App\Support\Format;
+
+use function Naf\route;
+use function Naf\View\s;
+
+if (!($runningTimer ?? null)) {
+    return;
+}
+$reference = Format::ticket($runningTimer['ticket_key'], $runningTimer['number']);
+?>
+<a
+    class="timer-chip"
+    data-running-timer
+    data-seconds="<?= (int) $runningTimer['seconds'] ?>"
+    href="<?= s(route('ticket', [
+        'project' => $runningTimer['project_id'],
+        'ticket'  => $reference,
+    ])) ?>"
+    title="<?= s($runningTimer['title']) ?>"
+>
+    <span class="timer-pulse" aria-hidden="true"></span>
+    <span class="timer-ticket"><?= s($reference) ?></span>
+    <time data-timer-readout><?= s(sprintf('%d:%02d', intdiv((int) $runningTimer['seconds'], 60), (int) $runningTimer['seconds'] % 60)) ?></time>
+</a>

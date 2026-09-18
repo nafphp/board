@@ -1,0 +1,20 @@
+<?php
+
+use App\Support\Icon;
+use Nafinity\Definition\NavigationItem;
+
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+/** @var NavigationItem $item */
+$url    = route($item->routeName, $params);
+$active = in_array(route()->current(), $item->activeRoutes, true) ? 'active' : '';
+$label  = t($item->label);
+?>
+<a class="side-link <?= $active ?>" href="<?= s($url) ?>" title="<?= s($label) ?>" data-contribution="<?= s($item->id) ?>">
+    <?php if ($item->icon !== null): ?>
+        <span class="nav-icon"><?= Icon::mark($item->icon, 'lg') ?></span>
+    <?php endif ?>
+    <span class="link-label"><?= s($label) ?></span>
+</a>

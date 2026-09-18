@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Domain\Failure;
-use App\Domain\ProjectPermissions;
 use App\Support\Input;
 use Nafinity\Contracts\AccessInterface;
 use Nafinity\Contracts\ProjectServiceInterface;
 use Nafinity\Contracts\RoleServiceInterface;
 use PDO;
+
+use function Nafinity\extensions;
 
 final class RoleService implements RoleServiceInterface
 {
@@ -25,9 +26,13 @@ final class RoleService implements RoleServiceInterface
             (SELECT COUNT(*) FROM project_members m WHERE m.project_id=r.project_id AND m.custom_role_id=r.id AND m.active=1) AS member_count
             FROM project_roles r WHERE project_id=? ORDER BY name');
         $statement->execute([$project]);
-        $roles = $statement->fetchAll();
+        $roles     = $statement->fetchAll();
+        $available = extensions()->permissions()->names();
         foreach ($roles as &$role) {
             $role['permissions'] = $this->access->permissions($project, 'viewer', (int) $role['id']);
+            $role['unavailable'] = array_values(
+                array_diff($this->stored($project, (int) $role['id']), $available),
+            );
         }
 
         return $roles;
@@ -66,10 +71,11 @@ final class RoleService implements RoleServiceInterface
             $fields      = Input::validate(['description' => '', ...$data], ['name' => 'required|string|max:60', 'description' => 'string|max:255']);
             $name        = trim($fields['name']);
             $permissions = $data['permissions'] ?? [];
+            $assignable  = array_keys(extensions()->permissions()->assignable());
             if ($name === '' || in_array(strtolower($name), ['owner', 'manager', 'member', 'viewer'], true)) {
                 throw new Failure('Bitte verwende einen eigenen Rollennamen.');
             }
-            if (!is_array($permissions) || array_filter($permissions, static fn($value) => !is_string($value) || !isset(ProjectPermissions::LABELS[$value]))) {
+            if (!is_array($permissions) || array_filter($permissions, static fn($value) => !is_string($value) || !in_array($value, $assignable, true))) {
                 throw new Failure('Ungültiges Recht.');
             }
             if (in_array('moderate', $permissions, true) && !in_array('comment', $permissions, true)) {
@@ -88,12 +94,34 @@ final class RoleService implements RoleServiceInterface
             } else {
                 $this->pdo->prepare('UPDATE project_roles SET name=?,description=?,version=version+1 WHERE project_id=? AND id=?')->execute([$name, $fields['description'], $project, $id]);
             }
+            // A grant whose plugin is currently missing is kept exactly as it is.
+            // The form could not show it, so the form cannot be read as a wish to
+            // drop it; reinstalling the plugin brings the right back.
+            $kept = array_diff($this->stored($project, $id), array_keys(extensions()->permissions()->all()));
             $this->pdo->prepare('DELETE FROM project_role_permissions WHERE project_id=? AND role_id=?')->execute([$project, $id]);
             $statement = $this->pdo->prepare('INSERT INTO project_role_permissions(project_id,role_id,permission) VALUES(?,?,?)');
-            foreach (array_unique($permissions) as $permission) {
+            foreach (array_unique([...$permissions, ...$kept]) as $permission) {
                 $statement->execute([$project, $id, $permission]);
             }
             $this->projects->changed($project, 'project.role_saved', ['id' => (string) $id, 'name' => $name]);
         });
+    }
+
+    /**
+     * The permission names stored for a role, whatever is defined right now
+     *
+     * @param int $project Project id
+     * @param int $role    Custom role id
+     *
+     * @return list<string>
+     */
+    private function stored(int $project, int $role): array
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT permission FROM project_role_permissions WHERE project_id=? AND role_id=?',
+        );
+        $statement->execute([$project, $role]);
+
+        return $statement->fetchAll(PDO::FETCH_COLUMN);
     }
 }
