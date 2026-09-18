@@ -897,3 +897,64 @@ Der Maintainer übernimmt Merge und Release; es wurde keine neue Veröffentlichu
 | queue | `v0.2.3-rc` | `a19e242` | [Vergleich](https://github.com/nafphp/queue/compare/main...v0.2.3-rc) |
 | schedule | `v0.2.3-rc` | `72b35f6` | [Vergleich](https://github.com/nafphp/schedule/compare/main...v0.2.3-rc) |
 | cli | `v0.2.2-rc` | `76df414` | [Vergleich](https://github.com/nafphp/cli/compare/main...v0.2.2-rc) |
+
+## Plugin-Erweiterbarkeit
+
+Umgesetzt auf `feat/plugin-extensibility` nach dem Auftrag in
+`docs/audits/2026-09-17-plugin-extensibility/IMPLEMENTATION_PROMPT.md`.
+Ausgangsstand war `a194993`, nicht der im Audit genannte Commit `016931e`.
+
+Nafinity war bis dahin fest zusammengesetzt. Ein Paket konnte Klassen, Routen und
+NAF-Dienste beitragen, aber nichts Sichtbares: kein Menüeintrag, keine
+Settingskarte, kein Ticketfeld, kein Widget, kein Filter. Ein in der
+`bootstrap.php` eines Composer-Plugins gesetztes Override ging außerdem verloren,
+weil die App ihre eigenen Defaults erst danach registriert.
+
+Der Kern ist deshalb ein ausdrücklicher Zeitpunkt: ein Paket merkt über
+`Nafinity\extensions()` einen Provider vor, und alle vorgemerkten Provider laufen
+in einem Durchlauf **nach** den App-Defaults, aufsteigend nach Index und ID. Die
+Reihenfolge steht in `app/bootstrap.php`; `app/app/extensions.php` bleibt das
+letzte Wort des Hosts.
+
+Vierzehn Registries tragen die Beiträge, alle mit denselben Regeln
+(`add`/`get`/`all`/`remove`, ein Sortierwert `index`, Gleichstand nach ID,
+Duplikate nur mit ausdrücklichem Ersatz). Siebzehn Contracts beschreiben die
+austauschbaren Dienste; sie sind lazy gebunden, und alle produktiven Verbraucher
+— Controller, Dienste untereinander, Jobs, Seed und Readiness — fragen den
+Contract, damit ein Ersatz auch den Worker erreicht.
+
+Feste Ticketbereiche bleiben fest: Titel, Beschreibung und Kommentare lassen sich
+über die Registries weder ersetzen noch entfernen. Bestehende Werte bleiben in
+ihren bisherigen Tabellen; beigetragene Werte bekommen eigene Zeilen in
+`user_settings`, `project_settings`, `project_user_settings` und
+`ticket_metadata`, sodass ein neues Feld keine Migration braucht.
+
+Zwei Beispielpakete unter `examples/` sind Teil der Abnahme und werden über
+ausschließlich lokale Path-Repositories in einen Wegwerf-Host installiert.
+
+| Prüfung | Ergebnis |
+|---|---|
+| `make test-mariadb` | 74 grün |
+| `make test-postgres` | 74 grün |
+| `make test-http` | 102 grün |
+| `make test-plugins` | 46 grün: 27 in-process, 6 über HTTP, 7 Assets, 6 ohne die Pakete |
+| `bin/style check`, `git diff --check` | grün |
+| `composer test` in naf/framework | 137 Tests, 280 Assertions, grün |
+| `composer test` in naf/i18n | 39 Tests, 108 Assertions, grün |
+
+Offene Punkte stehen ehrlich in
+[`docs/Plugin-Erweiterbarkeit-Status.md`](Plugin-Erweiterbarkeit-Status.md):
+T12, T14, T19–T22, T24, T25, T29, T31 und T32 sind teilweise oder offen. Es gab
+keinen Browserlauf und keinen Candidate-Build mit veröffentlichten Plugin-Assets.
+
+### Git-Übergabe
+
+| Paket | Branch | Commit | Review |
+|---|---|---|---|
+| framework | `v0.2.4-rc` | `3832e14` | [Vergleich](https://github.com/nafphp/framework/compare/main...v0.2.4-rc) |
+| i18n | `v0.2.2-rc` | `1fa2ee7` | [Vergleich](https://github.com/nafphp/i18n/compare/main...v0.2.2-rc) |
+
+Nafinity fordert jetzt `naf/i18n: ^0.2.2`. Beide Pakete sind **nicht
+veröffentlicht**; die stabile Distribution ist davon abhängig, dass der
+Maintainer sie merged und veröffentlicht. Der Nafinity-Pull-Request ist
+[nafphp/nafinity#1](https://github.com/nafphp/nafinity/pull/1).

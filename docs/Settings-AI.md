@@ -118,14 +118,29 @@ bis zu 40 Nachrichten. Das Modell erhält einen begrenzten Ausschnitt der letzte
 Pro Antwort sind maximal acht Werkzeugrunden möglich. Modellantworten werden dargestellt,
 aber nicht durch einen zweiten Modellaufruf umgeschrieben.
 
-Die tatsächlichen Werkzeugdefinitionen stammen aus `Naf\MCP\Support\ToolRegistry` und
-`ToolInterface`. Nafinity stellt dafür folgende Funktionen bereit:
+Die tatsächlichen Werkzeugdefinitionen stammen aus `Naf\MCP\Support\ToolRegistry`.
+Nafinitys eigene Liste ist dabei ein registrierter Anbieter unter mehreren: ein
+installiertes Paket liefert eigene Werkzeuge über `extensions()->aiTools()`, und
+`Nafinity\Contracts\ProjectToolInterface` ergänzt NAFs `ToolInterface` um Titel, Recht,
+Voraussetzungen und Suchbegriffe. Rechte werden vor der Auslieferung des Katalogs und
+erneut vor der Ausführung geprüft; zwei Anbieter können denselben Werkzeugnamen nicht
+zufällig belegen. Nafinity stellt selbst folgende Funktionen bereit:
 
 - Eigene Projekte auflisten, wenn kein Projekt ausgewählt ist.
 - Im Projekt: Board, Ticketdetails und Aktivitäten lesen.
 - Mit passenden Rechten: Tickets erstellen, bearbeiten oder verschieben und Kommentare schreiben.
 
 Schreibende Aufrufe zeigen die konkrete Aktion mit Argumenten zur Bestätigung im Chat.
+
+Die Einstellungsseite selbst ist ebenfalls registriert: Karten, Felder und Feldtypen stehen
+in `extensions()->settingSections()`, `->settings()` und `->fieldTypes()`, und ein Paket fügt
+eine Karte hinzu, ohne dass diese Seite ihren Namen kennt. Der PHP-Zugang zu den Werten ist
+`Nafinity\settings()` mit `get()`, `all()`, `has()` und `collection()` sowie den Kontexten
+`forProject()`, `forProjectUser()` und `forApplication()`; dazu kommen geschützte
+JSON-Endpunkte. Die bestehenden Werte bleiben in ihren bisherigen Tabellen. Die lokale AI
+behält ihren Browser-Speicher: `settings()->all()` kann localStorage nicht lesen, und weder
+Chatverlauf noch Gedächtnis oder Prompts werden auf den Server übertragen. Einzelheiten in
+[Plugin-Erweiterbarkeit](Plugin-Erweiterbarkeit.md#settings).
 Der Server fordert diese Bestätigung zusätzlich an und prüft bei jeder Ausführung die aktuelle
 Anmeldung und Projektberechtigung. Die Aktionen verwenden dieselben Application Services,
 Transaktionen, Versionsprüfungen und Events wie die Oberfläche. Die HTTP-Routen unter `/ai`

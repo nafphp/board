@@ -118,6 +118,20 @@ Projekttransaktion. Nicht übermittelte Attribute und Zuordnungen bleiben erhalt
 `version` und `board_revision` sind weiterhin erforderlich. Statuswechsel verwenden den
 bestehenden State-Service. Systemwerte wie Ersteller und Änderungsdatum sind schreibgeschützt.
 
+Die Felder der rechten Leiste und die Widgets zwischen Beschreibung und Kommentaren sind
+registrierte Beiträge. Die vier Gruppen — Status, Details, Planung & Zeit, Informationen —
+und die drei mittleren Bereiche — Verknüpfungen, Anhänge, Verlauf — stehen in derselben
+Registry, die auch ein installiertes Paket benutzt; ihre Reihenfolge, ihre Darstellung und
+ihr Vorhandensein sind damit bestimmbar. Titel, Beschreibung und Kommentare bleiben davon
+ausgenommen: sie sind keine Beiträge und lassen sich über die Registries weder ersetzen
+noch entfernen.
+
+Ein beigetragenes Feld speichert seinen Wert in `ticket_metadata`, eine Zeile je Schlüssel,
+und wird in derselben Transaktion, unter derselben Projektsperre und mit derselben
+Versionsprüfung geschrieben wie die Kernfelder. Version und Boardrevision steigen einmal je
+akzeptierter Änderung, auch wenn nur Metadaten betroffen sind. Die Einzelheiten stehen in
+[Plugin-Erweiterbarkeit](Plugin-Erweiterbarkeit.md#ticket-metadaten).
+
 Die Zeiterfassung ist eine manuell änderbare **Gesamtsumme in Minuten**; sie ist keine
 Stoppuhr und kein personenbezogenes Buchungsjournal. Die Darstellung rechnet in Stunden
 und Minuten um. Bei vorhandener Schätzung erscheinen Fortschritt und verbleibende Zeit

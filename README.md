@@ -213,6 +213,14 @@ Konfiguration, private Werte gehoeren in die ignorierte `identity.local.php`.
 Der [urspruengliche Plan](docs/Nafinity-Prototypplan.md), die [Analyse](docs/Nafinity-Analyse.md)
 und die [Review](docs/Review-Analyse-und-Plan.md) bleiben als Entscheidungshistorie erhalten.
 
+Nafinity ist durch installierte Composer-Pakete erweiterbar: eigene Controller, Routen und
+Dienste, Menueeintraege, Settings, Ticketfelder, Widgets, Board-Filter, Uebersetzungen,
+AI-Werkzeuge, Commands, Migrationen und Jobs. Wie das geht, steht in
+[Plugin-Erweiterbarkeit](docs/Plugin-Erweiterbarkeit.md); zwei vollstaendige Beispielpakete
+liegen unter `examples/`. `make test-plugins` installiert beide als echte Composer-Pakete in
+einen Wegwerf-Host, prueft sie in-process, ueber HTTP und ueber die Asset-Kommandos und
+bootet dieselbe Datenbank danach noch einmal ohne sie.
+
 `bin/check-plugin-stack` prueft den minimalen und den kompletten bestehenden Plugin-Stack
 in isolierten Source-Hosts. Die Upload-Regeln gehoeren zu `App\Support\AttachmentStorage`;
 Datei-I/O laeuft ueber `Naf\Storage\storage('attachments')`. Die neue allgemeine Storage-API
