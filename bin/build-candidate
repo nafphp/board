@@ -1,13 +1,67 @@
 #!/usr/bin/env python3
 # Build an immutable local RC snapshot; this is explicitly not a published distribution.
 from pathlib import Path
+import argparse
 import shutil
 import subprocess
 import json
 import hashlib
 
 root = Path(__file__).resolve().parents[1]
-context = root / "work/runtime-candidate"
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument(
+    "--source",
+    default="app",
+    help="Installation to package, relative to the project root (default: app).",
+)
+parser.add_argument("--tag", default="nafinity:candidate", help="Image tag to build.")
+parser.add_argument(
+    "--context",
+    default="work/runtime-candidate",
+    help="Build context directory, relative to the project root.",
+)
+arguments = parser.parse_args()
+source = root / arguments.source
+assert source.is_dir(), "No such installation: " + str(source)
+
+# Registered plugin assets are published into the document root before anything
+# is copied, so the image carries them as ordinary files. An installation with
+# no plugins publishes nothing and the step is simply a no-op.
+# The project is mounted where its own relative paths point, so an installation
+# whose vendor directory links to ../../packages works here exactly as it does
+# outside the container.
+publish = subprocess.run(
+    [
+        "docker",
+        "compose",
+        "run",
+        "--rm",
+        "--no-deps",
+        "-T",
+        "--volume",
+        str(root) + ":/workspace/project",
+        "--volume",
+        str((root / "packages").resolve()) + ":/workspace/nafphp:ro",
+        "--workdir",
+        "/workspace/project/" + source.relative_to(root).as_posix(),
+        "app",
+        "php",
+        "vendor/bin/naf",
+        "nafinity:assets:publish",
+    ],
+    cwd=root,
+    capture_output=True,
+    text=True,
+    check=True,
+)
+# A CLI that cannot find its own entry point still exits zero, so the report it
+# is supposed to print is what proves the step actually ran.
+assert "Published" in publish.stdout, (
+    "Publishing plugin assets produced no report:\n" + publish.stdout + publish.stderr
+)
+print(publish.stdout.strip())
+
+context = root / arguments.context
 context.mkdir(parents=True, exist_ok=True)
 app = context / "app"
 if app.exists():
@@ -31,7 +85,7 @@ ignore = shutil.ignore_patterns(
     "composer.dev.*",
     "composer.lock",
 )
-shutil.copytree(root / "app", app, ignore=ignore)
+shutil.copytree(source, app, ignore=ignore)
 # Package names must not be filtered by application data-directory names.
 vendor_ignore = shutil.ignore_patterns(
     ".git",
@@ -51,7 +105,7 @@ vendor_ignore = shutil.ignore_patterns(
     "composer.dev.*",
     "composer.lock",
 )
-shutil.copytree(root / "app/vendor", app / "vendor", symlinks=False, ignore=vendor_ignore)
+shutil.copytree(source / "vendor", app / "vendor", symlinks=False, ignore=vendor_ignore)
 docker_context = context / "docker"
 if docker_context.exists():
     shutil.rmtree(docker_context)
@@ -67,12 +121,26 @@ for manifest in (app / "vendor/naf").glob("*/composer.json"):
         digest.update(str(file.relative_to(package)).encode())
         digest.update(file.read_bytes())
     packages[json.loads(manifest.read_text())["name"]] = digest.hexdigest()
+published = sorted(
+    str(asset.relative_to(app / "public"))
+    for asset in (app / "public/plugins").rglob("*")
+    if asset.is_file()
+)
 (app / "source-snapshot.json").write_text(
-    json.dumps({"mode": "unreleased-source-snapshot", "packages": packages}, indent=2) + "\n"
+    json.dumps(
+        {
+            "mode": "unreleased-source-snapshot",
+            "source": arguments.source,
+            "packages": packages,
+            "published_plugin_assets": published,
+        },
+        indent=2,
+    )
+    + "\n"
 )
 expected = {
     name
-    for name in json.loads((root / "app/composer.json").read_text())["require"]
+    for name in json.loads((source / "composer.json").read_text())["require"]
     if name.startswith("naf/")
 }
 assert expected == set(packages), "The snapshot is missing required NAF packages: " + str(
@@ -90,9 +158,13 @@ RUN mkdir -p storage/sessions storage/logs storage/attachments storage/queue sto
 """
 )
 subprocess.run(
-    ["docker", "build", "--target", "candidate", "-t", "nafinity:candidate", str(context)],
+    ["docker", "build", "--target", "candidate", "-t", arguments.tag, str(context)],
     check=True,
 )
 print(
-    "Built nafinity:candidate without source mounts, symlinks or Composer. Package releases remain a separate gate."
+    "Built "
+    + arguments.tag
+    + " without source mounts, symlinks or Composer, carrying "
+    + str(len(published))
+    + " published plugin asset(s). Package releases remain a separate gate."
 )

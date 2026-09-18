@@ -1,0 +1,30 @@
+{
+  "what": "Candidate image built from an installation that has both example extensions, T32",
+  "command": "python3 bin/build-candidate --source work/extension-host --tag nafinity:candidate-extensions --context work/runtime-candidate-extensions",
+  "mode": "unreleased-source-snapshot",
+  "note": "This is a local snapshot, not a published distribution. The NAF packages it contains are RC branches; releasing them stays a separate, explicit step.",
+  "image": {
+    "source mounts": "none",
+    "symlinks": 0,
+    "composer at runtime": "none",
+    "naf packages carried as files": 18,
+    "example packages carried as files": [
+      "example/nafinity-extension-a",
+      "example/nafinity-extension-b"
+    ],
+    "published plugin assets": [
+      "public/plugins/example/nafinity-extension-a/review.js",
+      "public/plugins/example/nafinity-extension-b/review.css"
+    ]
+  },
+  "running the image without any source mount": {
+    "health/ready": { "status": "ready", "schema": "202609180004" },
+    "GET /login": 200,
+    "GET /plugins/example/nafinity-extension-a/review.js": 200,
+    "GET /plugins/example/nafinity-extension-b/review.css": 200,
+    "GET /projects/1/reports (member with the contributed right)": 200,
+    "page rendered by extension B's template": true,
+    "registered asset extensions.js on the page": true,
+    "published plugin stylesheet referenced by the page": true
+  }
+}

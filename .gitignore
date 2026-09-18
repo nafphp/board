@@ -6,6 +6,7 @@
 /app/composer.dev.lock
 /app/.phpunit.cache/
 /app/storage/*
+/app/public/plugins/
 !/app/storage/.gitkeep
 /work/
 /.idea/

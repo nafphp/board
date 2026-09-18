@@ -11,6 +11,7 @@ the whole point of it: what people stored has to survive the package going away.
 """
 from pathlib import Path
 import json
+import shutil
 import subprocess
 import sys
 
@@ -41,7 +42,7 @@ def build_host(folder, packages, order=None):
         config["repositories"].append(
             {
                 "type": "path",
-                "url": "/workspace/packages/" + name,
+                "url": "../../packages/" + name,
                 "options": {
                     "symlink": True,
                     "versions": {package: constraint.lstrip("^") + "-dev"},
@@ -53,7 +54,7 @@ def build_host(folder, packages, order=None):
         config["repositories"].append(
             {
                 "type": "path",
-                "url": "/workspace/examples/" + folder_name,
+                "url": "../../examples/" + folder_name,
                 "options": {"symlink": True, "versions": {package: "1.0.0"}},
             }
         )
@@ -63,24 +64,18 @@ def build_host(folder, packages, order=None):
     (host / "composer.json").write_text(json.dumps(config, indent=2) + "\n")
     (host / "storage").mkdir(exist_ok=True)
     (host / "logs").mkdir(exist_ok=True)
-    # The application's own source is shared, not copied. The two entry points
-    # are the exception: PHP resolves __DIR__ through a symlink, so a linked
-    # bootstrap.php or index.php would define BASE_PATH as the development
-    # installation and load its vendor directory instead of this host's.
-    for name in ["app", "tests"]:
-        link = host / name
-        if link.is_symlink() or link.exists():
-            link.unlink()
-        link.symlink_to("/workspace/app/" + name)
+    # The application's own source is copied rather than linked. A symlink would
+    # be cheaper, but PHP resolves __DIR__ through one — a linked bootstrap.php
+    # would define BASE_PATH as the development installation and load its vendor
+    # — and a host of real files can also be packaged into an image later.
+    for name in ["app", "tests", "public"]:
+        target = host / name
+        if target.is_symlink():
+            target.unlink()
+        elif target.is_dir():
+            shutil.rmtree(target)
+        shutil.copytree(root / "app" / name, target)
     (host / "bootstrap.php").write_text((root / "app/bootstrap.php").read_text())
-
-    public = host / "public"
-    public.mkdir(exist_ok=True)
-    (public / "index.php").write_text((root / "app/public/index.php").read_text())
-    assets = public / "assets"
-    if assets.is_symlink() or assets.exists():
-        assets.unlink()
-    assets.symlink_to("/workspace/app/public/assets")
 
     return host
 
@@ -95,16 +90,23 @@ def run(host, steps):
             "run",
             "--rm",
             "-T",
+            # The project is mounted where its own relative paths already point,
+            # so a host directory looks the same from inside the container and
+            # from this machine. An absolute container path in a repository would
+            # leave a vendor directory only the container could read, and the
+            # candidate build could never package it.
             "--volume",
-            str(host) + ":/workspace/host",
+            str(root) + ":/workspace/project",
             "--volume",
-            str(root / "examples") + ":/workspace/examples:ro",
+            str((root / "packages").resolve()) + ":/workspace/nafphp:ro",
             "--workdir",
-            "/workspace/host",
+            "/workspace/project/" + host.relative_to(root).as_posix(),
             "--env",
             "COMPOSER=composer.json",
             "--env",
-            "NAFINITY_BOOTSTRAP=/workspace/host/bootstrap.php",
+            "NAFINITY_BOOTSTRAP=/workspace/project/"
+            + host.relative_to(root).as_posix()
+            + "/bootstrap.php",
             "app-test",
             "sh",
             "-c",

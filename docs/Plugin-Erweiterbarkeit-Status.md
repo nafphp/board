@@ -20,10 +20,10 @@ Ergebnisse in [`docs/Plugin-Erweiterbarkeit-Evidenz.json`](Plugin-Erweiterbarkei
 | F — Settings | erledigt | `settings()`, `SettingsService`, `DatabaseSettingsStore`, `PreferenceStore`, Migration, Karten, Feldtypen, HTTP-API; T09–T14 teilweise |
 | G — Ticket-Metadaten | erledigt | `ticket_metadata`, `TicketMetadataWriter`/`-Reader`, `TicketService`, `BoardQuery::detail()`; T15–T17, T19 teilweise |
 | H — Ticket-Widgets und Upload-Modul | erledigt | drei Default-Widgets, `AttachmentsModule`, `fragment.js`, `extensions.js`; T18, T21 teilweise |
-| I — Assets und Übersetzungen | erledigt | `AssetPublisher` und drei CLI-Kommandos, `Naf\I18n\translation_paths()` in naf/i18n, `Locales::available()`; T27, T28 |
+| I — Assets und Übersetzungen | erledigt | `AssetPublisher` und drei CLI-Kommandos, Veröffentlichung im Candidate-Build, `Naf\I18n\translation_paths()` in naf/i18n, `Locales::available()`; T27, T28, T32 |
 | J — Filter, Schätzung, Events, AI | erledigt | `BoardFilterRegistry` in `BoardQuery`, `EstimationScaleRegistry`, `ActivityTypeRegistry`, `AiToolRegistry`; T23–T26 |
 | K — Lebensdauer, Beispiele, Dokumentation | erledigt | zwei installierte Beispielpakete, `app/app/extensions.php`, `docs/Plugin-Erweiterbarkeit.md`; T30 |
-| L — Abnahme T01–T32 | teilweise | siehe Tabelle unten; T20, T21, T22 und T32 sind teilweise oder offen |
+| L — Abnahme T01–T32 | teilweise | siehe Tabelle unten; offen bleiben nur die interaktiven Browserpunkte T20 (Uploadpfad), T21 (Drawer-Lifecycle) und T22 (Auto-Save) |
 
 ## Abnahmetests T01–T32
 
@@ -63,7 +63,7 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 | T29 | erledigt | `T29 the plugin command, migration, job and schedule entry are all there`, `… the queued plugin job runs and writes only its own table` — grün |
 | T30 | erledigt | `T30 …` (6 Prüfungen ohne A/B) — grün |
 | T31 | erledigt | Browserlauf auf 800/390/320 Pixeln in Light und Dark mit den echten Templates, Assets und Schriften; Nachweis in [`docs/Plugin-Erweiterbarkeit-Browser.json`](Plugin-Erweiterbarkeit-Browser.json). Dabei gefunden und behoben: das versteckte Datei-Feld des Anhangsformulars wurde auf volle Breite gestreckt und schob jede Ticketseite auf dem Telefon 34 Pixel zur Seite |
-| T32 | offen | Kein Candidate-Build mit veröffentlichten Plugin-Assets durchgeführt |
+| T32 | erledigt | `bin/build-candidate --source work/extension-host` baut ein Image ohne Source-Mounts und ohne Symlinks, trägt beide Beispielpakete als Dateien und ihre veröffentlichten Assets; das laufende Image liefert die Beitragsseite. Nachweis in [`docs/Plugin-Erweiterbarkeit-Distribution.json`](Plugin-Erweiterbarkeit-Distribution.json) |
 
 ## Ausgeführte Prüfungen
 
@@ -76,6 +76,7 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 | Nafinity-HTTP-Suite | `make test-http` | 102 Prüfungen grün |
 | Erweiterungs-Abnahme | `make test-plugins` | 57 Prüfungen grün: 38 in-process, 6 über HTTP, 7 Assets, 6 ohne die Pakete |
 | Browserprüfung | Snapshots aus dem Erweiterungs-Host, 800/390/320 Pixel, Light und Dark | grün, siehe Browser-Evidenz |
+| Distribution | `bin/build-candidate --source work/extension-host` und ein Lauf des Images ohne Source-Mounts | grün, siehe Distributions-Evidenz |
 | Stilprüfung | `bin/style check` | grün |
 | Whitespace | `git diff --check` | grün |
 
@@ -93,5 +94,5 @@ davon abhängig, dass der Maintainer die Pakete merged und veröffentlicht.
 ## Verbleibende Maintainer-Aktionen
 
 1. NAF-RC-Branches prüfen und mergen (`naf/framework` v0.2.4, `naf/i18n` v0.2.2).
-2. Offene Abnahmepunkte T20, T21, T22 und T32 abarbeiten: ein interaktiver Browserlauf für Upload, Drawer-Lifecycle und Auto-Save sowie ein Candidate-Build mit veröffentlichten Plugin-Assets.
+2. Offene Abnahmepunkte T20, T21 und T22 abarbeiten: ein interaktiver Browserlauf für den Uploadpfad, den Drawer-Lifecycle und das Auto-Save beigetragener Felder.
 3. Nach dem Release der Pakete die Distribution ohne Source-Symlinks prüfen.

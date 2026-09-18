@@ -760,6 +760,20 @@ php vendor/bin/naf nafinity:assets:remove  [--package=vendor/name]
 - Assets sind öffentliche Daten. Uploads sind keine Assets und nehmen diesen Weg
   nie.
 
+Der Candidate-Build veröffentlicht registrierte Plugin-Assets, bevor das Image
+fertig ist:
+
+```sh
+python3 bin/build-candidate --source work/extension-host --tag nafinity:candidate-extensions
+```
+
+Das Ergebnis enthält keine Source-Mounts, keine Symlinks und kein Composer; die
+Pakete und ihre veröffentlichten Dateien liegen als gewöhnliche Dateien darin,
+und `source-snapshot.json` nennt Modus, Quelle, Pakete und veröffentlichte
+Assets. Ein lokaler Snapshot ist **keine** veröffentlichte Distribution: die
+enthaltenen NAF-Pakete sind RC-Branches, deren Release ein eigener Schritt
+bleibt.
+
 ## Übersetzungen
 
 `naf/i18n` ab 0.2.2 bringt:
