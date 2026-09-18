@@ -300,6 +300,64 @@ abgewiesen zu werden; der Server prüft sie unverändert weiter. Nach dem Hochla
 Liste als Fragment nachgeladen statt geraten, und die neue Zeile leuchtet einmal auf.
 
 
+## Ein Ticket wechselt das Projekt
+
+Im Punktemenü der Seitenleiste steht jetzt „In ein anderes Projekt verschieben“. Der Eintrag
+klappt an Ort und Stelle auf, statt das Menü zu verlassen: Zielprojekt, Folgen und der Knopf
+stehen in einer Ansicht. Angeboten wird nur, wo die Person wirklich schreiben darf — die
+Rechte werden je Projekt gelesen, weil eine eigene Rolle weniger gewähren kann, als ihr Name
+vermuten lässt. Archivierte Projekte und das eigene stehen nicht darin.
+
+Zwei Sätze nennen, was passiert. Mitkommen: Kommentare, Anhänge, Verlauf und erfasste Zeit.
+Zurückbleiben: Labels, Verknüpfungen und Zuständige ohne Zugriff. Das Ticket bekommt drüben
+eine neue Nummer und damit ein neues Kürzel; die alte Adresse antwortet danach mit 404, und
+das Formular folgt der neuen, statt einen Stand nachzuladen, den es nicht mehr gibt.
+
+### Autorschaft hängt nicht mehr an einer Mitgliedschaft
+
+Drei Schlüssel zeigten auf `project_members`: wer ein Ticket angelegt, einen Kommentar
+geschrieben oder eine Datei angehängt hat. Das ist eine Aussage über die Vergangenheit und
+bleibt wahr, wenn die Person das Projekt verlässt oder im Zielprojekt nie war. Gelesen werden
+durfte deshalb ohnehin nie — das entscheidet jede Anfrage gegen das Projekt, in dem die Zeile
+jetzt liegt. Die drei zeigen nun auf `users`. Ohne diesen Schritt bräuchte es eine Vorabprüfung
+über jeden Kommentar und jeden Anhang und eine Absage, die niemand beheben kann außer dadurch,
+den früheren Autor nachträglich einzuladen.
+
+### Was am Ticket hängt, folgt ihm
+
+`activities`, `attachments`, `comments` und `ticket_assignees` tragen ihren Schlüssel auf
+`tickets(project_id, id)` jetzt mit `ON UPDATE CASCADE`. Ein einziges `UPDATE` auf dem Ticket
+nimmt sie mit, statt sie Tabelle für Tabelle umzuschreiben. `ticket_labels`, `ticket_links`,
+`notifications` und `ticket_timers` behalten absichtlich den einfachen Schlüssel: Sie bedeuten
+nur in dem Projekt etwas, in dem sie entstanden sind, werden vorher aufgelöst — und wer eine
+davon vergisst, bekommt einen Fehler der Datenbank statt einer Zeile, die irgendwo ankommt, wo
+sie nicht hingehört.
+
+Eine Antwort zeigt über `(project_id, ticket_id, parent_id)` auf den Kommentar darüber, und
+beide Treiber prüfen das je Zeile, während sie sich ändert, nicht erst am Ende der Anweisung —
+gegen MariaDB nachgestellt und in beide Sortierrichtungen abgewiesen. Der Faden wird deshalb
+vor dem Umzug auseinandergenommen und danach wieder zusammengesetzt; die Lücke besteht nur
+innerhalb der Transaktion und wird von niemandem gelesen.
+
+Laufende Uhren werden beendet, bevor das Ticket geht: Was gearbeitet wurde, erreicht das
+Ticket noch, nur der Lauf selbst kann nicht mitkommen, denn er gehört zu einer Mitgliedschaft.
+Beide Projekte werden gesperrt, das kleinere zuerst, damit zwei Umzüge in entgegengesetzter
+Richtung aufeinander warten statt sich gegenseitig zu blockieren.
+
+Der Rückweg der Migration verengt die Schlüssel wieder und behauptet damit etwas, das ein
+bereits verschobenes Ticket unwahr gemacht hat. Die einzige Reparatur, die nichts erfindet,
+trägt die betroffenen Personen als inaktive Mitglieder ein — genau die Zeile, die die Anwendung
+behält, wenn jemand aus einem Projekt entfernt wird. Sie gewährt nichts: Jeder Lese- und
+Schreibpfad verbindet über eine aktive Mitgliedschaft.
+
+Geprüft mit 74 MariaDB-, 74 PostgreSQL-, 102 HTTPS- und 25 Profilprüfungen, den Worker- und
+AI-Checks sowie der vollständigen Stilprüfung. Die Prüfungen decken den vollständigen Umzug
+samt Kommentarfaden, Anhang, Verlauf, Zuständigen und gebuchter Zeit ab, die Liste der
+angebotenen Ziele, sowie jede abgelehnte Form: dasselbe Projekt, ein unbekanntes, eines mit
+bloßem Leserecht, eine veraltete Version und ein archiviertes Ticket — jedes Mal ohne Spur.
+`/health/ready` meldet Schema `202609180001`.
+
+
 ## Eigenes Profil
 
 Der Avatar öffnet das Profil-Modal mit der aktuellen Projektrolle, Passwortwechsel,

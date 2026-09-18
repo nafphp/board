@@ -40,7 +40,7 @@ bleiben bei einem erneuten Aufruf erhalten; der Befehl ueberspringt die Initiali
 
 | Konto | Rolle / Projekt |
 |---|---|
-| alice@example.test | Owner, Nafinity |
+| alice@example.test | Owner, Nafinity und Archiv & Ideen |
 | bob@example.test | Owner, Studio Nord |
 | viewer@example.test | Viewer, Nafinity |
 
@@ -49,6 +49,9 @@ bleiben bei einem erneuten Aufruf erhalten; der Befehl ueberspringt die Initiali
 Mehrere isolierte Projekte, Mitgliedschaften und Rollen, konfigurierbare Spalten und
 Swimlanes, Labels, Mehrfach-Zuweisung, Prioritaet und Termin. Tickets haben eigene URLs,
 einen optionalen Drawer, Bearbeitung, Verschieben, Schliessen/Wiederoeffnen und Archiv.
+Ein Ticket laesst sich ausserdem in ein anderes Projekt verschieben: Kommentare, Anhaenge,
+Verlauf und erfasste Zeit kommen mit, es bekommt dort eine neue Nummer, und Labels,
+Verknuepfungen sowie Zustaendige ohne Zugriff bleiben zurueck.
 Kommentare und Aktivitaeten folgen den Projektgrenzen. Veraltete Schreibzugriffe enden
 mit 409; die Oberflaeche bietet das Nachladen des aktuellen Stands an.
 

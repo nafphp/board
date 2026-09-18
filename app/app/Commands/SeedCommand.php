@@ -185,9 +185,20 @@ final class SeedCommand extends AbstractCommand
             'color'       => '#14b8a6',
             'icon'        => 'S',
         ]);
+
+        // A second project of Alice's own, so that moving a ticket between projects has
+        // somewhere to go. Bob's is deliberately not that place: it is here to show that a
+        // project nobody invited you to stays out of reach.
+        $auth->setIdentity($users[0]);
+        $projects->create([
+            'name'        => 'Archiv & Ideen',
+            'description' => 'Was noch nicht dran ist, aber nicht verloren gehen soll.',
+            'color'       => '#f59e0b',
+            'icon'        => 'A',
+        ]);
         $auth->logout();
         $output->writeLine(
-            'Created Nafinity and Studio Nord. Local demo password: Nafinity-Demo-2026!',
+            'Created Nafinity, Archiv & Ideen and Studio Nord. Local demo password: Nafinity-Demo-2026!',
             'ok',
         );
 

@@ -105,6 +105,13 @@ bleiben beim Anlegen Select und Checkboxen als Formular-Fallback vorhanden.
 | Planung und Zeit | Startdatum, Fälligkeit, geschätzte und erfasste Minuten |
 | Informationen | Ersteller, Projekt, erstellt/geändert/geschlossen/archiviert, Version |
 
+Das Punktemenü oben rechts führt außerdem in ein anderes Projekt. Angeboten wird nur, wo die
+Person schreiben darf; das Ticket bekommt dort eine neue Nummer und damit ein neues Kürzel.
+Kommentare, Anhänge, Verlauf und erfasste Zeit kommen mit — laufende Uhren werden vorher
+beendet, damit die Arbeit noch gebucht wird. Labels, Verknüpfungen und Zuständige ohne Zugriff
+im Zielprojekt bleiben zurück, weil sie dort nichts bezeichnen würden. Zuständig ist
+`TicketService::transfer()`; die alte Adresse antwortet danach mit 404.
+
 Spaltenwechsel nutzen `TicketService::move()` einschließlich Abschlussstatus und Positionierung.
 Metadaten nutzen `TicketService::update()` als Teiländerung innerhalb der bestehenden
 Projekttransaktion. Nicht übermittelte Attribute und Zuordnungen bleiben erhalten.
