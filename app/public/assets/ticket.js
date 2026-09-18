@@ -1,5 +1,6 @@
 import { toast } from './app.js';
 import { enhanceChoices, openChoice, closeChoices } from './ticket-choice.js';
+import { attribute, fetchWorkspace, syncWidgets } from './fragment.js';
 
 let quillReady;
 const editors = new WeakMap();
@@ -119,13 +120,6 @@ function error(form, message, conflict = false) {
   }
   box.classList.add('visible');
 }
-// A contributed field is named metadata[example.external_id]; the dots and
-// brackets are fine inside a quoted attribute selector, a quote or a backslash
-// is not, so both are escaped before the name goes into one.
-function attributeValue(name) {
-  return String(name).replace(/["\\]/g, '\\$&');
-}
-
 async function beginEdit(field) {
   const workspace = field.closest('.ticket-workspace');
   if (!field.querySelector('form') || field.classList.contains('is-editing')) return;
@@ -136,7 +130,7 @@ async function beginEdit(field) {
   if (active && !(await finishEdit(active, true))) return;
   if (saving.has(workspace)) await saving.get(workspace);
   if (editIntents.get(workspace) !== intent || !workspace.isConnected) return;
-  field = workspace.querySelector(`[data-inline-field="${attributeValue(name)}"]`);
+  field = workspace.querySelector(`[data-inline-field="${attribute(name)}"]`);
   if (!field) return;
   const form = field.querySelector('form');
   field.classList.add('is-editing');
@@ -299,23 +293,20 @@ function cancelEdit(field, focus = true) {
   display.setAttribute('aria-expanded', 'false');
   if (focus) display.focus();
 }
-async function refresh(workspace, field, section) {
-  const response = await fetch(`${workspace.dataset.ticketUrl}?fragment=1`, {
-    headers: { Accept: 'text/html' },
-  });
-  if (!response.ok || response.redirected)
+export async function refresh(workspace, field, section) {
+  const fresh = await fetchWorkspace(workspace);
+  if (!fresh)
     throw new Error(
       'Gespeichert. Der aktuelle Stand konnte nicht geladen werden. Bitte lade die Seite neu.',
     );
-  const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
-  const fresh = parsed.querySelector('.ticket-workspace');
-  if (!fresh) throw new Error('Gespeichert. Bitte melde dich erneut an und lade das Ticket neu.');
   workspace.dataset.version = fresh.dataset.version;
   workspace.dataset.revision = fresh.dataset.revision;
   // The comment draft stays mounted while metadata or descriptions are saved.
   workspace.querySelectorAll('[data-inline-field]').forEach((current) => {
     if (current.classList.contains('is-editing') && current !== field) return;
-    const replacement = fresh.querySelector(`[data-inline-field="${current.dataset.inlineField}"]`);
+    const replacement = fresh.querySelector(
+      `[data-inline-field="${attribute(current.dataset.inlineField)}"]`,
+    );
     if (replacement && current === field && current.querySelector('[data-auto-save]')) {
       const form = current.querySelector('form');
       const savedForm = replacement.querySelector('form');
@@ -333,10 +324,16 @@ async function refresh(workspace, field, section) {
     );
     if (replacement) current.replaceWith(replacement);
   });
-  for (const name of new Set(['activity', ...(section ? [section] : [])])) {
-    const current = workspace.querySelector(`[data-ticket-section="${name}"]`);
-    const replacement = fresh.querySelector(`[data-ticket-section="${name}"]`);
-    if (current && replacement) {
+  // Widgets are reconciled by id rather than by walking the ones already here,
+  // so a widget an extension added appears and one it removed goes away. The
+  // node holding an open draft is kept exactly as it is.
+  syncWidgets(workspace, fresh, {
+    keep: (node) => node.contains(field) && field?.classList.contains('is-editing'),
+  });
+  for (const name of new Set(section ? [section] : [])) {
+    const current = workspace.querySelector(`[data-ticket-section="${attribute(name)}"]`);
+    const replacement = fresh.querySelector(`[data-ticket-section="${attribute(name)}"]`);
+    if (current && replacement && !current.closest('[data-widget-slot]')) {
       if (current.open) replacement.open = true;
       current.replaceWith(replacement);
     }
@@ -466,7 +463,10 @@ document.addEventListener('submit', (event) => {
   if (form.hasAttribute('data-auto-save')) finishEdit(form.closest('[data-inline-field]'));
   else saveTicket(form, event.submitter);
 });
-function saveTicket(form, submitter = null) {
+// The one write queue for a ticket. A contributed widget submits through its own
+// form and lands here as well, so there is no second auto-save, no second fetch
+// and no second idea of which version is current.
+export function saveTicket(form, submitter = null) {
   const workspace = form.closest('.ticket-workspace');
   if (!workspace || !form.isConnected || workspace.dataset.needsReload)
     return Promise.resolve(false);

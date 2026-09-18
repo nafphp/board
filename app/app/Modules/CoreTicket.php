@@ -74,6 +74,28 @@ final class CoreTicket implements ExtensionProviderInterface
             ));
         }
 
+        // Links and history are widgets in the middle column, registered exactly
+        // the way a plugin would register one. Title, description and comments
+        // stay outside this list: they are the ticket, not a contribution to it.
+        $ui->add(new UiContribution(
+            'core.ticket.links',
+            'ticket.main.widgets',
+            'ticket/widgets/links',
+            100,
+            null,
+            'read',
+            [UiContext::MODE_DETAIL],
+        ));
+        $ui->add(new UiContribution(
+            'core.ticket.activity',
+            'ticket.main.widgets',
+            'ticket/widgets/history',
+            300,
+            null,
+            'read',
+            [UiContext::MODE_DETAIL],
+        ));
+
         $fields = $context->ticketFields();
 
         foreach (self::FIELDS as $group => $entries) {

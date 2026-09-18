@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules;
 
+use App\Modules\Attachments\AttachmentsModule;
 use Nafinity\Contracts\ExtensionProviderInterface;
 use Nafinity\ExtensionContext;
 use Nafinity\Support\Resolver;
@@ -26,6 +27,8 @@ final class NafinityDefaults implements ExtensionProviderInterface
         CoreNavigation::class,
         CoreSettings::class,
         CoreTicket::class,
+        CoreAssets::class,
+        AttachmentsModule::class,
     ];
 
     public function register(ExtensionContext $context): void

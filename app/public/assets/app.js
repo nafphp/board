@@ -261,6 +261,11 @@ document.addEventListener('click', async (event) => {
     drawerUrl = link.href;
     history.pushState({ nafinityDrawer: true }, '', link.href);
     document.dispatchEvent(new CustomEvent('nafinity:ticket-opened'));
+    document.dispatchEvent(
+      new CustomEvent('nafinity:fragment-updated', {
+        detail: { container: drawer.querySelector('.drawer-content') },
+      }),
+    );
     drawer.querySelector(creating ? '[name=title]' : 'button[data-close-drawer]')?.focus();
   } catch (error) {
     if (error.name !== 'AbortError') {
@@ -278,6 +283,13 @@ document.addEventListener('click', (event) => {
 });
 drawer?.addEventListener('close', () => {
   drawerAbort?.abort();
+  // Contributed modules are told to go before their nodes do, so a mount has a
+  // matching dispose whether the ticket was closed, replaced or navigated away.
+  document.dispatchEvent(
+    new CustomEvent('nafinity:drawer-closed', {
+      detail: { node: drawer.querySelector('.drawer-content') },
+    }),
+  );
   drawer.querySelector('.drawer-content').replaceChildren();
   if (!drawerCloseFromHistory && history.state?.nafinityDrawer) history.back();
   drawerCloseFromHistory = false;

@@ -7,6 +7,7 @@ use App\Support\Icon;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
+use function Naf\View\asset;
 use function Naf\View\s;
 use function Nafinity\extensions;
 use function Nafinity\partial;
@@ -53,9 +54,10 @@ $hintUrl = $current
         <link rel="stylesheet" href="/assets/ticket.css?v=7" />
         <script type="module" src="/assets/ticket.js?v=3"></script>
         <script type="module" src="/assets/timer.js?v=4"></script>
-        <script type="module" src="/assets/upload.js?v=2"></script>
         <script type="module" src="/assets/language.js?v=1"></script>
         <script type="module" src="/assets/disclosure.js?v=2"></script>
+        <?= asset()->render('css') ?>
+        <?= asset()->render('js') ?>
     </head>
     <body>
         <div class="app-shell">

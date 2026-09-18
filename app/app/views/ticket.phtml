@@ -1,7 +1,6 @@
 <?php
 
 use App\Domain\Estimation;
-use App\Support\ActivityLabel;
 use App\Support\Duration;
 use App\Support\Format;
 use App\Support\Icon;
@@ -104,7 +103,9 @@ foreach ($labels as $label) {
 // Everything the built-in panels already hold, handed to the slot so that no
 // contribution has to load it again. A contribution's own provider still wins.
 $panelData = [
+    'activity'           => $activity ?? [],
     'assigneeDisplay'    => $assigneeDisplay,
+    'attachments'        => $attachments ?? [],
     'board'              => $board,
     'columns'            => $columns,
     'creator'            => $creator ?? '',
@@ -114,8 +115,10 @@ $panelData = [
     'estimating'         => $estimating,
     'field'              => $field,
     'isNew'              => $isNew,
+    'key'                => $key,
     'labelDisplay'       => $labelDisplay,
     'labels'             => $labels,
+    'linked_tickets'     => $linked_tickets ?? [],
     'memberNames'        => $memberNames,
     'metaFields'         => $metaFields,
     'metadata'           => $metadata ?? [],
@@ -126,6 +129,7 @@ $panelData = [
     'preferences'        => $preferences,
     'priorities'         => $priorities,
     'project'            => $project,
+    'projectId'          => $projectId,
     'scale'              => $scale,
     'scope'              => $scope,
     'selected_assignees' => $selected_assignees,
@@ -137,7 +141,7 @@ $panelData = [
     'token'              => $token,
 ];
 ?>
-<div class="ticket-detail ticket-workspace <?= $fragment ? 'in-drawer' : '' ?> <?= $isNew ? 'ticket-creating' : '' ?>" data-ticket-url="<?= s(route('ticket', $params)) ?>" data-version="<?= (int) $ticket['version'] ?>" data-revision="<?= (int) $board['revision'] ?>">
+<div class="ticket-detail ticket-workspace <?= $fragment ? 'in-drawer' : '' ?> <?= $isNew ? 'ticket-creating' : '' ?>" data-ticket-url="<?= s(route('ticket', $params)) ?>" data-version="<?= (int) $ticket['version'] ?>" data-revision="<?= (int) $board['revision'] ?>" data-mode="<?= $isNew ? 'create' : 'detail' ?>" data-project="<?= (int) $projectId ?>" data-ticket="<?= (int) ($ticket['id'] ?? 0) ?>">
     <div class="detail-topline">
         <a class="back-link" href="<?= s(route('board', ['project' => $projectId])) ?>" <?= $fragment ? 'data-close-drawer' : '' ?>><?= Icon::mark('arrow_back', 'sm') ?><span><?= $fragment ? s($project['name']) : s(t('Zurück zum Board')) ?></span></a>
         <span class="ticket-save-state" role="status" aria-live="polite"></span>
@@ -160,124 +164,25 @@ $panelData = [
                 <?= $field('description', 'Beschreibung', 'rich', RichText::description($ticket), $ticket['description'] === '' ? '<p class="muted">' . s(t('Noch keine Beschreibung.')) . '</p>' : RichText::description($ticket)) ?>
             </section>
             <?php if (!$isNew): ?>
-            <section class="detail-section" data-ticket-section="links">
-                <h2><?= s(t('Verknüpfte Tickets')) ?><span class="count"><?= count($linked_tickets) ?></span></h2>
-                <?php foreach ($linked_tickets as $linked): ?>
-                    <div class="ticket-link-row">
-                        <a href="<?= s(route('ticket', ['project' => $projectId, 'ticket' => Format::ticket($key, $linked['number'])])) ?>"><span class="ticket-key"><?= s(Format::ticket($key, $linked['number'])) ?></span><span><?= s($linked['title']) ?></span><span class="muted"><?= $linked['status'] === 'closed' ? Icon::mark('check_circle', 'sm') : Icon::mark('radio_button_unchecked', 'sm') ?></span></a>
-                        <?php if ($editable): ?>
-                            <form method="post" action="<?= s(route('ticket.links', $params)) ?>" data-ticket-form data-refresh-section="links">
-                                <input type="hidden" name="_csrf" value="<?= s($token) ?>" /><input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" /><input type="hidden" name="number" value="<?= (int) $linked['number'] ?>" /><input type="hidden" name="action" value="delete" />
-                                <button class="text-button muted" aria-label="<?= s(t('Verknüpfung entfernen')) ?>"><?= Icon::mark('close', 'sm') ?></button><div class="form-errors" role="alert"></div>
-                            </form>
-                        <?php endif ?>
-                    </div>
-                <?php endforeach ?>
-                <?php if (!$linked_tickets): ?><p class="muted small"><?= s(t('Keine verknüpften Tickets.')) ?></p><?php endif ?>
-                <?php if ($editable): ?>
-                    <details class="ticket-link-add"><summary class="text-button"><?= s(t('Ticket verknüpfen')) ?></summary>
-                        <form method="post" action="<?= s(route('ticket.links', $params)) ?>" data-ticket-form data-refresh-section="links">
-                            <input type="hidden" name="_csrf" value="<?= s($token) ?>" /><input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" />
-                            <label><?= s(t('Ticketnummer in diesem Projekt')) ?><span class="ticket-link-input"><span><?= s($key) ?>-</span><input type="number" name="number" min="1" required placeholder="42" /></span></label>
-                            <button class="button subtle"><?= s(t('Verknüpfen')) ?></button><div class="form-errors" role="alert"></div>
-                        </form>
-                    </details>
-                <?php endif ?>
-            </section>
-                <section class="detail-section" data-ticket-section="attachments">
-                    <h2>
-                        <?= s(t('Anhänge')) ?>
-                        <span class="count"><?= count($attachments) ?></span>
-                    </h2>
-                    <?php foreach ($attachments as $file): ?>
-                        <div class="attachment-row">
-                            <?php if ($file['state'] === 'ready'): ?>
-                                <a href="<?= s(route('attachment.download', ['project' => $projectId, 'ticket' => $params['ticket'], 'attachment' => $file['id']])) ?>"><?= Icon::mark('download', 'sm') ?> <?= s($file['original_name']) ?></a>
-                            <?php else: ?>
-                                <span><?= s($file['original_name']) ?> · Wird verarbeitet …</span>
-                            <?php endif ?>
-                            <span class="muted small"><?= number_format((int) $file['byte_size'] / 1024, 1, ',', '.') ?> KiB</span>
-                            <?php if ($scope->allows('upload')): ?>
-                                <form method="post" data-enhanced action="<?= s(route('attachment.delete', ['project' => $projectId, 'ticket' => $params['ticket'], 'attachment' => $file['id']])) ?>">
-                                    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-                                    <button
-                                        class="text-button muted"
-                                        aria-label="Anhang <?= s($file['original_name']) ?> löschen"
-                                    ><?= Icon::mark('close', 'sm') ?></button>
-                                    <div class="form-errors" role="alert"></div>
-                                </form>
-                            <?php endif ?>
-                        </div>
-                    <?php endforeach ?>
-                    <?php if ($scope->allows('upload') && !$ticket['archived_at']): ?>
-                        <form
-                            class="upload-form"
-                            method="post"
-                            enctype="multipart/form-data"
-                            data-upload
-                            action="<?= s(route('attachment.upload', ['project' => $projectId, 'ticket' => $params['ticket']])) ?>"
-                        >
-                            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-                            <label class="dropzone" data-dropzone>
-                                <input
-                                    type="file"
-                                    name="attachment"
-                                    required
-                                    class="sr-only"
-                                    data-upload-input
-                                    accept=".txt,.md,.csv,.pdf,.png,.jpg,.jpeg,.webp,.zip"
-                                />
-                                <span class="dropzone-mark"><?= Icon::mark('attach_file', 'lg') ?></span>
-                                <span class="dropzone-words">
-                                    <strong><?= s(t('Datei anhängen')) ?></strong>
-                                    <small class="muted"><?= s(t('Bis 10 MiB · Text, PDF, Bilder oder ZIP · privat im Projekt')) ?></small>
-                                </span>
-                            </label>
-                            <div class="upload-chosen" hidden data-upload-chosen>
-                                <?= Icon::mark('folder_open', 'sm') ?>
-                                <span class="upload-name" data-upload-name></span>
-                                <span class="muted small" data-upload-size></span>
-                                <button
-                                    type="button"
-                                    class="text-button muted"
-                                    data-upload-clear
-                                    aria-label="<?= s(t('Auswahl aufheben')) ?>"
-                                ><?= Icon::mark('close', 'sm') ?></button>
-                            </div>
-                            <div class="upload-progress" hidden data-upload-progress>
-                                <span class="upload-track"><span class="upload-fill" data-upload-fill></span></span>
-                                <span class="muted small" data-upload-percent>0 %</span>
-                            </div>
-                            <div class="form-errors" role="alert"></div>
-                            <button class="button subtle" data-upload-submit><?= s(t('Hochladen')) ?></button>
-                        </form>
-                    <?php endif ?>
-                </section>
-
-            <details class="detail-section ticket-history" data-ticket-section="activity">
-                <summary><?= s(t('Verlauf')) ?><span class="count"><?= count($activity) ?></span></summary>
-                <ol class="activity-list">
-                    <?php foreach ($activity as $item): ?>
-                        <li><span class="activity-dot"></span><div><strong><?= s($item['actor_name']) ?></strong><p><?= s(ActivityLabel::for($item['event_type'])) ?></p><time><?= s(Format::dateTime($item['created_at'], $preferences)) ?></time></div></li>
-                    <?php endforeach ?>
-                </ol>
-            </details>
+            <div data-widget-slot="ticket.main.widgets">
+                <?= slot('ticket.main.widgets', $uiContext, $panelData) ?>
+            </div>
             <section id="comments" class="detail-section ticket-comments">
                 <div data-ticket-section="comments">
                     <h2><?= s(t('Kommentare')) ?><span class="count"><?= count(array_filter($comments, static fn(array $comment) => $comment['deleted_at'] === null)) ?></span></h2>
                     <?php
                     $children = [];
-foreach ($comments as $comment) {
-    $children[$comment['parent_id'] ?? 0][] = $comment;
-}
-$stack = array_map(static fn(array $comment) => [$comment, 0], array_reverse($children[0] ?? []));
-while ($stack) {
-    [$comment, $depth] = array_pop($stack);
-    foreach (array_reverse($children[$comment['id']] ?? []) as $child) {
-        $stack[] = [$child, $depth + 1];
-    }
-    $handle = $memberHandles[$comment['author_id']] ?? Mentions::handle($comment['author_name']);
-    ?>
+                foreach ($comments as $comment) {
+                    $children[$comment['parent_id'] ?? 0][] = $comment;
+                }
+                $stack = array_map(static fn(array $comment) => [$comment, 0], array_reverse($children[0] ?? []));
+                while ($stack) {
+                    [$comment, $depth] = array_pop($stack);
+                    foreach (array_reverse($children[$comment['id']] ?? []) as $child) {
+                        $stack[] = [$child, $depth + 1];
+                    }
+                    $handle = $memberHandles[$comment['author_id']] ?? Mentions::handle($comment['author_name']);
+                    ?>
                         <article class="comment ticket-comment <?= $depth ? 'is-reply' : '' ?>" id="comment-<?= (int) $comment['id'] ?>" style="--reply-depth: <?= min($depth, 3) ?>">
                             <span class="avatar avatar-small"><?= s(mb_substr($comment['author_name'], 0, 1)) ?></span>
                             <div>

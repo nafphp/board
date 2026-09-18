@@ -1,3 +1,5 @@
+import { fetchWorkspace, syncWidgets } from './fragment.js';
+
 // Attaching a file, with the progress the browser's own control never shows. The form below
 // stays a plain multipart form: without this script the native field and button still work,
 // which is why the file input is only visually hidden and never replaced.
@@ -45,7 +47,9 @@ function percent(form, share) {
   form.querySelector('[data-upload-percent]').textContent = Math.round(done * 100) + ' %';
 }
 
-// The list is rendered by the server, so the fresh one is fetched rather than guessed at.
+// The list is rendered by the server, so the fresh one is fetched rather than
+// guessed at — through the same fragment path the inline editor uses, so a
+// widget that appeared or disappeared meanwhile is handled here as well.
 async function relist(form) {
   const workspace = form.closest('[data-ticket-url]');
   const section = form.closest('[data-ticket-section="attachments"]');
@@ -54,23 +58,16 @@ async function relist(form) {
 
     return;
   }
-  const response = await fetch(`${workspace.dataset.ticketUrl}?fragment=1`, {
-    headers: { Accept: 'text/html' },
-  });
-  if (!response.ok || response.redirected) {
+  const fresh = await fetchWorkspace(workspace);
+  if (!fresh || !fresh.querySelector('[data-ticket-section="attachments"]')) {
     location.reload();
 
     return;
   }
-  const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
-  const replacement = parsed.querySelector('[data-ticket-section="attachments"]');
-  if (!replacement) {
-    location.reload();
-
-    return;
-  }
-  section.replaceWith(replacement);
-  replacement.querySelector('.attachment-row:last-of-type')?.classList.add('just-added');
+  syncWidgets(workspace, fresh);
+  workspace
+    .querySelector('[data-ticket-section="attachments"] .attachment-row:last-of-type')
+    ?.classList.add('just-added');
 }
 
 function upload(form) {

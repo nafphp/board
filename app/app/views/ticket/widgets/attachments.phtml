@@ -1,0 +1,85 @@
+<?php
+
+use App\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+/**
+ * The files attached to this ticket.
+ *
+ * Reading the list needs nothing more than reading the project; uploading and
+ * deleting still need the upload permission, so a reader sees what is there
+ * without being offered actions they may not take.
+ */
+?>
+<section class="detail-section" data-ticket-section="attachments" data-extension-id="<?= s($contribution->id) ?>"<?= $contribution->module === null ? '' : ' data-extension-module="' . s($contribution->module) . '"' ?>>
+    <h2>
+        <?= s(t('Anhänge')) ?>
+        <span class="count"><?= count($attachments) ?></span>
+    </h2>
+    <?php foreach ($attachments as $file): ?>
+        <div class="attachment-row">
+            <?php if ($file['state'] === 'ready'): ?>
+                <a href="<?= s(route('attachment.download', ['project' => $projectId, 'ticket' => $params['ticket'], 'attachment' => $file['id']])) ?>"><?= Icon::mark('download', 'sm') ?> <?= s($file['original_name']) ?></a>
+            <?php else: ?>
+                <span><?= s($file['original_name']) ?> · Wird verarbeitet …</span>
+            <?php endif ?>
+            <span class="muted small"><?= number_format((int) $file['byte_size'] / 1024, 1, ',', '.') ?> KiB</span>
+            <?php if ($scope->allows('upload')): ?>
+                <form method="post" data-enhanced action="<?= s(route('attachment.delete', ['project' => $projectId, 'ticket' => $params['ticket'], 'attachment' => $file['id']])) ?>">
+                    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                    <button
+                        class="text-button muted"
+                        aria-label="Anhang <?= s($file['original_name']) ?> löschen"
+                    ><?= Icon::mark('close', 'sm') ?></button>
+                    <div class="form-errors" role="alert"></div>
+                </form>
+            <?php endif ?>
+        </div>
+    <?php endforeach ?>
+    <?php if ($scope->allows('upload') && !$ticket['archived_at']): ?>
+        <form
+            class="upload-form"
+            method="post"
+            enctype="multipart/form-data"
+            data-upload
+            action="<?= s(route('attachment.upload', ['project' => $projectId, 'ticket' => $params['ticket']])) ?>"
+        >
+            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+            <label class="dropzone" data-dropzone>
+                <input
+                    type="file"
+                    name="attachment"
+                    required
+                    class="sr-only"
+                    data-upload-input
+                    accept=".txt,.md,.csv,.pdf,.png,.jpg,.jpeg,.webp,.zip"
+                />
+                <span class="dropzone-mark"><?= Icon::mark('attach_file', 'lg') ?></span>
+                <span class="dropzone-words">
+                    <strong><?= s(t('Datei anhängen')) ?></strong>
+                    <small class="muted"><?= s(t('Bis 10 MiB · Text, PDF, Bilder oder ZIP · privat im Projekt')) ?></small>
+                </span>
+            </label>
+            <div class="upload-chosen" hidden data-upload-chosen>
+                <?= Icon::mark('folder_open', 'sm') ?>
+                <span class="upload-name" data-upload-name></span>
+                <span class="muted small" data-upload-size></span>
+                <button
+                    type="button"
+                    class="text-button muted"
+                    data-upload-clear
+                    aria-label="<?= s(t('Auswahl aufheben')) ?>"
+                ><?= Icon::mark('close', 'sm') ?></button>
+            </div>
+            <div class="upload-progress" hidden data-upload-progress>
+                <span class="upload-track"><span class="upload-fill" data-upload-fill></span></span>
+                <span class="muted small" data-upload-percent>0 %</span>
+            </div>
+            <div class="form-errors" role="alert"></div>
+            <button class="button subtle" data-upload-submit><?= s(t('Hochladen')) ?></button>
+        </form>
+    <?php endif ?>
+</section>

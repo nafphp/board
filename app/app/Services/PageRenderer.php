@@ -14,6 +14,7 @@ use Psr\Http\Message\ResponseInterface;
 
 use function Naf\redirect;
 use function Naf\route;
+use function Naf\View\asset;
 use function Naf\View\render;
 use function Naf\View\view;
 use function Nafinity\extensions;
@@ -42,6 +43,7 @@ final class PageRenderer implements PageRendererInterface
 
         $preferences = $this->query->preferences();
         \Naf\I18n\translator()->setLanguage($preferences['locale']);
+        $this->assets();
 
         return render($this->template($template), [
             ...$data,
@@ -56,6 +58,21 @@ final class PageRenderer implements PageRendererInterface
     public function fragment(string $template, array $data = []): string
     {
         return view($this->template($template), $data);
+    }
+
+    /**
+     * Hand every registered asset to NAF's asset service, in registry order
+     *
+     * The service decides css from js by the file's extension, which is why a
+     * registered path carries no query string.
+     */
+    private function assets(): void
+    {
+        $service = asset();
+
+        foreach (extensions()->assets()->all() as $definition) {
+            $service->add($definition->publicPath, $definition->module ? 'module' : 'classic');
+        }
     }
 
     /**
