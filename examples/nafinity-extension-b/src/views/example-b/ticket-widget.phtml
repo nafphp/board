@@ -16,6 +16,7 @@ use function Naf\View\s;
     class="detail-section"
     data-ticket-section="example-review"
     data-extension-id="<?= s($contribution->id) ?>"
+    <?= $contribution->module === null ? '' : 'data-extension-module="' . s($contribution->module) . '"' ?>
 >
     <h2><?= Icon::mark('history', 'sm') ?> <?= s(t('Prüfung (Erweiterung B)')) ?></h2>
     <p class="muted small">

@@ -19,11 +19,11 @@ Ergebnisse in [`docs/Plugin-Erweiterbarkeit-Evidenz.json`](Plugin-Erweiterbarkei
 | E — UI-Beiträge und linkes Menü | erledigt | `UiRegistry`, `NavigationRegistry`, `SlotRenderer`, alle Slots der Auftragstabelle in den echten Views; T06, T18 |
 | F — Settings | erledigt | `settings()`, `SettingsService`, `DatabaseSettingsStore`, `PreferenceStore`, Migration, Karten, Feldtypen, HTTP-API; T09–T14 teilweise |
 | G — Ticket-Metadaten | erledigt | `ticket_metadata`, `TicketMetadataWriter`/`-Reader`, `TicketService`, `BoardQuery::detail()`; T15–T17, T19 teilweise |
-| H — Ticket-Widgets und Upload-Modul | erledigt | drei Default-Widgets, `AttachmentsModule`, `fragment.js`, `extensions.js`; T18, T21 teilweise |
+| H — Ticket-Widgets und Upload-Modul | erledigt | drei Default-Widgets, `AttachmentsModule`, `fragment.js`, `extensions.js`; T18, T20, T22, T21 bis auf die Dispose-Beobachtung |
 | I — Assets und Übersetzungen | erledigt | `AssetPublisher` und drei CLI-Kommandos, Veröffentlichung im Candidate-Build, `Naf\I18n\translation_paths()` in naf/i18n, `Locales::available()`; T27, T28, T32 |
 | J — Filter, Schätzung, Events, AI | erledigt | `BoardFilterRegistry` in `BoardQuery`, `EstimationScaleRegistry`, `ActivityTypeRegistry`, `AiToolRegistry`; T23–T26 |
 | K — Lebensdauer, Beispiele, Dokumentation | erledigt | zwei installierte Beispielpakete, `app/app/extensions.php`, `docs/Plugin-Erweiterbarkeit.md`; T30 |
-| L — Abnahme T01–T32 | teilweise | siehe Tabelle unten; offen bleiben nur die interaktiven Browserpunkte T20 (Uploadpfad), T21 (Drawer-Lifecycle) und T22 (Auto-Save) |
+| L — Abnahme T01–T32 | teilweise | siehe Tabelle unten; offen bleibt allein die Dispose-Beobachtung beim Schließen des Drawers in T21, weil der verwendete Vorschaubrowser das `close`-Ereignis eines `<dialog>` nicht feuert |
 
 ## Abnahmetests T01–T32
 
@@ -51,9 +51,9 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 | T17 | erledigt | `T17 an unknown field key is refused instead of stored`, `… a core attribute cannot be claimed as a contributed field` — grün |
 | T18 | erledigt | `T18 two widgets share an index and are ordered by id`, `… extension B replaced extension A\'s widget under the same id`, `T18 the contributed widgets render in the ticket, in order` — grün |
 | T19 | erledigt | `T19 ticket field groups all point at a registered panel`, `… panels and fields are sortable without changing what they mean` — grün; die Fachregeln von move/Pivots/Timer laufen weiter über die bestehende Suite |
-| T20 | teilweise | `T20 the upload widget comes from the registry and removing it keeps the files` — grün; Auswahl, Progress, Quotas, private Downloads und Recovery laufen unverändert über `make test-mariadb` und `make test-http`, ein eigener Browserlauf des Uploadpfads fehlt |
-| T21 | teilweise | Lifecycle implementiert (`extensions.js`, `fragment.js`) und im Browser als statischer Seitenzustand geprüft; Drawer, Create→Detail und Dispose nach Refresh sind nicht interaktiv nachgewiesen |
-| T22 | offen | Auto-Save für Metadaten ist integriert, aber nicht eigens getestet |
+| T20 | erledigt | `T20 the upload widget comes from the registry and removing it keeps the files` — grün; dazu ein interaktiver Browserlauf: Dateiauswahl, Upload, Listenauffrischung, privater Download mit Attachment-Header und Abweisung einer `.php`-Datei. Nachweis in [`docs/Plugin-Erweiterbarkeit-Browser-Interaktiv.json`](Plugin-Erweiterbarkeit-Browser-Interaktiv.json) |
+| T21 | teilweise | Interaktiv geprüft: Vollseite, Drawer, Create-Modus ohne Beitragswidgets, Fragment-Refresh und erneutes Öffnen mounten das Beitragsmodul genau einmal, ohne doppelte Listener oder Assets. **Offen:** Dispose beim Schließen des Drawers ließ sich nicht beobachten — der Vorschaubrowser ist WebKit und feuert das `close`-Ereignis eines `<dialog>` dort überhaupt nicht, also läuft auch die vorhandene Aufräumroutine der Anwendung darin nicht |
+| T22 | erledigt | Interaktiv geprüft: Eingabe in ein beigetragenes Feld löst das vorhandene Auto-Save aus, die Ticketversion steigt genau einmal, die Anzeige übernimmt den neuen Wert, Entwurf und Fokus bleiben erhalten, und nach dem Refresh ist das Beitragsmodul weiterhin genau einmal gemountet |
 | T23 | erledigt | `T23 a contributed filter reaches the count and the cards` — grün |
 | T24 | erledigt | `T24 a contributed estimation scale is the same everywhere` — grün; die Spalte `projects.estimation_scale` wurde dafür auf VARCHAR(190) verbreitert |
 | T25 | erledigt | `T25 a plugin listener enqueues in the same transaction, and a rollback takes it back` — grün; Beispiel A bringt Listener und Queue-Job mit |
@@ -77,6 +77,7 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 | Erweiterungs-Abnahme | `make test-plugins` | 57 Prüfungen grün: 38 in-process, 6 über HTTP, 7 Assets, 6 ohne die Pakete |
 | Browserprüfung | Snapshots aus dem Erweiterungs-Host, 800/390/320 Pixel, Light und Dark | grün, siehe Browser-Evidenz |
 | Distribution | `bin/build-candidate --source work/extension-host` und ein Lauf des Images ohne Source-Mounts | grün, siehe Distributions-Evidenz |
+| Interaktive Browserprüfung | laufende Installation mit beiden Erweiterungen: Drawer, Auto-Save, Upload | grün bis auf die genannte Dispose-Beobachtung |
 | Stilprüfung | `bin/style check` | grün |
 | Whitespace | `git diff --check` | grün |
 
@@ -94,5 +95,5 @@ davon abhängig, dass der Maintainer die Pakete merged und veröffentlicht.
 ## Verbleibende Maintainer-Aktionen
 
 1. NAF-RC-Branches prüfen und mergen (`naf/framework` v0.2.4, `naf/i18n` v0.2.2).
-2. Offene Abnahmepunkte T20, T21 und T22 abarbeiten: ein interaktiver Browserlauf für den Uploadpfad, den Drawer-Lifecycle und das Auto-Save beigetragener Felder.
+2. Den Dispose-Pfad beim Schließen des Drawers in einem Browser nachvollziehen, der das `close`-Ereignis eines `<dialog>` feuert (Chrome oder Firefox).
 3. Nach dem Release der Pakete die Distribution ohne Source-Symlinks prüfen.

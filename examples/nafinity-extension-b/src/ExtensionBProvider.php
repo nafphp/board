@@ -66,6 +66,9 @@ final class ExtensionBProvider implements ExtensionProviderInterface
                 null,
                 'read',
                 [UiContext::MODE_DETAIL],
+                // Replacing what a widget says does not have to mean replacing
+                // what it does, so extension A's browser module stays mounted.
+                '/plugins/example/nafinity-extension-a/review.js',
             ),
             true,
         );
