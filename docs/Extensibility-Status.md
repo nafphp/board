@@ -1,17 +1,18 @@
 # Extensibility — status
 
-Working record for the assignment in
-`docs/audits/2026-09-17-plugin-extensibility/IMPLEMENTATION_PROMPT.md`, on branch
-`feat/plugin-extensibility` off `origin/main` (`a194993`). Open steps stay marked open.
+Working record for the extensibility assignment of 17 September 2026, on branch
+`feat/plugin-extensibility` off `origin/main` (`a194993`). The assignment itself was
+removed once it was implemented; the step and acceptance ids below are its own.
+Open steps stay marked open.
 
-The API itself is described in [`Extensibility.md`](Extensibility.md); the machine-readable
-results are in [`Plugin-Erweiterbarkeit-Evidenz.json`](Plugin-Erweiterbarkeit-Evidenz.json).
+The API itself is described in [`Extensibility.md`](Extensibility.md). The machine-readable
+results are written by `bin/check-extensions` into `work/` on every run.
 
 ## Steps A–L
 
 | Step | State | Evidence |
 |---|---|---|
-| A — Starting point, scope, test setup | done | `app/composer.json` is `fkde/nafinity`; HEAD was `a194993`, not the audit's `016931e`; `AGENTS.md`, `README.md`, `docs/Implementation.md`, the plan, the style rules, `REPORT.md` and the audit probe were read; branch created; this file. The audit probe runs unchanged as the baseline regression, result in [`Plugin-Erweiterbarkeit-Probe.json`](Plugin-Erweiterbarkeit-Probe.json). Acceptance runs with A/B, without A/B and with the plugin listing reversed |
+| A — Starting point, scope, test setup | done | `app/composer.json` is `fkde/nafinity`; HEAD was `a194993`, not the audit's `016931e`; `AGENTS.md`, `README.md`, `docs/Implementation.md`, the plan, the style rules, the audit report and its probe were read; branch created; this file. The audit probe was run unchanged as the baseline regression. Acceptance ran with A/B, without A/B and with the plugin listing reversed |
 | B — When extensions register | done | `Nafinity\extensions()`, `ExtensionRegistry`, `ExtensionContext`, the order in `app/bootstrap.php`; T01 |
 | C — Routes, controllers, services, page renderer | done | `Route::remove()` and dispatcher binding in naf/framework; 17 contracts, each checked against a productive consumer; `ServiceDefaults`; `PageRenderer`; `ViewRegistry`; T02–T05, T08 |
 | D — Plugin permissions | done | `PermissionRegistry`, `Access::permissions()`, `RoleService`, the role editor; T07 |
@@ -50,7 +51,7 @@ Run with `make test-plugins` (`bin/check-extensions`), `make test-mariadb`, `mak
 | T17 | done | `an unknown field key is refused instead of stored`, `a core attribute cannot be claimed as a contributed field` — green |
 | T18 | done | `two widgets share an index and are ordered by id`, `extension B replaced extension A's widget under the same id`, `the contributed widgets render in the ticket, in order` — green |
 | T19 | done | `ticket field groups all point at a registered panel`, `panels and fields are sortable without changing what they mean` — green; the domain rules for move, pivots and timer continue to run through the existing suite |
-| T20 | done | `the upload widget comes from the registry and removing it keeps the files` — green; plus an interactive browser run: file choice, upload, list refresh, private download with an attachment header and refusal of a `.php` file. Evidence in [`Plugin-Erweiterbarkeit-Browser-Interaktiv.json`](Plugin-Erweiterbarkeit-Browser-Interaktiv.json) |
+| T20 | done | `the upload widget comes from the registry and removing it keeps the files` — green; plus an interactive browser run: file choice, upload, list refresh, private download with an attachment header and refusal of a `.php` file |
 | T21 | **partial** | Verified interactively: full page, drawer, create mode without contributed widgets, fragment refresh and reopening mount the contributed module exactly once, with no duplicate listeners or assets. **Open:** dispose on closing the drawer could not be observed — the preview browser is WebKit and does not fire a `<dialog>`'s `close` event at all, so the application's existing cleanup does not run there either |
 | T22 | done | Verified interactively: typing in a contributed field triggers the existing auto-save, the ticket version rises exactly once, the display takes the new value, draft and focus are preserved, and after the refresh the contributed module is still mounted exactly once |
 | T23 | done | `a contributed filter reaches the count and the cards` — green |
@@ -61,8 +62,8 @@ Run with `make test-plugins` (`bin/check-extensions`), `make test-mariadb`, `mak
 | T28 | done | seven checks: registration, missing files, idempotency, file types, a host conflict, removal without the package, an unknown package — green, plus a real CLI run of all three commands |
 | T29 | done | `the plugin command, migration, job and schedule entry are all there`, `the queued plugin job runs and writes only its own table` — green |
 | T30 | done | six checks without A/B — green |
-| T31 | done | Browser run at 800/390/320 pixels in light and dark with the real templates, assets and fonts; evidence in [`Plugin-Erweiterbarkeit-Browser.json`](Plugin-Erweiterbarkeit-Browser.json). Found and fixed on the way: the attachment form's hidden file input was stretched to full width and pushed every ticket page 34 pixels sideways on a phone |
-| T32 | done | `bin/build-candidate --source work/extension-host` builds an image without source mounts or symlinks, carrying both example packages as files and their published assets; the running image serves the contributed page. Evidence in [`Plugin-Erweiterbarkeit-Distribution.json`](Plugin-Erweiterbarkeit-Distribution.json) |
+| T31 | done | Browser run at 800/390/320 pixels in light and dark with the real templates, assets and fonts. Found and fixed on the way: the attachment form's hidden file input was stretched to full width and pushed every ticket page 34 pixels sideways on a phone |
+| T32 | done | `bin/build-candidate --source work/extension-host` builds an image without source mounts or symlinks, carrying both example packages as files and their published assets; the running image serves the contributed page |
 
 ## Checks that ran
 
@@ -70,7 +71,8 @@ The numbers of the last full run are in
 [Implementation and acceptance](Implementation.md#verification): 74 MariaDB, 74 PostgreSQL,
 102 HTTP, 25 profile, 3 worker, both AI suites and 65 extension checks, plus naf/framework
 137/280 and naf/i18n 39/108. `composer validate` is green for every manifest, real and generated.
-The audit probe runs unchanged as the baseline regression.
+The audit probe was run unchanged as the baseline regression and showed only the two intended
+differences; it was removed with the rest of the assignment once that was implemented.
 
 ## Changes to NAF packages
 

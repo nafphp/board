@@ -877,16 +877,8 @@ real HTTP, with the **plugin listing reversed** — NAF then boots B first, and 
 run by index and id — and finally without the packages. Asset publishing is checked on top of
 that.
 
-The original audit's probe stays unchanged as the baseline regression:
-
-```sh
-docker compose run --rm --no-deps -T \
-  --volume "$PWD:/workspace/project" \
-  --volume "$(python3 -c 'import os;print(os.path.realpath("packages"))'):/workspace/nafphp:ro" \
-  --workdir /workspace/project app \
-  php docs/audits/2026-09-17-plugin-extensibility/nafinity-probe.php
-```
-
-It shows exactly two intended differences from the audited state: the dispatcher now takes the
-bound target class, and `Nafinity\settings()` exists. Everything else — including the fact that
-Nafinity's own `home` route still replaces a plugin's early route — stays as measured.
+Two framework behaviours changed deliberately along the way, and nothing else did: the dispatcher
+now takes the bound target class, and `Nafinity\settings()` exists. In particular, Nafinity's own
+`home` route still replaces a plugin's early route — registration order decides, and the
+application registers its routes first. `make test-plugins` covers both, with really installed
+packages.

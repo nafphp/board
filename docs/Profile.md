@@ -131,7 +131,7 @@ these tests.
 
 `M202609150002AccountProfile` adds two user fields and `account_email_changes`. Schema
 identifier: `202609150002`. The local backup `work/backups/20260915T214401Z` was taken before
-applying it. Results are in [Profile-Evidenz.json](Profile-Evidenz.json).
+applying it. `make test-profile` re-checks the whole flow.
 
 Not included: forgotten-password recovery, MFA and synchronisation of external LDAP or OIDC
 credentials. Those are their own account-recovery and identity flows.

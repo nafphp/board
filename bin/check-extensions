@@ -220,7 +220,10 @@ evidence = {
     + without_extensions["failed"],
 }
 print(json.dumps(evidence, indent=2, ensure_ascii=False))
-(root / "docs/Plugin-Erweiterbarkeit-Evidenz.json").write_text(
+# Generated output belongs in work/, which is ignored: a committed snapshot of a
+# past run goes stale the moment the next one differs, and documentation that
+# quotes it inherits that staleness.
+(root / "work" / "extension-evidence.json").write_text(
     json.dumps(evidence, indent=2, ensure_ascii=False) + "\n"
 )
 sys.exit(1 if evidence["failed"] else 0)

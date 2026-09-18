@@ -75,7 +75,7 @@ Verified with a catalogue of seven real and 493 synthetic tool descriptions: the
 `embeddinggemma:latest` took about seven seconds, and the following selection with an existing
 index 66 ms. The column question returned the board tool only. That is a local selection
 measurement, not a statement about 500 implemented actions or about the duration of the chat
-answer that follows. Details in [AI-Routing-Benchmark.json](AI-Routing-Benchmark.json).
+answer that follows. `make test-ai` re-runs the selection checks behind it.
 
 API and prefix contracts: [Ollama Embed](https://docs.ollama.com/api/embed),
 [EmbeddingGemma retrieval](https://ai.google.dev/gemma/docs/embeddinggemma/inference-embeddinggemma-with-sentence-transformers),

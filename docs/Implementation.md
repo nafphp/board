@@ -72,27 +72,6 @@ Hence the limit of 300 cards per query. Drag and drop is disabled on filtered or
 views so that invisible neighbours cannot produce a wrong position; the move menu stays
 available.
 
-## Evidence
-
-Machine-readable results of individual runs. All of them are snapshots carrying the date of
-their run, not a description of today's state.
-
-| File | Holds |
-|---|---|
-| [`Docker-Evidenz.json`](Docker-Evidenz.json) | Runtime, ports, processes, healthcheck |
-| [`Snapshot-Evidenz.json`](Snapshot-Evidenz.json) | Candidate image without source mounts |
-| [`Code-Style-Evidenz.json`](Code-Style-Evidenz.json) | Formatter run and commit evidence |
-| [`Profile-Evidenz.json`](Profile-Evidenz.json) | Password and email changes, sessions |
-| [`Bedienung-UI-Evidenz.json`](Bedienung-UI-Evidenz.json) | Operability, keyboard, viewports |
-| [`Settings-AI-Evidenz.json`](Settings-AI-Evidenz.json) | Settings cards, custom roles, Ollama |
-| [`AI-Chat-UI-Evidenz.json`](AI-Chat-UI-Evidenz.json) | Chat interface and tool rounds |
-| [`AI-Routing-Benchmark.json`](AI-Routing-Benchmark.json) | Semantic selection from large catalogues |
-| [`Analyse-Evidenz.json`](Analyse-Evidenz.json) | Package inventory from the pre-build analysis |
-
-The five `Plugin-Erweiterbarkeit-*.json` files are placed in
-[`Extensibility-Status.md`](Extensibility-Status.md);
-`Plugin-Erweiterbarkeit-Evidenz.json` is rewritten by `bin/check-extensions` on every run.
-
 ## Remaining limits
 
 - Stable package releases, the distribution lock built from them and a fresh install without
