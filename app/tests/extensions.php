@@ -216,6 +216,23 @@ test('T03 a later route of the same name replaces, and remove takes it back', fu
     check(route()->remove('example.removable') === false, 'unknown remove was true');
 });
 
+test('T03 the same path under another name does not replace anything', function () {
+    $board = route()->all()['board'];
+
+    // NAF matches in registration order, so the route that was there first
+    // answers. A later route with the same path but a different name is
+    // therefore reachable by name and by url(), but never by that path.
+    route()->add('GET', $board['path'], static fn() => null, 'example.shadow');
+
+    $matched = route()->find('/projects/1', 'GET');
+    check($matched['name'] === 'board', 'a later route took over the path: ' . $matched['name']);
+    check(route('example.shadow', ['project' => 1]) === '/projects/1', 'the shadow has no url');
+
+    // Replacing means using the same name; that is the only promise.
+    route()->add('GET', $board['path'], $board['action'], 'board');
+    check(route()->remove('example.shadow') === true, 'the shadow could not be removed');
+});
+
 test('T05 extension B decorates the bound ticket service for every consumer', function () use (
     $container,
     $tickets,

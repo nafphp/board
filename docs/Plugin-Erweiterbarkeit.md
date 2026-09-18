@@ -190,6 +190,12 @@ final class ReportController
 }
 ```
 
+**Der Name ist die Identität.** Eine Route unter einem bereits vergebenen Namen
+ersetzt die vorhandene — das ist die einzige Zusage. Derselbe *Pfad* unter einem
+anderen Namen ersetzt nichts: NAF prüft die Routen in Registrierungsreihenfolge,
+also antwortet weiterhin die zuerst registrierte. Die zweite bleibt über ihren
+Namen und `route()` erreichbar, aber nie über diesen Pfad.
+
 `Naf\Core\Route::remove(string $name): bool` nimmt eine benannte Route zurück.
 Der Dispatcher bevorzugt eine **gebundene** Zielklasse (`$container->get()`) und
 baut alles Ungebundene wie bisher; ein gebundenes Objekt ohne die Aktion der

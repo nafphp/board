@@ -58,7 +58,7 @@ def build_host(folder, packages, order=None):
                 "options": {"symlink": True, "versions": {package: "1.0.0"}},
             }
         )
-        config["require"][package] = "*"
+        config["require"][package] = "^1.0"
 
     host.mkdir(parents=True, exist_ok=True)
     (host / "composer.json").write_text(json.dumps(config, indent=2) + "\n")

@@ -34,7 +34,7 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 |---|---|---|
 | T01 | erledigt | `T01 both extensions boot after the application defaults, in index order`, `… a second initialization does not run the providers again`, `… registering after the pass reports where it belongs`, `… a failing provider names itself and its cause` — grün; dazu `A7 the application really did boot the plugins the other way round`, `A7 the providers still run in index and id order`, `A7 what B replaced is still replaced`, `A7 what only A registers is still there` — grün mit vertauschter Auflistung |
 | T02 | erledigt | `T02 the contributed page answers over HTTP for someone with the right`, `… refused without the right and hidden from a stranger` — grün |
-| T03 | erledigt | `T03 a plugin route exists and core routes still answer`, `… a later route of the same name replaces, and remove takes it back` — grün; Framework: `testRemovingANamedRouteTakesItOutOfMatching` u. a. |
+| T03 | erledigt | `T03 a plugin route exists and core routes still answer`, `… a later route of the same name replaces, and remove takes it back`, `… the same path under another name does not replace anything` — grün; Framework: `testRemovingANamedRouteTakesItOutOfMatching` u. a. |
 | T04 | erledigt | naf/framework: `testABoundControllerClassIsDispatchedInsteadOfANewInstance`, `testAnUnboundControllerClassIsStillBuiltByTheContainer`, `testAFailingControllerFactoryIsVisible`, `testABoundControllerWithoutTheActionIsReported` — grün |
 | T05 | teilweise | `T05 extension B decorates the bound ticket service for every consumer` — grün. Ein produktiver Konsument je Contract ist umgestellt; ein eigener Ersatztest je einzelnem Contract fehlt noch |
 | T06 | erledigt | `T06 the contributed menu entry appears only with the right` — grün; Index-Gleichstand über T18 |
@@ -74,7 +74,8 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 | Nafinity-DB-Suite (MariaDB) | `make test-mariadb` | 74 Tests grün |
 | Nafinity-DB-Suite (PostgreSQL) | `make test-postgres` | 74 Tests grün |
 | Nafinity-HTTP-Suite | `make test-http` | 102 Prüfungen grün |
-| Erweiterungs-Abnahme | `make test-plugins` | 61 Prüfungen grün: 38 in-process, 6 über HTTP, 4 mit vertauschter Auflistung, 7 Assets, 6 ohne die Pakete |
+| Erweiterungs-Abnahme | `make test-plugins` | 62 Prüfungen grün: 39 in-process, 6 über HTTP, 4 mit vertauschter Auflistung, 7 Assets, 6 ohne die Pakete |
+| Composer-Manifeste | `composer validate` im Container für `app/composer.json`, das generierte `app/composer.dev.json`, beide Beispielpakete und das generierte Testmanifest | alle gültig |
 | Ausgangsregression | Audit-Probe `nafinity-probe.php`, unverändert | grün; nur die beiden beabsichtigten Änderungen, siehe Probe-Evidenz |
 | Browserprüfung | Snapshots aus dem Erweiterungs-Host, 800/390/320 Pixel, Light und Dark | grün, siehe Browser-Evidenz |
 | Distribution | `bin/build-candidate --source work/extension-host` und ein Lauf des Images ohne Source-Mounts | grün, siehe Distributions-Evidenz |

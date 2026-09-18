@@ -6,7 +6,7 @@
   "require": {
     "php": ">=8.3",
     "naf/framework": "^0.2.4",
-    "example/nafinity-extension-a": "*"
+    "example/nafinity-extension-a": "^1.0"
   },
   "autoload": {
     "psr-4": {

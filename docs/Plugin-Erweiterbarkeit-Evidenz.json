@@ -5,7 +5,7 @@
       "example.reports",
       "example.review"
     ],
-    "passed": 38,
+    "passed": 39,
     "failed": [],
     "tests": [
       "T01 both extensions boot after the application defaults, in index order",
@@ -14,6 +14,7 @@
       "T01 a failing provider names itself and its cause",
       "T03 a plugin route exists and core routes still answer",
       "T03 a later route of the same name replaces, and remove takes it back",
+      "T03 the same path under another name does not replace anything",
       "T05 extension B decorates the bound ticket service for every consumer",
       "T15 a contributed field is stored, read back and reset",
       "T16 a metadata-only change raises the version exactly once",
@@ -120,6 +121,6 @@
       "T30 a personal value of a missing extension is neither read nor lost"
     ]
   },
-  "passed": 61,
+  "passed": 62,
   "failed": []
 }
