@@ -12,7 +12,7 @@ Ergebnisse in [`docs/Plugin-Erweiterbarkeit-Evidenz.json`](Plugin-Erweiterbarkei
 
 | Schritt | Stand | Nachweis |
 |---|---|---|
-| A — Ausgangspunkt, Umfang, Testaufbau | erledigt | `app/composer.json` ist `fkde/nafinity`; HEAD war `a194993`, nicht der Auditstand `016931e`; Branch angelegt; diese Datei |
+| A — Ausgangspunkt, Umfang, Testaufbau | erledigt | `app/composer.json` ist `fkde/nafinity`; HEAD war `a194993`, nicht der Auditstand `016931e`; `AGENTS.md`, `README.md`, `docs/Implementation.md`, `docs/Nafinity-Prototypplan.md`, `docs/Code-Style.md`, `REPORT.md` und die Audit-Probe gelesen; Branch angelegt; diese Datei. Die Audit-Probe läuft unverändert als Ausgangsregressionstest, Ergebnis in [`docs/Plugin-Erweiterbarkeit-Probe.json`](Plugin-Erweiterbarkeit-Probe.json). Die Abnahme läuft mit A/B, ohne A/B und mit vertauschter Plugin-Auflistung |
 | B — Zeitpunkt der Erweiterungsregistrierung | erledigt | `Nafinity\extensions()`, `ExtensionRegistry`, `ExtensionContext`, Reihenfolge in `app/bootstrap.php`; T01 |
 | C — Routen, Controller, Services, Seitenrenderer | erledigt | `Route::remove()` und Dispatcher-Binding in naf/framework; 17 Contracts; `ServiceDefaults`; `PageRenderer`; `ViewRegistry`; T02–T05, T08 |
 | D — Plugin-Rechte | erledigt | `PermissionRegistry`, `Access::permissions()`, `RoleService`, Rolleneditor; T07 |
@@ -32,7 +32,7 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 
 | ID | Stand | Testname / Ergebnis |
 |---|---|---|
-| T01 | erledigt | `T01 both extensions boot after the application defaults, in index order`, `… a second initialization does not run the providers again`, `… registering after the pass reports where it belongs`, `… a failing provider names itself and its cause` — grün |
+| T01 | erledigt | `T01 both extensions boot after the application defaults, in index order`, `… a second initialization does not run the providers again`, `… registering after the pass reports where it belongs`, `… a failing provider names itself and its cause` — grün; dazu `A7 the application really did boot the plugins the other way round`, `A7 the providers still run in index and id order`, `A7 what B replaced is still replaced`, `A7 what only A registers is still there` — grün mit vertauschter Auflistung |
 | T02 | erledigt | `T02 the contributed page answers over HTTP for someone with the right`, `… refused without the right and hidden from a stranger` — grün |
 | T03 | erledigt | `T03 a plugin route exists and core routes still answer`, `… a later route of the same name replaces, and remove takes it back` — grün; Framework: `testRemovingANamedRouteTakesItOutOfMatching` u. a. |
 | T04 | erledigt | naf/framework: `testABoundControllerClassIsDispatchedInsteadOfANewInstance`, `testAnUnboundControllerClassIsStillBuiltByTheContainer`, `testAFailingControllerFactoryIsVisible`, `testABoundControllerWithoutTheActionIsReported` — grün |
@@ -74,7 +74,8 @@ Ausgeführt mit `make test-plugins` (`bin/check-extensions`), `make test-mariadb
 | Nafinity-DB-Suite (MariaDB) | `make test-mariadb` | 74 Tests grün |
 | Nafinity-DB-Suite (PostgreSQL) | `make test-postgres` | 74 Tests grün |
 | Nafinity-HTTP-Suite | `make test-http` | 102 Prüfungen grün |
-| Erweiterungs-Abnahme | `make test-plugins` | 57 Prüfungen grün: 38 in-process, 6 über HTTP, 7 Assets, 6 ohne die Pakete |
+| Erweiterungs-Abnahme | `make test-plugins` | 61 Prüfungen grün: 38 in-process, 6 über HTTP, 4 mit vertauschter Auflistung, 7 Assets, 6 ohne die Pakete |
+| Ausgangsregression | Audit-Probe `nafinity-probe.php`, unverändert | grün; nur die beiden beabsichtigten Änderungen, siehe Probe-Evidenz |
 | Browserprüfung | Snapshots aus dem Erweiterungs-Host, 800/390/320 Pixel, Light und Dark | grün, siehe Browser-Evidenz |
 | Distribution | `bin/build-candidate --source work/extension-host` und ein Lauf des Images ohne Source-Mounts | grün, siehe Distributions-Evidenz |
 | Interaktive Browserprüfung | laufende Installation mit beiden Erweiterungen: Drawer, Auto-Save, Upload | grün bis auf die genannte Dispose-Beobachtung |

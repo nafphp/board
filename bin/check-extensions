@@ -157,6 +157,17 @@ over_http = run(
     ],
 )
 
+# The same two packages, listed the other way round. NAF boots plugins in the
+# order the application lists them, so this proves the provider order comes from
+# the index and the id rather than from whatever Composer happened to write down.
+(installed / "app/plugins.php").write_text(
+    "<?php\n\ndeclare(strict_types=1);\n\n"
+    "// Deliberately the wrong way round, to show it does not matter.\n"
+    "return ['example/nafinity-extension-b', 'example/nafinity-extension-a'];\n"
+)
+swapped = run(installed, ["php tests/extensions_order.php"])
+(installed / "app/plugins.php").unlink()
+
 # Publishing a package's public files, through the same class the CLI commands
 # use, and then the commands themselves so their wiring is proven too.
 assets = run(
@@ -194,14 +205,17 @@ run(installed, ["php vendor/bin/naf db:migrate down > migrate-down.log 2>&1", "e
 evidence = {
     "with_extensions": with_extensions,
     "over_http": over_http,
+    "swapped_listing": swapped,
     "assets": assets,
     "without_extensions": without_extensions,
     "passed": with_extensions["passed"]
     + over_http["passed"]
+    + swapped["passed"]
     + assets["passed"]
     + without_extensions["passed"],
     "failed": with_extensions["failed"]
     + over_http["failed"]
+    + swapped["failed"]
     + assets["failed"]
     + without_extensions["failed"],
 }

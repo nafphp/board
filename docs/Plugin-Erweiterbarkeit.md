@@ -888,3 +888,23 @@ Ausführen:
 ```sh
 make test-plugins
 ```
+
+Der Lauf bootet dieselbe Installation viermal: mit beiden Paketen, dieselbe
+Installation über echtes HTTP, mit **vertauschter Plugin-Auflistung** — NAF
+bootet dann B zuerst, die Provider laufen trotzdem nach Index und ID — und zum
+Schluss ohne die Pakete. Dazu kommt die Asset-Veröffentlichung.
+
+Die Probe des ursprünglichen Audits bleibt unverändert als Ausgangsregression:
+
+```sh
+docker compose run --rm --no-deps -T \
+  --volume "$PWD:/workspace/project" \
+  --volume "$(python3 -c 'import os;print(os.path.realpath("packages"))'):/workspace/nafphp:ro" \
+  --workdir /workspace/project app \
+  php docs/audits/2026-09-17-plugin-extensibility/nafinity-probe.php
+```
+
+Sie zeigt genau zwei beabsichtigte Änderungen gegenüber dem Auditstand: der
+Dispatcher nimmt jetzt die gebundene Zielklasse, und `Nafinity\settings()`
+existiert. Alles andere — auch dass Nafinitys eigene `home`-Route die frühe
+Route eines Plugins weiterhin ersetzt — bleibt wie gemessen.

@@ -80,10 +80,14 @@ final class Access implements AccessInterface
         $statement = $this->pdo->prepare('SELECT permission FROM project_role_permissions WHERE project_id=? AND role_id=?');
         $statement->execute([$project, $customRoleId]);
 
-        return array_values(array_intersect(
-            $statement->fetchAll(PDO::FETCH_COLUMN),
-            extensions()->permissions()->names(),
-        ));
+        // Before the extension pass has run — in a bare host, a unit test, the
+        // audit probe — nothing is registered yet. Falling back to the built-in
+        // names keeps ProjectPermissions the compatible access it has always
+        // been; a contributed permission still needs its definition.
+        $available = extensions()->permissions()->names()
+            ?: array_keys(ProjectPermissions::LABELS);
+
+        return array_values(array_intersect($statement->fetchAll(PDO::FETCH_COLUMN), $available));
     }
 
     public function write(int $projectId, string $action, callable $operation): mixed
