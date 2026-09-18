@@ -8,6 +8,8 @@ use Example\ExtensionA\ExtensionAProvider;
 use Example\ExtensionB\Services\CountingTicketService;
 use Nafinity\Contracts\ExtensionProviderInterface;
 use Nafinity\Contracts\TicketServiceInterface;
+use Nafinity\Definition\AssetDefinition;
+use Nafinity\Definition\AssetPackage;
 use Nafinity\Definition\SettingDefinition;
 use Nafinity\Definition\SettingSection;
 use Nafinity\Definition\UiContribution;
@@ -30,6 +32,7 @@ final class ExtensionBProvider implements ExtensionProviderInterface
         $this->widgets($context);
         $this->settings($context);
         $this->views($context);
+        $this->assets($context);
     }
 
     /**
@@ -115,5 +118,20 @@ final class ExtensionBProvider implements ExtensionProviderInterface
     private function views(ExtensionContext $context): void
     {
         $context->views()->add(new ViewOverride('example-a/reports', 'example-b/reports'));
+    }
+
+    private function assets(ExtensionContext $context): void
+    {
+        $context->assetPackages()->add(new AssetPackage(
+            'example/nafinity-extension-b',
+            __DIR__ . '/public',
+        ));
+
+        $context->assets()->add(new AssetDefinition(
+            'example.review.styles',
+            '/plugins/example/nafinity-extension-b/review.css',
+            'css',
+            300,
+        ));
     }
 }

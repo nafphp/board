@@ -7,6 +7,7 @@ use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\slot;
 use function Nafinity\template;
 
 $this->setLayout(template('layout'));
@@ -24,6 +25,7 @@ $unread = count(array_filter($notifications, static fn($item) => $item['read_at'
             </p>
         <?php endif ?>
     </div>
+    <?= slot('notifications.actions', $uiContext) ?>
     <form method="post" data-enhanced action="<?= s(route('notifications.read')) ?>">
         <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
         <button class="button subtle"><?= s(t('Alle als gelesen markieren')) ?></button>

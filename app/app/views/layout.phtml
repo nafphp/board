@@ -125,6 +125,7 @@ $hintUrl = $current
             'token'          => $token,
             'currentProject' => $current,
             'projects'       => $projects,
+            'uiContext'      => $uiContext,
         ]) ?>
         <dialog id="new-project" class="modal">
             <form method="post" action="<?= s(route('projects.create')) ?>" data-enhanced>

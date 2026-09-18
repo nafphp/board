@@ -4,6 +4,7 @@ use App\Support\Icon;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\slot;
 
 ?>
 <dialog
@@ -192,6 +193,7 @@ use function Naf\View\s;
                 </details>
             </div>
         </div>
+        <?= slot('profile.panels', $uiContext) ?>
     </div>
     <footer class="profile-footer">
         <form method="post" action="<?= s(route('logout')) ?>">

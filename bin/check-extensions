@@ -63,18 +63,24 @@ def build_host(folder, packages, order=None):
     (host / "composer.json").write_text(json.dumps(config, indent=2) + "\n")
     (host / "storage").mkdir(exist_ok=True)
     (host / "logs").mkdir(exist_ok=True)
-    if order is not None:
-        # Explicit provider order, independent of what Composer listed first.
-        (host / "app").unlink(missing_ok=True)
-    # The application's own source is shared, not copied. bootstrap.php is the
-    # exception: PHP resolves __DIR__ through a symlink, so a linked bootstrap
-    # would define BASE_PATH as the development installation and load its vendor.
-    for name in ["app", "public", "tests"]:
+    # The application's own source is shared, not copied. The two entry points
+    # are the exception: PHP resolves __DIR__ through a symlink, so a linked
+    # bootstrap.php or index.php would define BASE_PATH as the development
+    # installation and load its vendor directory instead of this host's.
+    for name in ["app", "tests"]:
         link = host / name
         if link.is_symlink() or link.exists():
             link.unlink()
         link.symlink_to("/workspace/app/" + name)
     (host / "bootstrap.php").write_text((root / "app/bootstrap.php").read_text())
+
+    public = host / "public"
+    public.mkdir(exist_ok=True)
+    (public / "index.php").write_text((root / "app/public/index.php").read_text())
+    assets = public / "assets"
+    if assets.is_symlink() or assets.exists():
+        assets.unlink()
+    assets.symlink_to("/workspace/app/public/assets")
 
     return host
 
@@ -102,7 +108,7 @@ def run(host, steps):
             "app-test",
             "sh",
             "-c",
-            "set -e; " + "; ".join(steps),
+            "set -e\n" + "\n".join(steps),
         ],
         cwd=root,
         capture_output=True,
@@ -130,6 +136,40 @@ with_extensions = run(
     ],
 )
 
+# The same host over real HTTP, with the fixtures the probe just created.
+over_http = run(
+    installed,
+    [
+        # The built-in server is stopped again, so the container run can end.
+        "php -S 127.0.0.1:8099 -t public public/index.php > server.log 2>&1 &",
+        "server=$!",
+        "sleep 1",
+        "set +e",
+        "php tests/extensions_http.php",
+        "status=$?",
+        "kill $server 2>/dev/null",
+        "exit $status",
+    ],
+)
+
+# Publishing a package's public files, through the same class the CLI commands
+# use, and then the commands themselves so their wiring is proven too.
+assets = run(
+    installed,
+    [
+        "php tests/extensions_assets.php",
+    ],
+)
+run(
+    installed,
+    [
+        "php vendor/bin/naf nafinity:assets:publish > assets-publish.log 2>&1",
+        "php vendor/bin/naf nafinity:assets:check > assets-check.log 2>&1",
+        "php vendor/bin/naf nafinity:assets:remove > assets-remove.log 2>&1",
+        "echo '{}'",
+    ],
+)
+
 # The same database, now without the packages: nothing is migrated down, because
 # uninstalling a package does not delete what people stored with it.
 removed = build_host("extension-host-without", [])
@@ -144,13 +184,21 @@ without_extensions = run(
 # The disposable database now records a migration whose source only exists while
 # the package is installed, so the schema is rolled back here rather than left
 # for the next suite to trip over.
-run(installed, ["php vendor/bin/naf db:migrate down > migrate-down.log 2>&1; echo '{}'"])
+run(installed, ["php vendor/bin/naf db:migrate down > migrate-down.log 2>&1", "echo '{}'"])
 
 evidence = {
     "with_extensions": with_extensions,
+    "over_http": over_http,
+    "assets": assets,
     "without_extensions": without_extensions,
-    "passed": with_extensions["passed"] + without_extensions["passed"],
-    "failed": with_extensions["failed"] + without_extensions["failed"],
+    "passed": with_extensions["passed"]
+    + over_http["passed"]
+    + assets["passed"]
+    + without_extensions["passed"],
+    "failed": with_extensions["failed"]
+    + over_http["failed"]
+    + assets["failed"]
+    + without_extensions["failed"],
 }
 print(json.dumps(evidence, indent=2, ensure_ascii=False))
 (root / "docs/Plugin-Erweiterbarkeit-Evidenz.json").write_text(

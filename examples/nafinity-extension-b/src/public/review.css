@@ -1,0 +1,7 @@
+/* The replacing widget's own styling, published from this package. */
+[data-extension-id='example.review.notes'] {
+  --example-accent: var(--accent);
+}
+[data-extension-id='example.review.notes'] h2 {
+  color: var(--example-accent);
+}

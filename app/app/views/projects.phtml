@@ -5,6 +5,7 @@ use App\Support\Format;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\slot;
 use function Nafinity\template;
 
 $this->setLayout(template('layout'));
@@ -23,6 +24,7 @@ $archived    = count(array_filter($projects, static fn($item) => $item['archived
             </p>
         <?php endif ?>
     </div>
+    <?= slot('projects.actions', $uiContext) ?>
     <button class="button primary" data-dialog="new-project">+ Neues Projekt</button>
 </section>
 <div class="project-cards">
@@ -34,6 +36,7 @@ $archived    = count(array_filter($projects, static fn($item) => $item['archived
             <h2><?= s($projectItem['name']) ?></h2>
             <p><?= s($projectItem['description']) ?></p>
             <span><?= (int) $projectItem['open_count'] ?> offene Tickets · <?= s($projectItem['role']) ?><?= $projectItem['archived_at'] ? ' · Archiviert' : '' ?></span>
+            <?= slot('projects.card.badges', $uiContext, ['project' => $projectItem]) ?>
         </a>
     <?php endforeach ?>
     <?php if (!$projects): ?>

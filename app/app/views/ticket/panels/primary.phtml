@@ -6,6 +6,7 @@ use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
 use function Nafinity\partial;
+use function Nafinity\slot;
 
 /**
  * The status group: which column a ticket sits in and who is on it.
@@ -57,6 +58,11 @@ use function Nafinity\partial;
                         </form>
                     </details>
                 <?php endif ?>
+                <?= slot('ticket.actions', $uiContext, [
+                    'ticket' => $ticket,
+                    'params' => $params,
+                    'token'  => $token,
+                ]) ?>
             </div>
         </details>
     <?php endif ?>

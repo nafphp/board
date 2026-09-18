@@ -7,6 +7,7 @@ use App\Support\Icon;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\slot;
 use function Nafinity\template;
 
 $this->setLayout(template('layout'));
@@ -22,6 +23,7 @@ $this->block('content');
                 : s(Format::count(count($activity), 'Eintrag', 'Einträge')) ?>
         </p>
     </div>
+    <?= slot('activity.actions', $uiContext) ?>
     <a class="button subtle" href="<?= s(route('board', ['project' => $project['id']])) ?>"><?= Icon::mark('arrow_back', 'sm') ?> Zum Board</a>
 </section>
 <section class="settings-card preferences-card">

@@ -37,6 +37,33 @@
       "T19 ticket field groups all point at a registered panel"
     ]
   },
+  "over_http": {
+    "host": "extension-host-http",
+    "passed": 6,
+    "failed": [],
+    "tests": [
+      "T02 the contributed page answers over HTTP for someone with the right",
+      "T06 the contributed menu entry appears only with the right",
+      "T02 the same page is refused without the right and hidden from a stranger",
+      "T13 the settings endpoints answer with values only",
+      "T13 a settings write without a token is refused",
+      "T18 the contributed widgets render in the ticket, in order"
+    ]
+  },
+  "assets": {
+    "host": "extension-host-assets",
+    "passed": 7,
+    "failed": [],
+    "tests": [
+      "T28 both packages register a public directory",
+      "T28 check reports what is missing before anything is published",
+      "T28 publishing writes both packages and is idempotent",
+      "T28 only declared public file types are published",
+      "T28 a file the host changed is neither overwritten nor removed",
+      "T28 remove works from the record, without the package",
+      "T28 an unknown package is named rather than guessed at"
+    ]
+  },
   "without_extensions": {
     "host": "extension-host-without",
     "passed": 6,
@@ -50,6 +77,6 @@
       "T30 a personal value of a missing extension is neither read nor lost"
     ]
   },
-  "passed": 33,
+  "passed": 46,
   "failed": []
 }
