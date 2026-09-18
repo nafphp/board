@@ -1,83 +1,140 @@
 # Nafinity
 
-Eine laufende Ticket-/Kanban-Anwendung auf NAF. Projektort: `/Users/flo/PhpStormProjects/nafinity`.
-Die Geschaeftsregeln liegen in App-Services; Routing, Auth, Policies, Views, Form/CSRF,
-PDO/Migrationen, ORM, Events, Queue, Scheduler, Mail und Uebersetzung kommen aus NAF.
+A ticket and kanban application running on [NAF](https://github.com/nafphp). Business rules
+live in application services; routing, auth, policies, views, form/CSRF, PDO and migrations,
+ORM, events, queue, scheduler, mail and translation come from NAF packages.
 
-## Starten
+The interface ships German and English. German is the complete base language, English covers
+the main interface texts.
 
-Voraussetzungen: Docker mit Compose, Make, OpenSSL und Python 3 auf dem Host und die lokalen
-NAF-Pakete unter `../nafphp`.
+## Getting started
+
+You need Docker with Compose, Make, OpenSSL and Python 3 on the host, plus the local NAF
+packages in `../nafphp`.
 
 ```sh
-cd ~/PhpStormProjects/nafinity
 make first-install
 ```
 
-Das richtet eine fehlende `.env` mit zufälligen lokalen Datenbankpasswörtern ein,
-erzeugt das lokale TLS-Zertifikat, baut das Image, installiert Composer-Abhängigkeiten im Container, führt die
-NAF-Migrationen und den Demo-Seed aus und startet App, Datenbank, Worker und Scheduler.
-Eine vorhandene `.env` bleibt erhalten. `NAFINITY_PORT`, `NAFINITY_HTTPS_PORT` und `NAF_SOURCE_ROOT` können
-dort angepasst werden. Die installierte Umgebung lässt sich danach mit `make run`
-starten; nach Änderungen an Docker-Dateien `make build-app run` verwenden.
+That creates a missing `.env` with random local database passwords, generates the local TLS
+certificate, builds the image, installs the Composer dependencies inside the container, runs
+the NAF migrations and the demo seed, and starts the app, database, worker and scheduler. An
+existing `.env` is left alone — `NAFINITY_PORT`, `NAFINITY_HTTPS_PORT` and `NAF_SOURCE_ROOT`
+can be adjusted there.
+
+Afterwards `make run` starts the installed environment; after changes to Docker files use
+`make build-app run`.
 
 ```sh
-make                       # Alle verfügbaren Befehle
-make status                # Container und Health-Status
-make logs                  # App-, Worker- und Scheduler-Logs verfolgen
-make ssh                   # Shell als www im App-Container
+make                       # every available command
+make status                # containers and health
+make logs                  # follow app, worker and scheduler logs
+make ssh                   # a shell as www inside the app container
 make composer ARGS='show naf/framework'
-make naf                   # Verfügbare NAF-Befehle
-make stop                  # Alle Nafinity-Container anhalten
-make down                  # Container/Netz entfernen; Datenbank und Dateien behalten
+make naf                   # the available NAF commands
+make stop                  # stop all Nafinity containers
+make down                  # remove containers and network, keep database and files
 ```
 
-Der Seed ist nur fuer eine leere Entwicklungs-/Testdatenbank erlaubt. Bestehende Daten
-bleiben bei einem erneuten Aufruf erhalten; der Befehl ueberspringt die Initialisierung.
+Open **https://localhost** (port 443). HTTP on port 8088 redirects there with status 308.
 
-Öffnen: **https://localhost** (Port 443). HTTP auf Port 8088 leitet mit Status 308 dorthin weiter. Demo-Passwort fuer alle drei Konten:
+The seed only runs against an empty development or test database; on an existing one it skips
+initialisation and leaves the data untouched. Demo password for all three accounts:
 `Nafinity-Demo-2026!`.
 
-| Konto | Rolle / Projekt |
+| Account | Role and project |
 |---|---|
-| alice@example.test | Owner, Nafinity und Archiv & Ideen |
-| bob@example.test | Owner, Studio Nord |
-| viewer@example.test | Viewer, Nafinity |
+| alice@example.test | Owner of Nafinity and Archiv & Ideen |
+| bob@example.test | Owner of Studio Nord |
+| viewer@example.test | Viewer on Nafinity |
 
-## Was funktioniert
+## What it does
 
-Mehrere isolierte Projekte, Mitgliedschaften und Rollen, konfigurierbare Spalten und
-Swimlanes, Labels, Mehrfach-Zuweisung, Prioritaet und Termin. Tickets haben eigene URLs,
-einen optionalen Drawer, Bearbeitung, Verschieben, Schliessen/Wiederoeffnen und Archiv.
-Ein Ticket laesst sich ausserdem in ein anderes Projekt verschieben: Kommentare, Anhaenge,
-Verlauf und erfasste Zeit kommen mit, es bekommt dort eine neue Nummer, und Labels,
-Verknuepfungen sowie Zustaendige ohne Zugriff bleiben zurueck.
-Kommentare und Aktivitaeten folgen den Projektgrenzen. Veraltete Schreibzugriffe enden
-mit 409; die Oberflaeche bietet das Nachladen des aktuellen Stands an.
+Separate projects with their own memberships and roles, configurable columns and swimlanes,
+labels, multiple assignees, priority and due date. Tickets have their own URLs and an optional
+drawer, and can be edited, moved, closed, reopened and archived. A ticket can move to another
+project: comments, attachments, history and logged time come along, it is given a new number
+there, and labels, links and assignees without access stay behind. Comments and activity
+follow project boundaries. A stale write ends with 409 and the interface offers a reload.
 
-Die [Ticketdetails](docs/Ticket-Details.md) bieten eine ruhige Leseansicht mit Inline-
-Bearbeitung mit Auto-Save, formatierbarer Beschreibung, Metadatenleiste, Startdatum und
-Zeitaufwand. Kompakte Eingaben behalten die Schriftgröße bei. Die ganze Boardkarte öffnet
-das Ticket; ihr Menü bleibt separat bedienbar.
-Verknüpfte Tickets erscheinen beidseitig; Kommentare unterstützen @-Erwähnungen und
-Antworten unter dem jeweiligen Kommentar. Die Nachrichteneingabe bleibt sichtbar.
-Spalten und Personen lassen sich über dasselbe durchsuchbare Dropdown direkt auswählen;
-mehrere Zuständige bleiben möglich und werden kompakt mit einem zusätzlichen Zähler angezeigt.
-Neue Tickets entstehen in einem Modal mit demselben Template, Editor und Metadatenfeldern.
+[Tickets](docs/Tickets.md) describes the reading view, inline editing with auto-save, the
+formatted description, the metadata bar, start date and time spent. The whole board card opens
+the ticket while its menu stays separately operable. Linked tickets appear on both sides;
+comments support @-mentions and threaded replies. Columns and people are picked from the same
+searchable dropdown. New tickets are created in a modal using the same template, editor and
+metadata fields.
 
-Filter und echte Volltextsuche, private Anhaenge ueber den benannten NAF-Storage-Datentraeger mit Quoten und Wiederanlauf,
-In-App-Benachrichtigungen, Einstellungen, Light/Dark und mobile Darstellung sind integriert.
-Die Settings öffnen sich als animierte Karten und enthalten eigene Projektrollen sowie einen
-lokalen Ollama-Chat. Der Embedding-Layer wählt aus großen Werkzeugkatalogen passende Aktionen
-aus; Details stehen in [Settings und lokale AI](docs/Settings-AI.md).
-Boards liefern maximal 300 Karten und die gesamte Trefferzahl; bei groesseren Bestaenden
-die Filter verwenden. Deutsch ist die vollstaendige Basissprache; Englisch deckt die
-wichtigsten Oberflaechentexte ab, einige Meldungen bleiben im Prototyp deutsch.
+Filters and real full-text search, private attachments on a named NAF storage volume with
+quotas and recovery, in-app notifications, settings, light and dark themes and a mobile layout
+are all in place. Settings open as animated cards and hold custom project roles and a local
+Ollama chat; see [Settings and local AI](docs/Settings-And-AI.md). A board answers with at most
+300 cards plus the total count — use the filters on larger sets.
 
-## Docker-Struktur
+## Extensibility
 
-Wie in `website`, `weonlywalk` und `nafphp/studio` bildet `docker/rootfs` die Pfade
-im Container ab. Das Dockerfile kopiert diesen Baum nach `/`:
+Nafinity can be extended by installed Composer packages. A package of `type: naf-plugin`
+contributes its own controllers, routes and services, menu entries, permissions, settings,
+ticket fields, widgets, board filters, translations, AI tools, commands, migrations and jobs,
+and can explicitly replace what the application registered.
+
+```php
+// In the package's bootstrap.php
+Nafinity\extensions()->register('example.reports', ReportsProvider::class, index: 100);
+```
+
+Every noted provider runs in one pass after the application's own defaults, ascending by index
+and id, so a package can replace a default instead of being overwritten by it. Title,
+description and comments stay fixed parts of a ticket. Uninstalling a package removes its
+contributions and keeps the data people stored with it.
+
+[Extensibility](docs/Extensibility.md) is the full reference — every extension point has a
+worked example and a negative case. Two complete example packages live in `examples/`.
+
+```sh
+make test-plugins   # installs both examples as real Composer packages into a throwaway host,
+                    # checks them in-process, over HTTP and through the asset commands,
+                    # then boots the same database once more without them
+```
+
+## Checks and operation
+
+The code follows PER Coding Style 3.0 with locally aligned assignments; the exact rules are in
+`.php-cs-fixer.dist.php` and summarised in [`AGENTS.md`](AGENTS.md). Run `make style-install`
+once, then `make style-check` or `make style-fix`. The check covers PHP, PHP in templates,
+JavaScript, CSS and the Python scripts. The formatters additionally need Node.js and npm on the
+host, are pinned under `tools/style` with their own locks, and stay out of the build context
+and the runtime image.
+
+```sh
+make test                  # everything: MariaDB, PostgreSQL, HTTP, profile, worker, AI, extensions
+make test-profile          # account changes, code verification and session revocation
+make test-ai               # AI transport and semantic router, without a running model
+make test-down             # stop the test services afterwards
+make mailpit               # start the local test mailbox on port 8025
+make backup
+make verify-restore BACKUP=work/backups/TIMESTAMP
+make supervisor-status     # all four app processes
+```
+
+The tests create `nafinity_test` when needed and reset only those test databases; the
+development database `nafinity` is never a test target. `make test-http` prepares its fixtures
+on every call. See [Implementation and acceptance](docs/Implementation.md) for results, limits
+and release branches.
+
+Health lives at `/health/live` and `/health/ready`; readiness checks the database, the required
+application migrations, the background tables and the native storage binding.
+
+Backups cover the database and the private files. The restore check writes exclusively to
+`nafinity_restore_test` and never replaces a running application. Treat backups as private.
+
+`bin/check-plugin-stack` boots the minimal and the complete NAF plugin stack in isolated source
+hosts. Upload rules belong to `App\Support\AttachmentStorage`; file I/O goes through
+`Naf\Storage\storage('attachments')`.
+
+## Docker layout
+
+As in the sibling projects, `docker/rootfs` mirrors the paths inside the container and the
+Dockerfile copies that tree to `/`:
 
 ```text
 docker/
@@ -86,12 +143,12 @@ docker/
 │   ├── nginx/
 │   │   ├── nginx.conf
 │   │   ├── conf.d/app.conf
-│   │   └── ssl/                 # Zertifikat und Schlüssel: nur lokal
+│   │   └── ssl/                 # certificate and key: local only
 │   ├── php85/
 │   │   ├── conf.d/99-nafinity.ini
 │   │   ├── php-fpm.conf
 │   │   └── php-fpm.d/www.conf
-│   ├── ssl/nafinity.cnf         # Lokale Zertifikatserzeugung
+│   ├── ssl/nafinity.cnf         # local certificate generation
 │   └── supervisor/
 │       ├── conf.d/supervisord.conf
 │       └── programs/
@@ -105,125 +162,72 @@ docker/
 └── development/rootfs/etc/php85/conf.d/zz-development.ini
 ```
 
-Das Development-Target ergänzt die OPcache-Einstellungen für direkt sichtbare
-Source-Änderungen. Runtime und Production verwenden nur den gemeinsamen Baum.
-Supervisor steuert nginx, PHP-FPM, `naf queue:consume` und `naf schedule:ticker`
-gemeinsam im App-Container. MariaDB bleibt ein eigener Dienst. Mit
-`make supervisor-status` sieht man alle vier Prozesse; `make restart-background`
-startet gezielt Worker und Ticker neu. Der Container-Healthcheck prüft HTTPS,
-die beiden Supervisor-Prozesse und ihre NAF-Heartbeats. Test- und Candidate-Dienste
-setzen `NAFINITY_BACKGROUND_ENABLED=false`, damit sie keine zusätzlichen Aufgaben
-ausführen beziehungsweise isolierte Test-Fixtures verändern.
-Der Build-Kontext bleibt das Projektverzeichnis, damit auch die App in das
-Production- beziehungsweise Snapshot-Image kopiert werden kann.
+The development target adds the OPcache settings that make source changes visible right away;
+runtime and production use the shared tree only. Supervisor runs nginx, PHP-FPM,
+`naf queue:consume` and `naf schedule:ticker` together in the app container, while MariaDB stays
+its own service. `make supervisor-status` shows all four processes and `make restart-background`
+restarts just the worker and the ticker. The container healthcheck covers HTTPS, both Supervisor
+processes and their NAF heartbeats. Test and candidate services set
+`NAFINITY_BACKGROUND_ENABLED=false` so they run no extra work and touch no isolated fixtures.
 
-## Lokales HTTPS
+## Local HTTPS
 
-`make certificates` erzeugt mit OpenSSL eine private Entwicklungs-CA und ein von ihr signiertes Serverzertifikat für
-`localhost`, `nafinity.local`, `127.0.0.1` und `::1`. Es gilt 365 Tage; ein noch
-gültiges zusammengehöriges Zertifikat/Schlüsselpaar bleibt beim erneuten Aufruf
-erhalten. `make first-install`, `make run` und die Test-/Candidate-Startziele rufen
-die Erzeugung automatisch auf. Nach einer Erneuerung `make restart` ausführen.
+`make certificates` uses OpenSSL to create a private development CA and a server certificate it
+signs for `localhost`, `nafinity.local`, `127.0.0.1` and `::1`. It is valid for 365 days; a
+still-valid matching certificate and key pair is kept on a repeated call. `make first-install`,
+`make run` and the test and candidate targets call it automatically. Run `make restart` after a
+renewal.
 
-Der private CA-Schlüssel liegt ausschließlich unter `work/tls` und wird nicht in
-den Container eingebunden. Die Server-TLS-Dateien liegen unter `docker/rootfs/etc/nginx/ssl`, sind von Git und beiden
-Image-Builds ausgeschlossen und werden nur lesbar eingebunden. Das private
-Schlüsselmaterial bleibt lokal. Der Schlüssel hat Dateimodus 0600.
+The private CA key lives only in `work/tls` and is never mounted into the container. The server
+TLS files live in `docker/rootfs/etc/nginx/ssl`, are excluded from git and from both image
+builds, and are mounted read-only. The key has file mode 0600.
 
-Für einen Browser ohne Zertifikatswarnung das öffentliche CA-Zertifikat `ca.pem` in der
-macOS-Schlüsselbundverwaltung importieren und für SSL als vertrauenswürdig markieren.
-Private Schlüssel werden dafür nicht importiert. Das Setup verändert
-den System-Schlüsselbund nicht. CLI- und Integrationstests prüfen TLS mit dem
-öffentlichen CA-Zertifikat als explizitem Vertrauensanker.
+For a browser without a certificate warning, import the public CA certificate `ca.pem` and mark
+it trusted for SSL. No private key is imported for that, and the setup does not modify the
+system keychain. CLI and integration tests verify TLS against the public CA certificate as an
+explicit trust anchor.
 
-Port 443 muss frei sein. Alternativ `NAFINITY_HTTPS_PORT=8443` in `.env` setzen;
-die HTTP-Weiterleitung folgt diesem Port. Der Testdienst verwendet HTTPS auf 8444,
-der Candidate auf 8445. Im Container bindet nginx den unprivilegierten Port 8443
-und läuft weiterhin als `www`.
+Port 443 has to be free. Alternatively set `NAFINITY_HTTPS_PORT=8443` in `.env`; the HTTP
+redirect follows that port. The test service uses HTTPS on 8444 and the candidate on 8445.
+Inside the container nginx binds the unprivileged port 8443 and still runs as `www`.
 
-## Lokale Framework-Quellen
+## Local framework sources
 
-`packages -> ../nafphp` dient der IDE. Compose bindet die App unter `/workspace/app`
-und die NAF-Quellen unter `/workspace/packages` ein. `bin/dev-composer` erzeugt ein
-ignoriertes Source-Manifest mit ausdruecklichen Development-Versionen. Composer laeuft
-im Container und erzeugt relative Vendor-Symlinks, die auf Host und Container aufgehen.
-Die App-Konfiguration verwendet NAFs native `ENV:VARIABLE_NAME`-Referenzen, auch
-für die optionalen LDAP-/OIDC-Zugangsdaten im Konfigurationsbeispiel. Standardwerte
-stehen in Compose; außerhalb von Compose die Variablen über das Environment oder
-NAFs `.env`/`.env.local` im App-Verzeichnis bereitstellen. PHP verwendet im Container
-`variables_order=EGPCS`, damit NAF die Werte aus `$_ENV` auflösen kann.
+`packages -> ../nafphp` exists for the IDE. Compose mounts the application at `/workspace/app`
+and the NAF sources at `/workspace/packages`. `bin/dev-composer` writes an ignored source
+manifest with explicit development versions. Composer runs inside the container and produces
+relative vendor symlinks that resolve on the host and in the container alike.
 
-FPM liest Source-Aenderungen beim naechsten Request. Nach Aenderungen an Hintergrundcode:
+Configuration uses NAF's native `ENV:VARIABLE_NAME` references, including the optional LDAP and
+OIDC credentials in the configuration example. Defaults live in Compose; outside Compose,
+provide the variables through the environment or NAF's `.env`/`.env.local` in the application
+directory. PHP uses `variables_order=EGPCS` in the container so NAF can resolve values from
+`$_ENV`.
+
+FPM picks up source changes on the next request. After changes to background code:
 
 ```sh
 make restart-background
 ```
 
-## Pruefungen und Betrieb
+## Source mode and distribution
 
-Der Code folgt PER Coding Style 3.0 mit lokal ausgerichteten Zuweisungen; die genauen
-Regeln stehen in `.php-cs-fixer.dist.php` und zusammengefasst in `AGENTS.md`.
-Einmalig `make style-install`, danach `make style-check` oder `make style-fix`.
-Geprueft werden PHP, PHP in Templates, JavaScript, CSS und die Python-Skripte.
-Die Formatter benötigen zusätzlich Node.js/npm auf dem Host, sind unter `tools/style` mit
-eigenen Locks festgelegt und bleiben ausserhalb des Build-Kontexts und der Runtime.
+The fixes in use sit on RC branches, with the limiter and LDAP kept local. `app/composer.json`
+describes the future minimum versions required. A clean install from published packages and a
+stable lock are only possible once those are released — no package has been merged or published.
 
-Siehe [Implementierung und Abnahme](docs/Implementation.md) fuer Ergebnisse, Grenzen,
-Release-Branches und Wiederholung der Tests. Health: `/health/live` und `/health/ready`.
-Die Readiness prueft Datenbank, erforderliche App-Migrationen, Hintergrundtabellen und die native Storage-Anbindung.
+`make candidate-build` already builds a frozen local source snapshot without source mounts,
+vendor symlinks or Composer in the runtime image. It is explicitly an
+`unreleased-source-snapshot`, not evidence of a published distribution. `make candidate-up`
+starts it on https://localhost:8445 and `make candidate-down` stops it again. The production
+target instead requires a real `composer.lock`, a link-free vendor directory and the marker
+`vendor/.nafinity-distribution` after a verified dist install.
 
-```sh
-make test                  # Alles: MariaDB, PostgreSQL, HTTP, Profil, Worker, AI und Erweiterungen
-make test-profile          # Kontowechsel, Code-Verifizierung und Sitzungswiderruf
-make mailpit               # Lokales Testpostfach auf Port 8025 starten
-make test-ai               # AI-Transport und semantischer Router, ohne laufendes Modell
-make test-down             # Testdienste anschließend anhalten
-make backup
-make verify-restore BACKUP=work/backups/ZEITSTEMPEL
-make supervisor-status     # Status aller vier App-Prozesse
-```
+Local sign-in stays active. LDAP and OIDC are prepared but switched off, and external accounts
+are only ever linked explicitly. `app/identity.example.php` documents the configuration; private
+values belong in the ignored `identity.local.php`.
 
-Die Tests legen `nafinity_test` bei Bedarf an und setzen nur diese Testdatenbanken zurück.
-`make test-http` bereitet seine Fixtures bei jedem Aufruf neu vor.
-
-Backups enthalten Datenbank und private Dateien. Die Restore-Probe schreibt ausschliesslich
-nach `nafinity_restore_test`; sie ersetzt keine laufende Anwendung. Backups sind privat zu
-behandeln. Sicherheitsmails laufen lokal über NAFs MailTransport und Mailpit; das Testpostfach
-liegt auf http://localhost:8025. Es wird nichts ins Internet versendet. Projektbenachrichtigungen
-per Mail bleiben deaktiviert. [Eigenes Profil und Kontoverifizierung](docs/Profile.md) beschreibt
-die Bedienung, SMTP-Konfiguration und Sicherheitsgrenzen.
-
-## Source-Modus und Distribution
-
-Die verwendeten Fixes liegen auf RC-Branches, Limiter und LDAP lokal. Storage wurde parallel auf seinem RC-Branch weiterentwickelt. `app/composer.json`
-beschreibt die benoetigten zukuenftigen Mindestversionen. Ein sauberer Install aus
-veroeffentlichten Paketen und ein stabiler Lock sind erst nach deren Releases moeglich.
-Es wurden keine Pakete gemergt oder veroeffentlicht.
-
-`make candidate-build` baut jetzt schon einen eingefrorenen lokalen Source-Snapshot ohne
-Source-Mounts, Vendor-Symlinks oder Composer im Runtime-Image. Er ist ausdruecklich
-`unreleased-source-snapshot`, kein Nachweis einer veroeffentlichten Distribution.
-`make candidate-up` startet den gebauten Snapshot auf https://localhost:8445;
-`make candidate-down` hält ihn wieder an.
-Das Production-Target verlangt dagegen einen echten `composer.lock`, linkfreies Vendor
-und den Marker `vendor/.nafinity-distribution` nach verifiziertem Dist-Install.
-
-Lokale Anmeldung bleibt aktiv. LDAP/OIDC sind optional vorbereitet und abgeschaltet;
-externe Konten werden nur explizit verknuepft. `app/identity.example.php` dokumentiert die
-Konfiguration, private Werte gehoeren in die ignorierte `identity.local.php`.
-
-Plan, Analyse und Review von vor der Umsetzung liegen als eingefrorene
-[Entscheidungshistorie](docs/history/) unter `docs/history/`.
-
-Nafinity ist durch installierte Composer-Pakete erweiterbar: eigene Controller, Routen und
-Dienste, Menueeintraege, Settings, Ticketfelder, Widgets, Board-Filter, Uebersetzungen,
-AI-Werkzeuge, Commands, Migrationen und Jobs. Wie das geht, steht in
-[Plugin-Erweiterbarkeit](docs/Plugin-Erweiterbarkeit.md); zwei vollstaendige Beispielpakete
-liegen unter `examples/`. `make test-plugins` installiert beide als echte Composer-Pakete in
-einen Wegwerf-Host, prueft sie in-process, ueber HTTP und ueber die Asset-Kommandos und
-bootet dieselbe Datenbank danach noch einmal ohne sie.
-
-`bin/check-plugin-stack` prueft den minimalen und den kompletten bestehenden Plugin-Stack
-in isolierten Source-Hosts. Die Upload-Regeln gehoeren zu `App\Support\AttachmentStorage`;
-Datei-I/O laeuft ueber `Naf\Storage\storage('attachments')`. Die neue allgemeine Storage-API
-wurde parallel im Storage-Paket vorbereitet; dessen entfernte Legacy-Klasse wird nicht mehr benoetigt.
+Security mail runs locally through NAF's MailTransport and Mailpit, with the test mailbox on
+http://localhost:8025. Nothing is sent to the internet, and project notifications by mail stay
+disabled. [Profile and account verification](docs/Profile.md) covers the flow, the SMTP
+configuration and the security boundaries.

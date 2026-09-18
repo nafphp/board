@@ -31,7 +31,8 @@ or a plugin metaframework.
   only through the application via `Naf\Storage\storage('attachments')`. The allowlist and
   MIME check are not a virus scanner.
 - A board query answers with at most 300 cards plus the total count.
-- German is the complete base language; English covers the main interface texts.
+- German is the complete base language of the product UI; English covers the main
+  interface texts. Code, comments and documentation are English.
 
 ## Extensibility
 
@@ -53,7 +54,7 @@ registered.
   `value()` and `field` instead of reaching for an own query or form.
 - Uninstalling a package takes its contributions away and leaves the stored data alone.
 
-`docs/Plugin-Erweiterbarkeit.md` is the reference: every extension point has an executed
+`docs/Extensibility.md` is the reference: every extension point has an executed
 example and a negative case.
 
 ## Running and checking
@@ -103,12 +104,12 @@ releasing is the maintainer's decision, not the agent's.
 | Document | Holds |
 |---|---|
 | `README.md` | Starting the application, demo accounts, ports, daily operation |
-| `docs/Plugin-Erweiterbarkeit.md` | The extension API in full, with examples |
-| `docs/Ticket-Details.md` | Ticket behaviour, data model, limits |
-| `docs/Settings-AI.md` | Settings cards, custom roles, local Ollama |
+| `docs/Extensibility.md` | The extension API in full, with examples |
+| `docs/Tickets.md` | Ticket behaviour, data model, limits |
+| `docs/Settings-And-AI.md` | Settings cards, custom roles, local Ollama |
 | `docs/Profile.md` | Account changes, verification codes, security boundaries |
 | `docs/Implementation.md` | What is delivered, what the last full run proved, what is missing |
-| `docs/history/` | Frozen pre-build analysis, plan and review — why it is built this way |
+| `docs/Extensibility-Status.md` | Acceptance record of the extensibility work, honest about what is open |
 
 Anything dated in `docs/` is a record of a past run, not a description of the current state.
 Check the code or run the suite before repeating a number from it.
