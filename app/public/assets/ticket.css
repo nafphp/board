@@ -1133,78 +1133,31 @@
   margin-bottom: 0;
 }
 
-/* The same compact picker for columns and people, above drawers via native popovers. */
-.choice-trigger {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+/* The reusable select sits tighter inside a ticket's inline fields than it does
+   in an ordinary form, and the column picker carries the ticket's accent. */
+.ticket-field .choice-trigger {
   border: 0;
   border-radius: 4px;
+  background: transparent;
   padding: 5px 7px;
   margin: -5px -7px;
   box-sizing: content-box;
-  background: transparent;
-  color: var(--text);
-  text-align: left;
-  font: inherit;
   font-size: 12px;
   min-height: 24px;
-  cursor: pointer;
 }
-.choice-trigger:hover,
-.choice-trigger[aria-expanded='true'] {
+.ticket-field .choice-trigger:hover,
+.ticket-field .choice-trigger[aria-expanded='true'] {
   background: var(--hover);
 }
-[data-choice-value] {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-[data-ticket-choice='column_id'] .choice-trigger {
+.ticket-field [data-choice='column_id'] .choice-trigger {
   color: var(--accent);
   font-size: 16px;
   font-weight: 650;
 }
-.choice-chevron {
-  color: var(--muted);
-  margin-left: auto;
-}
-.choice-count {
-  font-size: 10px;
-  padding: 2px 5px;
-  border-radius: 4px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  white-space: nowrap;
-}
-.choice-popup {
-  position: fixed;
-  inset: auto;
-  margin: 0;
-  z-index: 200;
-  box-sizing: border-box;
-  padding: 5px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: 0 10px 35px #0003;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  font-size: 12px;
-}
-.choice-search-wrap {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 7px 8px;
-  border-bottom: 1px solid var(--line);
-  color: var(--muted);
+.ticket-field [data-choice-value] {
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
 }
 .ticket-field .choice-search-wrap input {
   border: 0;
@@ -1214,47 +1167,4 @@
   box-shadow: none;
   outline: none;
   min-height: 26px;
-}
-.choice-search-wrap:focus-within {
-  border-color: var(--accent);
-}
-.choice-list {
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding-top: 4px;
-}
-.choice-option {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  width: 100%;
-  min-height: 36px;
-  padding: 7px 9px;
-  border: 0;
-  border-radius: 3px;
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  overflow-wrap: anywhere;
-}
-.choice-option:hover,
-.choice-option.is-active {
-  background: var(--hover);
-}
-.choice-option[aria-selected='true'] {
-  color: var(--accent);
-}
-.choice-check {
-  margin-left: auto;
-  opacity: 0;
-}
-.choice-option[aria-selected='true'] .choice-check {
-  opacity: 1;
-}
-.choice-empty {
-  margin: 0;
-  padding: 17px 9px;
-  color: var(--muted);
 }

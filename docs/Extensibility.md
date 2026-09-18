@@ -19,14 +19,15 @@ acceptance run: [`examples/nafinity-extension-a`](../examples/nafinity-extension
 7. [Settings](#settings)
 8. [Ticket metadata](#ticket-metadata)
 9. [Ticket widgets and the browser lifecycle](#ticket-widgets-and-the-browser-lifecycle)
-10. [Views](#views)
-11. [Board filters](#board-filters)
-12. [Estimation, activity and AI](#estimation-activity-and-ai)
-13. [Assets](#assets)
-14. [Translations](#translations)
-15. [Migrations, commands, jobs](#migrations-commands-jobs)
-16. [Lifetime and uninstalling](#lifetime-and-uninstalling)
-17. [Negative cases](#negative-cases)
+10. [The select component](#the-select-component)
+11. [Views](#views)
+12. [Board filters](#board-filters)
+13. [Estimation, activity and AI](#estimation-activity-and-ai)
+14. [Assets](#assets)
+15. [Translations](#translations)
+16. [Migrations, commands, jobs](#migrations-commands-jobs)
+17. [Lifetime and uninstalling](#lifetime-and-uninstalling)
+18. [Negative cases](#negative-cases)
 
 ## Installation
 
@@ -640,6 +641,47 @@ export function mount(root, context, api) {
 `ticket.js` and `upload.js` share one fragment path
 ([`fragment.js`](../app/public/assets/fragment.js)). Widgets are reconciled **by their ids**, so
 new ones appear and removed ones disappear; a node with an open draft stays mounted.
+
+## The select component
+
+Every select in the application is one partial, and a contributed template can use it too:
+
+```php
+<?= partial('components/choice', [
+    'name'        => 'example.region',
+    'label'       => 'Region',
+    'value'       => $slot->value('example.region'),
+    'options'     => ['eu' => 'Europe', 'us' => 'United States'],
+    'searchLabel' => 'Search regions',
+]) ?>
+```
+
+It renders a native `<select>` inside a wrapper and draws a searchable listbox over it.
+The native control stays the source of the form value and the whole fallback without
+JavaScript, so nothing about validation, CSRF or the version check changes — and any
+existing script that reads `form.elements.x.value` or `selectedOptions[0]` keeps working.
+
+| Argument | Meaning |
+|---|---|
+| `name`, `label`, `options`, `value` | The field itself; `options` is value => text |
+| `multiple` | Several values, stored as checkboxes rather than one select |
+| `searchFrom` | Option count from which the search field appears, default 8, `0` always |
+| `searchLabel` | Accessible label of the search field; the placeholder follows from it |
+| `avatars` | Draw an initial in front of every entry, as the people picker does |
+| `optionData` | `value => ['name' => 'value']`, rendered as `data-*` on that option |
+| `nativeData` | `data-*` on the native control, for an existing script hook |
+| `disabled` | Leaves the native control in place, unenhanced |
+
+A list shorter than `searchFrom` gets no search box, and keyboard focus then lands on the
+popup instead of the hidden input. Inside a ticket's inline fields the trigger renders
+compact and wraps; everywhere else it presents itself exactly like the native control it
+covers.
+
+The browser side is `app/public/assets/choice.js`. It enhances every `[data-choice]` on load,
+and exports `enhanceChoices(scope)`, `openChoice(root)`, `closeChoices(scope)` and
+`refreshChoices(scope)`. A list that JavaScript fills in later — the way the AI card fills its
+model lists — calls `refreshChoices(form)` afterwards so the drawn list is rebuilt from the
+native options.
 
 ## Views
 

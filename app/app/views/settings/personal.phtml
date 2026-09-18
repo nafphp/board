@@ -3,36 +3,39 @@ use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\partial;
 
+$zones = ['Europe/Berlin', 'Europe/London', 'America/New_York', 'UTC'];
 ?>
 <form method="post" data-enhanced action="<?= s(route('preferences.save')) ?>">
     <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
     <label>
         <?= s(t('Darstellung')) ?>
-        <select name="theme">
-            <?php foreach (['system' => t('Wie mein Gerät'), 'light' => t('Hell'), 'dark' => t('Dunkel')] as $key => $label): ?>
-                <option value="<?= s($key) ?>" <?= $preferences['theme'] === $key ? 'selected' : '' ?>>
-                    <?= s($label) ?>
-                </option>
-            <?php endforeach ?>
-        </select>
+        <?= partial('components/choice', [
+            'name'    => 'theme',
+            'label'   => 'Darstellung',
+            'value'   => $preferences['theme'],
+            'options' => ['system' => t('Wie mein Gerät'), 'light' => t('Hell'), 'dark' => t('Dunkel')],
+        ]) ?>
     </label>
     <label>
         <?= s(t('Sprache')) ?>
-        <select name="locale">
-            <option value="de" <?= $preferences['locale'] === 'de' ? 'selected' : '' ?>>Deutsch</option>
-            <option value="en" <?= $preferences['locale'] === 'en' ? 'selected' : '' ?>>English</option>
-        </select>
+        <?= partial('components/choice', [
+            'name'    => 'locale',
+            'label'   => 'Sprache',
+            'value'   => $preferences['locale'],
+            'options' => ['de' => 'Deutsch', 'en' => 'English'],
+        ]) ?>
     </label>
     <label>
         <?= s(t('Zeitzone')) ?>
-        <select name="timezone">
-            <?php foreach (['Europe/Berlin', 'Europe/London', 'America/New_York', 'UTC'] as $zone): ?>
-                <option value="<?= s($zone) ?>" <?= $preferences['timezone'] === $zone ? 'selected' : '' ?>>
-                    <?= s($zone) ?>
-                </option>
-            <?php endforeach ?>
-        </select>
+        <?= partial('components/choice', [
+            'name'        => 'timezone',
+            'label'       => 'Zeitzone',
+            'value'       => $preferences['timezone'],
+            'options'     => array_combine($zones, $zones),
+            'searchLabel' => 'Zeitzonen suchen',
+        ]) ?>
     </label>
     <div class="checkbox-list">
         <label>

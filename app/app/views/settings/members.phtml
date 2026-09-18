@@ -2,6 +2,7 @@
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\partial;
 
 ?>
 <table class="member-table">
@@ -31,11 +32,13 @@ use function Naf\View\s;
     </label>
     <label>
         <?= s(t('Rolle')) ?>
-        <select name="role">
-            <?php foreach ($availableRoles as $role => $roleLabel): ?>
-                <option value="<?= s($role) ?>"><?= s($roleLabel) ?></option>
-            <?php endforeach ?>
-        </select>
+        <?= partial('components/choice', [
+            'name'        => 'role',
+            'label'       => 'Rolle',
+            'value'       => '',
+            'options'     => $availableRoles,
+            'searchLabel' => 'Rollen suchen',
+        ]) ?>
     </label>
     <p>
         Die Person braucht bereits ein Konto. Eigene Rollen gelten nur für dieses Projekt, und du

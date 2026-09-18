@@ -1,4 +1,5 @@
-// Shared ticket picker. Native controls remain the source of form values and the fallback.
+// Reusable select. The native control inside stays the source of form values and the
+// no-JavaScript fallback; this only draws a searchable listbox over it.
 const choices = new WeakMap();
 let activeChoice;
 
@@ -6,8 +7,11 @@ function renderValue(state) {
   const selected = state.items.filter((item) => item.selected());
   const value = state.root.querySelector('[data-choice-value]');
   value.replaceChildren();
-  for (const item of selected.filter((item) => item.value !== '').slice(0, 1)) {
-    if (state.multiple) {
+  // Only a multi-select treats the empty entry as "nothing chosen"; for a single
+  // select that entry is an ordinary option with a label of its own.
+  const shown = state.multiple ? selected.filter((item) => item.value !== '') : selected;
+  for (const item of shown.slice(0, 1)) {
+    if (state.avatars) {
       const avatar = document.createElement('span');
       avatar.className = 'avatar avatar-small';
       avatar.textContent = [...item.label][0];
@@ -19,7 +23,7 @@ function renderValue(state) {
     value.append(label);
   }
   if (!value.childNodes.length) value.textContent = state.root.dataset.choiceEmpty;
-  if (selected.length > 1) {
+  if (state.multiple && selected.length > 1) {
     const count = document.createElement('span');
     count.className = 'choice-count';
     count.textContent = `+${selected.length - 1}`;
@@ -34,9 +38,9 @@ function renderValue(state) {
 function highlight(state, item) {
   state.items.forEach((entry) => entry.option.classList.toggle('is-active', entry === item));
   if (item) {
-    state.search.setAttribute('aria-activedescendant', item.option.id);
+    state.focusTarget.setAttribute('aria-activedescendant', item.option.id);
     item.option.scrollIntoView({ block: 'nearest' });
-  } else state.search.removeAttribute('aria-activedescendant');
+  } else state.focusTarget.removeAttribute('aria-activedescendant');
 }
 function filter(state) {
   const query = state.search.value.trim().toLocaleLowerCase();
@@ -92,8 +96,72 @@ function choose(state, item) {
   control.dispatchEvent(new Event('input', { bubbles: true }));
   control.dispatchEvent(new Event('change', { bubbles: true }));
 }
+// Item building is separate so a list that JavaScript fills later can be rebuilt
+// without binding the root's listeners a second time.
+function buildItems(state) {
+  state.list.replaceChildren();
+  state.controls = [...state.root.querySelectorAll('input[type=checkbox]')];
+  state.items = state.multiple
+    ? [
+        {
+          value: '',
+          label: state.root.dataset.choiceEmpty,
+          selected: () => !state.controls.some((input) => input.checked),
+        },
+        ...state.controls.map((control) => ({
+          control,
+          value: control.value,
+          label: control.closest('label').textContent.trim(),
+          selected: () => control.checked,
+        })),
+      ]
+    : [...state.select.options].map((option) => ({
+        value: option.value,
+        label: option.text,
+        selected: () => option.selected,
+      }));
+  state.items.forEach((item, index) => {
+    const option = document.createElement('button');
+    option.type = 'button';
+    option.className = 'choice-option';
+    option.tabIndex = -1;
+    option.id = `${state.list.id}-${index}`;
+    option.setAttribute('role', 'option');
+    if (state.avatars && item.value) {
+      const avatar = document.createElement('span');
+      avatar.className = 'avatar avatar-small';
+      avatar.textContent = [...item.label][0];
+      avatar.setAttribute('aria-hidden', 'true');
+      option.append(avatar);
+    }
+    const label = document.createElement('span');
+    label.textContent = item.label;
+    option.append(label);
+    const check = document.createElement('span');
+    check.className = 'choice-check';
+    check.textContent = '✓';
+    check.setAttribute('aria-hidden', 'true');
+    option.append(check);
+    option.addEventListener('mousedown', (event) => event.preventDefault());
+    option.addEventListener('click', () => choose(state, item));
+    item.option = option;
+    state.list.append(option);
+  });
+}
+
+function applySearchability(state) {
+  const threshold = Number(state.root.dataset.choiceSearch ?? 8);
+  state.searchable = Number.isFinite(threshold) && state.items.length >= threshold;
+  state.focusTarget = state.searchable ? state.search : state.popup;
+  state.root.querySelector('.choice-search-wrap').hidden = !state.searchable;
+  if (!state.searchable) {
+    state.popup.tabIndex = -1;
+    state.popup.setAttribute('aria-controls', state.list.id);
+  }
+}
+
 export function enhanceChoices(scope = document) {
-  scope.querySelectorAll('[data-ticket-choice]').forEach((root) => {
+  scope.querySelectorAll('[data-choice]').forEach((root) => {
     if (choices.has(root)) {
       renderValue(choices.get(root));
       return;
@@ -109,52 +177,8 @@ export function enhanceChoices(scope = document) {
       controls: [...root.querySelectorAll('input[type=checkbox]')],
     };
     state.multiple = !state.select;
-    state.items = state.multiple
-      ? [
-          {
-            value: '',
-            label: root.dataset.choiceEmpty,
-            selected: () => !state.controls.some((input) => input.checked),
-          },
-          ...state.controls.map((control) => ({
-            control,
-            value: control.value,
-            label: control.closest('label').textContent.trim(),
-            selected: () => control.checked,
-          })),
-        ]
-      : [...state.select.options].map((option) => ({
-          value: option.value,
-          label: option.text,
-          selected: () => option.selected,
-        }));
-    state.items.forEach((item, index) => {
-      const option = document.createElement('button');
-      option.type = 'button';
-      option.className = 'choice-option';
-      option.tabIndex = -1;
-      option.id = `${state.list.id}-${index}`;
-      option.setAttribute('role', 'option');
-      if (state.multiple && item.value) {
-        const avatar = document.createElement('span');
-        avatar.className = 'avatar avatar-small';
-        avatar.textContent = [...item.label][0];
-        avatar.setAttribute('aria-hidden', 'true');
-        option.append(avatar);
-      }
-      const label = document.createElement('span');
-      label.textContent = item.label;
-      option.append(label);
-      const check = document.createElement('span');
-      check.className = 'choice-check';
-      check.textContent = '✓';
-      check.setAttribute('aria-hidden', 'true');
-      option.append(check);
-      option.addEventListener('mousedown', (event) => event.preventDefault());
-      option.addEventListener('click', () => choose(state, item));
-      item.option = option;
-      state.list.append(option);
-    });
+    state.avatars = root.dataset.choiceAvatars !== undefined;
+    buildItems(state);
     state.search.addEventListener('input', (event) => {
       event.stopPropagation();
       filter(state);
@@ -197,6 +221,11 @@ export function enhanceChoices(scope = document) {
     state.trigger.addEventListener('click', () =>
       state.popup.hidden ? openChoice(root) : close(state, true, true),
     );
+    // A search box over a handful of options is noise, so it only appears once a
+    // list is long enough to be worth filtering. Keyboard handling stays on the
+    // root, and focus then lands on the popup instead of the hidden input.
+    applySearchability(state);
+
     choices.set(root, state);
     state.native.hidden = true;
     state.trigger.hidden = false;
@@ -216,10 +245,20 @@ export function openChoice(root) {
   position(state);
   filter(state);
   position(state);
-  state.search.focus({ preventScroll: true });
+  state.focusTarget.focus({ preventScroll: true });
+}
+// Rebuild after something replaced the native control's options.
+export function refreshChoices(scope = document) {
+  scope.querySelectorAll('[data-choice]').forEach((root) => {
+    const state = choices.get(root);
+    if (!state) return;
+    buildItems(state);
+    applySearchability(state);
+    renderValue(state);
+  });
 }
 export function closeChoices(scope) {
-  scope.querySelectorAll('[data-ticket-choice]').forEach((root) => {
+  scope.querySelectorAll('[data-choice]').forEach((root) => {
     const state = choices.get(root);
     if (state) close(state);
   });
@@ -239,3 +278,9 @@ function reposition(event) {
 window.addEventListener('resize', reposition);
 window.addEventListener('scroll', reposition, true);
 window.visualViewport?.addEventListener('resize', reposition);
+
+// Every page loads this module, so the first pass belongs here rather than in
+// whichever feature happened to need a select first.
+if (document.readyState === 'loading')
+  document.addEventListener('DOMContentLoaded', () => enhanceChoices());
+else enhanceChoices();

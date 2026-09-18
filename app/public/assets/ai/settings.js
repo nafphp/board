@@ -1,4 +1,5 @@
 import { requestOllama } from './ollama-client.js';
+import { refreshChoices } from '../choice.js';
 import { configFor, storageFor, write, read, defaults, localUrl } from './store.js';
 
 export function initSettings(form) {
@@ -110,6 +111,8 @@ export function initSettings(form) {
       if ([...embed.options].some((item) => item.value === current.embedding_model))
         embed.value = current.embedding_model;
       if (!chat.options.length) option(chat, '', 'Kein Modell mit Werkzeugunterstützung gefunden');
+      // Both lists were just replaced, so the pickers drawn over them rebuild.
+      refreshChoices(form);
       status.textContent = `Verbunden · ${inspected.length} Modelle`;
       output.textContent = 'Wähle ein Modell und speichere deine Einstellungen.';
     } catch (problem) {

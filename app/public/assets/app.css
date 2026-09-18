@@ -785,14 +785,20 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   flex-wrap: wrap;
 }
 .filterbar input,
-.filterbar select {
+.filterbar select,
+.filterbar .choice-trigger {
   height: 35px;
   font-size: 11px;
   padding: 7px 10px;
   min-width: 100px;
 }
-.filterbar select {
+.filterbar select,
+.filterbar .choice {
   max-width: 180px;
+}
+.filterbar .choice {
+  min-width: 100px;
+  flex: 0 1 auto;
 }
 .search-field {
   display: flex !important;
@@ -849,7 +855,8 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   display: block;
   margin-bottom: 10px;
 }
-.extra-filters select {
+.extra-filters select,
+.extra-filters .choice {
   max-width: none;
   width: 100%;
 }
@@ -1444,6 +1451,7 @@ textarea::placeholder {
 }
 label > input:not([type='checkbox']),
 label > select,
+label > .choice,
 label > textarea {
   width: 100%;
 }
@@ -1504,6 +1512,7 @@ fieldset:disabled {
 }
 fieldset:disabled input,
 fieldset:disabled textarea,
+fieldset:disabled .choice-trigger,
 fieldset:disabled select {
   cursor: default;
 }
@@ -1857,7 +1866,8 @@ fieldset:disabled select {
   margin: 10px 0;
 }
 .structure-row input,
-.structure-row select {
+.structure-row select,
+.structure-row .choice-trigger {
   padding: 7px;
   font-size: 11px;
 }
@@ -2188,7 +2198,8 @@ fieldset:disabled select {
     min-width: 100%;
     flex-basis: 100%;
   }
-  .filterbar select {
+  .filterbar select,
+  .filterbar .choice {
     max-width: calc(50% - 5px);
     flex: 1;
     font-size: 10px;
@@ -2333,4 +2344,132 @@ fieldset:disabled select {
 }
 .attachment-row form {
   margin: 0;
+}
+
+/* Reusable select. The trigger presents itself exactly like the native control it
+   covers, so a converted field keeps the place it already had in every layout. */
+.choice {
+  position: relative;
+  min-width: 0;
+}
+label > .choice {
+  width: 100%;
+  margin-top: 7px;
+}
+.choice-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--input);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 10px 11px;
+  max-width: 100%;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.choice-trigger:hover,
+.choice-trigger[aria-expanded='true'] {
+  border-color: var(--accent);
+}
+.choice-popup:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 3px;
+}
+[data-choice-value] {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.choice-chevron {
+  color: var(--muted);
+  margin-left: auto;
+}
+.choice-count {
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  white-space: nowrap;
+}
+.choice-popup[hidden] {
+  display: none;
+}
+.choice-popup {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  z-index: 200;
+  box-sizing: border-box;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 10px 35px #0003;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 12px;
+}
+.choice-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 7px 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+}
+.choice-search-wrap:focus-within {
+  border-color: var(--accent);
+}
+.choice-list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: 4px;
+}
+.choice-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.choice-option:hover,
+.choice-option.is-active {
+  background: var(--hover);
+}
+.choice-option[aria-selected='true'] {
+  color: var(--accent);
+}
+.choice-check {
+  margin-left: auto;
+  opacity: 0;
+}
+.choice-option[aria-selected='true'] .choice-check {
+  opacity: 1;
+}
+.choice-empty {
+  margin: 0;
+  padding: 17px 9px;
+  color: var(--muted);
 }

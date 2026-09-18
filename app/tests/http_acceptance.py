@@ -546,19 +546,27 @@ ok(
 
 # The shared picker keeps native values and allows multiple assignees through one menu.
 choice_markup = alice.page(created_url + "?fragment=1")
+# Every select in the sidebar is the same reusable picker now, so the count is no
+# longer two; what matters is that these two are among them and stay searchable.
+creation_markup = alice.page(new_url + "?fragment=1")
 ok(
-    choice_markup.count("data-ticket-choice=") == 2
-    and 'data-ticket-choice="column_id"' in choice_markup
-    and 'data-ticket-choice="assignee_ids"' in choice_markup
+    'data-choice="column_id"' in choice_markup
+    and 'data-choice="assignee_ids"' in choice_markup
     and 'aria-multiselectable="true"' in choice_markup
-    and choice_markup.count('popover="manual"') == 2
-    and alice.page(new_url + "?fragment=1").count("data-ticket-choice=") == 2,
+    and choice_markup.count("data-choice=") == choice_markup.count('popover="manual"')
+    and choice_markup.count("data-choice=") >= 2
+    and 'data-choice="column_id"' in creation_markup
+    and 'data-choice="assignee_ids"' in creation_markup,
     "Column and assignee share an accessible searchable picker in detail and creation",
+)
+ok(
+    choice_markup.count('data-choice-search="0"') == 2,
+    "Column and people stay searchable however short their lists are",
 )
 choice_form = next(
     form
     for form in re.findall(r"<form[^>]*data-auto-save[^>]*>.*?</form>", choice_markup, re.S)
-    if 'data-ticket-choice="assignee_ids"' in form
+    if 'data-choice="assignee_ids"' in form
 )
 choice_action = re.search(r'action="([^"]+)"', choice_form)[1]
 choice_revision = {
@@ -593,7 +601,7 @@ ok(
 choice_form = next(
     form
     for form in re.findall(r"<form[^>]*data-auto-save[^>]*>.*?</form>", choice_updated, re.S)
-    if 'data-ticket-choice="assignee_ids"' in form
+    if 'data-choice="assignee_ids"' in form
 )
 choice_revision = {
     name: re.search(r'name="' + name + r'" value="([^"]+)"', choice_form)[1]

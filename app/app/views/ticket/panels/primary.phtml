@@ -45,11 +45,22 @@ use function Nafinity\slot;
                             <input type="hidden" name="_csrf" value="<?= s($slot->token) ?>" />
                             <input type="hidden" name="version" value="<?= (int) $slot->ticket['version'] ?>" />
                             <label><span class="meta-caption"><?= s(t('Zielprojekt')) ?></span>
-                                <select name="project_id" required>
-                                    <?php foreach ($targets as $target): ?>
-                                        <option value="<?= (int) $target['id'] ?>"><?= s($target['name']) ?> · <?= s($target['ticket_key']) ?></option>
-                                    <?php endforeach ?>
-                                </select>
+                                <?= partial('components/choice', [
+                                    'name'    => 'project_id',
+                                    'label'   => 'Zielprojekt',
+                                    'value'   => '',
+                                    'options' => array_column(
+                                        array_map(static fn($target) => [
+                                            'id'    => $target['id'],
+                                            'title' => $target['name'] . ' · ' . $target['ticket_key'],
+                                        ], $targets),
+                                        'title',
+                                        'id',
+                                    ),
+                                    'id'          => 'transfer-project',
+                                    'required'    => true,
+                                    'searchLabel' => 'Projekte suchen',
+                                ]) ?>
                             </label>
                             <p class="muted small"><?= s(t('Neue Nummer, gleicher Inhalt: Kommentare, Anhänge, Verlauf und erfasste Zeit kommen mit.')) ?></p>
                             <p class="muted small"><?= s(t('Labels, Verknüpfungen und Zuständige ohne Zugriff bleiben zurück.')) ?></p>

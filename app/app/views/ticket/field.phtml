@@ -22,14 +22,23 @@ $creating ??= false;
             <?php endforeach ?>
         <?php endif ?>
             <label class="sr-only" for="edit-<?= s($name) ?>"><?= s(t($label)) ?></label>
-            <?php if (in_array($name, ['column_id', 'assignee_ids'], true)): ?>
-                <?= partial('ticket/choice', compact('name', 'label', 'type', 'value', 'options')) ?>
-            <?php elseif ($type === 'select'): ?>
-                <select id="edit-<?= s($name) ?>" name="<?= s($name) ?>">
-                    <?php foreach ($options as $key => $text): ?>
-                        <option value="<?= s($key) ?>" <?= (string) $value === (string) $key ? 'selected' : '' ?>><?= s($text) ?></option>
-                    <?php endforeach ?>
-                </select>
+            <?php if ($type === 'select' || in_array($name, ['column_id', 'assignee_ids'], true)): ?>
+                <?= partial('components/choice', [
+                    'name'        => $name,
+                    'label'       => $label,
+                    'value'       => $value,
+                    'options'     => $options,
+                    'multiple'    => $type === 'multiple',
+                    'avatars'     => $name === 'assignee_ids',
+                    'searchLabel' => match ($name) {
+                        'column_id'    => 'Spalten suchen',
+                        'assignee_ids' => 'Personen suchen',
+                        default        => 'Einträge suchen',
+                    },
+                    // Column and people are searched however short the list is:
+                    // that is how both already behaved before this was reusable.
+                    'searchFrom' => in_array($name, ['column_id', 'assignee_ids'], true) ? 0 : 8,
+                ]) ?>
             <?php elseif ($type === 'multiple'): ?>
                 <input type="hidden" name="<?= s($name) ?>" value="" />
                 <div class="ticket-options" role="group" aria-label="<?= s(t($label)) ?>">

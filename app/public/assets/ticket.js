@@ -1,5 +1,5 @@
 import { toast } from './app.js';
-import { enhanceChoices, openChoice, closeChoices } from './ticket-choice.js';
+import { enhanceChoices, openChoice, closeChoices } from './choice.js';
 import { attribute, fetchWorkspace, syncWidgets } from './fragment.js';
 
 let quillReady;
@@ -141,9 +141,9 @@ async function beginEdit(field) {
     error(form, 'Das Ticket wurde inzwischen geändert. Bitte lade den aktuellen Stand.', true);
     inlineStatus(form, 'Nicht gespeichert · Bitte aktuellen Stand laden');
   }
-  if (form.querySelector('[data-ticket-choice]')) {
+  if (form.querySelector('[data-choice]')) {
     inlineState(form);
-    openChoice(form.querySelector('[data-ticket-choice]'));
+    openChoice(form.querySelector('[data-choice]'));
   } else if (form.querySelector('[data-rich-editor]')) {
     try {
       const editor = await initializeEditor(form);
@@ -393,7 +393,7 @@ document.addEventListener('change', (event) => {
   const form = event.target.closest('[data-auto-save]');
   if (!form) return;
   if (event.target.tagName === 'SELECT') finishEdit(form.closest('[data-inline-field]'));
-  else if (event.target.closest('[data-ticket-choice]')) flushInline(form);
+  else if (event.target.closest('[data-choice]')) flushInline(form);
   else scheduleSave(form);
 });
 document.addEventListener('focusout', (event) => {

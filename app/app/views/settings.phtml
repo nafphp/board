@@ -17,6 +17,15 @@ $this->setLayout(template('layout'));
 $this->block('content');
 $projectId      = $project['id'] ?? null;
 $token          = csrf()->token();
+$projectOptions = ['/preferences' => t('Nur persönliche Einstellungen')];
+$currentProject = '/preferences';
+foreach ($projects as $settingsTarget) {
+    $target                  = '/projects/' . (int) $settingsTarget['id'] . '/settings';
+    $projectOptions[$target] = $settingsTarget['name'];
+    if ((string) $projectId === (string) $settingsTarget['id']) {
+        $currentProject = $target;
+    }
+}
 $availableRoles = ($scope ?? null)?->role === 'owner'
     ? ['owner' => 'Owner', 'manager' => 'Manager', 'member' => 'Member', 'viewer' => 'Viewer']
     : ['member' => 'Member', 'viewer' => 'Viewer'];
@@ -93,14 +102,15 @@ foreach (['user', 'project', 'project_user'] as $cardScope) {
     </div>
     <label>
         Projekt wechseln
-        <select data-settings-project aria-label="Projekt für Einstellungen">
-            <option value="/preferences">Nur persönliche Einstellungen</option>
-            <?php foreach ($projects as $item): ?>
-                <option value="/projects/<?= (int) $item['id'] ?>/settings" <?= (string) $projectId === (string) $item['id'] ? 'selected' : '' ?>>
-                    <?= s($item['name']) ?>
-                </option>
-            <?php endforeach ?>
-        </select>
+        <?= partial('components/choice', [
+            'name'        => 'settings_project',
+            'label'       => 'Projekt für Einstellungen',
+            'value'       => $currentProject,
+            'options'     => $projectOptions,
+            'id'          => 'settings-project',
+            'nativeData'  => ['settings-project' => true],
+            'searchLabel' => 'Projekte suchen',
+        ]) ?>
     </label>
 </div>
 <div class="settings-tiles">

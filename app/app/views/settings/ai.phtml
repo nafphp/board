@@ -1,4 +1,6 @@
-<?php use function Naf\View\s;
+<?php use function Naf\I18n\t;
+use function Naf\View\s;
+use function Nafinity\partial;
 
 ?>
 <form data-ai-settings data-user="<?= s($user->getIdentifier()) ?>" data-project="<?= (int) ($projectId ?? 0) ?>">
@@ -21,16 +23,27 @@
     </div>
     <label>
         Chat-Modell
-        <select name="model" required>
-            <option value="">Modelle laden …</option>
-        </select>
+        <?= partial('components/choice', [
+            'name'        => 'model',
+            'label'       => 'Chat-Modell',
+            'value'       => '',
+            'options'     => ['' => t('Modelle laden …')],
+            'id'          => 'ai-model',
+            'required'    => true,
+            'searchLabel' => 'Modelle suchen',
+        ]) ?>
         <small>Es werden Modelle mit Unterstützung für Werkzeuge angezeigt.</small>
     </label>
     <label>
         Embedding-Modell (optional)
-        <select name="embedding_model">
-            <option value="">Nur begrenzte Stichwortsuche</option>
-        </select>
+        <?= partial('components/choice', [
+            'name'        => 'embedding_model',
+            'label'       => 'Embedding-Modell',
+            'value'       => '',
+            'options'     => ['' => t('Nur begrenzte Stichwortsuche')],
+            'id'          => 'ai-embedding-model',
+            'searchLabel' => 'Modelle suchen',
+        ]) ?>
         <small>Wählt passende Werkzeuge nach Bedeutung aus. Der lokale Index bleibt für weitere Anfragen erhalten.</small>
     </label>
     <details class="ai-advanced">

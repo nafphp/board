@@ -176,11 +176,17 @@ $hintUrl = $current
                     </label>
                     <label>
                         <?= s(t('Schätzung')) ?>
-                        <select name="estimation_scale">
-                            <?php foreach (extensions()->estimationScales()->all() as $key => $registeredScale): ?>
-                                <option value="<?= s($key) ?>"><?= s(t($registeredScale->label)) ?></option>
-                            <?php endforeach ?>
-                        </select>
+                        <?= partial('components/choice', [
+                            'name'    => 'estimation_scale',
+                            'label'   => 'Schätzung',
+                            'value'   => '',
+                            'options' => array_map(
+                                static fn($registeredScale) => t($registeredScale->label),
+                                extensions()->estimationScales()->all(),
+                            ),
+                            'id'          => 'create-project-scale',
+                            'searchLabel' => 'Skalen suchen',
+                        ]) ?>
                     </label>
                 </div>
                 <div class="form-errors" role="alert"></div>

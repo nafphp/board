@@ -9,6 +9,7 @@ use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\partial;
 use function Nafinity\slot;
 use function Nafinity\template;
 
@@ -121,53 +122,68 @@ $emptyCellHint = $filters
             value="<?= s($filters['q'] ?? '') ?>"
         />
     </label>
-    <select name="assignee" aria-label="<?= s(t('Verantwortliche')) ?>">
-        <option value=""><?= s(t('Alle Verantwortlichen')) ?></option>
-        <?php foreach ($members as $member): ?>
-            <option value="<?= (int) $member['id'] ?>" <?= (string) ($filters['assignee'] ?? '') === (string) $member['id'] ? 'selected' : '' ?>><?= s($member['name']) ?></option>
-        <?php endforeach ?>
-    </select>
-    <select name="label" aria-label="<?= s(t('Label')) ?>">
-        <option value=""><?= s(t('Alle Labels')) ?></option>
-        <?php foreach ($labels as $label): ?>
-            <option value="<?= (int) $label['id'] ?>" <?= (string) ($filters['label'] ?? '') === (string) $label['id'] ? 'selected' : '' ?>><?= s($label['name']) ?></option>
-        <?php endforeach ?>
-    </select>
-    <select name="priority" aria-label="<?= s(t('Priorität')) ?>">
-        <option value=""><?= s(t('Priorität')) ?></option>
-        <?php foreach ($priorityLabels as $key => $label): ?>
-            <option value="<?= s($key) ?>" <?= ($filters['priority'] ?? '') === $key ? 'selected' : '' ?>><?= s($label) ?></option>
-        <?php endforeach ?>
-    </select>
+    <?= partial('components/choice', [
+        'name'        => 'assignee',
+        'label'       => 'Verantwortliche',
+        'value'       => $filters['assignee'] ?? '',
+        'options'     => ['' => t('Alle Verantwortlichen')] + array_column($members, 'name', 'id'),
+        'id'          => 'filter-assignee',
+        'searchLabel' => 'Personen suchen',
+    ]) ?>
+    <?= partial('components/choice', [
+        'name'        => 'label',
+        'label'       => 'Label',
+        'value'       => $filters['label'] ?? '',
+        'options'     => ['' => t('Alle Labels')] + array_column($labels, 'name', 'id'),
+        'id'          => 'filter-label',
+        'searchLabel' => 'Labels suchen',
+    ]) ?>
+    <?= partial('components/choice', [
+        'name'    => 'priority',
+        'label'   => 'Priorität',
+        'value'   => $filters['priority'] ?? '',
+        'options' => ['' => t('Priorität')] + $priorityLabels,
+        'id'      => 'filter-priority',
+    ]) ?>
     <details class="extra-filters">
         <summary><?= s(t('Weitere Filter')) ?></summary>
         <div>
             <label>
                 <?= s(t('Spalte')) ?>
-                <select name="column">
-                    <option value="">Alle</option>
-                    <?php foreach ($columns as $column): ?>
-                        <option value="<?= (int) $column['id'] ?>" <?= (string) ($filters['column'] ?? '') === (string) $column['id'] ? 'selected' : '' ?>><?= s($column['name']) ?></option>
-                    <?php endforeach ?>
-                </select>
+                <?= partial('components/choice', [
+                    'name'        => 'column',
+                    'label'       => 'Spalte',
+                    'value'       => $filters['column'] ?? '',
+                    'options'     => ['' => t('Alle')] + array_column($columns, 'name', 'id'),
+                    'id'          => 'filter-column',
+                    'searchLabel' => 'Spalten suchen',
+                ]) ?>
             </label>
             <label>
                 <?= s(t('Swimlane')) ?>
-                <select name="swimlane">
-                    <option value="">Alle</option>
-                    <?php foreach ($swimlanes as $lane): ?>
-                        <option value="<?= (int) $lane['id'] ?>" <?= (string) ($filters['swimlane'] ?? '') === (string) $lane['id'] ? 'selected' : '' ?>><?= s($lane['name']) ?></option>
-                    <?php endforeach ?>
-                </select>
+                <?= partial('components/choice', [
+                    'name'        => 'swimlane',
+                    'label'       => 'Swimlane',
+                    'value'       => $filters['swimlane'] ?? '',
+                    'options'     => ['' => t('Alle')] + array_column($swimlanes, 'name', 'id'),
+                    'id'          => 'filter-swimlane',
+                    'searchLabel' => 'Swimlanes suchen',
+                ]) ?>
             </label>
             <label>
                 <?= s(t('Status')) ?>
-                <select name="status">
-                    <option value="">Offen und geschlossen</option>
-                    <option value="open" <?= ($filters['status'] ?? '') === 'open' ? 'selected' : '' ?>><?= s(t('Offen')) ?></option>
-                    <option value="closed" <?= ($filters['status'] ?? '') === 'closed' ? 'selected' : '' ?>><?= s(t('Geschlossen')) ?></option>
-                    <option value="archived" <?= ($filters['status'] ?? '') === 'archived' ? 'selected' : '' ?>>Archiviert</option>
-                </select>
+                <?= partial('components/choice', [
+                    'name'    => 'status',
+                    'label'   => 'Status',
+                    'value'   => $filters['status'] ?? '',
+                    'options' => [
+                        ''         => t('Offen und geschlossen'),
+                        'open'     => t('Offen'),
+                        'closed'   => t('Geschlossen'),
+                        'archived' => t('Archiviert'),
+                    ],
+                    'id' => 'filter-status',
+                ]) ?>
             </label>
         </div>
     </details>
@@ -349,19 +365,31 @@ $emptyCellHint = $filters
             <input type="hidden" name="placement" value="append" />
             <label>
                 <?= s(t('Spalte')) ?>
-                <select name="column_id">
-                    <?php foreach ($columns as $column): ?>
-                        <option value="<?= (int) $column['id'] ?>" <?= $column['closes_tickets'] ? 'data-closes="1"' : '' ?>><?= s($column['name']) ?></option>
-                    <?php endforeach ?>
-                </select>
+                <?= partial('components/choice', [
+                    'name'  => 'column_id',
+                    'label' => 'Spalte',
+                    'value' => '',
+                    // The native option keeps data-closes, which app.js still reads
+                    // through selectedOptions to decide whether to celebrate.
+                    'options'    => array_column($columns, 'name', 'id'),
+                    'optionData' => array_map(
+                        static fn($closes) => $closes ? ['closes' => '1'] : [],
+                        array_column($columns, 'closes_tickets', 'id'),
+                    ),
+                    'id'          => 'move-column',
+                    'searchLabel' => 'Spalten suchen',
+                ]) ?>
             </label>
             <label>
                 <?= s(t('Swimlane')) ?>
-                <select name="swimlane_id">
-                    <?php foreach ($swimlanes as $lane): ?>
-                        <option value="<?= (int) $lane['id'] ?>"><?= s($lane['name']) ?></option>
-                    <?php endforeach ?>
-                </select>
+                <?= partial('components/choice', [
+                    'name'        => 'swimlane_id',
+                    'label'       => 'Swimlane',
+                    'value'       => '',
+                    'options'     => array_column($swimlanes, 'name', 'id'),
+                    'id'          => 'move-swimlane',
+                    'searchLabel' => 'Swimlanes suchen',
+                ]) ?>
             </label>
             <p class="muted small">Das Ticket wird am Ende des gewählten Bereichs eingeordnet.</p>
             <div class="form-errors" role="alert"></div>
