@@ -1,8 +1,0 @@
-{
-  "passed": [
-    "actual worker SIGKILL preserves reservation",
-    "fresh worker reclaims expired lease and acknowledges",
-    "missing job class returns failure and enters deadletter"
-  ],
-  "lease_deadline_advanced_for_test": true
-}

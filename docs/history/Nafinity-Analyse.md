@@ -22,7 +22,7 @@ Die Package-Quellen stimmen mit dem verifizierten GitHub-`main` überein, mit fo
 
 Die vorhandenen PHPUnit-Suites wurden in isolierten Kopien mit den vorhandenen Abhängigkeiten ausgeführt: **16 Packages, 927 Tests, 2.118 Assertions, alle erfolgreich**, PHP 8.5.4 / PHPUnit 12.5.35. Darunter ist die lokale Mail-RC-Suite. Dies ist keine vollständige PHP-/Datenbankmatrix und kein Nachweis, dass alle Transitivabhängigkeiten dieser einzelnen Vendor-Verzeichnisse dem aktuellen Stand entsprechen.
 
-Zusätzliche Proben liefen gegen eigens angelegte PostgreSQL-17.11- und MariaDB-11.4.13-Container. Bestehende Projektdatenbanken wurden nicht verändert. Eine separate Composer-Fixture installierte Core plus alle 15 relevanten offiziellen Plugins per Path-Symlink; deren gemeinsamer CLI-Boot funktioniert auf dem Host. Nach Korrektur der Vendor-Links booten dieselben 15 Plugins außerdem gemeinsam unter PHP 8.3.15 im bestehenden Alpine-Image; 20 Commands und 14 Routen sind registriert. Reflection zeigt `/workspace/packages/framework/src/Core/App.php`; dessen SHA-256 stimmt mit der lokalen Source überein. `sanity` ist dabei bewusst nicht als stabiles Plugin einbezogen. Die maschinenlesbaren Ergebnisse stehen in [Analyse-Evidenz.json](Analyse-Evidenz.json), die wichtigsten Reproduktionen in [Framework-Findings](Framework-Findings.md).
+Zusätzliche Proben liefen gegen eigens angelegte PostgreSQL-17.11- und MariaDB-11.4.13-Container. Bestehende Projektdatenbanken wurden nicht verändert. Eine separate Composer-Fixture installierte Core plus alle 15 relevanten offiziellen Plugins per Path-Symlink; deren gemeinsamer CLI-Boot funktioniert auf dem Host. Nach Korrektur der Vendor-Links booten dieselben 15 Plugins außerdem gemeinsam unter PHP 8.3.15 im bestehenden Alpine-Image; 20 Commands und 14 Routen sind registriert. Reflection zeigt `/workspace/packages/framework/src/Core/App.php`; dessen SHA-256 stimmt mit der lokalen Source überein. `sanity` ist dabei bewusst nicht als stabiles Plugin einbezogen. Die maschinenlesbaren Ergebnisse stehen in [Analyse-Evidenz.json](../Analyse-Evidenz.json), die wichtigsten Reproduktionen in Framework-Findings.
 
 ## 2. Verfügbare Packages und geprüfte Versionen
 
@@ -109,7 +109,7 @@ A = unmittelbar nutzbarer Teilumfang. B = vorhanden, benötigt eine generische K
 | i18n | A für einfache Übersetzung | JSON-Kataloge, Locale, Platzhalter; keine aus der Profilbeschreibung ableitbare vollwertige ICU-Engine | `APP`: Texte, Locale-/Zeitzonenpräferenz |
 | MCP | A für vorhandenen Tool-Transport | Authentifizierte JSON-RPC-Tools, Scopes und Token-Store; kein Live-Board-Push, keine automatischen Projekt-Policies | `APP`: später explizite Tools/Policy-Brücke |
 
-Die konkreten B-/C-Infrastrukturpunkte mit Ursachen, kleinster API-Änderung, BC und Tests stehen im [Findings-Protokoll](Framework-Findings.md). Es werden keine Ticketfelder, Boardzustände oder Rollen in den Core aufgenommen.
+Die konkreten B-/C-Infrastrukturpunkte mit Ursachen, kleinster API-Änderung, BC und Tests stehen im Findings-Protokoll. Es werden keine Ticketfelder, Boardzustände oder Rollen in den Core aufgenommen.
 
 ## 5. Architektur von Nafinity
 

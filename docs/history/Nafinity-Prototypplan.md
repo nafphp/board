@@ -1,8 +1,8 @@
 # Nafinity — Plan für Prototyp und erstes produktives MVP
 
-Stand: 14. September 2026. **Historischer, umgesetzter Plan. Aktueller Stand und offene Release-Gates: [Implementation.md](Implementation.md).** Projektort nach der Analyse: `/Users/flo/PhpStormProjects/nafinity`. Name ist vorläufig.
+Stand: 14. September 2026. **Historischer, umgesetzter Plan. Aktueller Stand und offene Release-Gates: [Implementation.md](../Implementation.md).** Projektort nach der Analyse: `/Users/flo/PhpStormProjects/nafinity`. Name ist vorläufig.
 
-Die Entscheidungsvorlage besteht aus [Architektur/Bestandsaufnahme](Nafinity-Analyse.md), [Framework Findings](Framework-Findings.md) und [Prüfevidenz](Analyse-Evidenz.json).
+Die Entscheidungsvorlage besteht aus [Architektur/Bestandsaufnahme](Nafinity-Analyse.md), Framework Findings und [Prüfevidenz](../Analyse-Evidenz.json).
 
 ## Gewählte Richtung
 

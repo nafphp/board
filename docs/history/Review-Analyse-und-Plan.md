@@ -1,6 +1,6 @@
 # Nafinity — Review der Analyse und Planung
 
-Stand: 14. September 2026. Gegenstand: [Analyse](Nafinity-Analyse.md), [Prototypplan](Nafinity-Prototypplan.md), [Framework Findings](Framework-Findings.md), [Prüfevidenz](Analyse-Evidenz.json).
+Stand: 14. September 2026. Gegenstand: [Analyse](Nafinity-Analyse.md), [Prototypplan](Nafinity-Prototypplan.md), Framework Findings, [Prüfevidenz](../Analyse-Evidenz.json).
 
 Dieses Dokument bewertet die vorliegende Planung. **Es ändert keine Entscheidung, implementiert nichts und veröffentlicht nichts.** Empfehlungen sind als solche gekennzeichnet.
 
@@ -125,7 +125,7 @@ Unter dieser Lesart ist F06 mit Dringlichkeit P1 in Planphase P2 **korrekt einge
 
 Der reale Defekt ist damit kein inhaltlicher, sondern ein Lesbarkeitsdefekt: **zwei Skalen mit identischer Schreibweise in Dokumenten, die sich ständig gegenseitig zitieren.** Diese Kollision hat bei der ersten Durchsicht dieses Reviews zu genau der Fehldiagnose geführt, die sie wahrscheinlich macht — sie ist keine theoretische Gefahr.
 
-*Empfehlung, umgesetzt:* im [Findings-Protokoll](Framework-Findings.md) steht nun ein ausdrücklicher Hinweis auf die beiden Skalen sowie eine vollständige Abbildung Dringlichkeit → geplante Phase für alle achtzehn Findings, mit der Pflicht, diese Zeile bei jedem neuen Finding mitzuführen. Damit ist die Zuordnung nachprüfbar statt implizit.
+*Empfehlung, umgesetzt:* im Findings-Protokoll steht nun ein ausdrücklicher Hinweis auf die beiden Skalen sowie eine vollständige Abbildung Dringlichkeit → geplante Phase für alle achtzehn Findings, mit der Pflicht, diese Zeile bei jedem neuen Finding mitzuführen. Damit ist die Zuordnung nachprüfbar statt implizit.
 
 **Inhaltlich bleibt von diesem Punkt ein Hinweis zu F06 übrig.** Der Move-Pfad der Planphase P1 — Project-Zeile per `SELECT … FOR UPDATE` sperren und anschließend Tickets schreiben — *ist* ein komponierter PDO/ORM-Ablauf, also schon vor Phase P2 relevant. Der Plan löst das über die Disziplinregel, alle eigenen Transaktionen über denselben EntityManager zu führen, und bezeichnet das ausdrücklich nicht als Behebung von F06. Das ist vertretbar und funktioniert (siehe Abschnitt 4), hing aber an einer Reihenfolge, die nirgends niedergeschrieben war.
 
@@ -163,10 +163,10 @@ In dieser Reihenfolge:
 
 1. **Aufwandsschätzung** je Finding und je P-Phase, mit Angabe der Personenzahl.
 2. ~~**Reihenfolgeregel EntityManager vor rohem `FOR UPDATE`** in Analyse-Abschnitt 8 aufnehmen, mit zugehörigem Negativtest.~~ — erledigt: Begründung in [Analyse](Nafinity-Analyse.md) Abschnitt 5, verbindliche Reihenfolge in Abschnitt 8 Schritt 1, Negativtest in der Moves-Zeile der Teststrategie.
-3. ~~**F18 ins Findings-Protokoll** und in den P0-Block des Database-Durchgangs.~~ — erledigt: [F18](Framework-Findings.md) im Protokoll, im [P0-Block](Nafinity-Prototypplan.md) auf den Database- und den Core-Durchgang aufgeteilt.
+3. ~~**F18 ins Findings-Protokoll** und in den P0-Block des Database-Durchgangs.~~ — erledigt: F18 im Protokoll, im [P0-Block](Nafinity-Prototypplan.md) auf den Database- und den Core-Durchgang aufgeteilt.
 4. **Zeitbudget für P0 mit definierter Reißleine.**
 5. **Release-Reihenfolge-Tabelle** mit den jeweils blockierten App-Meilensteinen.
-6. ~~**Prioritätslabels** zwischen Plan und Findings angleichen, insbesondere F06.~~ — hinfällig: die Labels widersprechen sich nicht, siehe Abschnitt 7.3. Stattdessen erledigt: Abbildung Dringlichkeit → Phase im [Findings-Protokoll](Framework-Findings.md).
+6. ~~**Prioritätslabels** zwischen Plan und Findings angleichen, insbesondere F06.~~ — hinfällig: die Labels widersprechen sich nicht, siehe Abschnitt 7.3. Stattdessen erledigt: Abbildung Dringlichkeit → Phase im Findings-Protokoll.
 
 Die Punkte 1, 4 und 5 sind Projektsteuerung und kosten zusammen wenige Stunden. Die Punkte 2, 3 und 6 sind inhaltlich und verhindern jeweils einen konkreten, wahrscheinlichen Fehler in der ersten Umsetzungswoche.
 

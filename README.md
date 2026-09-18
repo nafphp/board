@@ -161,17 +161,19 @@ make restart-background
 
 ## Pruefungen und Betrieb
 
-Der Code folgt PER Coding Style 3.0 mit lokal ausgerichteten Zuweisungen.
-[Code-Stil und Formatter](docs/Code-Style.md) dokumentiert die Regeln:
-`make style-install`, danach `make style-check` oder `make style-fix`.
-Die Formatter benötigen zusätzlich Node.js/npm auf dem Host und bleiben außerhalb der Runtime.
+Der Code folgt PER Coding Style 3.0 mit lokal ausgerichteten Zuweisungen; die genauen
+Regeln stehen in `.php-cs-fixer.dist.php` und zusammengefasst in `AGENTS.md`.
+Einmalig `make style-install`, danach `make style-check` oder `make style-fix`.
+Geprueft werden PHP, PHP in Templates, JavaScript, CSS und die Python-Skripte.
+Die Formatter benötigen zusätzlich Node.js/npm auf dem Host, sind unter `tools/style` mit
+eigenen Locks festgelegt und bleiben ausserhalb des Build-Kontexts und der Runtime.
 
 Siehe [Implementierung und Abnahme](docs/Implementation.md) fuer Ergebnisse, Grenzen,
 Release-Branches und Wiederholung der Tests. Health: `/health/live` und `/health/ready`.
 Die Readiness prueft Datenbank, erforderliche App-Migrationen, Hintergrundtabellen und die native Storage-Anbindung.
 
 ```sh
-make test                  # MariaDB, PostgreSQL, HTTP, Worker und lokale AI-Logik
+make test                  # Alles: MariaDB, PostgreSQL, HTTP, Profil, Worker, AI und Erweiterungen
 make test-profile          # Kontowechsel, Code-Verifizierung und Sitzungswiderruf
 make mailpit               # Lokales Testpostfach auf Port 8025 starten
 make test-ai               # AI-Transport und semantischer Router, ohne laufendes Modell
@@ -210,8 +212,8 @@ Lokale Anmeldung bleibt aktiv. LDAP/OIDC sind optional vorbereitet und abgeschal
 externe Konten werden nur explizit verknuepft. `app/identity.example.php` dokumentiert die
 Konfiguration, private Werte gehoeren in die ignorierte `identity.local.php`.
 
-Der [urspruengliche Plan](docs/Nafinity-Prototypplan.md), die [Analyse](docs/Nafinity-Analyse.md)
-und die [Review](docs/Review-Analyse-und-Plan.md) bleiben als Entscheidungshistorie erhalten.
+Plan, Analyse und Review von vor der Umsetzung liegen als eingefrorene
+[Entscheidungshistorie](docs/history/) unter `docs/history/`.
 
 Nafinity ist durch installierte Composer-Pakete erweiterbar: eigene Controller, Routen und
 Dienste, Menueeintraege, Settings, Ticketfelder, Widgets, Board-Filter, Uebersetzungen,
