@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Commands\CheckAssetsCommand;
+use App\Commands\PublishAssetsCommand;
+use App\Commands\RemoveAssetsCommand;
 use App\Commands\SeedCommand;
 use App\Domain\Change;
 use App\Domain\ProjectScope;
@@ -58,7 +61,11 @@ event()->listen(
         ->get(ActivityListener::class)
         ->record($change),
 );
-$container->get(CommandRegistry::class)->add(SeedCommand::class);
+$commands = $container->get(CommandRegistry::class);
+$commands->add(SeedCommand::class);
+$commands->add(PublishAssetsCommand::class);
+$commands->add(CheckAssetsCommand::class);
+$commands->add(RemoveAssetsCommand::class);
 $container->set(
     AttachmentStorage::class,
     static fn() => new AttachmentStorage(

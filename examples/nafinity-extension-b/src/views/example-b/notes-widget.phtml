@@ -1,0 +1,20 @@
+<?php
+
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+/**
+ * A second widget at the same index as the one above.
+ *
+ * Equal indexes are ordered by id, so this one follows
+ * `example.reports.widget` rather than landing somewhere by chance.
+ */
+?>
+<section
+    class="detail-section"
+    data-ticket-section="example-notes"
+    data-extension-id="<?= s($contribution->id) ?>"
+>
+    <h2><?= s(t('Notizen zur Prüfung')) ?></h2>
+    <p class="muted small"><?= s(t('Gleicher Index, nach ID sortiert.')) ?></p>
+</section>

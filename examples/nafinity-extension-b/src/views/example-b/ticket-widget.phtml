@@ -1,0 +1,24 @@
+<?php
+
+use App\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+/**
+ * This replaces extension A's widget under the very same id.
+ *
+ * It answers in the same slot at the same index, so what changes is what the
+ * widget says, not where it sits.
+ */
+?>
+<section
+    class="detail-section"
+    data-ticket-section="example-review"
+    data-extension-id="<?= s($contribution->id) ?>"
+>
+    <h2><?= Icon::mark('rate_review', 'sm') ?> <?= s(t('Prüfung (Erweiterung B)')) ?></h2>
+    <p class="muted small">
+        <?= s(t('Diese Darstellung ersetzt die der Erweiterung A unter derselben ID.')) ?>
+    </p>
+</section>

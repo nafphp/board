@@ -1,0 +1,159 @@
+#!/usr/bin/env python3
+"""Boot the real Nafinity application with, and then without, both example extensions.
+
+The extensions are installed as ordinary Composer packages from local path
+repositories into throwaway hosts that share Nafinity's own source. The
+development installation is never touched and nothing here reaches a package
+registry: this proves discovery, boot and uninstall, not distribution.
+
+The second phase runs against the database the first phase left behind, which is
+the whole point of it: what people stored has to survive the package going away.
+"""
+from pathlib import Path
+import json
+import subprocess
+import sys
+
+root = Path(__file__).resolve().parents[1]
+manifest = json.loads((root / "app/composer.json").read_text())
+examples = ["example/nafinity-extension-a", "example/nafinity-extension-b"]
+
+
+def build_host(folder, packages, order=None):
+    """Write a disposable host that shares Nafinity's source and installs packages."""
+    host = root / "work" / folder
+    config = {
+        "name": "local/nafinity-" + folder,
+        "description": "Disposable host for the Nafinity extension checks",
+        "type": "project",
+        "license": "proprietary",
+        "require": dict(manifest["require"]),
+        "autoload": manifest["autoload"],
+        "config": {"allow-plugins": False},
+        "minimum-stability": "dev",
+        "prefer-stable": True,
+        "repositories": [],
+    }
+    for package, constraint in manifest["require"].items():
+        if not package.startswith("naf/"):
+            continue
+        name = package.split("/")[1]
+        config["repositories"].append(
+            {
+                "type": "path",
+                "url": "/workspace/packages/" + name,
+                "options": {
+                    "symlink": True,
+                    "versions": {package: constraint.lstrip("^") + "-dev"},
+                },
+            }
+        )
+    for package in packages:
+        folder_name = package.split("/")[1]
+        config["repositories"].append(
+            {
+                "type": "path",
+                "url": "/workspace/examples/" + folder_name,
+                "options": {"symlink": True, "versions": {package: "1.0.0"}},
+            }
+        )
+        config["require"][package] = "*"
+
+    host.mkdir(parents=True, exist_ok=True)
+    (host / "composer.json").write_text(json.dumps(config, indent=2) + "\n")
+    (host / "storage").mkdir(exist_ok=True)
+    (host / "logs").mkdir(exist_ok=True)
+    if order is not None:
+        # Explicit provider order, independent of what Composer listed first.
+        (host / "app").unlink(missing_ok=True)
+    # The application's own source is shared, not copied. bootstrap.php is the
+    # exception: PHP resolves __DIR__ through a symlink, so a linked bootstrap
+    # would define BASE_PATH as the development installation and load its vendor.
+    for name in ["app", "public", "tests"]:
+        link = host / name
+        if link.is_symlink() or link.exists():
+            link.unlink()
+        link.symlink_to("/workspace/app/" + name)
+    (host / "bootstrap.php").write_text((root / "app/bootstrap.php").read_text())
+
+    return host
+
+
+def run(host, steps):
+    completed = subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--profile",
+            "test",
+            "run",
+            "--rm",
+            "-T",
+            "--volume",
+            str(host) + ":/workspace/host",
+            "--volume",
+            str(root / "examples") + ":/workspace/examples:ro",
+            "--workdir",
+            "/workspace/host",
+            "--env",
+            "COMPOSER=composer.json",
+            "--env",
+            "NAFINITY_BOOTSTRAP=/workspace/host/bootstrap.php",
+            "app-test",
+            "sh",
+            "-c",
+            "set -e; " + "; ".join(steps),
+        ],
+        cwd=root,
+        capture_output=True,
+        text=True,
+    )
+    output = completed.stdout.strip()
+    if completed.returncode != 0 or "{" not in output:
+        sys.stderr.write(output + "\n" + completed.stderr)
+        for log in ["install.log", "migrate.log"]:
+            file = host / log
+            if file.is_file():
+                sys.stderr.write("\n--- " + log + " ---\n" + file.read_text()[-2000:])
+        sys.exit(completed.returncode or 1)
+
+    return json.loads(output[output.index("{") :])
+
+
+installed = build_host("extension-host", examples)
+with_extensions = run(
+    installed,
+    [
+        "composer install --no-interaction --no-progress > install.log 2>&1",
+        "php vendor/bin/naf db:migrate up > migrate.log 2>&1",
+        "php tests/extensions.php",
+    ],
+)
+
+# The same database, now without the packages: nothing is migrated down, because
+# uninstalling a package does not delete what people stored with it.
+removed = build_host("extension-host-without", [])
+without_extensions = run(
+    removed,
+    [
+        "composer install --no-interaction --no-progress > install.log 2>&1",
+        "php tests/extensions_without.php",
+    ],
+)
+
+# The disposable database now records a migration whose source only exists while
+# the package is installed, so the schema is rolled back here rather than left
+# for the next suite to trip over.
+run(installed, ["php vendor/bin/naf db:migrate down > migrate-down.log 2>&1; echo '{}'"])
+
+evidence = {
+    "with_extensions": with_extensions,
+    "without_extensions": without_extensions,
+    "passed": with_extensions["passed"] + without_extensions["passed"],
+    "failed": with_extensions["failed"] + without_extensions["failed"],
+}
+print(json.dumps(evidence, indent=2, ensure_ascii=False))
+(root / "docs/Plugin-Erweiterbarkeit-Evidenz.json").write_text(
+    json.dumps(evidence, indent=2, ensure_ascii=False) + "\n"
+)
+sys.exit(1 if evidence["failed"] else 0)

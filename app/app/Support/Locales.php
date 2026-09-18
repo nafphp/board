@@ -6,6 +6,8 @@ namespace App\Support;
 
 use Naf\I18n\Support\Language;
 
+use function Naf\I18n\translation_paths;
+
 /**
  * The languages this application actually speaks, which is a shorter list than the ones the
  * framework knows: a locale is on offer only once a translation file exists for it, so the
@@ -13,6 +15,10 @@ use Naf\I18n\Support\Language;
  *
  * Names come from the framework, where each language is written in itself — someone who
  * cannot read the current language still recognises their own.
+ *
+ * A plugin's translation directory counts the same as the application's, so a
+ * package that brings French makes French selectable without this list being
+ * edited. The application's own file still wins over a package's wording.
  */
 final class Locales
 {
@@ -39,14 +45,19 @@ final class Locales
      */
     public static function available(): array
     {
-        $names  = Language::labels();
-        $found  = [];
-        $folder = dirname(__DIR__) . '/Resources/lang';
+        $names   = Language::labels();
+        $found   = [];
+        $folders = [
+            ...array_values(translation_paths()->all()),
+            dirname(__DIR__) . '/Resources/lang',
+        ];
 
-        foreach (glob($folder . '/*.json') ?: [] as $file) {
-            $code = basename($file, '.json');
-            if (isset($names[$code])) {
-                $found[$code] = $names[$code];
+        foreach ($folders as $folder) {
+            foreach (glob(rtrim($folder, '/') . '/*.json') ?: [] as $file) {
+                $code = basename($file, '.json');
+                if (isset($names[$code])) {
+                    $found[$code] = $names[$code];
+                }
             }
         }
         ksort($found);

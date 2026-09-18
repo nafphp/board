@@ -19,7 +19,7 @@
     "naf/auth": "^0.2.1",
     "naf/view": "^0.2.1",
     "naf/cli": "^0.2.2",
-    "naf/i18n": "^0.2.1",
+    "naf/i18n": "^0.2.2",
     "naf/client": "^0.2.2",
     "naf/oauth-client": "^0.2.2",
     "naf/storage": "^0.1.0",

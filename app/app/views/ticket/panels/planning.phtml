@@ -18,7 +18,7 @@ use function Nafinity\partial;
 <section class="ticket-sidebar-group">
     <h2><?= s(t('Planung & Zeit')) ?></h2>
     <dl class="ticket-meta">
-        <?php if ($estimating): ?><dt><?= s(t(Estimation::LABELS[$scale])) ?></dt><dd><?= $field('estimate_points', Estimation::LABELS[$scale], 'select', $points, $pointDisplay, $pointOptions) ?></dd><?php endif ?>
+        <?php if ($estimating): ?><dt><?= s(t(Estimation::label($scale))) ?></dt><dd><?= $field('estimate_points', Estimation::label($scale), 'select', $points, $pointDisplay, $pointOptions) ?></dd><?php endif ?>
         <dt><?= s(t('Startdatum')) ?></dt><dd><?= $field('start_date', 'Startdatum', 'date', $ticket['start_date'], $ticket['start_date'] ? s(date('d.m.Y', strtotime($ticket['start_date']))) : $empty) ?></dd>
         <dt><?= s(t('Fällig am')) ?></dt><dd><?= $field('due_date', 'Fällig am', 'date', $ticket['due_date'], $ticket['due_date'] ? s(date('d.m.Y', strtotime($ticket['due_date']))) : $empty) ?></dd>
         <dt><?= s(t('Geschätzt')) ?></dt><dd><?= $field('estimate_minutes', 'Geschätzt', 'duration', $ticket['estimate_minutes'] === null ? '' : Duration::format((int) $ticket['estimate_minutes']), s($duration($ticket['estimate_minutes'] === null ? null : (int) $ticket['estimate_minutes']))) ?></dd>

@@ -15,6 +15,7 @@ BACKUP       ?=
         build-app run up stop down restart restart-background status logs ssh shell \
         composer composer-install composer-update naf migrate seed health \
         test test-up test-down test-mariadb test-postgres test-http test-profile test-worker test-ai \
+        test-plugins \
         style-install style-check style-fix backup verify-restore \
         candidate-build candidate-up candidate-down plugin-check certificates supervisor-status mailpit
 
@@ -104,7 +105,7 @@ health: check-env-file ## Check app readiness (database, migrations and storage)
 	@$(COMPOSE) exec -T app curl --fail --silent --show-error --cacert /etc/nginx/ssl/ca.pem https://localhost:8443/health/ready
 	@printf '\n'
 
-test: test-http test-profile test-postgres test-worker test-ai ## Run MariaDB, PostgreSQL, HTTP and worker checks in disposable databases
+test: test-http test-profile test-postgres test-worker test-ai test-plugins ## Run MariaDB, PostgreSQL, HTTP, worker and extension checks in disposable databases
 
 test-up: config-check certificates ## Prepare nafinity_test and start the isolated test services
 	@$(COMPOSE) up -d --wait db
@@ -135,6 +136,9 @@ test-worker: test-up ## Check worker termination, lease recovery and dead letter
 test-ai: ## Check local AI streaming transport and browser storage boundaries
 	@node app/tests/ai_transport.mjs
 	@node app/tests/ai_routing.mjs
+
+test-plugins: test-up ## Boot Nafinity with and without both example extensions
+	@python3 bin/check-extensions
 
 style-install: check-env-file ## Install the pinned development formatters
 	@bin/style install

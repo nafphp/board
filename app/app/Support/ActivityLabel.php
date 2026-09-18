@@ -5,36 +5,26 @@ declare(strict_types=1);
 namespace App\Support;
 
 use function Naf\I18n\t;
+use function Nafinity\extensions;
 
+/**
+ * What a recorded change is called in the history.
+ *
+ * A type nobody registered keeps its own name instead of being presented as
+ * "project updated", which would be a confident wrong answer.
+ */
 final class ActivityLabel
 {
     public static function for(string $type): string
     {
-        return t(
-            [
-                'project.created'         => 'Projekt erstellt',
-                'project.updated'         => 'Projekt bearbeitet',
-                'project.archived'        => 'Projekt archiviert',
-                'project.restored'        => 'Projekt wiederhergestellt',
-                'project.member_changed'  => 'Mitgliedschaft geändert',
-                'board.structure_changed' => 'Board-Struktur geändert',
-                'ticket.created'          => 'Ticket erstellt',
-                'ticket.updated'          => 'Ticket bearbeitet',
-                'ticket.moved'            => 'Ticket verschoben',
-                'ticket.transferred'      => 'Ticket aus einem anderen Projekt verschoben',
-                'ticket.linked'           => 'Ticket verknüpft',
-                'ticket.unlinked'         => 'Ticketverknüpfung entfernt',
-                'ticket.close'            => 'Ticket geschlossen',
-                'ticket.reopen'           => 'Ticket wieder geöffnet',
-                'ticket.archive'          => 'Ticket archiviert',
-                'ticket.restore'          => 'Ticket wiederhergestellt',
-                'comment.created'         => 'Kommentar erstellt',
-                'comment.updated'         => 'Kommentar bearbeitet',
-                'comment.deleted'         => 'Kommentar gelöscht',
-                'timer.recorded'          => 'Zeit erfasst',
-                'attachment.added'        => 'Anhang hinzugefügt',
-                'attachment.deleted'      => 'Anhang gelöscht',
-            ][$type] ?? 'Projekt aktualisiert',
-        );
+        $definition = extensions()->activityTypes()->get($type);
+
+        return $definition === null ? $type : t($definition->label);
+    }
+
+    /** The Material symbol for a type, or none when it is unknown. */
+    public static function icon(string $type): ?string
+    {
+        return extensions()->activityTypes()->get($type)?->icon;
     }
 }

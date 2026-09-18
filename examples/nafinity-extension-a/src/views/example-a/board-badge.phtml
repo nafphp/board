@@ -1,0 +1,18 @@
+<?php
+
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+/**
+ * The board badge for a reviewed ticket.
+ *
+ * The card's metadata was loaded with the board in one query, so this reads
+ * what is already there instead of asking per card.
+ */
+$values = $card_metadata[(int) $card['id']] ?? [];
+
+if (($values['example.reviewed'] ?? false) !== true) {
+    return;
+}
+?>
+<span class="card-badge example-reviewed" title="<?= s(t('Geprüft')) ?>">✓</span>

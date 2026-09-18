@@ -1,0 +1,55 @@
+{
+  "with_extensions": {
+    "host": "extension-host",
+    "extensions": [
+      "example.reports",
+      "example.review"
+    ],
+    "passed": 27,
+    "failed": [],
+    "tests": [
+      "T01 both extensions boot after the application defaults, in index order",
+      "T01 a second initialization does not run the providers again",
+      "T01 registering after the pass reports where it belongs",
+      "T01 a failing provider names itself and its cause",
+      "T03 a plugin route exists and core routes still answer",
+      "T03 a later route of the same name replaces, and remove takes it back",
+      "T05 extension B decorates the bound ticket service for every consumer",
+      "T15 a contributed field is stored, read back and reset",
+      "T16 a metadata-only change raises the version exactly once",
+      "T16 a rejected value changes nothing at all",
+      "T17 an unknown field key is refused instead of stored",
+      "T17 a core attribute cannot be claimed as a contributed field",
+      "E the fixed ticket areas cannot be replaced or removed",
+      "T18 two widgets share an index and are ordered by id",
+      "T18 extension B replaced extension A's widget under the same id",
+      "T07 a plugin grant is stored, loaded and refused without it",
+      "T07 a grant of a missing extension survives a role save",
+      "T09 the extensions declare settings that read and write",
+      "T09 extension B moved one field to its own card",
+      "T10 values, presence and the collection snapshot agree",
+      "T11 contexts stay apart and a stranger reads nothing",
+      "T23 a contributed filter reaches the count and the cards",
+      "T08 a view override applies and the host wins last",
+      "T08 a mapping cycle is reported",
+      "T26 the contributed tool appears only with its grant",
+      "T27 the plugin translation is available and the application wins",
+      "T19 ticket field groups all point at a registered panel"
+    ]
+  },
+  "without_extensions": {
+    "host": "extension-host-without",
+    "passed": 6,
+    "failed": [],
+    "tests": [
+      "T30 no extension is registered any more",
+      "T30 the stored values are still there",
+      "T30 values of a missing extension are not authorized or shown",
+      "T30 the ticket reports that something is missing, without its values",
+      "T30 a core ticket change leaves unknown values untouched",
+      "T30 a personal value of a missing extension is neither read nor lost"
+    ]
+  },
+  "passed": 33,
+  "failed": []
+}

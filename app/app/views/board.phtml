@@ -8,6 +8,7 @@ use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\slot;
 use function Nafinity\template;
 
 $this->setLayout(template('layout'));
@@ -24,11 +25,23 @@ $memberMap    = array_column($members, null, 'id');
 $columnCounts = array_count_values(array_column($cards, 'column_id'));
 $laneCounts   = array_count_values(array_column($cards, 'swimlane_id'));
 
+// The board loaded every card's metadata in one query; contributions to a card
+// read from that instead of asking again per card.
+$cardSlotData = [
+    'project'       => $project,
+    'projectId'     => $projectId,
+    'scope'         => $scope,
+    'card_metadata' => $card_metadata ?? [],
+    'labelMap'      => $labelMap,
+    'memberMap'     => $memberMap,
+    'token'         => $token,
+];
+
 // One estimate read through the project's scale. The sums describe what is on screen, so
 // a filtered board reports the filtered total and says so in its existing hint.
 $scale        = Estimation::scale($project['estimation_scale']);
 $estimating   = Estimation::active($scale);
-$estimateUnit = Estimation::UNITS[$scale] ?? '';
+$estimateUnit = Estimation::unit($scale);
 $columnPoints = [];
 foreach ($cards as $card) {
     $columnPoints[$card['column_id']] = ($columnPoints[$card['column_id']] ?? 0)
@@ -73,6 +86,7 @@ $emptyCellHint = $filters
         <p><?= s($project['description']) ?></p>
     </div>
     <div class="heading-actions">
+        <?= slot('board.actions', $uiContext, $cardSlotData) ?>
         <div class="avatar-stack">
             <?php foreach (array_slice($members, 0, 4) as $member): ?>
                 <span class="avatar avatar-small" title="<?= s($member['name']) ?>"><?= s(mb_substr($member['name'], 0, 1)) ?></span>
@@ -198,9 +212,10 @@ $emptyCellHint = $filters
                     <span
                         class="column-points"
                         data-column-points="<?= (int) $column['id'] ?>"
-                        title="<?= s(t(Estimation::LABELS[$scale]) . ' · ' . $column['name']) ?>"
+                        title="<?= s(t(Estimation::label($scale)) . ' · ' . $column['name']) ?>"
                     ><span data-points-value><?= (int) ($columnPoints[$column['id']] ?? 0) ?></span><small><?= s($estimateUnit) ?></small></span>
                 <?php endif ?>
+                <?= slot('board.column.summary', $uiContext, [...$cardSlotData, 'column' => $column]) ?>
             </div>
         <?php endforeach ?>
     </div>
@@ -260,6 +275,7 @@ $emptyCellHint = $filters
                                             >
 <?= Icon::mark('more_horiz') ?>                                            </button>
                                         <?php endif ?>
+                                        <?= slot('board.card.actions', $uiContext, [...$cardSlotData, 'card' => $card]) ?>
                                     </div>
                                 </div>
                                 <a class="card-title" data-ticket-link href="<?= s(route('ticket', ['project' => $projectId, 'ticket' => Format::ticket($project['ticket_key'], $card['number'])])) ?>">
@@ -273,7 +289,9 @@ $emptyCellHint = $filters
                                             <?= s($label['name']) ?>
                                         </span>
                                     <?php endforeach ?>
+                                    <?= slot('board.card.badges', $uiContext, [...$cardSlotData, 'card' => $card]) ?>
                                 </div>
+                                <?= slot('board.card.details', $uiContext, [...$cardSlotData, 'card' => $card]) ?>
                                 <div class="card-bottom">
                                     <span class="due-date"><?= $card['due_date'] ? Icon::mark('schedule', 'sm') . ' ' . s(date('d. M', strtotime($card['due_date']))) : 'Kein Termin' ?></span>
                                     <?php if ($estimating && $card['estimate_points'] !== null): ?>
@@ -281,7 +299,7 @@ $emptyCellHint = $filters
                                             class="card-points <?= Estimation::offScale($scale, (int) $card['estimate_points']) ? 'off-scale' : '' ?>"
                                             title="<?= s(Estimation::offScale($scale, (int) $card['estimate_points'])
                                                 ? t('Wert außerhalb der Skala dieses Projekts')
-                                                : t(Estimation::LABELS[$scale])) ?>"
+                                                : t(Estimation::label($scale))) ?>"
                                         >
                                             <?= (int) $card['estimate_points'] ?><small><?= s($estimateUnit) ?></small>
                                         </span>

@@ -1,6 +1,5 @@
 <?php
 
-use App\Domain\Estimation;
 use App\Support\Format;
 use App\Support\Icon;
 
@@ -177,8 +176,8 @@ $hintUrl = $current
                     <label>
                         <?= s(t('Schätzung')) ?>
                         <select name="estimation_scale">
-                            <?php foreach (Estimation::LABELS as $key => $label): ?>
-                                <option value="<?= s($key) ?>"><?= s(t($label)) ?></option>
+                            <?php foreach (extensions()->estimationScales()->all() as $key => $registeredScale): ?>
+                                <option value="<?= s($key) ?>"><?= s(t($registeredScale->label)) ?></option>
                             <?php endforeach ?>
                         </select>
                     </label>

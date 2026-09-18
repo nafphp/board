@@ -1,0 +1,25 @@
+{
+  "name": "example/nafinity-extension-b",
+  "description": "Example Nafinity extension: decorates a service and replaces contributions of another extension.",
+  "type": "naf-plugin",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.3",
+    "naf/framework": "^0.2.4",
+    "example/nafinity-extension-a": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Example\\ExtensionB\\": "src/"
+    }
+  },
+  "config": {
+    "allow-plugins": false
+  },
+  "extra": {
+    "nafinity": {
+      "host": "fkde/nafinity",
+      "note": "Nafinity is the host application. This package additionally needs example/nafinity-extension-a, whose contributions it replaces."
+    }
+  }
+}

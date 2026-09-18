@@ -26,7 +26,7 @@ final class ProjectSectionProvider implements SettingSectionProviderInterface
             'description' => implode(' · ', [
                 ($project['archived_at'] ?? null) ? t('Archiviert') : t('Aktiv'),
                 ($project['ticket_key'] ?? '') . '-1',
-                t(Estimation::LABELS[$scale] ?? $scale),
+                t(Estimation::label($scale)),
             ]),
         ];
     }

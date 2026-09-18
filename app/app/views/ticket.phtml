@@ -64,7 +64,7 @@ foreach ($metaDefinitions ?? [] as $metaKey => $metaDefinition) {
 // from an earlier scale stays selectable, so opening the ticket cannot silently drop it.
 $scale        = Estimation::scale($project['estimation_scale'] ?? null);
 $estimating   = Estimation::active($scale);
-$estimateUnit = Estimation::UNITS[$scale] ?? '';
+$estimateUnit = Estimation::unit($scale);
 $points       = $ticket['estimate_points'] === null ? null : (int) $ticket['estimate_points'];
 $pointValues  = Estimation::values($scale);
 if ($points !== null && !in_array($points, $pointValues, true)) {

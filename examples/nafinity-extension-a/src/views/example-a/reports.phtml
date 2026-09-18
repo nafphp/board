@@ -1,0 +1,52 @@
+<?php
+
+use App\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+use function Nafinity\template;
+
+$this->setLayout(template('layout'));
+$this->block('content');
+?>
+<section class="page-heading">
+    <div>
+        <span class="eyebrow"><?= s(t('ERWEITERUNG')) ?></span>
+        <h1><?= s(t('Berichte')) ?></h1>
+    </div>
+    <a class="button subtle" href="<?= s(route('board', ['project' => $project['id']])) ?>">
+        <?= Icon::mark('arrow_back', 'sm') ?> <?= s(t('Zum Board')) ?>
+    </a>
+</section>
+<p class="muted">
+    <?= s(t(':reviewed von :total Tickets sind geprüft.', [
+        'reviewed' => $reviewed,
+        'total'    => $total,
+    ])) ?>
+</p>
+<table class="report-table <?= $compact ? 'is-compact' : '' ?>">
+    <thead>
+        <tr>
+            <th><?= s(t('Ticket')) ?></th>
+            <th><?= s(t('Titel')) ?></th>
+            <th><?= s(t('Externe Nummer')) ?></th>
+            <th><?= s(t('Geprüft')) ?></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($rows as $row): ?>
+            <tr>
+                <td><?= s($project['ticket_key']) ?>-<?= (int) $row['number'] ?></td>
+                <td><?= s($row['title']) ?></td>
+                <td><?= s((string) ($row['external_id'] ?? '–')) ?></td>
+                <td><?= $row['reviewed'] ? s(t('Ja')) : s(t('Nein')) ?></td>
+            </tr>
+        <?php endforeach ?>
+        <?php if (!$rows): ?>
+            <tr><td colspan="4" class="muted"><?= s(t('Noch keine Tickets.')) ?></td></tr>
+        <?php endif ?>
+    </tbody>
+</table>
+<p class="muted small"><?= s(t('Angezeigt werden höchstens :limit Zeilen.', ['limit' => $limit])) ?></p>
+<?php $this->endblock('content') ?>

@@ -4,6 +4,7 @@ use App\Domain\Estimation;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\extensions;
 
 $scale    = Estimation::scale($project['estimation_scale'] ?? null);
 $offScale = (int) ($offScale ?? 0);
@@ -42,11 +43,16 @@ $offScale = (int) ($offScale ?? 0);
         <label>
             <?= s(t('Schätzung')) ?>
             <select name="estimation_scale">
-                <?php foreach (Estimation::LABELS as $key => $label): ?>
+                <?php foreach (extensions()->estimationScales()->all() as $key => $option): ?>
                     <option value="<?= s($key) ?>" <?= $scale === $key ? 'selected' : '' ?>>
-                        <?= s(t($label)) ?><?= Estimation::SCALES[$key] ? ' · ' . implode(', ', Estimation::SCALES[$key]) : '' ?>
+                        <?= s(t($option->label)) ?><?= $option->values ? ' · ' . implode(', ', $option->values) : '' ?>
                     </option>
                 <?php endforeach ?>
+                <?php if (!Estimation::available($project['estimation_scale'] ?? null)): ?>
+                    <option value="<?= s((string) $project['estimation_scale']) ?>" selected>
+                        <?= s($project['estimation_scale']) ?> · <?= s(t('Erweiterung nicht installiert')) ?>
+                    </option>
+                <?php endif ?>
             </select>
             <small><?= s(t('Gilt für alle Tickets des Projekts. Nur eine Skala gleichzeitig; das Board summiert sie über jeder Spalte.')) ?></small>
         </label>

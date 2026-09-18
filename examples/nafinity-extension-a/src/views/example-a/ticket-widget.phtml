@@ -1,0 +1,33 @@
+<?php
+
+use App\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+/**
+ * This extension's own widget, between the links and the attachments.
+ *
+ * It only shows what it knows; the values themselves are edited through the
+ * registered ticket fields in the sidebar, which already go through Nafinity's
+ * auto-save and its version check.
+ */
+?>
+<section
+    class="detail-section"
+    data-ticket-section="example-review"
+    data-extension-id="<?= s($contribution->id) ?>"
+    <?= $contribution->module === null ? '' : 'data-extension-module="' . s($contribution->module) . '"' ?>
+>
+    <h2><?= Icon::mark('fact_check', 'sm') ?> <?= s(t('Prüfung')) ?></h2>
+    <p>
+        <?= $review['reviewed']
+            ? s(t('Dieses Ticket ist geprüft.'))
+            : s(t('Dieses Ticket ist noch nicht geprüft.')) ?>
+    </p>
+    <?php if ($review['external_id']): ?>
+        <p class="muted small">
+            <?= s(t('Externe Nummer: :id', ['id' => $review['external_id']])) ?>
+        </p>
+    <?php endif ?>
+</section>

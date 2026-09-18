@@ -1,0 +1,34 @@
+<?php
+
+use App\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+use function Nafinity\template;
+
+/**
+ * The reports page, rendered by this extension instead of extension A's.
+ *
+ * It receives exactly the data A's controller assembled: a view override
+ * changes which template answers a logical name, not who is allowed to see it.
+ */
+$this->setLayout(template('layout'));
+$this->block('content');
+?>
+<section class="page-heading">
+    <div>
+        <span class="eyebrow"><?= s(t('ERWEITERUNG B')) ?></span>
+        <h1><?= s(t('Berichte')) ?></h1>
+    </div>
+    <a class="button subtle" href="<?= s(route('board', ['project' => $project['id']])) ?>">
+        <?= Icon::mark('arrow_back', 'sm') ?> <?= s(t('Zum Board')) ?>
+    </a>
+</section>
+<p data-example-b-reports>
+    <?= s(t('Von Erweiterung B dargestellt: :reviewed von :total geprüft.', [
+        'reviewed' => $reviewed,
+        'total'    => $total,
+    ])) ?>
+</p>
+<?php $this->endblock('content') ?>
