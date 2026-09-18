@@ -9,10 +9,11 @@ use App\Domain\ProjectPermissions;
 use App\Domain\ProjectScope;
 use Naf\Auth\Auth;
 use Naf\ORM\Core\EntityManager;
+use Nafinity\Contracts\AccessInterface;
 use PDO;
 use Throwable;
 
-final class Access
+final class Access implements AccessInterface
 {
     public function __construct(private PDO $pdo, private Auth $auth, private EntityManager $entityManager)
     {

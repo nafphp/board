@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Domain\Failure;
-use App\Services\AccountService;
 use App\Support\Input;
 use Naf\Auth\Auth;
 use Naf\Auth\Exceptions\UnauthenticatedException;
 use Naf\Session\Core\Session;
+use Nafinity\Contracts\AccountServiceInterface;
 use Psr\Http\Message\ResponseInterface;
 
 use function Naf\Form\csrf;
@@ -17,7 +17,7 @@ use function Naf\json;
 
 final class ProfileController
 {
-    public function __construct(private AccountService $accounts, private Auth $auth, private Session $session)
+    public function __construct(private AccountServiceInterface $accounts, private Auth $auth, private Session $session)
     {
     }
 

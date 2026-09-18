@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Services\NotificationService;
 use Naf\CLI\Core\Output;
 use Naf\Mail\Core\Mailer;
 use Naf\Queue\Core\QueueJobInterface;
+use Nafinity\Contracts\NotificationServiceInterface;
 
 final class DeliverNotificationJob implements QueueJobInterface
 {
     public function __construct(
         private int $notificationId,
-        private NotificationService $notifications,
+        private NotificationServiceInterface $notifications,
         private Mailer $mailer,
     ) {
     }

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Domain\Failure;
-use App\Services\AiService;
 use App\Support\Input;
 use Naf\Auth\Exceptions\UnauthenticatedException;
+use Nafinity\Contracts\AiServiceInterface;
 use Psr\Http\Message\ResponseInterface;
 
 use function Naf\json;
@@ -15,7 +15,7 @@ use function Naf\request;
 
 final class AiController
 {
-    public function __construct(private AiService $ai)
+    public function __construct(private AiServiceInterface $ai)
     {
     }
 

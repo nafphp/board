@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Commands;
 
 use App\Models\User;
-use App\Services\ProjectService;
-use App\Services\TicketService;
 use Naf\Auth\Auth;
 use Naf\Auth\Support\PasswordHasher;
 use Naf\CLI\Core\AbstractCommand;
 use Naf\CLI\Core\Input;
 use Naf\CLI\Core\Output;
 use Naf\ORM\Core\EntityManager;
+use Nafinity\Contracts\ProjectServiceInterface;
+use Nafinity\Contracts\TicketServiceInterface;
 use PDO;
 use RuntimeException;
 
@@ -62,8 +62,8 @@ final class SeedCommand extends AbstractCommand
         }
         $auth = $c->get(Auth::class);
         $auth->setIdentity($users[0]);
-        $projects = $c->make(ProjectService::class);
-        $tickets  = $c->make(TicketService::class);
+        $projects = $c->get(ProjectServiceInterface::class);
+        $tickets  = $c->get(TicketServiceInterface::class);
         $purpose  = 'Ein klarer Ort für Ideen, Entscheidungen und die nächste gute Version.';
         $a        = $projects->create([
             'name'             => 'Nafinity',

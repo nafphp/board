@@ -9,6 +9,8 @@ use App\Jobs\DeliverNotificationJob;
 use LogicException;
 use Naf\Mail\Core\Mailer;
 use Naf\Mail\Models\Mail;
+use Nafinity\Contracts\AccessInterface;
+use Nafinity\Contracts\NotificationServiceInterface;
 use PDO;
 use RuntimeException;
 use Throwable;
@@ -16,9 +18,9 @@ use Throwable;
 use function Naf\config;
 use function Naf\Queue\queue;
 
-final class NotificationService
+final class NotificationService implements NotificationServiceInterface
 {
-    public function __construct(private PDO $pdo, private Access $access)
+    public function __construct(private PDO $pdo, private AccessInterface $access)
     {
     }
 

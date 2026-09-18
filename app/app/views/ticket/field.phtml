@@ -1,7 +1,7 @@
 <?php
 use function Naf\I18n\t;
 use function Naf\View\s;
-use function Naf\View\view;
+use function Nafinity\partial;
 
 $creating ??= false;
 ?>
@@ -23,7 +23,7 @@ $creating ??= false;
         <?php endif ?>
             <label class="sr-only" for="edit-<?= s($name) ?>"><?= s(t($label)) ?></label>
             <?php if (in_array($name, ['column_id', 'assignee_ids'], true)): ?>
-                <?= view('ticket/choice', compact('name', 'label', 'type', 'value', 'options')) ?>
+                <?= partial('ticket/choice', compact('name', 'label', 'type', 'value', 'options')) ?>
             <?php elseif ($type === 'select'): ?>
                 <select id="edit-<?= s($name) ?>" name="<?= s($name) ?>">
                     <?php foreach ($options as $key => $text): ?>

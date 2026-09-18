@@ -10,6 +10,7 @@ use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\partial;
 
 $profile  = $user->getProfile();
 $token    = csrf()->token();
@@ -184,7 +185,7 @@ $hintUrl = $current
                 <main id="main-content"><?= $this->renderBlock('content') ?></main>
             </div>
         </div>
-        <?= \Naf\View\view('profile.modal', [
+        <?= partial('profile.modal', [
             'profile'        => $profile,
             'token'          => $token,
             'currentProject' => $current,
@@ -266,7 +267,7 @@ $hintUrl = $current
                 </div>
             </form>
         </dialog>
-        <?= \Naf\View\view('settings.chat', ['user' => $user, 'projectId' => $current]) ?>
+        <?= partial('settings.chat', ['user' => $user, 'projectId' => $current]) ?>
         <div id="toast" class="toast" role="status" aria-live="polite"></div>
     </body>
 </html>

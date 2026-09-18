@@ -7,11 +7,14 @@ namespace App\Services;
 use App\Domain\Failure;
 use App\Domain\ProjectPermissions;
 use App\Support\Input;
+use Nafinity\Contracts\AccessInterface;
+use Nafinity\Contracts\ProjectServiceInterface;
+use Nafinity\Contracts\RoleServiceInterface;
 use PDO;
 
-final class RoleService
+final class RoleService implements RoleServiceInterface
 {
-    public function __construct(private PDO $pdo, private Access $access, private ProjectService $projects)
+    public function __construct(private PDO $pdo, private AccessInterface $access, private ProjectServiceInterface $projects)
     {
     }
 

@@ -16,6 +16,8 @@ use Naf\Mail\Models\Mail;
 use Naf\ORM\Core\EntityManager;
 use Naf\Queue\Core\Queue;
 use Naf\RateLimit\PdoLimiter;
+use Nafinity\Contracts\AccessInterface;
+use Nafinity\Contracts\AccountServiceInterface;
 use PDO;
 use PDOException;
 use SensitiveParameter;
@@ -23,7 +25,7 @@ use Throwable;
 
 use function Naf\config;
 
-final class AccountService
+final class AccountService implements AccountServiceInterface
 {
     private const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     private const CODE_TTL      = 900;
@@ -32,7 +34,7 @@ final class AccountService
     public function __construct(
         private PDO $pdo,
         private Auth $auth,
-        private Access $access,
+        private AccessInterface $access,
         private EntityManager $entityManager,
         private PasswordHasher $hasher,
         private PdoLimiter $limiter,

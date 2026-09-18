@@ -13,19 +13,23 @@ use App\Support\Format;
 use App\Support\Input;
 use App\Support\RichText;
 use Naf\ORM\Core\EntityManager;
+use Nafinity\Contracts\AccessInterface;
+use Nafinity\Contracts\ProjectServiceInterface;
+use Nafinity\Contracts\TicketServiceInterface;
+use Nafinity\Contracts\TimerServiceInterface;
 use PDO;
 use Throwable;
 
 use function Naf\event;
 
-final class TicketService
+final class TicketService implements TicketServiceInterface
 {
     public function __construct(
         private PDO $pdo,
         private EntityManager $entityManager,
-        private Access $access,
-        private ProjectService $projects,
-        private TimerService $timers,
+        private AccessInterface $access,
+        private ProjectServiceInterface $projects,
+        private TimerServiceInterface $timers,
     ) {
     }
 

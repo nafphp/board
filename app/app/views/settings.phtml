@@ -8,9 +8,10 @@ use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
-use function Naf\View\view;
+use function Nafinity\partial;
+use function Nafinity\template;
 
-$this->setLayout('layout');
+$this->setLayout(template('layout'));
 $this->block('content');
 $projectId      = $project['id'] ?? null;
 $token          = csrf()->token();
@@ -143,7 +144,7 @@ $icons = [
             data-title="<?= s($label) ?>"
             data-description="<?= s($description) ?>"
         >
-            <?= view($template, [...$viewData, ...$extra]) ?>
+            <?= partial($template, [...$viewData, ...$extra]) ?>
         </section>
     <?php endforeach ?>
 </div>

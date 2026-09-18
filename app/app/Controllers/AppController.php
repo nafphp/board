@@ -5,23 +5,24 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Domain\Failure;
-use App\Services\Access;
-use App\Services\AccountService;
-use App\Services\AttachmentService;
-use App\Services\BoardQuery;
-use App\Services\CommentService;
-use App\Services\NotificationService;
-use App\Services\PreferenceService;
-use App\Services\ProjectService;
-use App\Services\RoleService;
-use App\Services\TicketService;
-use App\Services\TimerService;
 use App\Support\Input;
 use Naf\Auth\Auth;
 use Naf\Auth\Credentials\PasswordCredentials;
 use Naf\Auth\Exceptions\UnauthenticatedException;
 use Naf\RateLimit\PdoLimiter;
 use Naf\Session\Core\Session;
+use Nafinity\Contracts\AccessInterface;
+use Nafinity\Contracts\AccountServiceInterface;
+use Nafinity\Contracts\AttachmentServiceInterface;
+use Nafinity\Contracts\BoardQueryInterface;
+use Nafinity\Contracts\CommentServiceInterface;
+use Nafinity\Contracts\NotificationServiceInterface;
+use Nafinity\Contracts\PageRendererInterface;
+use Nafinity\Contracts\PreferenceServiceInterface;
+use Nafinity\Contracts\ProjectServiceInterface;
+use Nafinity\Contracts\RoleServiceInterface;
+use Nafinity\Contracts\TicketServiceInterface;
+use Nafinity\Contracts\TimerServiceInterface;
 use Nyholm\Psr7\Stream;
 use PDO;
 use Psr\Http\Message\ResponseInterface;
@@ -33,25 +34,27 @@ use function Naf\json;
 use function Naf\redirect;
 use function Naf\request;
 use function Naf\View\render;
+use function Nafinity\template;
 
 final class AppController
 {
     public function __construct(
         private Auth $auth,
-        private BoardQuery $query,
-        private ProjectService $projects,
-        private TicketService $tickets,
-        private TimerService $timers,
-        private CommentService $comments,
-        private Access $access,
+        private BoardQueryInterface $query,
+        private ProjectServiceInterface $projects,
+        private TicketServiceInterface $tickets,
+        private TimerServiceInterface $timers,
+        private CommentServiceInterface $comments,
+        private AccessInterface $access,
         private PDO $pdo,
-        private AttachmentService $attachments,
-        private NotificationService $notifications,
-        private PreferenceService $prefs,
+        private AttachmentServiceInterface $attachments,
+        private NotificationServiceInterface $notifications,
+        private PreferenceServiceInterface $prefs,
         private PdoLimiter $limiter,
-        private RoleService $roles,
-        private AccountService $accounts,
+        private RoleServiceInterface $roles,
+        private AccountServiceInterface $accounts,
         private Session $session,
+        private PageRendererInterface $pages,
     ) {
     }
 
@@ -61,7 +64,7 @@ final class AppController
             return redirect('/', 303);
         }
 
-        return render('login', ['error' => null, 'email' => '', 'notice' => $this->session->getFlash('account.notice')])->withHeader('Cache-Control', 'no-store');
+        return render(template('login'), ['error' => null, 'email' => '', 'notice' => $this->session->getFlash('account.notice')])->withHeader('Cache-Control', 'no-store');
     }
 
     public function authenticate(): ResponseInterface
@@ -80,7 +83,7 @@ final class AppController
             if (!$ipLimit['allowed'] || !$accountLimit['allowed']) {
                 $retryAfter = max($ipLimit['retry_after'], $accountLimit['retry_after']);
 
-                return render('login', [
+                return render(template('login'), [
                     'error' => 'Zu viele Anmeldeversuche. Bitte versuche es später erneut.',
                     'email' => $data['email'],
                 ])
@@ -93,7 +96,7 @@ final class AppController
             $credentials = new PasswordCredentials($email, $data['password']);
 
             if (!$this->accounts->authenticate($credentials, $provider)) {
-                return render('login', [
+                return render(template('login'), [
                     'error' => 'E-Mail oder Passwort stimmt nicht.',
                     'email' => $data['email'],
                 ])->withStatus(401);
@@ -103,7 +106,7 @@ final class AppController
 
             return redirect('/', 303);
         } catch (Failure $exception) {
-            return render('login', ['error' => $exception->getMessage(), 'email' => ''])->withStatus(
+            return render(template('login'), ['error' => $exception->getMessage(), 'email' => ''])->withStatus(
                 $exception->status,
             );
         }
@@ -495,19 +498,7 @@ final class AppController
 
     private function page(string $template, array $data): ResponseInterface
     {
-        if (!$this->auth->check()) {
-            return redirect('/login', 303);
-        }
-        $preferences = $this->query->preferences();
-        \Naf\I18n\translator()->setLanguage($preferences['locale']);
-
-        return render($template, [
-            ...$data,
-            'projects'     => $this->query->projects(),
-            'runningTimer' => $this->timers->running(),
-            'user'         => $this->auth->user(),
-            'preferences'  => $preferences,
-        ]);
+        return $this->pages->render($template, $data);
     }
 
     private function read(callable $read): ResponseInterface
@@ -517,7 +508,7 @@ final class AppController
         } catch (UnauthenticatedException) {
             return redirect('/login', 303);
         } catch (Failure $exception) {
-            return render('error', [
+            return render(template('error'), [
                 'message' => $exception->getMessage(),
                 'status'  => $exception->status,
             ])->withStatus($exception->status);
@@ -543,7 +534,7 @@ final class AppController
                 ], $exception->status);
             }
 
-            return render('error', [
+            return render(template('error'), [
                 'message' => $exception->getMessage(),
                 'status'  => $exception->status,
             ])->withStatus($exception->status);

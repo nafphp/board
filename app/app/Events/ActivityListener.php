@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Events;
 
 use App\Domain\Change;
-use App\Services\NotificationService;
 use LogicException;
+use Nafinity\Contracts\NotificationServiceInterface;
 use PDO;
 
 final class ActivityListener
 {
     public function __construct(
         private PDO $pdo,
-        private NotificationService $notifications,
+        private NotificationServiceInterface $notifications,
     ) {
     }
 

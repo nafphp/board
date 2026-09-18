@@ -11,17 +11,19 @@ use App\Domain\ProjectScope;
 use App\Support\Input;
 use Naf\Auth\Auth;
 use Naf\ORM\Core\EntityManager;
+use Nafinity\Contracts\AccessInterface;
+use Nafinity\Contracts\ProjectServiceInterface;
 use PDO;
 use Throwable;
 
 use function Naf\event;
 
-final class ProjectService
+final class ProjectService implements ProjectServiceInterface
 {
     public function __construct(
         private PDO $pdo,
         private Auth $auth,
-        private Access $access,
+        private AccessInterface $access,
         private EntityManager $entityManager,
     ) {
     }

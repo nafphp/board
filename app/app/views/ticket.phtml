@@ -12,7 +12,8 @@ use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
-use function Naf\View\view;
+use function Nafinity\partial;
+use function Nafinity\template;
 
 $isNew = $ticket === null;
 $ticket ??= [
@@ -24,7 +25,7 @@ $ticket ??= [
     'spent_minutes' => 0, 'estimate_points' => null, 'archived_at' => null,
 ];
 if (!$fragment) {
-    $this->setLayout('layout');
+    $this->setLayout(template('layout'));
     $this->block('content');
 }
 $projectId = $project['id'];
@@ -42,7 +43,7 @@ $memberHandles = array_column($members, 'handle', 'id');
 $priorities    = ['low' => t('Niedrig'), 'normal' => t('Normal'), 'high' => t('Hoch'), 'urgent' => t('Dringend')];
 $empty         = '<span class="muted">' . s(t('Nicht festgelegt')) . '</span>';
 $field         = static function (string $name, string $label, string $type, mixed $value, string $display, array $options = [], array $extra = []) use ($ticket, $board, $token, $params, $editable, $isNew): string {
-    return view('ticket/field', [
+    return partial('ticket/field', [
         'name'    => $name, 'label' => $label, 'type' => $type, 'value' => $value,
         'display' => $display, 'options' => $options, 'editable' => $editable,
         'ticket'  => $ticket, 'board' => $board, 'token' => $token,

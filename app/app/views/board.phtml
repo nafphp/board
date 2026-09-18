@@ -8,8 +8,9 @@ use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
+use function Nafinity\template;
 
-$this->setLayout('layout');
+$this->setLayout(template('layout'));
 $this->block('content');
 $canWrite  = $scope->allows('write');
 $canManage = true;

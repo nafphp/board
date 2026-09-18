@@ -8,16 +8,19 @@ use App\Domain\Change;
 use App\Domain\Failure;
 use App\Domain\ProjectScope;
 use App\Support\Input;
+use Nafinity\Contracts\AccessInterface;
+use Nafinity\Contracts\CommentServiceInterface;
+use Nafinity\Contracts\TicketServiceInterface;
 use PDO;
 
 use function Naf\event;
 
-final class CommentService
+final class CommentService implements CommentServiceInterface
 {
     public function __construct(
         private PDO $pdo,
-        private Access $access,
-        private TicketService $tickets,
+        private AccessInterface $access,
+        private TicketServiceInterface $tickets,
     ) {
     }
 

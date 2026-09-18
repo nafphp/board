@@ -7,11 +7,13 @@ namespace App\Services;
 use App\Domain\Failure;
 use App\Support\Locales;
 use DateTimeZone;
+use Nafinity\Contracts\AccessInterface;
+use Nafinity\Contracts\PreferenceServiceInterface;
 use PDO;
 
-final class PreferenceService
+final class PreferenceService implements PreferenceServiceInterface
 {
-    public function __construct(private PDO $pdo, private Access $access)
+    public function __construct(private PDO $pdo, private AccessInterface $access)
     {
     }
 

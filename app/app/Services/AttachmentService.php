@@ -10,6 +10,9 @@ use App\Jobs\FinalizeAttachmentJob;
 use App\Support\AttachmentStorage;
 use InvalidArgumentException;
 use Naf\ORM\Core\EntityManager;
+use Nafinity\Contracts\AccessInterface;
+use Nafinity\Contracts\AttachmentServiceInterface;
+use Nafinity\Contracts\TicketServiceInterface;
 use PDO;
 use Psr\Http\Message\UploadedFileInterface;
 use RuntimeException;
@@ -18,12 +21,12 @@ use Throwable;
 use function Naf\event;
 use function Naf\Queue\queue;
 
-final class AttachmentService
+final class AttachmentService implements AttachmentServiceInterface
 {
     public function __construct(
         private PDO $pdo,
-        private Access $access,
-        private TicketService $tickets,
+        private AccessInterface $access,
+        private TicketServiceInterface $tickets,
         private AttachmentStorage $storage,
         private EntityManager $entityManager,
     ) {

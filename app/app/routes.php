@@ -15,7 +15,7 @@ use App\Migrations\M202609160003ProjectTicketKey;
 use App\Migrations\M202609170001EstimationScale;
 use App\Migrations\M202609170002TicketTimers;
 use App\Migrations\M202609180001TicketTransfer;
-use App\Services\AttachmentService;
+use Nafinity\Contracts\AttachmentServiceInterface;
 
 use function Naf\json;
 use function Naf\route;
@@ -46,7 +46,7 @@ route()->add(
             }
             $pdo->query('SELECT 1 FROM naf_queue_jobs LIMIT 1');
             $pdo->query('SELECT 1 FROM naf_rate_limits LIMIT 1');
-            \Naf\app()->container()->make(AttachmentService::class);
+            \Naf\app()->container()->get(AttachmentServiceInterface::class);
 
             return json(['status' => 'ready', 'schema' => '202609180001']);
         } catch (Throwable) {

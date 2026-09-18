@@ -9,14 +9,19 @@ use App\Domain\Failure;
 use App\Support\Input;
 use Naf\MCP\Support\ToolRegistry;
 use Naf\RateLimit\PdoLimiter;
+use Nafinity\Contracts\AccessInterface;
+use Nafinity\Contracts\AiServiceInterface;
+use Nafinity\Contracts\BoardQueryInterface;
+use Nafinity\Contracts\CommentServiceInterface;
+use Nafinity\Contracts\TicketServiceInterface;
 
-final class AiService
+final class AiService implements AiServiceInterface
 {
     public function __construct(
-        private Access $access,
-        private BoardQuery $query,
-        private TicketService $tickets,
-        private CommentService $comments,
+        private AccessInterface $access,
+        private BoardQueryInterface $query,
+        private TicketServiceInterface $tickets,
+        private CommentServiceInterface $comments,
         private PdoLimiter $limiter,
     ) {
     }

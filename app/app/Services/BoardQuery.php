@@ -7,15 +7,19 @@ namespace App\Services;
 use App\Domain\Failure;
 use App\Support\Input;
 use App\Support\TicketFilter;
+use Nafinity\Contracts\AccessInterface;
+use Nafinity\Contracts\BoardQueryInterface;
+use Nafinity\Contracts\TicketServiceInterface;
+use Nafinity\Contracts\TimerServiceInterface;
 use PDO;
 
-final class BoardQuery
+final class BoardQuery implements BoardQueryInterface
 {
     public function __construct(
         private PDO $pdo,
-        private Access $access,
-        private TicketService $tickets,
-        private TimerService $timers,
+        private AccessInterface $access,
+        private TicketServiceInterface $tickets,
+        private TimerServiceInterface $timers,
     ) {
     }
 

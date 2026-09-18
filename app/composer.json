@@ -31,8 +31,12 @@
   },
   "autoload": {
     "psr-4": {
-      "App\\": "app/"
-    }
+      "App\\": "app/",
+      "Nafinity\\": "app/Extensions/"
+    },
+    "files": [
+      "app/functions.php"
+    ]
   },
   "config": {
     "sort-packages": true,

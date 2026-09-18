@@ -6,6 +6,8 @@ namespace App\Services;
 
 use App\Domain\Change;
 use App\Domain\Failure;
+use Nafinity\Contracts\AccessInterface;
+use Nafinity\Contracts\TimerServiceInterface;
 use PDO;
 
 use function Naf\event;
@@ -24,13 +26,13 @@ use function Naf\event;
  * pause, and a conflict there would throw away real work. Accumulating minutes is an
  * addition, not a replacement, so it cannot conflict with anyone else's edit.
  */
-final class TimerService
+final class TimerService implements TimerServiceInterface
 {
     private const ACTIONS = ['start', 'pause', 'stop'];
 
     public function __construct(
         private PDO $pdo,
-        private Access $access,
+        private AccessInterface $access,
     ) {
     }
 
