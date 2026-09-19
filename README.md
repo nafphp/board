@@ -210,14 +210,12 @@ FPM picks up source changes on the next request. After changes to background cod
 make restart-background
 ```
 
-## Source mode and distribution
+## Distribution
 
-`app/composer.json` describes the minimum versions required. `naf/framework` v0.2.4 and
-`naf/i18n` v0.2.2 are released; the remaining fixes still sit on RC branches, and the limiter,
-LDAP and storage packages are not on Packagist at all. A clean install from published packages
-and a stable lock therefore stay out of reach until those are released — see
-[Implementation and acceptance](docs/Implementation.md#handover-to-the-maintainer) for the
-current list and the command that regenerates it.
+`app/composer.json` describes the minimum versions required, and every one of them is
+released: since 19 September 2026 the manifest resolves entirely from Packagist, with no path
+repository involved. See [Implementation and acceptance](docs/Implementation.md#distribution)
+for the command that checks this rather than taking its word for it.
 
 `make candidate-build` already builds a frozen local source snapshot without source mounts,
 vendor symlinks or Composer in the runtime image. It is explicitly an

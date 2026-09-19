@@ -74,9 +74,8 @@ available.
 
 ## Remaining limits
 
-- Stable package releases, the distribution lock built from them and a fresh install without
-  local package sources are still outstanding. `naf/framework` v0.2.4 and `naf/i18n` v0.2.2 are
-  released; the other required versions are not, so the clean install still fails.
+- Every required NAF package is released, and a fresh install without local package sources
+  works. What remains is to build and commit a distribution lock from it.
 - No external LDAP server, OIDC issuer or SMTP service was contacted. Enabling those still needs
   deployment configuration and end-to-end acceptance. Local SMTP through Mailpit is verified for
   account verification and security notices.
@@ -92,34 +91,28 @@ available.
   visible change in the browser tooling used. The move dialog and the same server-side move path
   are verified.
 
-## Handover to the maintainer
+## Distribution
 
-Verified RC branches pushed following the agreed NAF workflow. Merge and release are the
-maintainer's decision. Two are done; the rest are branches waiting for it.
+Every NAF package Nafinity requires is released. On **19 September 2026** the manifest resolved
+entirely from Packagist for the first time: eighteen NAF packages, all as `zip`, no path
+repository anywhere in the lock.
 
-| Package | Required | State |
-|---|---|---|
-| framework | `^0.2.4` | **released** [v0.2.4](https://github.com/nafphp/framework/releases/tag/v0.2.4) |
-| i18n | `^0.2.2` | **released** [v0.2.2](https://github.com/nafphp/i18n/releases/tag/v0.2.2) |
-| database | `^0.2.2` | branch [`v0.2.2-rc`](https://github.com/nafphp/database/compare/main...v0.2.2-rc) |
-| form | `^0.2.3` | branch [`v0.2.3-rc`](https://github.com/nafphp/form/compare/main...v0.2.3-rc) |
-| session | `^0.2.2` | branch [`v0.2.2-rc`](https://github.com/nafphp/session/compare/main...v0.2.2-rc) |
-| orm | `^0.2.2` | branch [`v0.2.2-rc`](https://github.com/nafphp/orm/compare/main...v0.2.2-rc) |
-| queue | `^0.2.3` | branch [`v0.2.3-rc`](https://github.com/nafphp/queue/compare/main...v0.2.3-rc) |
-| schedule | `^0.2.3` | branch [`v0.2.3-rc`](https://github.com/nafphp/schedule/compare/main...v0.2.3-rc) |
-| cli | `^0.2.2` | branch [`v0.2.2-rc`](https://github.com/nafphp/cli/compare/main...v0.2.2-rc) |
-| client | `^0.2.2` | no stable tag for the required version |
-| mail | `^0.2.2` | no stable tag for the required version |
-| storage, rate-limit, auth-ldap | `^0.1.0` | not registered on Packagist at all |
+| Released that day | |
+|---|---|
+| framework `v0.2.5` · i18n `v0.2.2` | cli · client · database · mail · orm · session · auth · view `v0.2.2` |
+| form · queue · schedule · mcp · oauth-client `v0.2.3` | storage · rate-limit · auth-ldap `v0.1.0`, first releases |
 
-A stable alias is never faked, so Nafinity works in source mode until every one of those
-resolves. What is still missing is answerable in one command rather than from this table:
+Rather than trusting this list, ask the resolver:
 
 ```sh
 docker compose run --rm --no-deps -T --volume "$PWD/app:/dist:ro" --workdir /tmp app \
   sh -c 'cp /dist/composer.json . && composer update --dry-run --no-install'
 ```
 
-On 19 September 2026 that reported twelve unresolvable requirements: nine packages whose RC
-branch is on Packagist as `dev-…` but carries no matching stable tag, and three that are not
-published there at all.
+`make candidate-build` still builds a frozen local snapshot for inspection, and the production
+target still requires a real `composer.lock`, a link-free vendor directory and the marker
+`vendor/.nafinity-distribution` after a verified dist install. What changed is that a clean
+install no longer depends on local package sources.
+
+The extensibility work is on `main`, merged from
+[nafphp/nafinity#1](https://github.com/nafphp/nafinity/pull/1).
