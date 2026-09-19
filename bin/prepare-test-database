@@ -1,9 +1,0 @@
-#!/bin/sh
-set -eu
-cd "$(dirname "$0")/.."
-
-# This helper never resets a schema. Only the guarded test runners do that.
-docker compose exec -T db sh -c 'MYSQL_PWD="$MARIADB_ROOT_PASSWORD" mariadb -uroot' <<'SQL'
-CREATE DATABASE IF NOT EXISTS nafinity_test;
-GRANT ALL PRIVILEGES ON nafinity_test.* TO 'nafinity'@'%';
-SQL

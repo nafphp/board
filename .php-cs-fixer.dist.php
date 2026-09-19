@@ -5,13 +5,16 @@ declare(strict_types=1);
 use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
 
+// Named directories rather than __DIR__, so a vendor/ or a working directory in
+// the root is never walked. This is the package: its code, its tests and the
+// assets it publishes into a host.
 $finder = Finder::create()
-    ->in(__DIR__ . '/app')
+    ->in([__DIR__ . '/src', __DIR__ . '/tests'])
     ->name('*.php')
     ->name('*.phtml')
     ->exclude(['vendor', 'storage', 'logs'])
     ->notName('identity.local.php')
-    ->append([__FILE__]);
+    ->append([__FILE__, __DIR__ . '/bootstrap.php']);
 
 return (new Config())
     ->setRiskyAllowed(false)

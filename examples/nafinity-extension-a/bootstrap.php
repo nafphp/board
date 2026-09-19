@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Example\ExtensionA\ExtensionAProvider;
 use Naf\Database\Support\MigrationRegistry;
 
-use function Nafinity\extensions;
+use function Naf\Board\extensions;
 
 /**
  * Composer plugins boot before Nafinity registers its own defaults, so nothing

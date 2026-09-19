@@ -1,0 +1,22 @@
+<?php
+
+use function Naf\Board\choice;
+use function Naf\I18n\t;
+
+$choices = $definition->options['choices'] ?? [];
+$options = [];
+foreach ($choices as $key => $label) {
+    $options[(string) $key] = t((string) $label);
+}
+?>
+<?= choice([
+    'name'        => $name,
+    'label'       => $definition->label ?: $name,
+    'value'       => is_array($value) ? $value : [],
+    'options'     => $options,
+    'multiple'    => true,
+    'id'          => $id,
+    'disabled'    => $disabled,
+    'empty'       => 'Nichts ausgewählt',
+    'searchLabel' => 'Einträge suchen',
+]) ?>

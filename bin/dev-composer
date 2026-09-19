@@ -1,6 +1,0 @@
-#!/bin/sh
-set -eu
-cd "$(dirname "$0")/.."
-# Paths and local version aliases are development-only; Composer runs in the container.
-python3 bin/generate-dev-manifest.py
-docker compose run --rm --no-deps -e COMPOSER=composer.dev.json app composer "$@"

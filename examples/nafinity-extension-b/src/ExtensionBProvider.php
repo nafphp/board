@@ -6,16 +6,16 @@ namespace Example\ExtensionB;
 
 use Example\ExtensionA\ExtensionAProvider;
 use Example\ExtensionB\Services\CountingTicketService;
-use Nafinity\Contracts\ExtensionProviderInterface;
-use Nafinity\Contracts\TicketServiceInterface;
-use Nafinity\Definition\AssetDefinition;
-use Nafinity\Definition\AssetPackage;
-use Nafinity\Definition\SettingDefinition;
-use Nafinity\Definition\SettingSection;
-use Nafinity\Definition\UiContribution;
-use Nafinity\Definition\ViewOverride;
-use Nafinity\ExtensionContext;
-use Nafinity\Support\UiContext;
+use Naf\Board\Contracts\ExtensionProviderInterface;
+use Naf\Board\Contracts\TicketServiceInterface;
+use Naf\Board\Definition\AssetDefinition;
+use Naf\Board\Definition\AssetPackage;
+use Naf\Board\Definition\SettingDefinition;
+use Naf\Board\Definition\SettingSection;
+use Naf\Board\Definition\UiContribution;
+use Naf\Board\Definition\ViewOverride;
+use Naf\Board\ExtensionContext;
+use Naf\Board\Support\UiContext;
 
 /**
  * What this example changes about what is already there.

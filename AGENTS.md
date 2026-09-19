@@ -6,13 +6,20 @@ events, queue, scheduler, mail and translation come from NAF packages.
 
 ## Layout
 
-- `app/` — the Composer application. `app/app/` is its source; `app/public` is the only web root.
-- `packages` — symlink to `../nafphp`. Fix generic defects there, in the owning repository,
-  following its own `AGENTS.md`. Never edit `app/vendor/`.
-- `examples/` — two extension packages that the acceptance run really installs.
-- `docker/rootfs` — mirrors container paths; the Dockerfile copies the tree to `/`.
-- `tools/style` — pinned formatters, kept out of the build context and the runtime image.
-- `work/` — scratch: backups, TLS, disposable test hosts. Never committed.
+This is a package. It has no environment, no container and no installation of its own: a
+host installs it, and the [Nafinity skeleton](https://github.com/nafphp/nafinity) is that
+host during development, with this working copy symlinked into its vendor.
+
+- `src/` — the source, namespace `Naf\Board\`. `Contracts`, `Definition`, `Registry`,
+  `Domain` and the context classes in `Support` are the API; everything marked `@internal`
+  is not.
+- `public/` — assets the host publishes into its own document root.
+- `tests/` — the suite. It boots the host, not this package.
+- `examples/` — two extension packages the acceptance run really installs.
+- `docs/` — how the pieces fit together, for people working on them.
+
+Generic defects belong in the owning NAF repository, following its own `AGENTS.md`, not in
+a workaround here.
 
 ## Before adding an abstraction
 
@@ -59,15 +66,20 @@ example and a negative case.
 
 ## Running and checking
 
-Composer runs in the container, through `make composer` or `bin/dev-composer` — never on the host.
+Everything runs from the host, because the container is the host's. Check out the skeleton
+beside this directory and work from there:
 
 ```sh
+cd ../nafinity
 make first-install      # .env, certificates, image, dependencies, migrations, seed, start
 make test               # MariaDB, PostgreSQL, HTTP, profile, worker, AI and extensions
 make test-plugins       # installs both example packages, then boots the same database without them
-bin/style check         # PER Coding Style 3.0, JavaScript, CSS, Python
+bin/style check         # this package and the host, each with its own rules
 make restart-background # after changes to worker or scheduler code
 ```
+
+The suite lives here and runs there: the Makefile points at this working copy through
+`BOARD`, and the tests take the installation to boot from `NAF_HOST`.
 
 Both MariaDB and PostgreSQL have to pass; a change that works on only one is not finished.
 The runners refuse to start unless `APP_ENV=test` and `DB_DATABASE=nafinity_test`. The
@@ -82,16 +94,16 @@ evaluation order and transaction boundaries.
 
 ## Operation
 
-Supervisor runs nginx, PHP-FPM, `naf queue:consume` and `naf schedule:ticker` together in the
-app container. Local HTTPS is port 443; `make certificates` generates the CA and certificate.
-Test and candidate services set `NAFINITY_BACKGROUND_ENABLED=false` explicitly. Configuration
-uses NAF's native `ENV:VARIABLE_NAME` references with defaults in Compose; do not duplicate
-this with `getenv()` in application configuration.
+How the application is served is the host's business -- supervisor, nginx, PHP-FPM, the
+queue consumer and the scheduler ticker all live in its container, and the skeleton's
+`AGENTS.md` describes them. What matters here: configuration uses NAF's native
+`ENV:VARIABLE_NAME` references with defaults supplied by the host, so do not duplicate that
+with `getenv()` in application configuration.
 
 ## Never committed or baked into an image
 
-Secrets, `.env`, `vendor/`, generated development manifests and locks, TLS keys or
-certificates, private storage, logs, anything under `work/`.
+`vendor/`, and anything a host leaves behind while this package is developed inside it.
+Secrets, environments, certificates and storage belong to the host and never appear here.
 
 ## Release gating
 

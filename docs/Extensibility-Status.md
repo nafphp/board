@@ -22,7 +22,7 @@ results are written by `bin/check-extensions` into `work/` on every run.
 | H — Ticket widgets and browser lifecycle | done | three default widgets, `AttachmentsModule`, `fragment.js`, `extensions.js`; T18, T20, T22, and T21 except the dispose observation |
 | I — Assets and translations | done | `AssetPublisher` and three CLI commands, publishing in the candidate build, `Naf\I18n\translation_paths()` in naf/i18n, `Locales::available()`; T27, T28, T32 |
 | J — Filters, estimation, events, AI | done | `BoardFilterRegistry` in `BoardQuery`, `EstimationScaleRegistry`, `ActivityTypeRegistry`, `AiToolRegistry`; T23–T26 |
-| K — Lifetime, examples, documentation | done | two installed example packages, `app/app/extensions.php`, [`Extensibility.md`](Extensibility.md); T30 |
+| K — Lifetime, examples, documentation | done | two installed example packages, `src/extensions.php`, [`Extensibility.md`](Extensibility.md); T30 |
 | L — Acceptance T01–T32 | partial | T01–T20 and T22–T32 done; the only thing still open is observing dispose when the drawer closes in T21, because the preview browser used does not fire a `<dialog>`'s `close` event |
 
 ## Acceptance T01–T32

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Example\ExtensionA\Support;
 
-use Nafinity\Contracts\UiDataProviderInterface;
-use Nafinity\Support\UiContext;
+use Naf\Board\Contracts\UiDataProviderInterface;
+use Naf\Board\Support\UiContext;
 use PDO;
 
 /**

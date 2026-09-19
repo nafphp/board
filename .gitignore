@@ -1,32 +1,9 @@
-/.env
-/app/.env*
-!/app/.env.example
-/app/vendor/
-/app/composer.dev.json
-/app/composer.dev.lock
-/app/.phpunit.cache/
-/app/storage/*
-/app/public/plugins/
-!/app/storage/.gitkeep
-/work/
+# This is a package: no environment, no container, no installation of its own.
+# What appears here comes from being developed inside a host, or from the tools.
+/vendor/
 /.idea/
 /.claude/
 .DS_Store
-
-/app/identity.local.php
-/app/config/*-ca.pem
-
-/.test-storage/
-
 __pycache__/
 *.pyc
-
-/app/logs/
-
-/tools/style/php/vendor/
-/tools/style/web/node_modules/
-/tools/style/python/.venv/
 /.php-cs-fixer.cache
-
-/docker/rootfs/etc/nginx/ssl/*
-!/docker/rootfs/etc/nginx/ssl/.gitkeep

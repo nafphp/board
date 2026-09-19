@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Example\ExtensionA\Support;
 
-use App\Ai\ProjectTool;
+use Naf\Board\Ai\ProjectTool;
 use Example\ExtensionA\ExtensionAProvider;
 use Example\ExtensionA\Services\ReportService;
-use Nafinity\Contracts\AiToolProviderInterface;
-use Nafinity\Support\AiToolContext;
+use Naf\Board\Contracts\AiToolProviderInterface;
+use Naf\Board\Support\AiToolContext;
 
-use function Nafinity\settings;
+use function Naf\Board\settings;
 
 /**
  * This extension's tool for the local chat.
