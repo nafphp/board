@@ -15,6 +15,7 @@ use Psr\Http\Message\ResponseInterface;
 use function Naf\Form\csrf;
 use function Naf\json;
 
+/** @internal */
 final class ProfileController
 {
     public function __construct(private AccountServiceInterface $accounts, private Auth $auth, private Session $session)

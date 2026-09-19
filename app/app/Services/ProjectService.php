@@ -18,6 +18,7 @@ use Throwable;
 
 use function Naf\event;
 
+/** @internal */
 final class ProjectService implements ProjectServiceInterface
 {
     public function __construct(

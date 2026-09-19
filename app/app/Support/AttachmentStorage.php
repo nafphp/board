@@ -10,7 +10,9 @@ use Naf\Storage\Storage;
 use Psr\Http\Message\UploadedFileInterface;
 use RuntimeException;
 
-/** Nafinity's upload policy and lifecycle, backed by a private named NAF disk. */
+/** Nafinity's upload policy and lifecycle, backed by a private named NAF disk. *
+ * @internal
+ */
 final class AttachmentStorage
 {
     public function __construct(private Storage $disk, private string $localRoot)

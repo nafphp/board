@@ -19,6 +19,8 @@ use Naf\Board\Support\Input;
  * among others: a plugin adds its own tools beside these, and replacing one of
  * these takes an explicit replacement in the provider definition rather than
  * happening to be registered last.
+ *
+ * @internal
  */
 final class CoreToolProvider implements AiToolProviderInterface
 {

@@ -6,7 +6,9 @@ namespace Naf\Board\Support\Fields;
 
 use function Naf\I18n\t;
 
-/** A single line of text. */
+/** A single line of text. *
+ * @internal
+ */
 final class TextType extends AbstractFieldType
 {
     public function id(): string

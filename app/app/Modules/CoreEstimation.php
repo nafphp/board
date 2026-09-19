@@ -11,6 +11,8 @@ use Naf\Board\ExtensionContext;
 
 /**
  * The estimation scales Nafinity ships with.
+ *
+ * @internal
  */
 final class CoreEstimation implements ExtensionProviderInterface
 {

@@ -14,6 +14,8 @@ use PDO;
  * comes from a package carries a namespaced id such as `example.tshirt`, which
  * did not fit — and a value that does not fit is not a smaller value, it is a
  * failed write. The width now matches the other key columns.
+ *
+ * @internal
  */
 final class M202609180004ScaleIdentifiers extends AbstractMigration
 {

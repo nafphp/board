@@ -19,6 +19,8 @@ use function Naf\I18n\t;
  * It runs inside the transaction and the project lock TicketService has already
  * taken, so metadata, core fields, pivots and the recorded change either all
  * happen or none of them do.
+ *
+ * @internal
  */
 final class TicketMetadataWriter
 {

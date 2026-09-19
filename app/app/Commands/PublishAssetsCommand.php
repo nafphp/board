@@ -7,7 +7,9 @@ namespace Naf\Board\Commands;
 use Naf\CLI\Core\Input;
 use Naf\CLI\Core\Output;
 
-/** Copy every registered package's public files into app/public/plugins. */
+/** Copy every registered package's public files into app/public/plugins. *
+ * @internal
+ */
 final class PublishAssetsCommand extends AssetCommand
 {
     public const string NAME = 'nafinity:assets:publish';

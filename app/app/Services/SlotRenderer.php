@@ -19,6 +19,8 @@ use function Naf\Board\extensions;
  * Menu entries and templates are two ways of contributing to the same place,
  * so they are merged into one list, ordered by index and id together. Two
  * contributions cannot share an id, whichever kind they are.
+ *
+ * @internal
  */
 final class SlotRenderer
 {

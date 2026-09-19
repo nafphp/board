@@ -25,6 +25,8 @@ use function Naf\route;
  * These routes answer with values, never with definitions, configuration trees
  * or anything marked sensitive. They are separate from the existing HTML forms
  * and share their authorization with them through the settings service.
+ *
+ * @internal
  */
 final class SettingsApiController
 {

@@ -23,6 +23,8 @@ use RuntimeException;
  * only means something in the project it was made in — deliberately keep a plain constraint,
  * so forgetting to deal with one of them fails loudly instead of arriving somewhere it does
  * not belong.
+ *
+ * @internal
  */
 final class M202609180001TicketTransfer extends AbstractMigration
 {

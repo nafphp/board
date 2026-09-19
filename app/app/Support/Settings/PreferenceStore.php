@@ -12,6 +12,8 @@ use PDO;
  * PreferenceService keeps its whole-form semantics and the generic settings
  * service writes single fields, but both end up here, so the two can never
  * disagree about what a stored preference means.
+ *
+ * @internal
  */
 final class PreferenceStore
 {

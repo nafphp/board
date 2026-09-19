@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Naf\Board\Modules\Providers;
 
-/** The short "a, b, c +2" summary the settings cards use. */
+/** The short "a, b, c +2" summary the settings cards use. *
+ * @internal
+ */
 final class Names
 {
     /**

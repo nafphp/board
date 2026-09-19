@@ -8,6 +8,7 @@ use Naf\Board\Contracts\AttachmentServiceInterface;
 use Naf\CLI\Core\Output;
 use Naf\Queue\Core\QueueJobInterface;
 
+/** @internal */
 final class FinalizeAttachmentJob implements QueueJobInterface
 {
     public function __construct(

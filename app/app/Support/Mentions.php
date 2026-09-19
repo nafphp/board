@@ -6,6 +6,7 @@ namespace Naf\Board\Support;
 
 use function Naf\View\s;
 
+/** @internal */
 final class Mentions
 {
     /** Handles are derived from project member names; duplicate names receive an ID suffix. */

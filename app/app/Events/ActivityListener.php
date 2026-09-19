@@ -9,6 +9,7 @@ use Naf\Board\Contracts\NotificationServiceInterface;
 use Naf\Board\Domain\Change;
 use PDO;
 
+/** @internal */
 final class ActivityListener
 {
     public function __construct(

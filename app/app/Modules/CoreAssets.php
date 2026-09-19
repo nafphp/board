@@ -15,6 +15,8 @@ use Naf\Board\ExtensionContext;
  * their cache busters. What belongs here is what extensions rely on: the
  * browser side of the contribution API, which has to be on the page before a
  * contributed module can be mounted into it.
+ *
+ * @internal
  */
 final class CoreAssets implements ExtensionProviderInterface
 {

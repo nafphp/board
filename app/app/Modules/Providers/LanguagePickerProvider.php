@@ -10,7 +10,9 @@ use Naf\Board\Support\UiContext;
 
 use function Naf\Form\csrf;
 
-/** The language picker of the top bar. */
+/** The language picker of the top bar. *
+ * @internal
+ */
 final class LanguagePickerProvider implements UiDataProviderInterface
 {
     public function __construct(private BoardQueryInterface $query)

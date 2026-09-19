@@ -7,6 +7,7 @@ namespace Naf\Board\Migrations;
 use Naf\Database\Core\AbstractMigration;
 use PDO;
 
+/** @internal */
 final class M202609160003ProjectTicketKey extends AbstractMigration
 {
     public function up(PDO $connection): void

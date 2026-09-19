@@ -15,6 +15,7 @@ use PDO;
 
 use function Naf\event;
 
+/** @internal */
 final class CommentService implements CommentServiceInterface
 {
     public function __construct(

@@ -14,6 +14,7 @@ use PDO;
 
 use function Naf\Board\extensions;
 
+/** @internal */
 final class BoardQuery implements BoardQueryInterface
 {
     public function __construct(

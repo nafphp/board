@@ -8,6 +8,7 @@ use Naf\Auth\Identity\UserInterface;
 use Naf\Auth\Identity\UserProfile;
 use Naf\ORM\Model\AbstractModel;
 
+/** @internal */
 final class User extends AbstractModel implements UserInterface
 {
     protected string $name               = '';

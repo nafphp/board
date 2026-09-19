@@ -15,6 +15,7 @@ use Throwable;
 
 use function Naf\Board\extensions;
 
+/** @internal */
 final class Access implements AccessInterface
 {
     public function __construct(private PDO $pdo, private Auth $auth, private EntityManager $entityManager)

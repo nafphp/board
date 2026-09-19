@@ -8,7 +8,9 @@ use DateTimeImmutable;
 
 use function Naf\I18n\t;
 
-/** A calendar day, written as YYYY-MM-DD. */
+/** A calendar day, written as YYYY-MM-DD. *
+ * @internal
+ */
 final class DateType extends AbstractFieldType
 {
     public function id(): string

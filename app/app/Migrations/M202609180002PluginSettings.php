@@ -13,6 +13,8 @@ use PDO;
  * A new field must not need a new column, so the value is JSON in a row that
  * belongs to its owner. The existing personal, per-project and project columns
  * keep their meaning; nothing is copied into a second place.
+ *
+ * @internal
  */
 final class M202609180002PluginSettings extends AbstractMigration
 {

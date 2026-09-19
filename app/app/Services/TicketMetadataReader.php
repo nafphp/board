@@ -18,6 +18,8 @@ use function Naf\Board\extensions;
  * checked on every call. An unknown key is simply the caller's default; a known
  * key the actor may not see is a 403, because pretending it is absent would be
  * a different, wrong answer.
+ *
+ * @internal
  */
 final class TicketMetadataReader implements TicketMetadataReaderInterface
 {

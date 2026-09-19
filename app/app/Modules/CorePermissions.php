@@ -15,6 +15,8 @@ use Naf\Board\ExtensionContext;
  * The seven role permissions and the four owner actions become ordinary
  * definitions. A contributed permission joins them and can be granted to a
  * custom role, but it is granted to nobody by registering it.
+ *
+ * @internal
  */
 final class CorePermissions implements ExtensionProviderInterface
 {

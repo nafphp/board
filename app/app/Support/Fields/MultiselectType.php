@@ -6,7 +6,9 @@ namespace Naf\Board\Support\Fields;
 
 use function Naf\I18n\t;
 
-/** Any number of the declared choices, without duplicates. */
+/** Any number of the declared choices, without duplicates. *
+ * @internal
+ */
 final class MultiselectType extends AbstractFieldType
 {
     public function id(): string

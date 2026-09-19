@@ -19,6 +19,7 @@ use Naf\RateLimit\PdoLimiter;
 use function Naf\app;
 use function Naf\Board\extensions;
 
+/** @internal */
 final class AiService implements AiServiceInterface
 {
     public function __construct(

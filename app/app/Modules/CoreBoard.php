@@ -21,6 +21,8 @@ use function Naf\app;
  * One normalized value feeds the chips, the count and the card query alike, so
  * a filter cannot mean one thing in the list and another in the summary. The
  * project predicate and the archive rule stay outside every fragment.
+ *
+ * @internal
  */
 final class CoreBoard implements ExtensionProviderInterface
 {

@@ -9,6 +9,7 @@ use Naf\CLI\Core\Output;
 use Naf\Mail\Core\Mailer;
 use Naf\Queue\Core\QueueJobInterface;
 
+/** @internal */
 final class DeliverNotificationJob implements QueueJobInterface
 {
     public function __construct(

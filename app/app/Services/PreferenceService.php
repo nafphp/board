@@ -11,6 +11,7 @@ use Naf\Board\Domain\Failure;
 use Naf\Board\Support\Locales;
 use Naf\Board\Support\Settings\PreferenceStore;
 
+/** @internal */
 final class PreferenceService implements PreferenceServiceInterface
 {
     public function __construct(private AccessInterface $access, private PreferenceStore $store)

@@ -6,7 +6,9 @@ namespace Naf\Board\Support\Fields;
 
 use function Naf\I18n\t;
 
-/** Several lines of plain text. */
+/** Several lines of plain text. *
+ * @internal
+ */
 final class TextareaType extends AbstractFieldType
 {
     public function id(): string

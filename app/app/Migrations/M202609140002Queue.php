@@ -8,6 +8,7 @@ use Naf\Database\Core\AbstractMigration;
 use Naf\Queue\Drivers\PDODriver;
 use PDO;
 
+/** @internal */
 final class M202609140002Queue extends AbstractMigration
 {
     public function up(PDO $connection): void

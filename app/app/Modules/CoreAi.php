@@ -11,6 +11,8 @@ use Naf\Board\ExtensionContext;
 
 /**
  * Nafinity's own tools for the local chat, as one provider among others.
+ *
+ * @internal
  */
 final class CoreAi implements ExtensionProviderInterface
 {

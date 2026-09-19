@@ -6,6 +6,7 @@ namespace Naf\Board\Models;
 
 use Naf\ORM\Model\AbstractModel;
 
+/** @internal */
 final class Ticket extends AbstractModel
 {
     protected int $project_id           = 0;

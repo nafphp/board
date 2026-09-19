@@ -13,6 +13,8 @@ use Naf\CLI\Core\Output;
  * It works without the package being installed, which is the point: after an
  * uninstall the record is all that is left. A file somebody changed is kept and
  * reported rather than deleted.
+ *
+ * @internal
  */
 final class RemoveAssetsCommand extends AssetCommand
 {

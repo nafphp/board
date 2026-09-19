@@ -25,6 +25,8 @@ use function Naf\View\view;
  * Language, own projects, the running timer, the signed-in user and the
  * personal preferences are the renderer's own answer. Page data is spread
  * first, so a template cannot hand in a different `user` and be believed.
+ *
+ * @internal
  */
 final class PageRenderer implements PageRendererInterface
 {

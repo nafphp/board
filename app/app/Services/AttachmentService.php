@@ -21,6 +21,7 @@ use Throwable;
 use function Naf\event;
 use function Naf\Queue\queue;
 
+/** @internal */
 final class AttachmentService implements AttachmentServiceInterface
 {
     public function __construct(

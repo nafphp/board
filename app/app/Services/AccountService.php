@@ -25,6 +25,7 @@ use Throwable;
 
 use function Naf\config;
 
+/** @internal */
 final class AccountService implements AccountServiceInterface
 {
     private const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

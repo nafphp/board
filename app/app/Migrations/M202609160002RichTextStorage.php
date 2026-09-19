@@ -7,7 +7,9 @@ namespace Naf\Board\Migrations;
 use Naf\Database\Core\AbstractMigration;
 use PDO;
 
-/** The documented character limits must also fit multi-byte text and rich-text markup. */
+/** The documented character limits must also fit multi-byte text and rich-text markup. *
+ * @internal
+ */
 final class M202609160002RichTextStorage extends AbstractMigration
 {
     public function up(PDO $connection): void

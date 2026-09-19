@@ -16,6 +16,8 @@ use Naf\Board\Support\Fields\TextType;
 
 /**
  * The value types settings and ticket metadata share.
+ *
+ * @internal
  */
 final class CoreFieldTypes implements ExtensionProviderInterface
 {

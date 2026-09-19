@@ -13,6 +13,7 @@ use PDO;
 
 use function Naf\Board\extensions;
 
+/** @internal */
 final class RoleService implements RoleServiceInterface
 {
     public function __construct(private PDO $pdo, private AccessInterface $access, private ProjectServiceInterface $projects)

@@ -11,7 +11,9 @@ use Naf\Board\Support\UiContext;
 
 use function Naf\I18n\t;
 
-/** How many roles a project actually has. */
+/** How many roles a project actually has. *
+ * @internal
+ */
 final class RolesSectionProvider implements SettingSectionProviderInterface
 {
     public function data(SettingSection $section, UiContext $context, array $page): array

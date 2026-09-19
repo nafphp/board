@@ -20,6 +20,8 @@ use Naf\Board\Support\UiContext;
  *
  * The existing AttachmentService, private storage, quotas, the staged/ready
  * lifecycle and the finalizing job are unchanged.
+ *
+ * @internal
  */
 final class AttachmentsModule implements ExtensionProviderInterface
 {

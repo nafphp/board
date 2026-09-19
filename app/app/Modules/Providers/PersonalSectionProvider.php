@@ -11,7 +11,9 @@ use Naf\Board\Support\UiContext;
 
 use function Naf\I18n\t;
 
-/** What the personal card says it holds right now. */
+/** What the personal card says it holds right now. *
+ * @internal
+ */
 final class PersonalSectionProvider implements SettingSectionProviderInterface
 {
     public function data(SettingSection $section, UiContext $context, array $page): array

@@ -25,6 +25,8 @@ use function Naf\event;
  * locking, but someone who tracked an hour would hold a stale version by the time they
  * pause, and a conflict there would throw away real work. Accumulating minutes is an
  * addition, not a replacement, so it cannot conflict with anyone else's edit.
+ *
+ * @internal
  */
 final class TimerService implements TimerServiceInterface
 {

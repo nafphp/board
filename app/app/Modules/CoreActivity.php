@@ -13,6 +13,8 @@ use Naf\Board\ExtensionContext;
  *
  * A type nobody registered is shown under its own escaped name instead of
  * pretending the project was updated.
+ *
+ * @internal
  */
 final class CoreActivity implements ExtensionProviderInterface
 {

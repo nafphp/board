@@ -7,6 +7,7 @@ namespace Naf\Board\Migrations;
 use Naf\Database\Core\AbstractMigration;
 use PDO;
 
+/** @internal */
 final class M202609140001Nafinity extends AbstractMigration
 {
     public function up(PDO $connection): void

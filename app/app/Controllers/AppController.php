@@ -37,6 +37,7 @@ use function Naf\redirect;
 use function Naf\request;
 use function Naf\View\render;
 
+/** @internal */
 final class AppController
 {
     public function __construct(

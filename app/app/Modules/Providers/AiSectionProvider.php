@@ -15,6 +15,8 @@ use function Naf\I18n\t;
  *
  * Its model, prompts and history live in the browser, so the server can only
  * say that it does not know them.
+ *
+ * @internal
  */
 final class AiSectionProvider implements SettingSectionProviderInterface
 {

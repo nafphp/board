@@ -12,7 +12,9 @@ use RuntimeException;
 
 use function Naf\config;
 
-/** The old address is intentional: security notices survive an address change. */
+/** The old address is intentional: security notices survive an address change. *
+ * @internal
+ */
 final class AccountSecurityNoticeJob implements QueueJobInterface
 {
     public function __construct(

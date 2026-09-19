@@ -23,6 +23,8 @@ use Naf\Board\Support\Locales;
  * Every existing card keeps its id and its own form. The values behind them
  * keep their tables too: these definitions describe where a value lives, they
  * do not move it.
+ *
+ * @internal
  */
 final class CoreSettings implements ExtensionProviderInterface
 {

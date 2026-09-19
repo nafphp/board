@@ -13,6 +13,7 @@ use Psr\Http\Message\ResponseInterface;
 use function Naf\json;
 use function Naf\request;
 
+/** @internal */
 final class AiController
 {
     public function __construct(private AiServiceInterface $ai)

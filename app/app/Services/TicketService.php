@@ -22,6 +22,7 @@ use Throwable;
 
 use function Naf\event;
 
+/** @internal */
 final class TicketService implements TicketServiceInterface
 {
     public function __construct(

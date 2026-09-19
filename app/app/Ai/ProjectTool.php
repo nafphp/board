@@ -14,6 +14,8 @@ use Naf\Board\Domain\Failure;
  * The public properties stay exactly where they were so existing constructor
  * calls keep working; the contract's getters answer from the same values, which
  * is what lets a contributed tool be treated like any other.
+ *
+ * @internal
  */
 final readonly class ProjectTool implements ProjectToolInterface
 {

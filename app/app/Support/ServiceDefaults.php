@@ -53,6 +53,8 @@ use Psr\Container\ContainerInterface;
  *
  * Nothing is resolved here. The closures run when a request, a command or a job
  * first needs the service.
+ *
+ * @internal
  */
 final class ServiceDefaults
 {

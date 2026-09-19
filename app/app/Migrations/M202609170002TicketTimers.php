@@ -12,6 +12,8 @@ use PDO;
  * what the person has tracked here since starting, which is what a clock has to show and
  * may therefore never fall, and the seconds that do not add up to a whole minute yet,
  * which is what stops repeated short bursts from rounding away into nothing.
+ *
+ * @internal
  */
 final class M202609170002TicketTimers extends AbstractMigration
 {

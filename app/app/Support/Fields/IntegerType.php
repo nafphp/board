@@ -6,7 +6,9 @@ namespace Naf\Board\Support\Fields;
 
 use function Naf\I18n\t;
 
-/** A whole number within the declared range. */
+/** A whole number within the declared range. *
+ * @internal
+ */
 final class IntegerType extends AbstractFieldType
 {
     public function id(): string

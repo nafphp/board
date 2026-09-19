@@ -14,6 +14,8 @@ use function Naf\I18n\t;
  * Validation always runs on the raw value first: a type says which raw shapes
  * it accepts, and only then is the value normalized. Nothing invalid is ever
  * quietly turned into a default.
+ *
+ * @internal
  */
 abstract class AbstractFieldType implements FieldTypeInterface
 {

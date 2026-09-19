@@ -9,6 +9,7 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
 use function Naf\View\s;
 
+/** @internal */
 final class RichText
 {
     public static function clean(string $html): string

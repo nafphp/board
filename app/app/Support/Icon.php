@@ -11,6 +11,8 @@ use Naf\Board\Domain\Failure;
  * font turns it into the glyph. That text must never reach a screen reader as a word, so
  * every icon is hidden from the accessibility tree here and the surrounding control carries
  * the label instead.
+ *
+ * @internal
  */
 final class Icon
 {

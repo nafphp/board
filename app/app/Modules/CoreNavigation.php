@@ -18,6 +18,8 @@ use Naf\Board\Support\UiContext;
  *
  * The list of projects a person may actually open stays a BoardQuery result;
  * a registry of every project would be a different, wrong thing.
+ *
+ * @internal
  */
 final class CoreNavigation implements ExtensionProviderInterface
 {

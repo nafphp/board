@@ -15,6 +15,8 @@ use function Naf\I18n\t;
  *
  * They share one template and differ only in what they list, so the card id is
  * also the kind of item it edits.
+ *
+ * @internal
  */
 final class StructureSectionProvider implements SettingSectionProviderInterface
 {

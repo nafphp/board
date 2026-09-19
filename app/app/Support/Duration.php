@@ -10,6 +10,8 @@ use Naf\Board\Domain\Failure;
  * Durations are stored as whole minutes but written the way people say them: 2h 40m, 90m,
  * 1:30 or a bare 90. A bare decimal stays refused, because "1.5" alone says neither
  * minutes nor hours; with a unit, "1.5h" is unambiguous and welcome.
+ *
+ * @internal
  */
 final class Duration
 {

@@ -11,7 +11,9 @@ use Naf\Board\Support\UiContext;
 
 use function Naf\I18n\t;
 
-/** What the project card says about the project it belongs to. */
+/** What the project card says about the project it belongs to. *
+ * @internal
+ */
 final class ProjectSectionProvider implements SettingSectionProviderInterface
 {
     public function data(SettingSection $section, UiContext $context, array $page): array

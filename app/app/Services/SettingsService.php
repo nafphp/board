@@ -30,6 +30,8 @@ use function Naf\config;
  *
  * The existing personal, per-project and project fields keep their storage and
  * their services. This is a second way to reach them, never a second copy.
+ *
+ * @internal
  */
 final class SettingsService implements SettingsServiceInterface
 {

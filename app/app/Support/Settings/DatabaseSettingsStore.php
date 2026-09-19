@@ -16,6 +16,8 @@ use PDO;
  * One row per key, so a new field never needs a new column. A stored null and
  * a missing key are different things: the row exists or it does not. The store
  * joins the caller's transaction and never opens or commits one of its own.
+ *
+ * @internal
  */
 final class DatabaseSettingsStore implements SettingsStoreInterface
 {

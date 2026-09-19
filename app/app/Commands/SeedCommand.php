@@ -18,6 +18,7 @@ use RuntimeException;
 
 use function Naf\app;
 
+/** @internal */
 final class SeedCommand extends AbstractCommand
 {
     public const string NAME = 'nafinity:seed';

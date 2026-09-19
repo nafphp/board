@@ -10,7 +10,9 @@ use Naf\Session\Core\Session;
 use PDO;
 use RuntimeException;
 
-/** Adds account-wide revocation to NAF's rotating session store. */
+/** Adds account-wide revocation to NAF's rotating session store. *
+ * @internal
+ */
 final class AccountStateStore implements StateStoreInterface
 {
     private const VERSION_KEY = 'account.security_version';

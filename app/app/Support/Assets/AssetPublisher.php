@@ -22,6 +22,8 @@ use function Naf\Board\extensions;
  * Every published file is recorded with its hash, so a later run can tell its
  * own work from a file the host has edited. It never overwrites or deletes
  * something it did not write, and running it twice changes nothing.
+ *
+ * @internal
  */
 final class AssetPublisher
 {

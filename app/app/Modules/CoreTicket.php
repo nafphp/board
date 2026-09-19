@@ -20,6 +20,8 @@ use Naf\Board\Support\UiContext;
  * Core fields keep their existing services and partials — a column is still
  * moved, assignees are still a pivot, time is still the timer. Declaring them
  * here makes them sortable and replaceable, never differently validated.
+ *
+ * @internal
  */
 final class CoreTicket implements ExtensionProviderInterface
 {

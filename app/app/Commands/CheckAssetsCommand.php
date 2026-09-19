@@ -7,7 +7,9 @@ namespace Naf\Board\Commands;
 use Naf\CLI\Core\Input;
 use Naf\CLI\Core\Output;
 
-/** Report what publishing would change, without touching anything. */
+/** Report what publishing would change, without touching anything. *
+ * @internal
+ */
 final class CheckAssetsCommand extends AssetCommand
 {
     public const string NAME = 'nafinity:assets:check';

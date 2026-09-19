@@ -8,6 +8,7 @@ use Naf\Database\Core\AbstractMigration;
 use Naf\RateLimit\PdoLimiter;
 use PDO;
 
+/** @internal */
 final class M202609140003RateLimits extends AbstractMigration
 {
     public function up(PDO $connection): void

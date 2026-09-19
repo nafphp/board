@@ -27,6 +27,8 @@ use function Naf\app;
  * meaning, which is precisely the character a namespace is made of. Package
  * migrations keep their own namespaces and are left alone, and a second run
  * finds nothing to do.
+ *
+ * @internal
  */
 final class RenameMigrationNamespaceCommand extends AbstractCommand
 {

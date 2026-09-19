@@ -16,6 +16,8 @@ use function Naf\app;
  *
  * Three commands share this base because they differ only in what they do with
  * the same plan; each names itself and reports exactly which files it touched.
+ *
+ * @internal
  */
 abstract class AssetCommand extends AbstractCommand
 {

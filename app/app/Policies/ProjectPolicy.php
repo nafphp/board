@@ -7,6 +7,7 @@ namespace Naf\Board\Policies;
 use Naf\Auth\Identity\IdentityInterface;
 use Naf\Board\Domain\ProjectScope;
 
+/** @internal */
 final class ProjectPolicy
 {
     public function __invoke(IdentityInterface $user, string $action, ProjectScope $scope): bool

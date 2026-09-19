@@ -11,6 +11,8 @@ use function Naf\I18n\t;
  *
  * Forms send the strings `0` and `1`; a missing checkbox is not an absent value
  * but an explicit false, which the form has to send.
+ *
+ * @internal
  */
 final class BooleanType extends AbstractFieldType
 {

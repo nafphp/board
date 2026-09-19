@@ -9,6 +9,7 @@ use DateTimeZone;
 
 use function Naf\I18n\t;
 
+/** @internal */
 final class Format
 {
     public static function dateTime(string $value, array $preferences): string

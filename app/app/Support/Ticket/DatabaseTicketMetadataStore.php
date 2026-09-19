@@ -15,6 +15,8 @@ use PDO;
  * Every statement names the project, and the write runs inside the domain
  * transaction the caller has already opened: it never begins or commits one, so
  * a failure further along still rolls the whole ticket change back.
+ *
+ * @internal
  */
 final class DatabaseTicketMetadataStore implements TicketMetadataStoreInterface
 {

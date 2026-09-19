@@ -6,7 +6,9 @@ namespace Naf\Board\Support\Fields;
 
 use function Naf\I18n\t;
 
-/** Exactly one of the declared choices. */
+/** Exactly one of the declared choices. *
+ * @internal
+ */
 final class SelectType extends AbstractFieldType
 {
     public function id(): string

@@ -10,7 +10,9 @@ use Naf\Board\Support\UiContext;
 
 use function Naf\I18n\t;
 
-/** The account row and avatar that open the profile dialog. */
+/** The account row and avatar that open the profile dialog. *
+ * @internal
+ */
 final class ProfileTriggerProvider implements UiDataProviderInterface
 {
     public function __construct(private Auth $auth)

@@ -18,6 +18,7 @@ use Throwable;
 use function Naf\config;
 use function Naf\Queue\queue;
 
+/** @internal */
 final class NotificationService implements NotificationServiceInterface
 {
     public function __construct(private PDO $pdo, private AccessInterface $access)

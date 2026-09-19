@@ -19,6 +19,8 @@ use function Naf\I18n\translation_paths;
  * A plugin's translation directory counts the same as the application's, so a
  * package that brings French makes French selectable without this list being
  * edited. The application's own file still wins over a package's wording.
+ *
+ * @internal
  */
 final class Locales
 {

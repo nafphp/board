@@ -10,6 +10,7 @@ use Naf\CLI\Core\Output;
 use Naf\RateLimit\PdoLimiter;
 use Naf\Schedule\Core\ScheduledJobInterface;
 
+/** @internal */
 final class MaintenanceJob implements ScheduledJobInterface
 {
     public function __construct(

@@ -7,7 +7,9 @@ namespace Naf\Board\Support;
 use Naf\Core\Log;
 use Stringable;
 
-/** Send NAF's PSR-3 messages through PHP/FPM to the bounded Compose log transport. */
+/** Send NAF's PSR-3 messages through PHP/FPM to the bounded Compose log transport. *
+ * @internal
+ */
 final class ContainerLogger extends Log
 {
     public function __construct()

@@ -13,6 +13,8 @@ use PDO;
  * The composite foreign key keeps a value inside the project its ticket belongs
  * to, so a metadata read can never cross a project boundary by mistake. Values
  * of a plugin that is currently absent stay here untouched.
+ *
+ * @internal
  */
 final class M202609180003TicketMetadata extends AbstractMigration
 {

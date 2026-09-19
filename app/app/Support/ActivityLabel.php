@@ -12,6 +12,8 @@ use function Naf\I18n\t;
  *
  * A type nobody registered keeps its own name instead of being presented as
  * "project updated", which would be a confident wrong answer.
+ *
+ * @internal
  */
 final class ActivityLabel
 {
