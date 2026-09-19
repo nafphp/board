@@ -14,6 +14,10 @@ use function Naf\View\s;
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <title>Anmelden · Nafinity</title>
         <link rel="stylesheet" href="/assets/app.css?v=2" />
+        <!-- This page builds its own head rather than using the layout, so it has to
+             ask for the icon font itself: without it a ligature like arrow_forward
+             is shown as that word. -->
+        <link rel="stylesheet" href="/assets/icons.css?v=2" />
         <script type="module" src="/assets/app.js"></script>
     </head>
     <body class="login-body">
