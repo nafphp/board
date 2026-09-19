@@ -54,7 +54,7 @@ final class AssetPublisher
             $planned  = [];
 
             foreach ($this->sources($definition) as $relative => $source) {
-                $target = $this->target($definition->packageName, $relative);
+                $target = $this->target($definition->packageName, $relative, $definition->root);
                 $hash   = hash_file('sha256', $source);
 
                 if (is_file($target) && !$this->owns($manifest, $target, $relative)) {
@@ -86,7 +86,7 @@ final class AssetPublisher
                 $written[$relative] = $file['hash'];
             }
 
-            $this->removeGone($definition->packageName, $manifest, $written);
+            $this->removeGone($definition->packageName, $manifest, $written, $definition->root);
             $this->storeManifest($definition->packageName, $written);
         }
 
@@ -108,7 +108,7 @@ final class AssetPublisher
             $manifest = $this->manifest($definition->packageName);
 
             foreach ($this->sources($definition) as $relative => $source) {
-                $target = $this->target($definition->packageName, $relative);
+                $target = $this->target($definition->packageName, $relative, $definition->root);
 
                 if (!is_file($target)) {
                     $result['missing'][] = $target;
@@ -149,7 +149,16 @@ final class AssetPublisher
 
         foreach ($names as $name) {
             foreach ($this->manifest($name) as $relative => $hash) {
+                // The record does not say whether this package published under
+                // its own name or at the document root, and by now it may not be
+                // installed to ask. Both candidates are considered; every
+                // deletion below is guarded by the recorded hash, so looking in
+                // two places cannot reach a file this publisher did not write.
                 $target = $this->target($name, $relative);
+
+                if (!is_file($target)) {
+                    $target = $this->target($name, $relative, true);
+                }
 
                 if (!is_file($target)) {
                     continue;
@@ -261,14 +270,14 @@ final class AssetPublisher
      * @param array<string, string> $manifest Previous record
      * @param array<string, string> $written  Current record
      */
-    private function removeGone(string $package, array $manifest, array $written): void
+    private function removeGone(string $package, array $manifest, array $written, bool $root = false): void
     {
         foreach ($manifest as $relative => $hash) {
             if (isset($written[$relative])) {
                 continue;
             }
 
-            $target = $this->target($package, $relative);
+            $target = $this->target($package, $relative, $root);
 
             if (is_file($target) && hash_file('sha256', $target) === $hash) {
                 unlink($target);
@@ -291,14 +300,25 @@ final class AssetPublisher
         chmod($target, 0664);
     }
 
-    private function target(string $package, string $relative): string
+    private function target(string $package, string $relative, bool $root = false): string
     {
-        return $this->packageRoot($package) . '/' . $relative;
+        return $this->packageRoot($package, $root) . '/' . $relative;
     }
 
-    private function packageRoot(string $package): string
+    /**
+     * Where a package's files go.
+     *
+     * A plugin gets a directory of its own, so two of them can never claim one
+     * path. The application's own files go to the document root, because that is
+     * where its templates say they are. Pruning stays on the plugin path either
+     * way: emptying directories under a host's document root is not this
+     * publisher's business.
+     */
+    private function packageRoot(string $package, bool $root = false): string
     {
-        return $this->publicRoot . '/plugins/' . $this->safeName($package);
+        return $root
+            ? $this->publicRoot
+            : $this->publicRoot . '/plugins/' . $this->safeName($package);
     }
 
     /**

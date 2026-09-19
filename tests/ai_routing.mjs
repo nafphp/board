@@ -3,9 +3,9 @@ import {
   selectTools,
   EMBEDDING_BATCH_SIZE,
   MAX_TOOL_SCHEMA_CHARS,
-} from '../public/assets/ai/tool-router.js';
-import { MemoryVectorCache, BrowserVectorCache } from '../public/assets/ai/tool-index.js';
-import { ollamaTools } from '../public/assets/ai/tools.js';
+} from '../src/Resources/public/assets/ai/tool-router.js';
+import { MemoryVectorCache, BrowserVectorCache } from '../src/Resources/public/assets/ai/tool-index.js';
+import { ollamaTools } from '../src/Resources/public/assets/ai/tools.js';
 
 const tools = Array.from({ length: 500 }, (_, index) => ({
   name: `tool_${index}`,

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { requestOllama } from '../public/assets/ai/ollama-client.js';
-import { localUrl, storageFor } from '../public/assets/ai/store.js';
+import { requestOllama } from '../src/Resources/public/assets/ai/ollama-client.js';
+import { localUrl, storageFor } from '../src/Resources/public/assets/ai/store.js';
 
 let sent;
 const originalFetch = globalThis.fetch;

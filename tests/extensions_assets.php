@@ -52,10 +52,14 @@ $fileB        = $publicRoot . '/plugins/example/nafinity-extension-b/review.css'
 // A clean start, so the checks describe this run and not a previous one.
 $publisher->remove();
 
-test('T28 both packages register a public directory', function () {
+test('T28 both packages register a public directory, after the board itself', function () {
     $packages = array_keys(extensions()->assetPackages()->all());
 
+    // naf/board is first because its index is 0: the application's own
+    // stylesheets are in place before a package adds to them, and unlike a
+    // plugin's they go to the document root rather than under plugins/.
     check($packages === [
+        'naf/board',
         'example/nafinity-extension-a',
         'example/nafinity-extension-b',
     ], implode(', ', $packages));
@@ -82,7 +86,13 @@ test('T28 publishing writes both packages and is idempotent', function () use (
 
     $second = $publisher->publish();
     check($second['published'] === [], 'a second run wrote again');
-    check(count($second['unchanged']) === 2, 'unchanged: ' . count($second['unchanged']));
+    // Both files again, rather than a count: naf/board publishes its own assets
+    // through the same registry, and so may anything else installed here. What
+    // matters is that nothing was rewritten and nothing went missing.
+    check(
+        in_array($fileA, $second['unchanged'], true) && in_array($fileB, $second['unchanged'], true),
+        'unchanged did not name both files: ' . implode(', ', $second['unchanged']),
+    );
 
     $status = $publisher->check();
     check($status['missing'] === [] && $status['stale'] === [], 'check disagrees with publish');

@@ -2,9 +2,9 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
-import { selectTools } from '../public/assets/ai/tool-router.js';
-import { MemoryVectorCache } from '../public/assets/ai/tool-index.js';
-import { requestOllama } from '../public/assets/ai/ollama-client.js';
+import { selectTools } from '../src/Resources/public/assets/ai/tool-router.js';
+import { MemoryVectorCache } from '../src/Resources/public/assets/ai/tool-index.js';
+import { requestOllama } from '../src/Resources/public/assets/ai/ollama-client.js';
 
 if (!process.argv[2])
   throw new Error('Pass a JSON file containing an authorized /ai/tools catalog.');
