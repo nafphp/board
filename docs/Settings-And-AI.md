@@ -177,7 +177,7 @@ cannot reach into them. See [Extensibility](Extensibility.md#settings) for the f
 ## Storage and what came from nixcms
 
 The Ollama transport functions, tool conversion and safe Markdown rendering were deliberately
-taken from the NAF version of nixcms (`nafphp/cms`, MIT). The licence text sits next to the
+taken from the NAF version of nixcms (`naf/cms`, MIT). The licence text sits next to the
 shipped modules in `app/public/assets/ai/LICENSE`. Transport abort and visible streaming errors
 extend that implementation. CMS-specific page builder, article and system tools are replaced by
 project-bound Nafinity tools.
