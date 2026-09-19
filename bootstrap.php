@@ -38,6 +38,7 @@ use function Naf\app;
 use function Naf\Board\extensions;
 use function Naf\config;
 use function Naf\event;
+use function Naf\I18n\translation_paths;
 
 // Installed in a host, this file is the board's plugin bootstrap: NAF loads it
 // through CoreFileLoader::BOOTSTRAP_FILES once the host has defined BASE_PATH
@@ -58,6 +59,12 @@ if (!defined('BASE_PATH')) {
 // every other package does -- through __DIR__, which holds whether it is the
 // project being developed or a directory under a host's vendor.
 MigrationRegistry::addPath(__DIR__ . '/src/Migrations');
+
+// The board's own translations, registered the way a package registers
+// anything else it contributes. Locales::available() lists them from disk, so
+// a language could be offered in the picker while the translator had never
+// been told where to load it from.
+translation_paths()->add('naf.board', __DIR__ . '/src/Resources/lang', 0);
 
 $container = app()->container();
 $container->set(LoggerInterface::class, new ContainerLogger());
