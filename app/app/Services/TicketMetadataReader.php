@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Failure;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\TicketMetadataReaderInterface;
-use Nafinity\Contracts\TicketServiceInterface;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\TicketMetadataReaderInterface;
+use Naf\Board\Contracts\TicketServiceInterface;
+use Naf\Board\Domain\Failure;
 
-use function Nafinity\extensions;
+use function Naf\Board\extensions;
 
 /**
  * The authorized way to read ticket metadata.

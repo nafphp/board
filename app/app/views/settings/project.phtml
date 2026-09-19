@@ -1,11 +1,11 @@
 <?php
-use App\Domain\Estimation;
+use Naf\Board\Domain\Estimation;
 
+use function Naf\Board\extensions;
+use function Naf\Board\field;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
-use function Nafinity\extensions;
-use function Nafinity\field;
 
 $scale    = Estimation::scale($project['estimation_scale'] ?? null);
 $offScale = (int) ($offScale ?? 0);

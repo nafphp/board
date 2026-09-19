@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Failure;
-use App\Domain\ProjectPermissions;
-use App\Domain\ProjectScope;
 use Naf\Auth\Auth;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Domain\ProjectPermissions;
+use Naf\Board\Domain\ProjectScope;
 use Naf\ORM\Core\EntityManager;
-use Nafinity\Contracts\AccessInterface;
 use PDO;
 use Throwable;
 
-use function Nafinity\extensions;
+use function Naf\Board\extensions;
 
 final class Access implements AccessInterface
 {

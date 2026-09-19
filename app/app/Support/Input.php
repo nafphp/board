@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
+namespace Naf\Board\Support;
 
-use App\Domain\Failure;
 use JsonException;
+use Naf\Board\Domain\Failure;
 
 use function Naf\Form\validator;
 use function Naf\request;

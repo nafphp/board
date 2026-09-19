@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Controllers;
+namespace Naf\Board\Controllers;
 
-use App\Domain\Failure;
-use App\Support\Input;
 use Naf\Auth\Auth;
 use Naf\Auth\Exceptions\UnauthenticatedException;
+use Naf\Board\Contracts\AccountServiceInterface;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Support\Input;
 use Naf\Session\Core\Session;
-use Nafinity\Contracts\AccountServiceInterface;
 use Psr\Http\Message\ResponseInterface;
 
 use function Naf\Form\csrf;

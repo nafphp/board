@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Jobs;
+namespace Naf\Board\Jobs;
 
+use Naf\Board\Contracts\AccountServiceInterface;
+use Naf\Board\Contracts\AttachmentServiceInterface;
 use Naf\CLI\Core\Output;
 use Naf\RateLimit\PdoLimiter;
 use Naf\Schedule\Core\ScheduledJobInterface;
-use Nafinity\Contracts\AccountServiceInterface;
-use Nafinity\Contracts\AttachmentServiceInterface;
 
 final class MaintenanceJob implements ScheduledJobInterface
 {

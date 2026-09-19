@@ -1,21 +1,21 @@
 <?php
 
-use App\Domain\Estimation;
-use App\Support\Duration;
-use App\Support\Format;
-use App\Support\Icon;
-use App\Support\Mentions;
-use App\Support\RichText;
-use Nafinity\Support\InlineFieldRenderer;
-use Nafinity\Support\TicketSlotContext;
+use Naf\Board\Domain\Estimation;
+use Naf\Board\Support\Duration;
+use Naf\Board\Support\Format;
+use Naf\Board\Support\Icon;
+use Naf\Board\Support\InlineFieldRenderer;
+use Naf\Board\Support\Mentions;
+use Naf\Board\Support\RichText;
+use Naf\Board\Support\TicketSlotContext;
 
+use function Naf\Board\partial;
+use function Naf\Board\slot;
+use function Naf\Board\template;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
-use function Nafinity\partial;
-use function Nafinity\slot;
-use function Nafinity\template;
 
 $isNew = $ticket === null;
 $ticket ??= [

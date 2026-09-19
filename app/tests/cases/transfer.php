@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Services\TimerService;
+use Naf\Board\Services\TimerService;
 
 $moveTimers = $c->make(TimerService::class);
 $auth->setIdentity($users['alice']);

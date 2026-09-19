@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Jobs;
+namespace Naf\Board\Jobs;
 
 use Naf\CLI\Core\Output;
 use Naf\Mail\Core\Mailer;

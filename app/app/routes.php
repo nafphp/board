@@ -1,25 +1,25 @@
 <?php
 
 declare(strict_types=1);
-use App\Controllers\AiController;
-use App\Controllers\AppController as C;
-use App\Controllers\ProfileController;
-use App\Controllers\SettingsApiController as S;
-use App\Migrations\M202609140001Nafinity;
-use App\Migrations\M202609140002Queue;
-use App\Migrations\M202609140003RateLimits;
-use App\Migrations\M202609150001ProjectRoles;
-use App\Migrations\M202609150002AccountProfile;
-use App\Migrations\M202609160001TicketDetails;
-use App\Migrations\M202609160002RichTextStorage;
-use App\Migrations\M202609160003ProjectTicketKey;
-use App\Migrations\M202609170001EstimationScale;
-use App\Migrations\M202609170002TicketTimers;
-use App\Migrations\M202609180001TicketTransfer;
-use App\Migrations\M202609180002PluginSettings;
-use App\Migrations\M202609180003TicketMetadata;
-use App\Migrations\M202609180004ScaleIdentifiers;
-use Nafinity\Contracts\AttachmentServiceInterface;
+use Naf\Board\Contracts\AttachmentServiceInterface;
+use Naf\Board\Controllers\AiController;
+use Naf\Board\Controllers\AppController as C;
+use Naf\Board\Controllers\ProfileController;
+use Naf\Board\Controllers\SettingsApiController as S;
+use Naf\Board\Migrations\M202609140001Nafinity;
+use Naf\Board\Migrations\M202609140002Queue;
+use Naf\Board\Migrations\M202609140003RateLimits;
+use Naf\Board\Migrations\M202609150001ProjectRoles;
+use Naf\Board\Migrations\M202609150002AccountProfile;
+use Naf\Board\Migrations\M202609160001TicketDetails;
+use Naf\Board\Migrations\M202609160002RichTextStorage;
+use Naf\Board\Migrations\M202609160003ProjectTicketKey;
+use Naf\Board\Migrations\M202609170001EstimationScale;
+use Naf\Board\Migrations\M202609170002TicketTimers;
+use Naf\Board\Migrations\M202609180001TicketTransfer;
+use Naf\Board\Migrations\M202609180002PluginSettings;
+use Naf\Board\Migrations\M202609180003TicketMetadata;
+use Naf\Board\Migrations\M202609180004ScaleIdentifiers;
 
 use function Naf\json;
 use function Naf\route;

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Failure;
-use App\Support\Input;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\ProjectServiceInterface;
-use Nafinity\Contracts\RoleServiceInterface;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\ProjectServiceInterface;
+use Naf\Board\Contracts\RoleServiceInterface;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Support\Input;
 use PDO;
 
-use function Nafinity\extensions;
+use function Naf\Board\extensions;
 
 final class RoleService implements RoleServiceInterface
 {

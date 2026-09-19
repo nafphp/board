@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Modules;
+namespace Naf\Board\Modules;
 
-use App\Modules\Attachments\AttachmentsModule;
-use Nafinity\Contracts\ExtensionProviderInterface;
-use Nafinity\ExtensionContext;
-use Nafinity\Support\Resolver;
+use Naf\Board\Contracts\ExtensionProviderInterface;
+use Naf\Board\ExtensionContext;
+use Naf\Board\Modules\Attachments\AttachmentsModule;
+use Naf\Board\Support\Resolver;
 
 /**
  * Everything Nafinity itself contributes, registered exactly once.

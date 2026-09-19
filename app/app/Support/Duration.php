@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
+namespace Naf\Board\Support;
 
-use App\Domain\Failure;
+use Naf\Board\Domain\Failure;
 
 /**
  * Durations are stored as whole minutes but written the way people say them: 2h 40m, 90m,

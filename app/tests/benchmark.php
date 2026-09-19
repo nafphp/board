@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Models\User;
-use App\Services\BoardQuery;
 use Naf\Auth\Auth;
+use Naf\Board\Models\User;
+use Naf\Board\Services\BoardQuery;
 
 if (getenv('APP_ENV') !== 'test' || getenv('DB_DATABASE') !== 'nafinity_test') {
     throw new RuntimeException('Benchmark requires the disposable nafinity_test database.');

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Failure;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\BoardQueryInterface;
-use Nafinity\Contracts\TicketServiceInterface;
-use Nafinity\Contracts\TimerServiceInterface;
-use Nafinity\Support\BoardFilterContext;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\BoardQueryInterface;
+use Naf\Board\Contracts\TicketServiceInterface;
+use Naf\Board\Contracts\TimerServiceInterface;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Support\BoardFilterContext;
 use PDO;
 
-use function Nafinity\extensions;
+use function Naf\Board\extensions;
 
 final class BoardQuery implements BoardQueryInterface
 {

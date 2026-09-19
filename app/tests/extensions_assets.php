@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Domain\Failure;
-use App\Support\Assets\AssetPublisher;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Support\Assets\AssetPublisher;
 
-use function Nafinity\extensions;
+use function Naf\Board\extensions;
 
 /**
  * Publishing, checking and removing the example packages' public files.

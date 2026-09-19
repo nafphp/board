@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\ProjectScope;
 use Naf\Auth\Auth;
-use Nafinity\Contracts\BoardQueryInterface;
-use Nafinity\Contracts\PageRendererInterface;
-use Nafinity\Contracts\TimerServiceInterface;
-use Nafinity\Support\UiContext;
+use Naf\Board\Contracts\BoardQueryInterface;
+use Naf\Board\Contracts\PageRendererInterface;
+use Naf\Board\Contracts\TimerServiceInterface;
+use Naf\Board\Domain\ProjectScope;
+use Naf\Board\Support\UiContext;
 use Psr\Http\Message\ResponseInterface;
 
+use function Naf\Board\extensions;
 use function Naf\redirect;
 use function Naf\route;
 use function Naf\View\asset;
 use function Naf\View\render;
 use function Naf\View\view;
-use function Nafinity\extensions;
 
 /**
  * The application shell every normal page is rendered in.

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Events;
+namespace Naf\Board\Events;
 
-use App\Domain\Change;
 use LogicException;
-use Nafinity\Contracts\NotificationServiceInterface;
+use Naf\Board\Contracts\NotificationServiceInterface;
+use Naf\Board\Domain\Change;
 use PDO;
 
 final class ActivityListener

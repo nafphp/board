@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Domain\Estimation;
+use Naf\Board\Domain\Estimation;
 
 $auth->setIdentity($users['alice']);
 $estimationProject = $projects->create([

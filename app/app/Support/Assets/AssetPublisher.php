@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Assets;
+namespace Naf\Board\Support\Assets;
 
-use App\Domain\Failure;
 use FilesystemIterator;
-use Nafinity\Definition\AssetPackage;
+use Naf\Board\Definition\AssetPackage;
+use Naf\Board\Domain\Failure;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
-use function Nafinity\extensions;
+use function Naf\Board\extensions;
 
 /**
  * Copies a package's public files into the document root.

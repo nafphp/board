@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Commands;
+namespace Naf\Board\Commands;
 
-use App\Support\Assets\AssetPublisher;
+use Naf\Board\Support\Assets\AssetPublisher;
 use Naf\CLI\Core\AbstractCommand;
 use Naf\CLI\Core\Input;
 use Naf\CLI\Core\Output;

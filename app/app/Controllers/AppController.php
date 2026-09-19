@@ -2,40 +2,40 @@
 
 declare(strict_types=1);
 
-namespace App\Controllers;
+namespace Naf\Board\Controllers;
 
-use App\Domain\Failure;
-use App\Support\Input;
 use Naf\Auth\Auth;
 use Naf\Auth\Credentials\PasswordCredentials;
 use Naf\Auth\Exceptions\UnauthenticatedException;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\AccountServiceInterface;
+use Naf\Board\Contracts\AttachmentServiceInterface;
+use Naf\Board\Contracts\BoardQueryInterface;
+use Naf\Board\Contracts\CommentServiceInterface;
+use Naf\Board\Contracts\NotificationServiceInterface;
+use Naf\Board\Contracts\PageRendererInterface;
+use Naf\Board\Contracts\PreferenceServiceInterface;
+use Naf\Board\Contracts\ProjectServiceInterface;
+use Naf\Board\Contracts\RoleServiceInterface;
+use Naf\Board\Contracts\TicketServiceInterface;
+use Naf\Board\Contracts\TimerServiceInterface;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Support\Input;
 use Naf\RateLimit\PdoLimiter;
 use Naf\Session\Core\Session;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\AccountServiceInterface;
-use Nafinity\Contracts\AttachmentServiceInterface;
-use Nafinity\Contracts\BoardQueryInterface;
-use Nafinity\Contracts\CommentServiceInterface;
-use Nafinity\Contracts\NotificationServiceInterface;
-use Nafinity\Contracts\PageRendererInterface;
-use Nafinity\Contracts\PreferenceServiceInterface;
-use Nafinity\Contracts\ProjectServiceInterface;
-use Nafinity\Contracts\RoleServiceInterface;
-use Nafinity\Contracts\TicketServiceInterface;
-use Nafinity\Contracts\TimerServiceInterface;
 use Nyholm\Psr7\Stream;
 use PDO;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UploadedFileInterface;
 
+use function Naf\Board\extensions;
+use function Naf\Board\template;
 use function Naf\config;
 use function Naf\Form\csrf;
 use function Naf\json;
 use function Naf\redirect;
 use function Naf\request;
 use function Naf\View\render;
-use function Nafinity\extensions;
-use function Nafinity\template;
 
 final class AppController
 {

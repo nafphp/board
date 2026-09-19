@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Modules;
+namespace Naf\Board\Modules;
 
-use Nafinity\Contracts\ExtensionProviderInterface;
-use Nafinity\Definition\ActivityType;
-use Nafinity\ExtensionContext;
+use Naf\Board\Contracts\ExtensionProviderInterface;
+use Naf\Board\Definition\ActivityType;
+use Naf\Board\ExtensionContext;
 
 /**
  * Readable sentences for the change types Nafinity records itself.

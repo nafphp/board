@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Ai;
+namespace Naf\Board\Ai;
 
-use App\Support\Input;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\AiToolProviderInterface;
-use Nafinity\Contracts\BoardQueryInterface;
-use Nafinity\Contracts\CommentServiceInterface;
-use Nafinity\Contracts\TicketServiceInterface;
-use Nafinity\Support\AiToolContext;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\AiToolProviderInterface;
+use Naf\Board\Contracts\BoardQueryInterface;
+use Naf\Board\Contracts\CommentServiceInterface;
+use Naf\Board\Contracts\TicketServiceInterface;
+use Naf\Board\Support\AiToolContext;
+use Naf\Board\Support\Input;
 
 /**
  * The tools Nafinity itself offers the local chat.

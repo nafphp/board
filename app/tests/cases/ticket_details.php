@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Support\Duration;
-use App\Support\Mentions;
-use App\Support\RichText;
+use Naf\Board\Support\Duration;
+use Naf\Board\Support\Mentions;
+use Naf\Board\Support\RichText;
 use Naf\Core\App;
 
 // CLI boot omits the HTTP guards; load the framework's actual escaping guard for view tests.

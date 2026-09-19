@@ -1,9 +1,9 @@
 <?php
 
-use App\Services\AttachmentService;
-use App\Services\NotificationService;
-use App\Services\PreferenceService;
-use App\Support\AttachmentStorage;
+use Naf\Board\Services\AttachmentService;
+use Naf\Board\Services\NotificationService;
+use Naf\Board\Services\PreferenceService;
+use Naf\Board\Support\AttachmentStorage;
 use Naf\Queue\Drivers\PDODriver;
 use Naf\Storage\Adapters\LocalAdapter;
 use Naf\Storage\Storage;

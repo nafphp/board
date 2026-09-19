@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use function Nafinity\extensions;
+use function Naf\Board\extensions;
 
 /**
  * The host's last word on contributions.

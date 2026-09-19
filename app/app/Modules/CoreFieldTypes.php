@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Modules;
+namespace Naf\Board\Modules;
 
-use App\Support\Fields\BooleanType;
-use App\Support\Fields\DateType;
-use App\Support\Fields\IntegerType;
-use App\Support\Fields\MultiselectType;
-use App\Support\Fields\SelectType;
-use App\Support\Fields\TextareaType;
-use App\Support\Fields\TextType;
-use Nafinity\Contracts\ExtensionProviderInterface;
-use Nafinity\ExtensionContext;
+use Naf\Board\Contracts\ExtensionProviderInterface;
+use Naf\Board\ExtensionContext;
+use Naf\Board\Support\Fields\BooleanType;
+use Naf\Board\Support\Fields\DateType;
+use Naf\Board\Support\Fields\IntegerType;
+use Naf\Board\Support\Fields\MultiselectType;
+use Naf\Board\Support\Fields\SelectType;
+use Naf\Board\Support\Fields\TextareaType;
+use Naf\Board\Support\Fields\TextType;
 
 /**
  * The value types settings and ticket metadata share.

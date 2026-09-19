@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Example\ExtensionB\Services;
 
-use Nafinity\Contracts\TicketServiceInterface;
+use Naf\Board\Contracts\TicketServiceInterface;
 
 /**
  * A decorator around whatever ticket service is bound.

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Failure;
-use App\Domain\ProjectScope;
-use Nafinity\Contracts\FieldTypeInterface;
-use Nafinity\Contracts\TicketMetadataStoreInterface;
-use Nafinity\Definition\TicketFieldDefinition;
+use Naf\Board\Contracts\FieldTypeInterface;
+use Naf\Board\Contracts\TicketMetadataStoreInterface;
+use Naf\Board\Definition\TicketFieldDefinition;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Domain\ProjectScope;
 
+use function Naf\Board\extensions;
 use function Naf\I18n\t;
-use function Nafinity\extensions;
 
 /**
  * Validates and stores the metadata part of a ticket change.

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Jobs\AccountSecurityNoticeJob;
-use App\Models\User;
 use Naf\Auth\Support\PasswordHasher;
+use Naf\Board\Jobs\AccountSecurityNoticeJob;
+use Naf\Board\Models\User;
 use Naf\CLI\Core\Input;
 use Naf\CLI\Core\Output;
 use Naf\ORM\Core\EntityManager;

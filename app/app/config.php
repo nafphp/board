@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-use App\Models\User;
+use Naf\Board\Models\User;
 use Naf\Mail\Core\Transport\MailTransport;
 use Naf\Storage\Adapters\LocalAdapter;
 

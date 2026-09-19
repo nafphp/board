@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Ticket;
+namespace Naf\Board\Support\Ticket;
 
-use App\Domain\Failure;
 use JsonException;
-use Nafinity\Contracts\TicketMetadataStoreInterface;
+use Naf\Board\Contracts\TicketMetadataStoreInterface;
+use Naf\Board\Domain\Failure;
 use PDO;
 
 /**

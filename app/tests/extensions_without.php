@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-use App\Models\User;
 use Naf\Auth\Auth;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\BoardQueryInterface;
-use Nafinity\Contracts\TicketMetadataReaderInterface;
-use Nafinity\Contracts\TicketServiceInterface;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\BoardQueryInterface;
+use Naf\Board\Contracts\TicketMetadataReaderInterface;
+use Naf\Board\Contracts\TicketServiceInterface;
+use Naf\Board\Models\User;
 
 use function Naf\app;
-use function Nafinity\extensions;
-use function Nafinity\settings;
+use function Naf\Board\extensions;
+use function Naf\Board\settings;
 
 /**
  * The same installation, booted without the two example extensions.

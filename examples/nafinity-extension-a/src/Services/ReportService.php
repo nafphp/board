@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Example\ExtensionA\Services;
 
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\BoardQueryInterface;
-use Nafinity\Contracts\TicketMetadataReaderInterface;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\BoardQueryInterface;
+use Naf\Board\Contracts\TicketMetadataReaderInterface;
 use PDO;
 
 /**

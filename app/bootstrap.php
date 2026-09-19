@@ -2,40 +2,41 @@
 
 declare(strict_types=1);
 
-use App\Commands\CheckAssetsCommand;
-use App\Commands\PublishAssetsCommand;
-use App\Commands\RemoveAssetsCommand;
-use App\Commands\SeedCommand;
-use App\Domain\Change;
-use App\Domain\ProjectScope;
-use App\Events\ActivityListener;
-use App\Jobs\MaintenanceJob;
-use App\Modules\CoreTicket;
-use App\Modules\NafinityDefaults;
-use App\Policies\ProjectPolicy;
-use App\Support\AccountStateStore;
-use App\Support\AttachmentStorage;
-use App\Support\ContainerLogger;
-use App\Support\ServiceDefaults;
 use Naf\Auth\Auth;
 use Naf\Auth\Ldap\LdapProvider;
 use Naf\Auth\Ldap\NativeDirectory;
 use Naf\Auth\Provider\OrmProvider;
 use Naf\Auth\Session\StateStoreInterface;
+use Naf\Board\Commands\CheckAssetsCommand;
+use Naf\Board\Commands\PublishAssetsCommand;
+use Naf\Board\Commands\RemoveAssetsCommand;
+use Naf\Board\Commands\RenameMigrationNamespaceCommand;
+use Naf\Board\Commands\SeedCommand;
+use Naf\Board\Domain\Change;
+use Naf\Board\Domain\ProjectScope;
+use Naf\Board\Events\ActivityListener;
+use Naf\Board\ExtensionContext;
+use Naf\Board\Jobs\MaintenanceJob;
+use Naf\Board\Modules\CoreTicket;
+use Naf\Board\Modules\NafinityDefaults;
+use Naf\Board\Policies\ProjectPolicy;
+use Naf\Board\Support\AccountStateStore;
+use Naf\Board\Support\AttachmentStorage;
+use Naf\Board\Support\ContainerLogger;
+use Naf\Board\Support\Resolver;
+use Naf\Board\Support\ServiceDefaults;
 use Naf\CLI\Support\CommandRegistry;
 use Naf\Queue\Core\Queue;
 use Naf\Queue\Drivers\PDODriver;
 use Naf\Schedule\Core\JobRepository;
 use Naf\Schedule\Core\Scheduler;
 use Naf\Schedule\Support\CronParser;
-use Nafinity\ExtensionContext;
-use Nafinity\Support\Resolver;
 use Psr\Log\LoggerInterface;
 
 use function Naf\app;
+use function Naf\Board\extensions;
 use function Naf\config;
 use function Naf\event;
-use function Nafinity\extensions;
 
 define('BASE_PATH', __DIR__);
 require __DIR__ . '/vendor/autoload.php';
@@ -63,6 +64,7 @@ event()->listen(
 );
 $commands = $container->get(CommandRegistry::class);
 $commands->add(SeedCommand::class);
+$commands->add(RenameMigrationNamespaceCommand::class);
 $commands->add(PublishAssetsCommand::class);
 $commands->add(CheckAssetsCommand::class);
 $commands->add(RemoveAssetsCommand::class);

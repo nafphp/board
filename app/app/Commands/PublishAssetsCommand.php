@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Commands;
+namespace Naf\Board\Commands;
 
 use Naf\CLI\Core\Input;
 use Naf\CLI\Core\Output;

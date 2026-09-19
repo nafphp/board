@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Fields;
+namespace Naf\Board\Support\Fields;
 
-use Nafinity\Contracts\FieldTypeInterface;
+use Naf\Board\Contracts\FieldTypeInterface;
 
 use function Naf\I18n\t;
 

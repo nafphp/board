@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domain;
+namespace Naf\Board\Domain;
 
-use function Nafinity\extensions;
+use function Naf\Board\extensions;
 
 /**
  * Complexity and story points are the same number read on two different scales, so a

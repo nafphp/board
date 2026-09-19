@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Providers;
+namespace Naf\Board\Modules\Providers;
 
 use Naf\Auth\Auth;
-use Nafinity\Contracts\UiDataProviderInterface;
-use Nafinity\Support\UiContext;
+use Naf\Board\Contracts\UiDataProviderInterface;
+use Naf\Board\Support\UiContext;
 
 use function Naf\I18n\t;
 

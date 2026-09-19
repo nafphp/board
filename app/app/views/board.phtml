@@ -1,17 +1,17 @@
 <?php
 
-use App\Domain\Estimation;
-use App\Support\Format;
-use App\Support\Icon;
-use Nafinity\Support\BoardSlotContext;
+use Naf\Board\Domain\Estimation;
+use Naf\Board\Support\BoardSlotContext;
+use Naf\Board\Support\Format;
+use Naf\Board\Support\Icon;
 
+use function Naf\Board\choice;
+use function Naf\Board\slot;
+use function Naf\Board\template;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
-use function Nafinity\choice;
-use function Nafinity\slot;
-use function Nafinity\template;
 
 $this->setLayout(template('layout'));
 $this->block('content');

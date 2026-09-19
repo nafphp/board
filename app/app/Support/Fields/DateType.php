@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Fields;
+namespace Naf\Board\Support\Fields;
 
 use DateTimeImmutable;
 

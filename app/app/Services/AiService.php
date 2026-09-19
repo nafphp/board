@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Failure;
-use App\Domain\ProjectScope;
-use App\Support\Input;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\AiServiceInterface;
+use Naf\Board\Contracts\AiToolProviderInterface;
+use Naf\Board\Contracts\ProjectToolInterface;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Domain\ProjectScope;
+use Naf\Board\Support\AiToolContext;
+use Naf\Board\Support\Input;
+use Naf\Board\Support\Resolver;
 use Naf\MCP\Support\ToolRegistry;
 use Naf\RateLimit\PdoLimiter;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\AiServiceInterface;
-use Nafinity\Contracts\AiToolProviderInterface;
-use Nafinity\Contracts\ProjectToolInterface;
-use Nafinity\Support\AiToolContext;
-use Nafinity\Support\Resolver;
 
 use function Naf\app;
-use function Nafinity\extensions;
+use function Naf\Board\extensions;
 
 final class AiService implements AiServiceInterface
 {

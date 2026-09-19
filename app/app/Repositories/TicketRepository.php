@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Repositories;
+namespace Naf\Board\Repositories;
 
-use App\Models\Ticket;
+use Naf\Board\Models\Ticket;
 use Naf\ORM\Repository\AbstractRepository;
 
 final class TicketRepository extends AbstractRepository

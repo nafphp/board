@@ -1,11 +1,11 @@
 <?php
 
-use App\Jobs\AccountSecurityNoticeJob;
-use App\Models\User;
-use App\Services\AccountService;
-use App\Support\AccountStateStore;
 use Naf\Auth\Session\SessionStateStore;
 use Naf\Auth\Support\PasswordHasher;
+use Naf\Board\Jobs\AccountSecurityNoticeJob;
+use Naf\Board\Models\User;
+use Naf\Board\Services\AccountService;
+use Naf\Board\Support\AccountStateStore;
 use Naf\CLI\Core\Output;
 use Naf\Mail\Core\Mailer;
 use Naf\Mail\Core\Transport\DummyTransport;

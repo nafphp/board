@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Modules;
+namespace Naf\Board\Modules;
 
-use App\Modules\Providers\LanguagePickerProvider;
-use App\Modules\Providers\ProfileTriggerProvider;
-use App\Modules\Providers\TimerChipProvider;
-use Nafinity\Contracts\ExtensionProviderInterface;
-use Nafinity\Definition\NavigationItem;
-use Nafinity\Definition\UiContribution;
-use Nafinity\ExtensionContext;
-use Nafinity\Support\UiContext;
+use Naf\Board\Contracts\ExtensionProviderInterface;
+use Naf\Board\Definition\NavigationItem;
+use Naf\Board\Definition\UiContribution;
+use Naf\Board\ExtensionContext;
+use Naf\Board\Modules\Providers\LanguagePickerProvider;
+use Naf\Board\Modules\Providers\ProfileTriggerProvider;
+use Naf\Board\Modules\Providers\TimerChipProvider;
+use Naf\Board\Support\UiContext;
 
 /**
  * The menu entries Nafinity has always had, as ordinary definitions.

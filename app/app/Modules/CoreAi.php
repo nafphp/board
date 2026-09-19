@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Modules;
+namespace Naf\Board\Modules;
 
-use App\Ai\CoreToolProvider;
-use Nafinity\Contracts\ExtensionProviderInterface;
-use Nafinity\Definition\AiToolProviderDefinition;
-use Nafinity\ExtensionContext;
+use Naf\Board\Ai\CoreToolProvider;
+use Naf\Board\Contracts\ExtensionProviderInterface;
+use Naf\Board\Definition\AiToolProviderDefinition;
+use Naf\Board\ExtensionContext;
 
 /**
  * Nafinity's own tools for the local chat, as one provider among others.

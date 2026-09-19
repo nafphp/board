@@ -1,15 +1,15 @@
 <?php
 
-use Nafinity\Contracts\SettingsServiceInterface;
-use Nafinity\Support\SettingsContext;
+use Naf\Board\Contracts\SettingsServiceInterface;
+use Naf\Board\Support\SettingsContext;
 
 use function Naf\app;
+use function Naf\Board\extensions;
+use function Naf\Board\partial;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
-use function Nafinity\extensions;
-use function Nafinity\partial;
 
 /**
  * The form a settings card gets when it does not bring its own.

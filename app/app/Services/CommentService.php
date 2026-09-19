@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Change;
-use App\Domain\Failure;
-use App\Domain\ProjectScope;
-use App\Support\Input;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\CommentServiceInterface;
-use Nafinity\Contracts\TicketServiceInterface;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\CommentServiceInterface;
+use Naf\Board\Contracts\TicketServiceInterface;
+use Naf\Board\Domain\Change;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Domain\ProjectScope;
+use Naf\Board\Support\Input;
 use PDO;
 
 use function Naf\event;

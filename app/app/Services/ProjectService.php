@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Change;
-use App\Domain\Estimation;
-use App\Domain\Failure;
-use App\Domain\ProjectScope;
-use App\Support\Input;
 use Naf\Auth\Auth;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\ProjectServiceInterface;
+use Naf\Board\Domain\Change;
+use Naf\Board\Domain\Estimation;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Domain\ProjectScope;
+use Naf\Board\Support\Input;
 use Naf\ORM\Core\EntityManager;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\ProjectServiceInterface;
 use PDO;
 use Throwable;
 

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Providers;
+namespace Naf\Board\Modules\Providers;
 
-use Nafinity\Contracts\SettingSectionProviderInterface;
-use Nafinity\Definition\SettingSection;
-use Nafinity\Support\UiContext;
+use Naf\Board\Contracts\SettingSectionProviderInterface;
+use Naf\Board\Definition\SettingSection;
+use Naf\Board\Support\UiContext;
 
 use function Naf\I18n\t;
 

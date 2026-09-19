@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
+namespace Naf\Board\Support;
 
+use function Naf\Board\extensions;
 use function Naf\I18n\t;
-use function Nafinity\extensions;
 
 /**
  * What a recorded change is called in the history.

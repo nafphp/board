@@ -10,7 +10,7 @@ use function Naf\View\s;
  * card's metadata in one query, so `value()` reads what is already here instead
  * of asking again per card.
  *
- * @var \Nafinity\Support\BoardSlotContext $slot
+ * @var \Naf\Board\Support\BoardSlotContext $slot
  */
 if ($slot->value('example.reviewed') !== true) {
     return;

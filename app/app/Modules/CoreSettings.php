@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Modules;
+namespace Naf\Board\Modules;
 
-use App\Domain\Estimation;
-use App\Modules\Providers\AiSectionProvider;
-use App\Modules\Providers\MembersSectionProvider;
-use App\Modules\Providers\PersonalSectionProvider;
-use App\Modules\Providers\ProjectSectionProvider;
-use App\Modules\Providers\RolesSectionProvider;
-use App\Modules\Providers\StructureSectionProvider;
-use App\Support\Locales;
-use Nafinity\Contracts\ExtensionProviderInterface;
-use Nafinity\Definition\SettingDefinition;
-use Nafinity\Definition\SettingSection;
-use Nafinity\ExtensionContext;
+use Naf\Board\Contracts\ExtensionProviderInterface;
+use Naf\Board\Definition\SettingDefinition;
+use Naf\Board\Definition\SettingSection;
+use Naf\Board\Domain\Estimation;
+use Naf\Board\ExtensionContext;
+use Naf\Board\Modules\Providers\AiSectionProvider;
+use Naf\Board\Modules\Providers\MembersSectionProvider;
+use Naf\Board\Modules\Providers\PersonalSectionProvider;
+use Naf\Board\Modules\Providers\ProjectSectionProvider;
+use Naf\Board\Modules\Providers\RolesSectionProvider;
+use Naf\Board\Modules\Providers\StructureSectionProvider;
+use Naf\Board\Support\Locales;
 
 /**
  * The settings cards and values Nafinity already had.

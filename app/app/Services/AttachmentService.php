@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Change;
-use App\Domain\Failure;
-use App\Jobs\FinalizeAttachmentJob;
-use App\Support\AttachmentStorage;
 use InvalidArgumentException;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\AttachmentServiceInterface;
+use Naf\Board\Contracts\TicketServiceInterface;
+use Naf\Board\Domain\Change;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Jobs\FinalizeAttachmentJob;
+use Naf\Board\Support\AttachmentStorage;
 use Naf\ORM\Core\EntityManager;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\AttachmentServiceInterface;
-use Nafinity\Contracts\TicketServiceInterface;
 use PDO;
 use Psr\Http\Message\UploadedFileInterface;
 use RuntimeException;

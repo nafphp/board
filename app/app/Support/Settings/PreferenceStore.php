@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Settings;
+namespace Naf\Board\Support\Settings;
 
 use PDO;
 

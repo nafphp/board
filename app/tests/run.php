@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use App\Domain\Failure;
-use App\Models\User;
-use App\Services\Access;
-use App\Services\BoardQuery;
-use App\Services\CommentService;
-use App\Services\ProjectService;
-use App\Services\TicketService;
 use Naf\Auth\Auth;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Models\User;
+use Naf\Board\Services\Access;
+use Naf\Board\Services\BoardQuery;
+use Naf\Board\Services\CommentService;
+use Naf\Board\Services\ProjectService;
+use Naf\Board\Services\TicketService;
 use Naf\Database\Core\MigrationRunner;
 use Naf\Database\Support\MigrationRegistry;
 use Naf\ORM\Core\EntityManager;

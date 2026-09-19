@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Providers;
+namespace Naf\Board\Modules\Providers;
 
 /** The short "a, b, c +2" summary the settings cards use. */
 final class Names

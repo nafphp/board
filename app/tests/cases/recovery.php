@@ -1,7 +1,7 @@
 <?php
 
-use App\Services\NotificationService;
-use App\Services\PreferenceService;
+use Naf\Board\Services\NotificationService;
+use Naf\Board\Services\PreferenceService;
 use Naf\Core\Config;
 use Naf\Mail\Core\Mailer;
 use Naf\Mail\Core\Transport\DummyTransport;

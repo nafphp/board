@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
+namespace Naf\Board\Support;
 
 use Naf\I18n\Support\Language;
 

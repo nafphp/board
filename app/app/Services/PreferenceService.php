@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Failure;
-use App\Support\Locales;
-use App\Support\Settings\PreferenceStore;
 use DateTimeZone;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\PreferenceServiceInterface;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\PreferenceServiceInterface;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Support\Locales;
+use Naf\Board\Support\Settings\PreferenceStore;
 
 final class PreferenceService implements PreferenceServiceInterface
 {

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Commands;
+namespace Naf\Board\Commands;
 
-use App\Models\User;
 use Naf\Auth\Auth;
 use Naf\Auth\Support\PasswordHasher;
+use Naf\Board\Contracts\ProjectServiceInterface;
+use Naf\Board\Contracts\TicketServiceInterface;
+use Naf\Board\Models\User;
 use Naf\CLI\Core\AbstractCommand;
 use Naf\CLI\Core\Input;
 use Naf\CLI\Core\Output;
 use Naf\ORM\Core\EntityManager;
-use Nafinity\Contracts\ProjectServiceInterface;
-use Nafinity\Contracts\TicketServiceInterface;
 use PDO;
 use RuntimeException;
 

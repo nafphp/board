@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Ai;
+namespace Naf\Board\Ai;
 
-use App\Domain\Failure;
 use Closure;
-use Nafinity\Contracts\ProjectToolInterface;
+use Naf\Board\Contracts\ProjectToolInterface;
+use Naf\Board\Domain\Failure;
 
 /**
  * One definition supplies the MCP schema, chat label and confirmation policy.

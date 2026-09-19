@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Modules;
+namespace Naf\Board\Modules;
 
-use App\Domain\Failure;
-use App\Support\Input;
-use Nafinity\Contracts\ExtensionProviderInterface;
-use Nafinity\Definition\BoardFilterDefinition;
-use Nafinity\ExtensionContext;
-use Nafinity\Support\BoardFilterContext;
-use Nafinity\Support\SqlCondition;
+use Naf\Board\Contracts\ExtensionProviderInterface;
+use Naf\Board\Definition\BoardFilterDefinition;
+use Naf\Board\Domain\Failure;
+use Naf\Board\ExtensionContext;
+use Naf\Board\Support\BoardFilterContext;
+use Naf\Board\Support\Input;
+use Naf\Board\Support\SqlCondition;
 use PDO;
 
 use function Naf\app;

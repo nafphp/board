@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Attachments;
+namespace Naf\Board\Modules\Attachments;
 
-use Nafinity\Contracts\ExtensionProviderInterface;
-use Nafinity\Definition\AssetDefinition;
-use Nafinity\Definition\UiContribution;
-use Nafinity\ExtensionContext;
-use Nafinity\Support\UiContext;
+use Naf\Board\Contracts\ExtensionProviderInterface;
+use Naf\Board\Definition\AssetDefinition;
+use Naf\Board\Definition\UiContribution;
+use Naf\Board\ExtensionContext;
+use Naf\Board\Support\UiContext;
 
 /**
  * Uploads as a module, registered the same way a foreign plugin would be.

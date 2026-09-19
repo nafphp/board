@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Modules;
+namespace Naf\Board\Modules;
 
-use Nafinity\Contracts\ExtensionProviderInterface;
-use Nafinity\Definition\TicketFieldDefinition;
-use Nafinity\Definition\UiContribution;
-use Nafinity\ExtensionContext;
-use Nafinity\Support\UiContext;
+use Naf\Board\Contracts\ExtensionProviderInterface;
+use Naf\Board\Definition\TicketFieldDefinition;
+use Naf\Board\Definition\UiContribution;
+use Naf\Board\ExtensionContext;
+use Naf\Board\Support\UiContext;
 
 /**
  * The ticket's own panels and fields.

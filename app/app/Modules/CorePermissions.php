@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Modules;
+namespace Naf\Board\Modules;
 
-use App\Domain\ProjectPermissions;
-use Nafinity\Contracts\ExtensionProviderInterface;
-use Nafinity\Definition\PermissionDefinition;
-use Nafinity\ExtensionContext;
+use Naf\Board\Contracts\ExtensionProviderInterface;
+use Naf\Board\Definition\PermissionDefinition;
+use Naf\Board\Domain\ProjectPermissions;
+use Naf\Board\ExtensionContext;
 
 /**
  * Nafinity's own project permissions.

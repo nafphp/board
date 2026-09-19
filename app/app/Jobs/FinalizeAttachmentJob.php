@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Jobs;
+namespace Naf\Board\Jobs;
 
+use Naf\Board\Contracts\AttachmentServiceInterface;
 use Naf\CLI\Core\Output;
 use Naf\Queue\Core\QueueJobInterface;
-use Nafinity\Contracts\AttachmentServiceInterface;
 
 final class FinalizeAttachmentJob implements QueueJobInterface
 {

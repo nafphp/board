@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
+namespace Naf\Board\Support;
 
-use App\Domain\Failure;
+use Naf\Board\Domain\Failure;
 
 /**
  * Material Symbols are drawn by a ligature: the element's text is the icon's name and the

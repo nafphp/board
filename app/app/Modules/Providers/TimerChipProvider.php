@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Providers;
+namespace Naf\Board\Modules\Providers;
 
-use Nafinity\Contracts\TimerServiceInterface;
-use Nafinity\Contracts\UiDataProviderInterface;
-use Nafinity\Support\UiContext;
+use Naf\Board\Contracts\TimerServiceInterface;
+use Naf\Board\Contracts\UiDataProviderInterface;
+use Naf\Board\Support\UiContext;
 
 /** The running timer shown in the top bar. */
 final class TimerChipProvider implements UiDataProviderInterface

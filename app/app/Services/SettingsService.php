@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Failure;
-use App\Domain\ProjectScope;
-use App\Support\Settings\PreferenceStore;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\FieldTypeInterface;
+use Naf\Board\Contracts\ProjectServiceInterface;
+use Naf\Board\Contracts\SettingsServiceInterface;
+use Naf\Board\Contracts\SettingsStoreInterface;
+use Naf\Board\Definition\SettingDefinition;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Domain\ProjectScope;
+use Naf\Board\Support\Settings\PreferenceStore;
+use Naf\Board\Support\SettingsContext;
 use Naf\ORM\Core\EntityManager;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\FieldTypeInterface;
-use Nafinity\Contracts\ProjectServiceInterface;
-use Nafinity\Contracts\SettingsServiceInterface;
-use Nafinity\Contracts\SettingsStoreInterface;
-use Nafinity\Definition\SettingDefinition;
-use Nafinity\Support\SettingsContext;
 use PDO;
 use Throwable;
 
+use function Naf\Board\extensions;
 use function Naf\config;
-use function Nafinity\extensions;
 
 /**
  * Reading and writing declared settings, with their types and their rights.

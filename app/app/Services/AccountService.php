@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Failure;
-use App\Jobs\AccountSecurityNoticeJob;
-use App\Models\User;
-use App\Support\Input;
 use Naf\Auth\Auth;
 use Naf\Auth\Credentials\PasswordCredentials;
 use Naf\Auth\Support\PasswordHasher;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\AccountServiceInterface;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Jobs\AccountSecurityNoticeJob;
+use Naf\Board\Models\User;
+use Naf\Board\Support\Input;
 use Naf\Mail\Core\Mailer;
 use Naf\Mail\Models\Mail;
 use Naf\ORM\Core\EntityManager;
 use Naf\Queue\Core\Queue;
 use Naf\RateLimit\PdoLimiter;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\AccountServiceInterface;
 use PDO;
 use PDOException;
 use SensitiveParameter;

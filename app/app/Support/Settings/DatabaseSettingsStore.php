@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Settings;
+namespace Naf\Board\Support\Settings;
 
-use App\Domain\Failure;
 use JsonException;
-use Nafinity\Contracts\SettingsStoreInterface;
-use Nafinity\Support\SettingsContext;
+use Naf\Board\Contracts\SettingsStoreInterface;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Support\SettingsContext;
 use PDO;
 
 /**

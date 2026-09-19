@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace Naf\Board\Models;
 
 use Naf\Auth\Identity\UserInterface;
 use Naf\Auth\Identity\UserProfile;

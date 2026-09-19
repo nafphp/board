@@ -1,13 +1,13 @@
 <?php
 
-use App\Support\Format;
-use Nafinity\Support\ProjectSlotContext;
+use Naf\Board\Support\Format;
+use Naf\Board\Support\ProjectSlotContext;
 
+use function Naf\Board\slot;
+use function Naf\Board\template;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
-use function Nafinity\slot;
-use function Nafinity\template;
 
 $this->setLayout(template('layout'));
 $this->block('content');

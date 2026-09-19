@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Controllers;
+namespace Naf\Board\Controllers;
 
-use App\Domain\Failure;
-use App\Support\Input;
 use Naf\Auth\Exceptions\UnauthenticatedException;
-use Nafinity\Contracts\AiServiceInterface;
+use Naf\Board\Contracts\AiServiceInterface;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Support\Input;
 use Psr\Http\Message\ResponseInterface;
 
 use function Naf\json;

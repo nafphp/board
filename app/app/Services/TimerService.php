@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Change;
-use App\Domain\Failure;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\TimerServiceInterface;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\TimerServiceInterface;
+use Naf\Board\Domain\Change;
+use Naf\Board\Domain\Failure;
 use PDO;
 
 use function Naf\event;

@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace App\Controllers;
+namespace Naf\Board\Controllers;
 
-use App\Domain\Failure;
-use App\Support\Input;
 use Naf\Auth\Exceptions\UnauthenticatedException;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\SettingsServiceInterface;
-use Nafinity\Definition\SettingDefinition;
-use Nafinity\Support\SettingsContext;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\SettingsServiceInterface;
+use Naf\Board\Definition\SettingDefinition;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Support\Input;
+use Naf\Board\Support\SettingsContext;
 use Psr\Http\Message\ResponseInterface;
 
+use function Naf\Board\extensions;
 use function Naf\json;
 use function Naf\redirect;
 use function Naf\request;
 use function Naf\route;
-use function Nafinity\extensions;
 
 /**
  * The protected JSON access to declared settings.

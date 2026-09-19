@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Services\AiService;
-use App\Services\PreferenceService;
-use App\Services\RoleService;
-use App\Support\Locales;
+use Naf\Board\Services\AiService;
+use Naf\Board\Services\PreferenceService;
+use Naf\Board\Services\RoleService;
+use Naf\Board\Support\Locales;
 
 $roles = $c->make(RoleService::class);
 $ai    = $c->make(AiService::class);

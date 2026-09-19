@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Migrations;
+namespace Naf\Board\Migrations;
 
 use Naf\Database\Core\AbstractMigration;
 use Naf\RateLimit\PdoLimiter;

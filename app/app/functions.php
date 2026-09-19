@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Nafinity;
+namespace Naf\Board;
 
-use App\Services\SlotRenderer;
-use Nafinity\Contracts\PageRendererInterface;
-use Nafinity\Support\PageSlotContext;
-use Nafinity\Support\SlotContextInterface;
-use Nafinity\Support\UiContext;
+use Naf\Board\Contracts\PageRendererInterface;
+use Naf\Board\Services\SlotRenderer;
+use Naf\Board\Support\PageSlotContext;
+use Naf\Board\Support\SlotContextInterface;
+use Naf\Board\Support\UiContext;
 
 use function Naf\app;
 
@@ -18,7 +18,7 @@ use function Naf\app;
  * This file only declares functions. It starts no application and touches no
  * database while it is included, so Composer can load it for every process.
  */
-if (!function_exists('Nafinity\extensions')) {
+if (!function_exists('Naf\Board\extensions')) {
     /**
      * The container-bound extension registry
      *
@@ -39,7 +39,7 @@ if (!function_exists('Nafinity\extensions')) {
     }
 }
 
-if (!function_exists('Nafinity\template')) {
+if (!function_exists('Naf\Board\template')) {
     /**
      * Resolve a logical view name through the registered view mappings
      *
@@ -54,7 +54,7 @@ if (!function_exists('Nafinity\template')) {
     }
 }
 
-if (!function_exists('Nafinity\partial')) {
+if (!function_exists('Naf\Board\partial')) {
     /**
      * Render a mapped partial through the application's page renderer
      *
@@ -67,7 +67,7 @@ if (!function_exists('Nafinity\partial')) {
     }
 }
 
-if (!function_exists('Nafinity\choice')) {
+if (!function_exists('Naf\Board\choice')) {
     /**
      * Render the reusable select
      *
@@ -82,7 +82,7 @@ if (!function_exists('Nafinity\choice')) {
     }
 }
 
-if (!function_exists('Nafinity\field')) {
+if (!function_exists('Naf\Board\field')) {
     /**
      * Render a labelled form field
      *
@@ -97,7 +97,7 @@ if (!function_exists('Nafinity\field')) {
     }
 }
 
-if (!function_exists('Nafinity\slot')) {
+if (!function_exists('Naf\Board\slot')) {
     /**
      * Render everything contributed to a named slot
      *
@@ -120,7 +120,7 @@ if (!function_exists('Nafinity\slot')) {
     }
 }
 
-if (!function_exists('Nafinity\settings')) {
+if (!function_exists('Naf\Board\settings')) {
     /**
      * Declared settings for the signed-in person
      *

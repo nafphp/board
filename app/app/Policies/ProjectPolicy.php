@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Policies;
+namespace Naf\Board\Policies;
 
-use App\Domain\ProjectScope;
 use Naf\Auth\Identity\IdentityInterface;
+use Naf\Board\Domain\ProjectScope;
 
 final class ProjectPolicy
 {

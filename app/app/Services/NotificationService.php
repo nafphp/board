@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Change;
-use App\Jobs\DeliverNotificationJob;
 use LogicException;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\NotificationServiceInterface;
+use Naf\Board\Domain\Change;
+use Naf\Board\Jobs\DeliverNotificationJob;
 use Naf\Mail\Core\Mailer;
 use Naf\Mail\Models\Mail;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\NotificationServiceInterface;
 use PDO;
 use RuntimeException;
 use Throwable;

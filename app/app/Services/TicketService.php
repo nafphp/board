@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
-use App\Domain\Change;
-use App\Domain\Estimation;
-use App\Domain\Failure;
-use App\Models\Ticket;
-use App\Support\Duration;
-use App\Support\Format;
-use App\Support\Input;
-use App\Support\RichText;
+use Naf\Board\Contracts\AccessInterface;
+use Naf\Board\Contracts\ProjectServiceInterface;
+use Naf\Board\Contracts\TicketServiceInterface;
+use Naf\Board\Contracts\TimerServiceInterface;
+use Naf\Board\Domain\Change;
+use Naf\Board\Domain\Estimation;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Models\Ticket;
+use Naf\Board\Support\Duration;
+use Naf\Board\Support\Format;
+use Naf\Board\Support\Input;
+use Naf\Board\Support\RichText;
 use Naf\ORM\Core\EntityManager;
-use Nafinity\Contracts\AccessInterface;
-use Nafinity\Contracts\ProjectServiceInterface;
-use Nafinity\Contracts\TicketServiceInterface;
-use Nafinity\Contracts\TimerServiceInterface;
 use PDO;
 use Throwable;
 

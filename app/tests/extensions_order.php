@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 
 use function Naf\app;
-use function Nafinity\extensions;
+use function Naf\Board\extensions;
 
 /**
  * The same two extensions, booted in the opposite order.

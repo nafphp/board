@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Modules;
+namespace Naf\Board\Modules;
 
-use App\Domain\Estimation;
-use Nafinity\Contracts\ExtensionProviderInterface;
-use Nafinity\Definition\EstimationScale;
-use Nafinity\ExtensionContext;
+use Naf\Board\Contracts\ExtensionProviderInterface;
+use Naf\Board\Definition\EstimationScale;
+use Naf\Board\Domain\Estimation;
+use Naf\Board\ExtensionContext;
 
 /**
  * The estimation scales Nafinity ships with.

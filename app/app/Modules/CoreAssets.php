@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Modules;
+namespace Naf\Board\Modules;
 
-use Nafinity\Contracts\ExtensionProviderInterface;
-use Nafinity\Definition\AssetDefinition;
-use Nafinity\ExtensionContext;
+use Naf\Board\Contracts\ExtensionProviderInterface;
+use Naf\Board\Definition\AssetDefinition;
+use Naf\Board\ExtensionContext;
 
 /**
  * The assets Nafinity contributes through the registry.

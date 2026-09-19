@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Naf\Board\Services;
 
 use LogicException;
-use Nafinity\Contracts\PageRendererInterface;
-use Nafinity\Definition\NavigationItem;
-use Nafinity\Definition\UiContribution;
-use Nafinity\Support\SlotContextInterface;
-use Nafinity\Support\UiContext;
+use Naf\Board\Contracts\PageRendererInterface;
+use Naf\Board\Definition\NavigationItem;
+use Naf\Board\Definition\UiContribution;
+use Naf\Board\Support\SlotContextInterface;
+use Naf\Board\Support\UiContext;
 
-use function Nafinity\extensions;
+use function Naf\Board\extensions;
 
 /**
  * Renders one named slot of the interface.
