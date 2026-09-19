@@ -11,7 +11,7 @@ use Naf\Queue\Core\QueueJobInterface;
 if (getenv('APP_ENV') !== 'test' || getenv('DB_DATABASE') !== 'nafinity_test') {
     throw new RuntimeException('This process probe requires nafinity_test.');
 }
-require dirname(__DIR__) . '/bootstrap.php';
+require __DIR__ . '/bootstrap.php';
 
 final class NafinityCrashProbe implements QueueJobInterface
 {

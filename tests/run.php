@@ -25,7 +25,7 @@ if (getenv('APP_ENV') !== 'test' || getenv('DB_DATABASE') !== 'nafinity_test') {
     );
     exit(2);
 }
-require dirname(__DIR__) . '/bootstrap.php';
+require __DIR__ . '/bootstrap.php';
 
 
 $c             = app()->container();

@@ -9,7 +9,7 @@ use Naf\Board\Services\BoardQuery;
 if (getenv('APP_ENV') !== 'test' || getenv('DB_DATABASE') !== 'nafinity_test') {
     throw new RuntimeException('Benchmark requires the disposable nafinity_test database.');
 }
-require dirname(__DIR__) . '/bootstrap.php';
+require __DIR__ . '/bootstrap.php';
 $c    = \Naf\app()->container();
 $pdo  = $c->get(PDO::class);
 $user = new User($pdo->query('SELECT * FROM users WHERE id=1')->fetch());

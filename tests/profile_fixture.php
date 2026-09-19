@@ -16,7 +16,7 @@ if (getenv('APP_ENV') !== 'test' || getenv('DB_DATABASE') !== 'nafinity_test') {
     fwrite(STDERR, "Profile fixtures require the isolated nafinity_test database.\n");
     exit(2);
 }
-require dirname(__DIR__) . '/bootstrap.php';
+require __DIR__ . '/bootstrap.php';
 $container = app()->container();
 if (($argv[1] ?? '') === 'deliver') {
     $pdo     = $container->get(PDO::class);
