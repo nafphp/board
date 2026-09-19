@@ -319,7 +319,7 @@ $emptyCellHint = $filters
                                                 ? t('Wert außerhalb der Skala dieses Projekts')
                                                 : t(Estimation::label($scale))) ?>"
                                         >
-                                            <?= (int) $card['estimate_points'] ?><small><?= s($estimateUnit) ?></small>
+                                            <?= s(Estimation::display($scale, (int) $card['estimate_points'])) ?><small><?= s($estimateUnit) ?></small>
                                         </span>
                                     <?php endif ?>
                                     <div class="card-assignees">

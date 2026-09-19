@@ -75,13 +75,16 @@ if ($points !== null && !in_array($points, $pointValues, true)) {
 }
 $pointOptions = ['' => t('Nicht geschätzt')];
 foreach ($pointValues as $value) {
-    $pointOptions[$value] = $value . ' ' . $estimateUnit
+    // A scale that names its values says "M", not "3 Kp". Estimation::display()
+    // answers with the number where a scale has no name for it, which is also
+    // the off-scale case below.
+    $pointOptions[$value] = trim(Estimation::display($scale, $value) . ' ' . $estimateUnit)
         . (Estimation::offScale($scale, $value) ? ' · ' . t('außerhalb der Skala') : '');
 }
 $pointDisplay = $points === null
     ? $empty
     : '<span class="ticket-points' . (Estimation::offScale($scale, $points) ? ' off-scale' : '') . '">'
-        . $points . '<small>' . s($estimateUnit) . '</small></span>'
+        . s(Estimation::display($scale, $points)) . '<small>' . s($estimateUnit) . '</small></span>'
         . (Estimation::offScale($scale, $points)
             ? '<span class="muted small"> ' . s(t('außerhalb der Skala')) . '</span>'
             : '');

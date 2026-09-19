@@ -17,12 +17,25 @@ final class Estimation
         'none'       => [],
         'complexity' => [1, 2, 3, 4, 5],
         'points'     => [1, 2, 3, 5, 8, 13, 21],
+        'tshirt'     => [1, 2, 3, 5, 8],
+    ];
+
+    /**
+     * What a scale's numbers are shown as, where a number is not the point.
+     *
+     * T-shirt sizes are stored as the numbers above so a column still sums and a
+     * project can switch scales without losing an estimate. The spacing is the
+     * same as the points scale, because that is what people mean by the sizes.
+     */
+    public const NAMES = [
+        'tshirt' => [1 => 'XS', 2 => 'S', 3 => 'M', 5 => 'L', 8 => 'XL'],
     ];
 
     public const LABELS = [
         'none'       => 'Keine Schätzung',
         'complexity' => 'Komplexität',
         'points'     => 'Story-Points',
+        'tshirt'     => 'T-Shirt-Größen',
     ];
 
     /** What a column sum is called once it is more than a ticket count. */
@@ -75,6 +88,26 @@ final class Estimation
     public static function values(mixed $scale): array
     {
         return extensions()->estimationScales()->get(self::scale($scale))?->values ?? [];
+    }
+
+    /**
+     * What a value is shown as: the scale's name for it, or the number itself.
+     *
+     * A value from an earlier scale has no name here and falls back to the
+     * number, which is exactly what should happen -- it is off-scale and the
+     * caller marks it as such.
+     */
+    public static function display(mixed $scale, int $value): string
+    {
+        $names = extensions()->estimationScales()->get(self::scale($scale))?->names ?? [];
+
+        return $names[$value] ?? (string) $value;
+    }
+
+    /** Whether a scale names its values instead of counting in them. */
+    public static function named(mixed $scale): bool
+    {
+        return (extensions()->estimationScales()->get(self::scale($scale))?->names ?? []) !== [];
     }
 
     /** A value kept from an earlier scale, which this project no longer offers. */
