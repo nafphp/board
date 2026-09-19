@@ -178,7 +178,7 @@ cannot reach into them. See [Extensibility](Extensibility.md#settings) for the f
 
 The Ollama transport functions, tool conversion and safe Markdown rendering were deliberately
 taken from the NAF version of nixcms (`naf/cms`, MIT). The licence text sits next to the
-shipped modules in `app/public/assets/ai/LICENSE`. Transport abort and visible streaming errors
+shipped modules in `public/assets/ai/LICENSE`. Transport abort and visible streaming errors
 extend that implementation. CMS-specific page builder, article and system tools are replaced by
 project-bound Nafinity tools.
 
@@ -194,7 +194,7 @@ system prompt.
 streaming, Unicode across packet boundaries, tool answers, errors, aborts, allowed local URLs and
 separated storage areas, plus selection from 500 tools, cache invalidation, permission
 revocation, dependencies and the fallback and schema limits. The optional live benchmark runs
-with `node app/tests/ai_routing_live.mjs PATH_TO_AUTHORIZED_TOOL_ARRAY.json`; it uses an already
+with `node tests/ai_routing_live.mjs PATH_TO_AUTHORIZED_TOOL_ARRAY.json`; it uses an already
 installed local model and executes no domain tools.
 
 The native migration `M202609150001ProjectRoles` adds custom roles, permissions and a

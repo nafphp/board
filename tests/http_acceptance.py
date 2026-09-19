@@ -12,7 +12,7 @@ TLS = ssl.create_default_context(
         "NAF_HOST_CA",
         # The board ships no docker/ any more: the host does, and it is the one
         # serving the certificate these tests verify against.
-        str(Path(__file__).resolve().parents[1] / "../nafinity-skeleton/docker/rootfs/etc/nginx/ssl/ca.pem"),
+        str(Path(__file__).resolve().parents[1] / "../nafinity/docker/rootfs/etc/nginx/ssl/ca.pem"),
     )
 )
 

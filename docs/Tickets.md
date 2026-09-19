@@ -13,7 +13,7 @@ context menu and opening in a new tab.
 ## Creating a ticket in the modal
 
 **+ New ticket** on the board opens the right-hand ticket drawer. It renders the same
-`app/app/views/ticket.phtml` and the same field components as the detail view: title and Quill
+`src/views/ticket.phtml` and the same field components as the detail view: title and Quill
 description on the left, column, assignees and the remaining metadata on the right. Start date,
 due date, estimate, logged minutes, labels and colour are all available at creation time. On
 small screens the sidebar follows the description.
@@ -196,7 +196,7 @@ make migrate
 make restart-background
 ```
 
-Quill including its licence lives in `app/public/assets/vendor/quill/`; browsers load no editor
+Quill including its licence lives in `public/assets/vendor/quill/`; browsers load no editor
 files from a CDN. `symfony/html-sanitizer:^7.4` and `ext-dom` are explicit Composer requirements
 and support the application's PHP 8.3 floor.
 

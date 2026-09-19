@@ -110,13 +110,13 @@ interface ExtensionProviderInterface
 `ExtensionContext` carries the container and all registries. It carries **no** user and performs
 no authorization: definitions are code, user data is read in the request that needs it.
 
-The order in [`app/bootstrap.php`](../app/bootstrap.php) is fixed:
+The order in [`bootstrap.php`](../bootstrap.php) is fixed:
 
 1. Composer/NAF boot and the existing application routes (in the `app()` constructor),
 2. lazily bound application service defaults, policies and native infrastructure,
 3. Nafinity's built-in contribution definitions (`App\Modules\NafinityDefaults`),
 4. the noted providers, ascending by index and id,
-5. optionally [`app/app/extensions.php`](../app/app/extensions.php) as the last host override,
+5. optionally [`src/extensions.php`](../src/extensions.php) as the last host override,
 6. `app()->run()`.
 
 Properties of that pass:
@@ -131,7 +131,7 @@ Properties of that pass:
 ## Shared registry rules
 
 All contribution registries share the same rules
-([`DefinitionRegistry`](../app/app/Extensions/Registry/DefinitionRegistry.php)):
+([`DefinitionRegistry`](../src/Registry/DefinitionRegistry.php)):
 
 ```php
 $registry->add(object $definition, bool $replace = false): void;
@@ -460,7 +460,7 @@ Existing values stay where they are: `theme`, `locale`, `timezone`, `notify_in_a
 `color`, `icon`, `ticket_key`, `estimation_scale` in the project record through `ProjectService`.
 There is no second, contradicting store — `PreferenceService` and `SettingsService` share the
 same internal persistence
-([`PreferenceStore`](../app/app/Support/Settings/PreferenceStore.php)).
+([`PreferenceStore`](../src/Support/Settings/PreferenceStore.php)).
 
 New plugin values live in `user_settings`, `project_settings` and `project_user_settings`: one
 row per key, `value_json TEXT`, at most 16 KiB per value. No DDL per field.
@@ -610,13 +610,13 @@ Title and description come before it, comments after. Index 150 lands between li
 attachments; an equal index sorts by id.
 
 Uploads are a shipped module
-([`App\Modules\Attachments\AttachmentsModule`](../app/app/Modules/Attachments/AttachmentsModule.php))
+([`App\Modules\Attachments\AttachmentsModule`](../src/Modules/Attachments/AttachmentsModule.php))
 using the same registry as a third-party plugin. The permission filter does **not** hide the
 widget from read-only viewers: the file list stays visible, while upload and delete still require
 `upload`. If the widget is removed, the interface and its asset disappear — no file, no route and
 no permission.
 
-On the browser side, `app/public/assets/extensions.js`:
+On the browser side, `public/assets/extensions.js`:
 
 ```js
 export function mount(root, context, api) {
@@ -639,7 +639,7 @@ export function mount(root, context, api) {
   before submitting and are validated server-side in the field type.
 
 `ticket.js` and `upload.js` share one fragment path
-([`fragment.js`](../app/public/assets/fragment.js)). Widgets are reconciled **by their ids**, so
+([`fragment.js`](../public/assets/fragment.js)). Widgets are reconciled **by their ids**, so
 new ones appear and removed ones disappear; a node with an open draft stays mounted.
 
 ## Form components
@@ -703,7 +703,7 @@ A `multiselect` renders checkboxes preceded by an empty field of the same name. 
 nothing ticked arrives as an empty string, and the settings controller reads that as an empty
 list rather than a list holding an empty string.
 
-The browser side is `app/public/assets/choice.js`. It enhances every `[data-choice]` on load,
+The browser side is `public/assets/choice.js`. It enhances every `[data-choice]` on load,
 and exports `enhanceChoices(scope)`, `openChoice(root)`, `closeChoices(scope)` and
 `refreshChoices(scope)`. A list that JavaScript fills in later — the way the AI card fills its
 model lists — calls `refreshChoices(form)` afterwards so the drawn list is rebuilt from the
@@ -807,7 +807,7 @@ layout really outputs what it produces. The service determines the type from the
 so a registered path must carry **no query string** — versioning belongs in the file name or the
 directory. The static application assets and their cache busters are untouched.
 
-Publishing goes to `app/public/plugins/<vendor>/<name>/`:
+Publishing goes to `public/plugins/<vendor>/<name>/`:
 
 ```sh
 php vendor/bin/naf nafinity:assets:publish [--package=vendor/name]
@@ -909,10 +909,10 @@ it is still there.
 ## Negative cases
 
 Every extension point has an executed negative test in
-[`app/tests/extensions.php`](../app/tests/extensions.php),
-[`extensions_http.php`](../app/tests/extensions_http.php),
-[`extensions_assets.php`](../app/tests/extensions_assets.php) and
-[`extensions_without.php`](../app/tests/extensions_without.php):
+[`tests/extensions.php`](../tests/extensions.php),
+[`extensions_http.php`](../tests/extensions_http.php),
+[`extensions_assets.php`](../tests/extensions_assets.php) and
+[`extensions_without.php`](../tests/extensions_without.php):
 
 | Point | Negative case |
 |---|---|
