@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 """Real HTTP regression suite. Run against only the named disposable Compose app-test service."""
 import urllib.request, urllib.error, http.cookiejar, urllib.parse, json, re, concurrent.futures, time
+import os
 import ssl
 from pathlib import Path
 from html.parser import HTMLParser
 
 BASE = "https://127.0.0.1:8444"
 TLS = ssl.create_default_context(
-    cafile=str(Path(__file__).resolve().parents[1] / "docker/rootfs/etc/nginx/ssl/ca.pem")
+    cafile=os.environ.get(
+        "NAF_HOST_CA",
+        # The board ships no docker/ any more: the host does, and it is the one
+        # serving the certificate these tests verify against.
+        str(Path(__file__).resolve().parents[1] / "../nafinity-skeleton/docker/rootfs/etc/nginx/ssl/ca.pem"),
+    )
 )
 
 

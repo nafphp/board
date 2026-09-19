@@ -1,10 +1,16 @@
 import urllib.request, urllib.error, urllib.parse, http.cookiejar, re, json, hashlib
+import os
 import ssl
 from pathlib import Path
 
 base = "https://127.0.0.1:8445"
 TLS = ssl.create_default_context(
-    cafile=str(Path(__file__).resolve().parents[1] / "docker/rootfs/etc/nginx/ssl/ca.pem")
+    cafile=os.environ.get(
+        "NAF_HOST_CA",
+        # The board ships no docker/ any more: the host does, and it is the one
+        # serving the certificate these tests verify against.
+        str(Path(__file__).resolve().parents[1] / "../nafinity-skeleton/docker/rootfs/etc/nginx/ssl/ca.pem"),
+    )
 )
 
 client = urllib.request.build_opener(

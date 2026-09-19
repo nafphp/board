@@ -14,7 +14,18 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(os.environ.get("NAF_HOST_ROOT",
+                          Path(__file__).resolve().parents[1] / "../nafinity-skeleton"))
+
+# The fixture script lives with these tests, in the package, while the container
+# belongs to the host that installs it. NAF_BOARD_IN_CONTAINER is where the host
+# mounts the package; NAF_HOST is the installation the fixture must boot.
+BOARD_IN_CONTAINER = os.environ.get("NAF_BOARD_IN_CONTAINER", "/workspace/board")
+FIXTURE = [
+    "docker", "compose", "exec", "-T",
+    "-e", "NAF_HOST=" + os.environ.get("NAF_HOST_IN_CONTAINER", "/workspace/app"),
+    "app-test", "php", BOARD_IN_CONTAINER + "/tests/profile_fixture.php",
+]
 BASE = "https://127.0.0.1:8444"
 TLS = ssl.create_default_context(cafile=str(ROOT / "docker/rootfs/etc/nginx/ssl/ca.pem"))
 ORIGINAL = "Profile test original password!"
@@ -84,7 +95,7 @@ def mail_code(email):
 
 fixtures = json.loads(
     subprocess.check_output(
-        ["docker", "compose", "exec", "-T", "app-test", "php", "tests/profile_fixture.php"],
+        FIXTURE,
         cwd=ROOT,
     )
 )
@@ -197,7 +208,7 @@ check(
 )
 
 subprocess.run(
-    ["docker", "compose", "exec", "-T", "app-test", "php", "tests/profile_fixture.php", "deliver"],
+    FIXTURE + ["deliver"],
     cwd=ROOT,
     check=True,
     stdout=subprocess.DEVNULL,
