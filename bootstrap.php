@@ -39,8 +39,19 @@ use function Naf\Board\extensions;
 use function Naf\config;
 use function Naf\event;
 
-define('BASE_PATH', __DIR__);
-require __DIR__ . '/vendor/autoload.php';
+// Installed in a host, this file is the board's plugin bootstrap: NAF loads it
+// through CoreFileLoader::BOOTSTRAP_FILES once the host has defined BASE_PATH
+// and started the autoloader, so both steps are already done.
+//
+// Being the project under development is the other case. Nothing has booted a
+// host, and a package is not loaded as a plugin from inside its own vendor, so
+// the board stands in for one here. That is the only difference between the two
+// situations; everything below is the same either way.
+if (!defined('BASE_PATH')) {
+    define('BASE_PATH', __DIR__);
+
+    require __DIR__ . '/vendor/autoload.php';
+}
 
 // naf/database registers BASE_PATH/app/Migrations by convention, which is meant
 // for the host application. The board is a package, so it names its own the way
@@ -146,5 +157,3 @@ foreach (['/app/extensions.php', '/src/extensions.php'] as $hostOverrides) {
         break;
     }
 }
-
-app()->run();
