@@ -212,9 +212,12 @@ make restart-background
 
 ## Source mode and distribution
 
-The fixes in use sit on RC branches, with the limiter and LDAP kept local. `app/composer.json`
-describes the future minimum versions required. A clean install from published packages and a
-stable lock are only possible once those are released — no package has been merged or published.
+`app/composer.json` describes the minimum versions required. `naf/framework` v0.2.4 and
+`naf/i18n` v0.2.2 are released; the remaining fixes still sit on RC branches, and the limiter,
+LDAP and storage packages are not on Packagist at all. A clean install from published packages
+and a stable lock therefore stay out of reach until those are released — see
+[Implementation and acceptance](docs/Implementation.md#handover-to-the-maintainer) for the
+current list and the command that regenerates it.
 
 `make candidate-build` already builds a frozen local source snapshot without source mounts,
 vendor symlinks or Composer in the runtime image. It is explicitly an

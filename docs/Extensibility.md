@@ -856,9 +856,9 @@ packages is modified.
 a French translation makes French selectable without any application allowlist being changed.
 Locale selection, `PreferenceService` and `PageRenderer` all use the same list.
 
-> `naf/i18n` 0.2.2 is **not published** at the time of writing. Nafinity requires `^0.2.2` and
-> works against the RC branch in source mode. Stable distribution depends on the maintainer
-> merging and publishing the package.
+> `naf/i18n` 0.2.2 was released on 19 September 2026, so `translation_paths()` resolves from
+> Packagist. Nafinity as a whole still installs in source mode, because other required NAF
+> versions are not released yet.
 
 ## Migrations, commands, jobs
 

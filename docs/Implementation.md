@@ -75,7 +75,8 @@ available.
 ## Remaining limits
 
 - Stable package releases, the distribution lock built from them and a fresh install without
-  local package sources are still outstanding. No package has been merged or published.
+  local package sources are still outstanding. `naf/framework` v0.2.4 and `naf/i18n` v0.2.2 are
+  released; the other required versions are not, so the clean install still fails.
 - No external LDAP server, OIDC issuer or SMTP service was contacted. Enabling those still needs
   deployment configuration and end-to-end acceptance. Local SMTP through Mailpit is verified for
   account verification and security notices.
@@ -94,21 +95,31 @@ available.
 ## Handover to the maintainer
 
 Verified RC branches pushed following the agreed NAF workflow. Merge and release are the
-maintainer's decision; nothing has been published.
+maintainer's decision. Two are done; the rest are branches waiting for it.
 
-| Package | Branch | Review |
+| Package | Required | State |
 |---|---|---|
-| framework | `v0.2.4-rc` | [compare](https://github.com/nafphp/framework/compare/main...v0.2.4-rc) |
-| database | `v0.2.2-rc` | [compare](https://github.com/nafphp/database/compare/main...v0.2.2-rc) |
-| form | `v0.2.3-rc` | [compare](https://github.com/nafphp/form/compare/main...v0.2.3-rc) |
-| session | `v0.2.2-rc` | [compare](https://github.com/nafphp/session/compare/main...v0.2.2-rc) |
-| orm | `v0.2.2-rc` | [compare](https://github.com/nafphp/orm/compare/main...v0.2.2-rc) |
-| queue | `v0.2.3-rc` | [compare](https://github.com/nafphp/queue/compare/main...v0.2.3-rc) |
-| schedule | `v0.2.3-rc` | [compare](https://github.com/nafphp/schedule/compare/main...v0.2.3-rc) |
-| cli | `v0.2.2-rc` | [compare](https://github.com/nafphp/cli/compare/main...v0.2.2-rc) |
-| i18n | `v0.2.2-rc` | [compare](https://github.com/nafphp/i18n/compare/main...v0.2.2-rc) |
+| framework | `^0.2.4` | **released** [v0.2.4](https://github.com/nafphp/framework/releases/tag/v0.2.4) |
+| i18n | `^0.2.2` | **released** [v0.2.2](https://github.com/nafphp/i18n/releases/tag/v0.2.2) |
+| database | `^0.2.2` | branch [`v0.2.2-rc`](https://github.com/nafphp/database/compare/main...v0.2.2-rc) |
+| form | `^0.2.3` | branch [`v0.2.3-rc`](https://github.com/nafphp/form/compare/main...v0.2.3-rc) |
+| session | `^0.2.2` | branch [`v0.2.2-rc`](https://github.com/nafphp/session/compare/main...v0.2.2-rc) |
+| orm | `^0.2.2` | branch [`v0.2.2-rc`](https://github.com/nafphp/orm/compare/main...v0.2.2-rc) |
+| queue | `^0.2.3` | branch [`v0.2.3-rc`](https://github.com/nafphp/queue/compare/main...v0.2.3-rc) |
+| schedule | `^0.2.3` | branch [`v0.2.3-rc`](https://github.com/nafphp/schedule/compare/main...v0.2.3-rc) |
+| cli | `^0.2.2` | branch [`v0.2.2-rc`](https://github.com/nafphp/cli/compare/main...v0.2.2-rc) |
+| client | `^0.2.2` | no stable tag for the required version |
+| mail | `^0.2.2` | no stable tag for the required version |
+| storage, rate-limit, auth-ldap | `^0.1.0` | not registered on Packagist at all |
 
-Nafinity requires `naf/i18n: ^0.2.2` and works against these branches in source mode. Stable
-distribution depends on the maintainer merging and publishing them; a stable alias is never
-faked. The extensibility work is on `feat/plugin-extensibility`, pull request
-[nafphp/nafinity#1](https://github.com/nafphp/nafinity/pull/1).
+A stable alias is never faked, so Nafinity works in source mode until every one of those
+resolves. What is still missing is answerable in one command rather than from this table:
+
+```sh
+docker compose run --rm --no-deps -T --volume "$PWD/app:/dist:ro" --workdir /tmp app \
+  sh -c 'cp /dist/composer.json . && composer update --dry-run --no-install'
+```
+
+On 19 September 2026 that reported twelve unresolvable requirements: nine packages whose RC
+branch is on Packagist as `dev-…` but carries no matching stable tag, and three that are not
+published there at all.

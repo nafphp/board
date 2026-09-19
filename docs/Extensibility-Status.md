@@ -81,9 +81,10 @@ differences; it was removed with the rest of the assignment once that was implem
 | naf/framework | `v0.2.4-rc` | `3832e14` | `Route::remove()` and bound controller resolution, tests green |
 | naf/i18n | `v0.2.2-rc` | `1fa2ee7` | `Naf\I18n\translation_paths()`, tests green |
 
-Both packages are **not published**. Nafinity requires `naf/i18n: ^0.2.2` and works against the
-RC branches in source mode. Stable distribution depends on the maintainer merging and publishing
-them.
+Both are merged and released: [framework v0.2.4](https://github.com/nafphp/framework/releases/tag/v0.2.4)
+on 19 September 2026 and [i18n v0.2.2](https://github.com/nafphp/i18n/releases/tag/v0.2.2) the same
+day. Nafinity still works in source mode, because other required NAF versions remain unreleased —
+see [Implementation and acceptance](Implementation.md#handover-to-the-maintainer).
 
 ## Not done
 
