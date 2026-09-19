@@ -44,7 +44,9 @@ $settings = [
     'schedule'        => ['heartbeat_file' => '/tmp/nafinity-ticker-heartbeat'],
     'csrf_validation' => true,
     'mail'            => ['transport' => MailTransport::class],
-    'view'            => ['paths' => ['app/views']],
+    // Both spellings, src/ first, exactly as naf/framework orders its own
+    // VIEW_PATHS. A host laid out either way finds its overrides.
+    'view' => ['paths' => ['src/views', 'app/views']],
 ];
 
 $identityConfig = dirname(__DIR__) . '/identity.local.php';

@@ -7,7 +7,7 @@ from html.parser import HTMLParser
 
 BASE = "https://127.0.0.1:8444"
 TLS = ssl.create_default_context(
-    cafile=str(Path(__file__).resolve().parents[2] / "docker/rootfs/etc/nginx/ssl/ca.pem")
+    cafile=str(Path(__file__).resolve().parents[1] / "docker/rootfs/etc/nginx/ssl/ca.pem")
 )
 
 

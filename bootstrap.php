@@ -26,6 +26,7 @@ use Naf\Board\Support\ContainerLogger;
 use Naf\Board\Support\Resolver;
 use Naf\Board\Support\ServiceDefaults;
 use Naf\CLI\Support\CommandRegistry;
+use Naf\Database\Support\MigrationRegistry;
 use Naf\Queue\Core\Queue;
 use Naf\Queue\Drivers\PDODriver;
 use Naf\Schedule\Core\JobRepository;
@@ -40,6 +41,12 @@ use function Naf\event;
 
 define('BASE_PATH', __DIR__);
 require __DIR__ . '/vendor/autoload.php';
+
+// naf/database registers BASE_PATH/app/Migrations by convention, which is meant
+// for the host application. The board is a package, so it names its own the way
+// every other package does -- through __DIR__, which holds whether it is the
+// project being developed or a directory under a host's vendor.
+MigrationRegistry::addPath(__DIR__ . '/src/Migrations');
 
 $container = app()->container();
 $container->set(LoggerInterface::class, new ContainerLogger());
@@ -130,9 +137,14 @@ $extensions->ticketFields()->assertGroups(CoreTicket::groups($context));
 
 // The host has the last word: an optional file that may replace or remove any
 // definition, including one an extension just registered.
-$hostOverrides = __DIR__ . '/app/extensions.php';
-if (is_file($hostOverrides)) {
-    require $hostOverrides;
+// Both spellings, because NAF itself accepts either for plugins.php: a host
+// laid out as app/ and one laid out as src/ are equally ordinary.
+foreach (['/app/extensions.php', '/src/extensions.php'] as $hostOverrides) {
+    if (is_file(BASE_PATH . $hostOverrides)) {
+        require BASE_PATH . $hostOverrides;
+
+        break;
+    }
 }
 
 app()->run();

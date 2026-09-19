@@ -11,8 +11,8 @@ root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument(
     "--source",
-    default="app",
-    help="Installation to package, relative to the project root (default: app).",
+    default=".",
+    help="Installation to package, relative to the project root (default: the root itself).",
 )
 parser.add_argument("--tag", default="nafinity:candidate", help="Image tag to build.")
 parser.add_argument(
@@ -84,6 +84,18 @@ ignore = shutil.ignore_patterns(
     ".DS_Store",
     "composer.dev.*",
     "composer.lock",
+    # Repository tooling, which is not part of an installation. It sat outside
+    # the copied directory while the application lived under app/.
+    "bin",
+    "docker",
+    "docs",
+    "examples",
+    "packages",
+    "tools",
+    "work",
+    "Makefile",
+    "compose.yaml",
+    "AGENTS.md",
 )
 shutil.copytree(source, app, ignore=ignore)
 # Package names must not be filtered by application data-directory names.

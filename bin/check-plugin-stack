@@ -6,7 +6,7 @@ import subprocess
 
 root = Path(__file__).resolve().parents[1]
 lab = root / "work/plugin-lab"
-requirements = json.loads((root / "app/composer.json").read_text())["require"]
+requirements = json.loads((root / "composer.json").read_text())["require"]
 stacks = {
     "minimal": ["framework", "cli", "auth", "database", "form", "orm", "session", "view"],
     "all": [

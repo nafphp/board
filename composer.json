@@ -1,7 +1,7 @@
 {
-  "name": "fkde/nafinity",
-  "description": "A project-isolated Kanban application and NAF showcase.",
-  "type": "project",
+  "name": "naf/board",
+  "description": "Project-isolated Kanban boards for NAF, with an extension platform.",
+  "type": "naf-plugin",
   "license": "proprietary",
   "require": {
     "php": ">=8.3",
@@ -31,10 +31,10 @@
   },
   "autoload": {
     "psr-4": {
-      "Naf\\Board\\": "app/"
+      "Naf\\Board\\": "src/"
     },
     "files": [
-      "app/functions.php"
+      "src/functions.php"
     ]
   },
   "config": {

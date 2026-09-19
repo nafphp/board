@@ -27,7 +27,7 @@ python3 - "$restore_files" <<'PYCODE'
 import pathlib
 import hashlib
 import sys
-original = pathlib.Path("app/storage/attachments")
+original = pathlib.Path("storage/attachments")
 restored = pathlib.Path(sys.argv[1]) / "storage/attachments"
 a = {
     str(p.relative_to(original)): hashlib.sha256(p.read_bytes()).hexdigest()

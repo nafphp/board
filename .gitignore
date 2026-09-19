@@ -1,27 +1,27 @@
 /.env
-/app/.env*
-!/app/.env.example
-/app/vendor/
-/app/composer.dev.json
-/app/composer.dev.lock
-/app/.phpunit.cache/
-/app/storage/*
-/app/public/plugins/
-!/app/storage/.gitkeep
+/.env*
+!/.env.example
+/vendor/
+/composer.dev.json
+/composer.dev.lock
+/.phpunit.cache/
+/storage/*
+/public/plugins/
+!/storage/.gitkeep
 /work/
 /.idea/
 /.claude/
 .DS_Store
 
-/app/identity.local.php
-/app/config/*-ca.pem
+/identity.local.php
+/config/*-ca.pem
 
 /.test-storage/
 
 __pycache__/
 *.pyc
 
-/app/logs/
+/logs/
 
 /tools/style/php/vendor/
 /tools/style/web/node_modules/

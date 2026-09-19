@@ -5,13 +5,16 @@ declare(strict_types=1);
 use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
 
+// Named directories rather than __DIR__: the repository root carries a packages
+// symlink to the whole NAF source tree, and scanning it would reach far outside
+// this project. These three plus the two root files are what app/ used to hold.
 $finder = Finder::create()
-    ->in(__DIR__ . '/app')
+    ->in([__DIR__ . '/src', __DIR__ . '/tests', __DIR__ . '/public'])
     ->name('*.php')
     ->name('*.phtml')
     ->exclude(['vendor', 'storage', 'logs'])
     ->notName('identity.local.php')
-    ->append([__FILE__]);
+    ->append([__FILE__, __DIR__ . '/bootstrap.php', __DIR__ . '/identity.example.php']);
 
 return (new Config())
     ->setRiskyAllowed(false)

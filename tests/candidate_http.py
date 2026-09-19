@@ -4,7 +4,7 @@ from pathlib import Path
 
 base = "https://127.0.0.1:8445"
 TLS = ssl.create_default_context(
-    cafile=str(Path(__file__).resolve().parents[2] / "docker/rootfs/etc/nginx/ssl/ca.pem")
+    cafile=str(Path(__file__).resolve().parents[1] / "docker/rootfs/etc/nginx/ssl/ca.pem")
 )
 
 client = urllib.request.build_opener(

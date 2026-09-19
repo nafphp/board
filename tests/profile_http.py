@@ -14,7 +14,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 BASE = "https://127.0.0.1:8444"
 TLS = ssl.create_default_context(cafile=str(ROOT / "docker/rootfs/etc/nginx/ssl/ca.pem"))
 ORIGINAL = "Profile test original password!"

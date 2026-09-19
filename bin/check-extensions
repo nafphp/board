@@ -16,7 +16,7 @@ import subprocess
 import sys
 
 root = Path(__file__).resolve().parents[1]
-manifest = json.loads((root / "app/composer.json").read_text())
+manifest = json.loads((root / "composer.json").read_text())
 examples = ["example/nafinity-extension-a", "example/nafinity-extension-b"]
 
 
@@ -68,14 +68,20 @@ def build_host(folder, packages, order=None):
     # be cheaper, but PHP resolves __DIR__ through one — a linked bootstrap.php
     # would define BASE_PATH as the development installation and load its vendor
     # — and a host of real files can also be packaged into an image later.
-    for name in ["app", "tests", "public"]:
+    # Clear every directory this function has ever owned before copying, not
+    # only the ones it writes today. A host is reused between runs, so a copy
+    # left by an earlier layout survives otherwise -- and a stale app/Migrations
+    # beside a fresh src/Migrations is two files claiming one migration class.
+    for name in ["app", "src", "tests", "public"]:
         target = host / name
         if target.is_symlink():
             target.unlink()
         elif target.is_dir():
             shutil.rmtree(target)
-        shutil.copytree(root / "app" / name, target)
-    (host / "bootstrap.php").write_text((root / "app/bootstrap.php").read_text())
+
+    for name in ["src", "tests", "public"]:
+        shutil.copytree(root / name, host / name)
+    (host / "bootstrap.php").write_text((root / "bootstrap.php").read_text())
 
     return host
 
@@ -160,13 +166,13 @@ over_http = run(
 # The same two packages, listed the other way round. NAF boots plugins in the
 # order the application lists them, so this proves the provider order comes from
 # the index and the id rather than from whatever Composer happened to write down.
-(installed / "app/plugins.php").write_text(
+(installed / "src/plugins.php").write_text(
     "<?php\n\ndeclare(strict_types=1);\n\n"
     "// Deliberately the wrong way round, to show it does not matter.\n"
     "return ['example/nafinity-extension-b', 'example/nafinity-extension-a'];\n"
 )
 swapped = run(installed, ["php tests/extensions_order.php"])
-(installed / "app/plugins.php").unlink()
+(installed / "src/plugins.php").unlink()
 
 # Publishing a package's public files, through the same class the CLI commands
 # use, and then the commands themselves so their wiring is proven too.

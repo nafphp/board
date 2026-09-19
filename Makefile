@@ -125,17 +125,17 @@ test-postgres: test-up ## Reset and check only the PostgreSQL nafinity_test sche
 
 test-http: test-mariadb ## Reset test fixtures and check HTTP, permissions and private files
 	@$(COMPOSE) exec -T app-test php vendor/bin/naf nafinity:seed
-	@python3 app/tests/http_acceptance.py
+	@python3 tests/http_acceptance.py
 
 test-profile: test-up ## Check password/email changes, SMTP delivery and session revocation over HTTPS
-	@python3 app/tests/profile_http.py
+	@python3 tests/profile_http.py
 
 test-worker: test-up ## Check worker termination, lease recovery and dead letters
 	@$(COMPOSE) exec -T app-test php tests/queue_process.php
 
 test-ai: ## Check local AI streaming transport and browser storage boundaries
-	@node app/tests/ai_transport.mjs
-	@node app/tests/ai_routing.mjs
+	@node tests/ai_transport.mjs
+	@node tests/ai_routing.mjs
 
 test-plugins: test-up ## Boot Nafinity with and without both example extensions
 	@python3 bin/check-extensions
