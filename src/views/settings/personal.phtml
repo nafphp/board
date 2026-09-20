@@ -65,6 +65,17 @@ $logins = (array) config('auth:logins', []);
             'value' => (int) $preferences['notify_mail'],
         ]) ?>
     </div>
+    <?php // A board that rearranges itself while you are reading it is not what
+          // everybody wants from a board. Off, the page still works -- it simply
+          // shows what it showed when it was loaded, like any other page.?>
+    <div class="checkbox-list">
+        <?= field([
+            'label' => 'Änderungen anderer sofort auf dem Board zeigen',
+            'name'  => 'live_updates',
+            'type'  => 'checkbox',
+            'value' => (int) ($preferences['live_updates'] ?? 1),
+        ]) ?>
+    </div>
     <div class="form-errors" role="alert"></div>
     <div class="settings-actions">
         <button class="button primary"><?= s(t('Einstellungen speichern')) ?></button>

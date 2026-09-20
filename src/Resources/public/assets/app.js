@@ -216,20 +216,19 @@ document.addEventListener('nafinity:ai-changed', () => {
   const update = document.querySelector('#board-update');
   if (update) update.hidden = false;
 });
-if (board) {
-  setInterval(async () => {
-    if (document.hidden) return;
-    try {
-      const response = await fetch(`/projects/${board.dataset.project}/state`, {
-        headers: { Accept: 'application/json' },
-      });
-      if (!response.ok) return;
-      const data = await response.json();
-      if (String(data.revision) !== board.dataset.revision)
-        document.querySelector('#board-update').hidden = false;
-    } catch {}
-  }, 30000);
-}
+/*
+ * There used to be a poll here: every thirty seconds, ask the board for its
+ * revision and, if it had moved, put up a banner asking the reader to reload.
+ *
+ * That is what a page does when nothing tells it. A page is told now -- the
+ * change is announced over the socket and the board brings itself up to date --
+ * so the question was being asked of every open board every half minute in order
+ * to nag about something that had already been handled. Somebody who would
+ * rather their board held still switches live updates off in their preferences,
+ * and then it holds still: no banner, no polling, nothing moving until they
+ * reload, which is what they asked for.
+ */
+
 const drawer = document.querySelector('#ticket-drawer');
 let drawerAbort = null;
 let drawerCloseFromHistory = false;
@@ -331,7 +330,7 @@ document.addEventListener('keydown', (event) => {
 // The board brings its own drag, drop and celebration layer and is only needed there.
 // Versioned here because this is the only place that loads it; a second
 // importer with a different spelling would be a second module instance.
-if (board) import('./board.js?v=4');
+if (board) import('./board.js?v=5');
 
 // Only where there is something to report: an installation without a socket
 // server renders no status to keep up to date.

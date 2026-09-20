@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Naf\Board\Support;
 
+use Naf\Auth\Auth;
+use Naf\Board\Support\Settings\PreferenceStore;
+
+use function Naf\app;
 use function Naf\config;
 use function Naf\route;
 
@@ -19,7 +23,7 @@ use function Naf\route;
  *
  * Nothing here decides *whether* somebody may. That is the caller's question,
  * and both callers ask Access before they ask this. This only says what hearing
- * a board is called.
+ * a board is called, and whether it is wanted at all.
  */
 final class LiveConnection
 {
@@ -35,6 +39,27 @@ final class LiveConnection
         return function_exists('Naf\Websocket\live') && \Naf\Websocket\live();
     }
 
+    /**
+     * Whether the person being served right now wants one.
+     *
+     * Asked here rather than passed in, so that the page, the status beside it
+     * and the endpoint that renews a token cannot come to different conclusions
+     * about the same person. A board that rearranges itself while you read it is
+     * not what everybody wants from a board, and that is a decision each person
+     * makes once in their preferences.
+     */
+    public static function wanted(): bool
+    {
+        if (!self::running()) {
+            return false;
+        }
+
+        $user = self::viewer();
+
+        return $user !== null
+            && (bool) app()->container()->get(PreferenceStore::class)->user($user)['live_updates'];
+    }
+
     /** @return list<string> */
     public static function channels(int $project): array
     {
@@ -43,17 +68,18 @@ final class LiveConnection
 
     /**
      * @return array{url: string, token: string, refresh: string}|null
-     *  Null when this installation runs no socket server, which is the ordinary
-     *  case and not a failure: every page works without one.
+     *  Null when there is nothing to connect to, or nobody who wants it, which
+     *  is the ordinary case and not a failure: every page works without one.
      */
-    public static function forProject(int $project, string $subject): ?array
+    public static function forProject(int $project): ?array
     {
-        if (!self::running()) {
+        $user = self::viewer();
+        if ($user === null || !self::wanted()) {
             return null;
         }
 
         $url   = (string) config('websocket:url', '');
-        $token = \Naf\Websocket\token($subject, self::channels($project));
+        $token = \Naf\Websocket\token((string) $user, self::channels($project));
         if ($url === '' || $token === '') {
             return null;
         }
@@ -63,5 +89,13 @@ final class LiveConnection
             'token'   => $token,
             'refresh' => route('board.socket', ['project' => $project]),
         ];
+    }
+
+    /** The signed-in person, or null where there is none. */
+    private static function viewer(): ?int
+    {
+        $id = app()->container()->get(Auth::class)->id();
+
+        return $id === null ? null : (int) $id;
     }
 }

@@ -38,6 +38,7 @@ final class PreferenceService implements PreferenceServiceInterface
             'timezone'      => $zone,
             'notify_in_app' => isset($data['notify_in_app']) ? 1 : 0,
             'notify_mail'   => isset($data['notify_mail']) ? 1 : 0,
+            'live_updates'  => isset($data['live_updates']) ? 1 : 0,
         ]);
     }
 

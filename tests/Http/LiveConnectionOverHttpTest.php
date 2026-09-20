@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Naf\Board\Tests\Http;
 
+use Naf\Board\Support\LiveConnection;
 use Naf\Board\Tests\Support\AcceptanceTestCase;
 use Naf\Board\Tests\Support\HttpClient;
 use Naf\Websocket\Token;
@@ -91,6 +92,54 @@ final class LiveConnectionOverHttpTest extends AcceptanceTestCase
         $this->assertArrayHasKey('token', $answer['body'], 'the endpoint answered without a token');
 
         return $answer;
+    }
+
+    /**
+     * Switched off, a page is not told where to connect and is not given a token
+     * to connect with. Both, because either one on its own would leave a tab
+     * that had been open since before the decision still listening.
+     */
+    public function testSomebodyWhoDoesNotWantLiveUpdatesIsNotGivenOne(): void
+    {
+        if (!LiveConnection::running()) {
+            $this->markTestSkipped('This installation issues no tokens.');
+        }
+
+        $this->liveUpdatesFor($this->viewer, false);
+
+        try {
+            $page = $this->viewer->request('/projects/' . self::PROJECT)['body'];
+
+            $this->assertStringNotContainsString('data-naf-websocket', $page, 'the page still connects');
+            $this->assertStringNotContainsString('data-live-status', $page);
+            $this->assertArrayNotHasKey('token', $this->socket($this->viewer)['body']);
+        } finally {
+            $this->liveUpdatesFor($this->viewer, true);
+        }
+
+        $this->assertStringContainsString(
+            'data-naf-websocket',
+            $this->viewer->request('/projects/' . self::PROJECT)['body'],
+            'switching it back on did not bring it back',
+        );
+    }
+
+    private function liveUpdatesFor(HttpClient $client, bool $on): void
+    {
+        // save() writes the whole form, so everything it governs travels with it.
+        $body = [
+            '_csrf'         => $client->token($client->request('/preferences')['body']),
+            'theme'         => 'system',
+            'locale'        => 'de',
+            'timezone'      => 'Europe/Berlin',
+            'notify_in_app' => '1',
+        ];
+        if ($on) {
+            $body['live_updates'] = '1';
+        }
+
+        $response = $client->request('/preferences', $body);
+        $this->assertContains($response['status'], [200, 303], 'the preference did not save');
     }
 
     /** @return array{status:int, body:array<string,mixed>} */

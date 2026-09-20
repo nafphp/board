@@ -149,10 +149,7 @@ $hintUrl = $current
          * module then finds no settings and does nothing, which is the whole of
          * what switching it off has to do.
          */
-        $socket = $current === null ? null : LiveConnection::forProject(
-            (int) $current,
-            (string) $user->getIdentifier(),
-        );
+        $socket = $current === null ? null : LiveConnection::forProject((int) $current);
 ?>
         <?php if ($socket !== null): ?>
             <script type="application/json" data-naf-websocket><?= json_encode($socket, JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>

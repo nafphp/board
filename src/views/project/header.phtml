@@ -99,7 +99,7 @@ $views    = [
                 <?= s('v' . $version) ?>
             </span>
         <?php endif ?>
-        <?php if (LiveConnection::running()): ?>
+        <?php if (LiveConnection::wanted()): ?>
             <span
                 class="pill live-status"
                 data-live-status="waiting"

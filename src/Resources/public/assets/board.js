@@ -813,6 +813,25 @@ document.addEventListener('naf:websocket-message', (event) => {
   refreshBoard();
 });
 
+/*
+ * Back after a gap.
+ *
+ * A message is only sent when something happens, so nothing will re-announce
+ * what changed while the connection was down -- the board would sit there, out
+ * of date and convinced it was current, until the next person touched it. So it
+ * asks once, on reconnect. Not on the first connection of a page that was just
+ * rendered, which is already as current as asking would make it.
+ */
+let dropped = false;
+document.addEventListener('naf:websocket-closed', () => {
+  dropped = true;
+});
+document.addEventListener('naf:websocket-open', () => {
+  if (!dropped) return;
+  dropped = false;
+  refreshBoard();
+});
+
 if (board && board.dataset.filtered === '0') {
   board.addEventListener('pointerdown', onDown);
   // The native drag image would fight the pointer ghost, so it never starts.

@@ -339,9 +339,7 @@ final class AppController
             $id = Input::id($project);
             $this->access->project($id);
 
-            return json(
-                LiveConnection::forProject($id, (string) $this->auth->id()) ?? ['live' => false],
-            );
+            return json(LiveConnection::forProject($id) ?? ['live' => false]);
         });
     }
 
