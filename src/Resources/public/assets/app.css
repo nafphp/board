@@ -1273,6 +1273,19 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   padding-top: 10px;
   border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
 }
+/*
+ * A card with nothing between its title and its footer.
+ *
+ * The description and the label row each carry the margin below the title, and
+ * both take it with them when they are empty -- so a ticket with neither gets
+ * its footer rule drawn against the title, which is the one card on the board
+ * that looks squeezed. This is roughly what one of those rows would have given
+ * it. Asked with `:has()` for the same reason the rules above use it: a loop
+ * that rendered nothing still leaves whitespace, so only an element counts.
+ */
+.ticket-card:not(:has(.card-labels > *, .card-description:not(:empty))) .card-bottom {
+  margin-top: 14px;
+}
 .due-date {
   font-size: 9px;
   color: var(--muted);
