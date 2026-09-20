@@ -217,11 +217,10 @@ html.board-dragging .ticket-card::after {
 }
 
 /* Closed tickets carry a quiet check, and light up once while they are celebrated. */
-.ticket-card[data-status='closed'] .ticket-number::before {
-  content: '✓ ';
-  color: #2fbf8f;
-  font-weight: 700;
-}
+/* No tick in front of the number. It was there when nothing else was, and now
+   the priority chip stands in the same place -- two marks competing over one
+   card, neither of them winning. A closed ticket still reads as closed: its
+   title goes quiet, and it is sitting in the column that closes tickets. */
 .ticket-card[data-status='closed'] .card-title {
   color: var(--muted);
 }
