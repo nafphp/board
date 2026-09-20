@@ -190,10 +190,9 @@ const flights = new WeakMap();
 /*
  * How long cards take to glide to where they now belong.
  *
- * Named because two other things wait exactly this long: a card arriving from
- * somebody else's change, which must not appear until the room for it is made,
- * and the scroll that brings it into view. The stylesheet delays its arrival by
- * the same amount and says so.
+ * Named because the stylesheet waits exactly this long before letting a card
+ * that arrived from somebody else's change appear: the room is made first, and
+ * it arrives into the space rather than being there before anybody saw it come.
  */
 const roomMade = 190;
 
@@ -689,51 +688,6 @@ function dismiss(card) {
 }
 
 /*
- * Bringing what just arrived into view -- but only when it is not already there.
- *
- * A column long enough to scroll is exactly where a new card is invisible, and a
- * card nobody sees arrive might as well have been there all along. `nearest`
- * moves as little as it takes, so a card just off the edge nudges into view
- * rather than jumping to the middle of the screen.
- *
- * Not while a ticket is open in front of it: scrolling the board behind a drawer
- * moves something nobody is looking at.
- */
-function reveal(card) {
-  // A moment passed while the room was made, and a card can be gone by now.
-  if (!card.isConnected) return;
-  if (document.querySelector('#ticket-drawer[open]')) return;
-
-  const behavior = reducedMotion.matches ? 'auto' : 'smooth';
-  // Where the card will be, not where it shows: it is one frame into its own
-  // arrival, and a rect carries that transform with it.
-  const box = layoutBox(card);
-  // Brought just inside rather than flush against the edge, which reads as cut off.
-  const air = 24;
-
-  const above = box.top - air;
-  const below = box.top + box.height + air - innerHeight;
-  // A card taller than the window shows its top half; there is no arrangement
-  // that shows all of it.
-  const down = above < 0 ? above : Math.max(0, below);
-  /*
-   * Carrying the eye a little is helpful; hauling the page a thousand pixels is
-   * not -- it is the reader who ends up somewhere else, and they did not ask to
-   * go. Past a screenful, the card keeps its place and the counts above the
-   * board say that something arrived.
-   */
-  if (down && Math.abs(down) <= innerHeight) scrollBy({ top: down, behavior });
-
-  // The board scrolls sideways on its own, so a column off to the right is not
-  // something the window can do anything about.
-  const frame = board.getBoundingClientRect();
-  const before = box.left - air - frame.left;
-  const after = box.left + card.offsetWidth + air - frame.right;
-  const across = before < 0 ? before : Math.max(0, after);
-  if (across) board.scrollBy({ left: across, behavior });
-}
-
-/*
  * Bring the board up to date without redrawing it.
  *
  * Only what actually differs is touched: a card that has not changed is never
@@ -825,10 +779,6 @@ function applyBoard(data) {
   // to a cell this page does not have, or gone. Each fades where it stands and
   // the gap closes behind it.
   for (const node of present.values()) dismiss(node);
-
-  // Once the room is made, the newcomer appears -- and the board carries the eye
-  // to it if it landed somewhere nobody can see.
-  if (arrived[0]) setTimeout(() => reveal(arrived[0]), roomMade);
 
   syncCounts();
   board.dataset.revision = String(data.revision ?? board.dataset.revision);
