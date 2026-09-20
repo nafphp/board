@@ -94,29 +94,46 @@ use function Naf\View\s;
             <?= slot('board.card.badges', $boardSlot->withCard($card)) ?>
         </div>
         <?= slot('board.card.details', $boardSlot->withCard($card)) ?>
-        <div class="card-bottom">
-            <span class="due-date"><?= $card['due_date'] ? Icon::mark('schedule', 'sm') . ' ' . s(date('d. M', strtotime($card['due_date']))) : 'Kein Termin' ?></span>
-            <?php if ($estimating && $card['estimate_points'] !== null): ?>
-                <span
-                    class="card-points <?= Estimation::offScale($scale, (int) $card['estimate_points']) ? 'off-scale' : '' ?>"
-                    title="<?= s(Estimation::offScale($scale, (int) $card['estimate_points'])
-                        ? t('Wert außerhalb der Skala dieses Projekts')
-                        : t(Estimation::label($scale))) ?>"
-                >
-                    <?= s(Estimation::display($scale, (int) $card['estimate_points'])) ?><small><?= s($estimateUnit) ?></small>
-                </span>
-            <?php endif ?>
-            <div class="card-assignees">
-                <?php foreach ($assignments[$card['id']] ?? [] as $userId): ?>
-                    <?php
-                if (!isset($memberMap[$userId])) {
-                    continue;
-                }
-                    ?>
-                    <span class="avatar tiny" title="<?= s($memberMap[$userId]['name']) ?>">
-                        <?= s(mb_substr($memberMap[$userId]['name'], 0, 1)) ?>
+        <?php
+/*
+ * The footer, and only when it has something to say.
+ *
+ * It used to print "Kein Termin" on every card that had no date -- a line
+ * announcing the absence of a thing, on the majority of cards, above a rule
+ * drawn to separate it from what is now nothing. A date says something; not
+ * having one does not, and the card is shorter for it.
+ */
+$people = array_values(array_filter(
+    $assignments[$card['id']] ?? [],
+    static fn($userId) => isset($memberMap[$userId]),
+));
+$points = $estimating && $card['estimate_points'] !== null;
+?>
+        <?php if ($card['due_date'] || $points || $people !== []): ?>
+            <div class="card-bottom">
+                <?php if ($card['due_date']): ?>
+                    <span class="due-date">
+                        <?= Icon::mark('schedule', 'sm') ?>
+                        <?= s(date('d. M', strtotime((string) $card['due_date']))) ?>
                     </span>
-                <?php endforeach ?>
+                <?php endif ?>
+                <?php if ($points): ?>
+                    <span
+                        class="card-points <?= Estimation::offScale($scale, (int) $card['estimate_points']) ? 'off-scale' : '' ?>"
+                        title="<?= s(Estimation::offScale($scale, (int) $card['estimate_points'])
+                            ? t('Wert außerhalb der Skala dieses Projekts')
+                            : t(Estimation::label($scale))) ?>"
+                    >
+                        <?= s(Estimation::display($scale, (int) $card['estimate_points'])) ?><small><?= s($estimateUnit) ?></small>
+                    </span>
+                <?php endif ?>
+                <div class="card-assignees">
+                    <?php foreach ($people as $userId): ?>
+                        <span class="avatar tiny" title="<?= s($memberMap[$userId]['name']) ?>">
+                            <?= s(mb_substr($memberMap[$userId]['name'], 0, 1)) ?>
+                        </span>
+                    <?php endforeach ?>
+                </div>
             </div>
-        </div>
+        <?php endif ?>
     </article>
