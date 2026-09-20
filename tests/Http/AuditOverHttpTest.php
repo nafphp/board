@@ -39,6 +39,37 @@ final class AuditOverHttpTest extends AcceptanceTestCase
         $this->assertStringNotContainsString('audit-entry', $page['body']);
     }
 
+    /**
+     * The search asks four places, because those are the four a person
+     * remembers something from: who, which board, which ticket, and what the
+     * entry said.
+     */
+    public function testTheSearchFindsWhatSomebodyWouldRemember(): void
+    {
+        $this->assertGreaterThan(0, $this->found('Alice'), 'a person nobody found');
+        $this->assertSame(0, $this->found('gibtesnichtimprotokoll'));
+    }
+
+    /**
+     * The payload holds `description`; the page shows "Beschreibung". Somebody
+     * searching types what the page showed them, so both have to find the same
+     * entries -- otherwise the search box means something other than it says.
+     */
+    public function testAWordFromTheScreenFindsWhatIsStoredUnderAnotherName(): void
+    {
+        $shown  = $this->found('Beschreibung');
+        $stored = $this->found('description');
+
+        $this->assertGreaterThan(0, $stored, 'nothing recorded a description change');
+        $this->assertSame($stored, $shown);
+    }
+
+    /** A percent sign is a character somebody typed, not a pattern meaning "everything". */
+    public function testAWildcardIsTakenLiterally(): void
+    {
+        $this->assertSame(0, $this->found('%'), 'a search for % matched the whole log');
+    }
+
     public function testFilteringByPersonKeepsOnlyTheirs(): void
     {
         $everything = $this->alice->request('/audit')['body'];
@@ -46,5 +77,13 @@ final class AuditOverHttpTest extends AcceptanceTestCase
 
         $mine = $this->alice->request('/audit?actor=99999')['body'];
         $this->assertStringNotContainsString('audit-entry', $mine, 'an actor nobody is matched something');
+    }
+
+    private function found(string $term): int
+    {
+        $page = $this->alice->request('/audit?q=' . rawurlencode($term));
+        $this->assertSame(200, $page['status']);
+
+        return substr_count($page['body'], 'audit-entry');
     }
 }

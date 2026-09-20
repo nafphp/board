@@ -45,6 +45,43 @@ final class ActivityDetail
      */
     private const array TWINS = ['description_html'];
 
+    /**
+     * The stored field names whose label reads like this term.
+     *
+     * A payload holds `description`; the page shows "Beschreibung". Somebody
+     * searching the log types what the page showed them, so the search asks here
+     * what that would have been stored as. The mapping is the same one the
+     * rendering uses, which is why the two cannot drift apart.
+     *
+     * @return list<string>
+     */
+    public static function storedAs(string $term): array
+    {
+        $term = mb_strtolower(trim($term));
+        if ($term === '') {
+            return [];
+        }
+
+        $names = [];
+        foreach (self::FIELDS as $field => $label) {
+            /*
+             * Both spellings: the label as it is written here and as this
+             * installation translates it. The translator is set while a page is
+             * rendered, and a search runs before that -- so asking only the
+             * translation would make the result depend on when it was asked,
+             * which is not something a search box should do.
+             */
+            foreach ([$label, t($label)] as $candidate) {
+                if (str_contains(mb_strtolower($candidate), $term)) {
+                    $names[] = $field;
+                    break;
+                }
+            }
+        }
+
+        return $names;
+    }
+
     /** @param array<string,mixed> $item one activity row, payload included */
     public static function of(array $item): string
     {

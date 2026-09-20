@@ -41,6 +41,15 @@ $day = null;
 </section>
 
 <form method="get" class="filterbar" action="<?= s(route('audit')) ?>">
+    <label class="search-field">
+        <?= Icon::mark('search') ?>
+        <input
+            name="q"
+            aria-label="<?= s(t('Protokoll durchsuchen')) ?>"
+            placeholder="<?= s(t('Person, Board, Ticket oder Inhalt …')) ?>"
+            value="<?= s($chosen['q']) ?>"
+        />
+    </label>
     <?= choice([
         'name'    => 'scope',
         'label'   => 'Bereich',
@@ -65,7 +74,7 @@ $day = null;
         'searchLabel' => 'Arten suchen',
     ]) ?>
     <button class="button subtle" data-apply><?= s(t('Filtern')) ?></button>
-    <?php if ($chosen['scope'] !== 'alle' || $chosen['actor'] !== '' || $chosen['type'] !== ''): ?>
+    <?php if ($chosen['scope'] !== 'alle' || $chosen['actor'] !== '' || $chosen['type'] !== '' || $chosen['q'] !== ''): ?>
         <a class="clear-filter" href="<?= s(route('audit')) ?>"><?= s(t('Zurücksetzen')) ?></a>
     <?php endif ?>
 </form>
@@ -122,6 +131,7 @@ $day = null;
                 'scope' => $chosen['scope'] === 'alle' ? null : $chosen['scope'],
                 'actor' => $chosen['actor'] ?: null,
                 'type'  => $chosen['type'] ?: null,
+                'q'     => $chosen['q'] ?: null,
             ], static fn($value) => $value !== null),
             'before' => $oldest,
         ])) ?>"><?= s(t('Ältere anzeigen')) ?></a>

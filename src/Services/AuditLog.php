@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Naf\Board\Services;
 
+use Naf\Board\Support\ActivityDetail;
 use Naf\Rbac\Scope;
 use PDO;
 
@@ -51,6 +52,37 @@ final class AuditLog
         if (!empty($filter['type'])) {
             $where[]  = 'a.event_type = ?';
             $values[] = (string) $filter['type'];
+        }
+        if (($filter['q'] ?? '') !== '') {
+            /*
+             * Four places a person might remember something from: who did it,
+             * which board, which ticket, and what the entry itself said.
+             *
+             * A scan, not an index. The table is meant to be kept in bounds by
+             * the scheduled prune; until that exists this is the one query here
+             * that will feel a very long history.
+             */
+            $like    = '%' . self::literal((string) $filter['q']) . '%';
+            $columns = ['u.name', 'a.payload', 'p.name', "CONCAT(p.ticket_key, '-', t.number)"];
+            $matches = array_map(
+                static fn(string $column): string => $column . " LIKE ? ESCAPE '!'",
+                $columns,
+            );
+            $terms = array_fill(0, count($columns), $like);
+
+            /*
+             * A payload holds `description`; the page shows "Beschreibung", and
+             * that is the word somebody types. So the term is also asked of the
+             * rendering: what would this have been stored as? The mapping is the
+             * one the entries are drawn with, so the two cannot drift apart.
+             */
+            foreach (ActivityDetail::storedAs((string) $filter['q']) as $field) {
+                $matches[] = "a.payload LIKE ? ESCAPE '!'";
+                $terms[]   = '%"' . self::literal($field) . '"%';
+            }
+
+            $where[] = '(' . implode(' OR ', $matches) . ')';
+            $values  = [...$values, ...$terms];
         }
         if ($before > 0) {
             $where[]  = 'a.id < ?';
@@ -125,6 +157,20 @@ final class AuditLog
         }
 
         return $named;
+    }
+
+    /**
+     * A term as itself rather than as a pattern.
+     *
+     * Without this, searching for "100%" matches every entry there is, and an
+     * underscore matches any character -- a search box that quietly means
+     * something else than it says. `!` as the escape because the two engines
+     * disagree about backslashes in string literals and a log should not be the
+     * place that discovers it.
+     */
+    private static function literal(string $term): string
+    {
+        return str_replace(['!', '%', '_'], ['!!', '!%', '!_'], trim($term));
     }
 
     /** A board that is gone is still where something happened. */

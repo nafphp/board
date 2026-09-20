@@ -366,7 +366,7 @@ final class AppController
             if (isset($query['scope']) && $query['scope'] !== 'alle') {
                 $filter['scope'] = (string) $query['scope'];
             }
-            foreach (['actor', 'type'] as $key) {
+            foreach (['actor', 'type', 'q'] as $key) {
                 if (!empty($query[$key])) {
                     $filter[$key] = $query[$key];
                 }
@@ -385,6 +385,7 @@ final class AppController
                     'scope' => $query['scope'] ?? 'alle',
                     'actor' => (string) ($query['actor'] ?? ''),
                     'type'  => (string) ($query['type'] ?? ''),
+                    'q'     => (string) ($query['q'] ?? ''),
                 ],
             ]);
         });
