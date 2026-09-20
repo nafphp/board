@@ -55,6 +55,12 @@ final class CountingTicketService implements TicketServiceInterface
         return $result;
     }
 
+    public function delete(int $project, int $id, array $data): void
+    {
+        $this->inner->delete($project, $id, $data);
+        $this->writes++;
+    }
+
     public function state(int $project, int $id, array $data): void
     {
         $this->inner->state($project, $id, $data);

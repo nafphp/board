@@ -49,6 +49,7 @@ final class CoreActivity implements ExtensionProviderInterface
         'ticket.reopen'           => ['Ticket wieder geöffnet', 'refresh'],
         'ticket.archive'          => ['Ticket archiviert', 'folder_open'],
         'ticket.restore'          => ['Ticket wiederhergestellt', 'refresh'],
+        'ticket.deleted'          => ['Ticket gelöscht', 'delete'],
         'comment.created'         => ['Kommentar erstellt', 'comment'],
         'comment.updated'         => ['Kommentar bearbeitet', 'comment'],
         'comment.deleted'         => ['Kommentar gelöscht', 'chat_bubble'],

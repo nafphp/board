@@ -590,6 +590,22 @@ final class AppController
         });
     }
 
+    /**
+     * Remove a ticket for good.
+     *
+     * Answers with the board rather than the ticket, because the ticket is the
+     * one place the browser cannot be sent back to.
+     */
+    public function deleteTicket(string $project, string $ticket): ResponseInterface
+    {
+        return $this->mutation(function ($data) use ($project, $ticket) {
+            $projectId = Input::id($project);
+            $this->tickets->delete($projectId, $this->tickets->resolve($projectId, $ticket), $data);
+
+            return ['url' => route('board', ['project' => $projectId])];
+        });
+    }
+
     public function ticketState(string $project, string $ticket): ResponseInterface
     {
         return $this->mutation(function ($data) use ($project, $ticket) {

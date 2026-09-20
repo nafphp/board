@@ -86,6 +86,16 @@ document.addEventListener('click', (event) => {
     form.elements.password.value = 'Nafinity-Demo-2026!';
     form.querySelector('button').focus();
   }
+  if (target.hasAttribute('data-delete-card')) {
+    const card = target.closest('.ticket-card');
+    const board = card.closest('#board');
+    const form = document.querySelector('#move-card form[data-delete-ticket]');
+    if (form) {
+      form.action = `/projects/${board.dataset.project}/tickets/${card.dataset.key}/delete`;
+      form.elements.version.value = card.dataset.version;
+      form.querySelector('[data-confirm]').dataset.confirmDetail = card.dataset.title;
+    }
+  }
   if (target.hasAttribute('data-move-card')) {
     const card = target.closest('.ticket-card');
     const cell = card.closest('.board-cell');
@@ -102,6 +112,42 @@ document.addEventListener('click', (event) => {
     dialog.showModal();
   }
 });
+/*
+ * Anything grave enough to ask about first.
+ *
+ * The button says what it is asking and what the affirmative is called; the
+ * dialog is the same one every time. On yes the very same button is clicked
+ * again, marked, so the form submits exactly as it would have -- the name and
+ * value it carries reach the server untouched, which a second form built here
+ * could not promise.
+ */
+let awaitingConfirmation = null;
+
+document.addEventListener('click', (event) => {
+  const button = event.target.closest?.('[data-confirm]');
+  if (!button || button.dataset.confirmed === 'yes') return;
+
+  const dialog = document.querySelector('#confirm');
+  if (!dialog) return;
+
+  event.preventDefault();
+  dialog.querySelector('[data-confirm-title]').textContent = button.dataset.confirm;
+  dialog.querySelector('[data-confirm-detail]').textContent = button.dataset.confirmDetail || '';
+  dialog.querySelector('[data-confirm-yes]').textContent = button.dataset.confirmYes || 'Löschen';
+  awaitingConfirmation = button;
+  dialog.showModal();
+});
+
+document.querySelector('#confirm')?.addEventListener('close', (event) => {
+  const button = awaitingConfirmation;
+  awaitingConfirmation = null;
+  if (!button || event.target.returnValue !== 'yes') return;
+
+  button.dataset.confirmed = 'yes';
+  button.click();
+  delete button.dataset.confirmed;
+});
+
 // Treat a backdrop click like Escape, so each modal keeps its own close guards.
 let backdropDialog = null;
 function onDialogBackdrop(event) {

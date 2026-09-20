@@ -350,6 +350,72 @@ final class TicketService implements TicketServiceInterface
         });
     }
 
+    /**
+     * Remove a ticket and everything that only existed because of it.
+     *
+     * Archiving is the ordinary way to put a ticket out of sight, and it is
+     * reversible. This is not: comments, attachments, links, assignments,
+     * labels, timers, metadata and notifications go with it, and the files
+     * behind the attachments are removed from storage rather than left orphaned.
+     *
+     * The history stays. An entry saying what happened is not part of the thing
+     * it happened to, and a log that loses its rows when somebody tidies up is
+     * not a log. The entries keep their project and their words and let go of
+     * the ticket that no longer exists; a last one records what was deleted,
+     * named, so the log still says which ticket that was.
+     */
+    public function delete(int $project, int $id, array $data): void
+    {
+        $this->access->write($project, 'delete', function () use ($project, $id, $data) {
+            $row = $this->ticket($project, $id);
+            $this->version($row, $data);
+
+            $key = $this->pdo->prepare('SELECT ticket_key FROM projects WHERE id=?');
+            $key->execute([$project]);
+
+            // Recorded first, while the ticket is still there to be pointed at,
+            // and named because the pointer is about to be let go.
+            $this->changed($project, $id, 'ticket.deleted', [
+                'number' => (string) $row['number'],
+                'title'  => (string) $row['title'],
+                'key'    => Format::ticket((string) $key->fetchColumn(), $row['number']),
+            ]);
+
+            /*
+             * The rows go now; the files they name are swept by the maintenance
+             * job, which already removes any stored file no attachment row
+             * points at. Reaching for the attachment service from here would
+             * close a circle -- it is the one that depends on this.
+             */
+            foreach (
+                [
+                    'notifications',
+                    'comments',
+                    'attachments',
+                    'ticket_assignees',
+                    'ticket_labels',
+                    'ticket_metadata',
+                    'ticket_timers',
+                ] as $table
+            ) {
+                $this->pdo
+                    ->prepare("DELETE FROM $table WHERE project_id=? AND ticket_id=?")
+                    ->execute([$project, $id]);
+            }
+
+            // A link names two tickets and this one may be either of them.
+            $this->pdo
+                ->prepare('DELETE FROM ticket_links WHERE project_id=? AND (ticket_id=? OR related_id=?)')
+                ->execute([$project, $id, $id]);
+
+            $this->pdo
+                ->prepare('UPDATE activities SET ticket_id=NULL WHERE project_id=? AND ticket_id=?')
+                ->execute([$project, $id]);
+
+            $this->pdo->prepare('DELETE FROM tickets WHERE project_id=? AND id=?')->execute([$project, $id]);
+        });
+    }
+
     public function link(int $project, int $id, array $data): void
     {
         $this->access->write($project, 'write', function () use ($project, $id, $data) {

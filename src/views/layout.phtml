@@ -52,7 +52,7 @@ $hintUrl = $current
         <title><?= s(t($title ?? 'Board')) ?> · Nafinity</title>
         <script src="/assets/boot.js"></script>
         <link rel="stylesheet" href="/assets/icons.css?v=2" />
-        <link rel="stylesheet" href="/assets/app.css?v=31" />
+        <link rel="stylesheet" href="/assets/app.css?v=32" />
         <script type="module" src="/assets/app.js"></script>
         <script type="module" src="/assets/settings.js?v=5"></script>
         <script type="module" src="/assets/profile.js?v=1"></script>
@@ -244,6 +244,19 @@ $hintUrl = $current
                 <div class="ticket-create-actions">
                     <button class="button subtle" value="keep" autofocus><?= s(t('Weiterbearbeiten')) ?></button>
                     <button class="button primary" value="discard"><?= s(t('Verwerfen')) ?></button>
+                </div>
+            </form>
+        </dialog>
+        <?php /* Asked for by any button carrying data-confirm. One dialog rather
+                 than one per action: what differs between them is a sentence,
+                 and a sentence is not a reason for a second dialog. */ ?>
+        <dialog id="confirm" class="modal" aria-labelledby="confirm-title" aria-describedby="confirm-detail">
+            <form method="dialog">
+                <h2 id="confirm-title" data-confirm-title></h2>
+                <p id="confirm-detail" class="muted" data-confirm-detail></p>
+                <div class="ticket-create-actions">
+                    <button class="button subtle" value="no" autofocus><?= s(t('Abbrechen')) ?></button>
+                    <button class="button danger" value="yes" data-confirm-yes></button>
                 </div>
             </form>
         </dialog>

@@ -57,11 +57,33 @@ final class AuditOverHttpTest extends AcceptanceTestCase
      */
     public function testAWordFromTheScreenFindsWhatIsStoredUnderAnotherName(): void
     {
-        $shown  = $this->found('Beschreibung');
-        $stored = $this->found('description');
+        // Made rather than hoped for: this used to lean on an entry that
+        // happened to be in the database from something else, and a fresh seed
+        // had none.
+        $this->changeATitle();
 
-        $this->assertGreaterThan(0, $stored, 'nothing recorded a description change');
+        $shown  = $this->found('Titel');
+        $stored = $this->found('title');
+
+        $this->assertGreaterThan(0, $stored, 'the edit recorded nothing');
         $this->assertSame($stored, $shown);
+    }
+
+    /** One edit, through the application, so the log has something to find. */
+    private function changeATitle(): void
+    {
+        $page = $this->alice->request('/projects/' . self::PROJECT . '/tickets/NAF-1')['body'];
+        preg_match('/name="version" value="(\d+)"/', $page, $version);
+        preg_match('/name="board_revision" value="(\d+)"/', $page, $revision);
+
+        $response = $this->alice->request('/projects/' . self::PROJECT . '/tickets/NAF-1', [
+            '_csrf'          => $this->alice->token($page),
+            'version'        => $version[1] ?? '',
+            'board_revision' => $revision[1] ?? '',
+            'title'          => 'Umbenannt für das Protokoll ' . bin2hex(random_bytes(3)),
+        ]);
+
+        $this->assertContains($response['status'], [200, 303], 'the edit was refused');
     }
 
     /** A percent sign is a character somebody typed, not a pattern meaning "everything". */

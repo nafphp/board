@@ -143,6 +143,7 @@ $routes = [
     ['PATCH', '/projects/{project}/tickets/{ticket}', 'updateTicket', 'ticket.patch'],
     ['POST', '/projects/{project}/tickets/{ticket}/move', 'moveTicket', 'ticket.move'],
     ['POST', '/projects/{project}/tickets/{ticket}/state', 'ticketState', 'ticket.state'],
+    ['POST', '/projects/{project}/tickets/{ticket}/delete', 'deleteTicket', 'ticket.delete'],
     ['POST', '/projects/{project}/tickets/{ticket}/transfer', 'transferTicket', 'ticket.transfer'],
     ['POST', '/projects/{project}/tickets/{ticket}/comments', 'comment', 'ticket.comments'],
     ['POST', '/projects/{project}/tickets/{ticket}/links', 'linkTicket', 'ticket.links'],

@@ -19,6 +19,14 @@ interface TicketServiceInterface
 
     public function state(int $project, int $id, array $data): void;
 
+    /**
+     * Remove a ticket and everything that only existed because of it.
+     *
+     * Not the history: an entry saying what happened is not part of the thing it
+     * happened to.
+     */
+    public function delete(int $project, int $id, array $data): void;
+
     public function link(int $project, int $id, array $data): void;
 
     public function resolve(int $project, string $reference): int;

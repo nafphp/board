@@ -1188,6 +1188,19 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 .ticket-card[draggable='true'] .card-title {
   cursor: grab;
 }
+/* The grave action, set apart from the one above it rather than beside it. */
+.dialog-aside {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.button.danger.subtle {
+  background: transparent;
+  border-color: transparent;
+}
+.button.danger.subtle:hover {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
 .card-id {
   display: flex;
   align-items: center;

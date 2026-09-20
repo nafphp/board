@@ -73,6 +73,7 @@ use function Naf\View\s;
                         type="button"
                         class="card-menu"
                         data-move-card
+                        data-delete-card
                         aria-label="<?= s(t('Ticket :key verschieben', ['key' => Format::ticket($project['ticket_key'], $card['number'])])) ?>"
                     >
 <?= Icon::mark('more_horiz') ?>                                            </button>

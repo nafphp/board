@@ -39,6 +39,22 @@ use function Naf\View\s;
                     </button>
                     <div class="form-errors" role="alert"></div>
                 </form>
+                <?php if ($slot->scope->allows('delete')): ?>
+                    <form method="post" data-ticket-form data-leaves-page action="<?= s(route('ticket.delete', $slot->params)) ?>">
+                        <input type="hidden" name="_csrf" value="<?= s($slot->token) ?>" />
+                        <input type="hidden" name="version" value="<?= (int) $slot->ticket['version'] ?>" />
+                        <button
+                            class="danger"
+                            data-confirm="<?= s(t('Ticket endgültig löschen?')) ?>"
+                            data-confirm-detail="<?= s(t('Kommentare, Anhänge, Verknüpfungen und erfasste Zeit gehen mit. Das Protokoll behält den Vorgang.')) ?>"
+                            data-confirm-yes="<?= s(t('Löschen')) ?>"
+                        >
+                            <?= Icon::mark('delete', 'sm') ?>
+                            <?= s(t('Ticket löschen')) ?>
+                        </button>
+                        <div class="form-errors" role="alert"></div>
+                    </form>
+                <?php endif ?>
                 <?php if ($targets): ?>
                     <details class="menu-move">
                         <summary><?= Icon::mark('drive_file_move', 'sm') ?><?= s(t('In ein anderes Projekt verschieben')) ?></summary>

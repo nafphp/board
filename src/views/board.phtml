@@ -315,6 +315,24 @@ if (isset($people[$me])) {
             <div class="form-errors" role="alert"></div>
             <button class="button primary">Verschieben →</button>
         </form>
+        <?php if ($scope->allows('delete')): ?>
+            <?php /* A second form in the same dialog: the "..." on a card is where
+                     people look for this first, and sending them to the ticket
+                     to find it would be the long way round. */ ?>
+            <form method="post" data-enhanced data-delete-ticket class="dialog-aside">
+                <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                <input type="hidden" name="version" />
+                <button
+                    class="button danger subtle"
+                    data-confirm="<?= s(t('Ticket endgültig löschen?')) ?>"
+                    data-confirm-yes="<?= s(t('Löschen')) ?>"
+                >
+                    <?= Icon::mark('delete', 'sm') ?>
+                    <?= s(t('Ticket löschen')) ?>
+                </button>
+                <div class="form-errors" role="alert"></div>
+            </form>
+        <?php endif ?>
     </dialog>
 <?php endif ?>
 <?php $this->endblock('content'); ?>

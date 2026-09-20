@@ -92,7 +92,10 @@ final class ActivityDetail
 
         return match ((string) $item['event_type']) {
             'ticket.created', 'project.created' => self::quoted($payload['title'] ?? $payload['name'] ?? null),
-            'ticket.updated'                    => self::fields($payload),
+            // The entry outlives the ticket, so it carries what the ticket was
+            // called: the link beside it is gone with the row it pointed at.
+            'ticket.deleted' => self::deleted($payload),
+            'ticket.updated' => self::fields($payload),
             // Which switches, never what they were set to: settings hold the
             // passwords and keys a log must not become a second copy of.
             'settings.changed'        => self::settings($payload),
@@ -144,6 +147,15 @@ final class ActivityDetail
         $named = array_filter(array_map(self::text(...), (array) $roles));
 
         return $named === [] ? t('keine') : implode(', ', $named);
+    }
+
+    /** @param array<string,mixed> $payload */
+    private static function deleted(array $payload): string
+    {
+        $key   = self::text($payload['key'] ?? null);
+        $title = self::quoted($payload['title'] ?? null);
+
+        return trim($key . ' ' . $title);
     }
 
     /** @param array<string,mixed> $payload */
