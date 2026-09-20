@@ -1220,6 +1220,20 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   min-height: 18px;
   margin-bottom: 11px;
 }
+/*
+ * Gone when nothing landed in it. The row keeps a height so cards with labels
+ * line up, but this one also carries the badge slot, so it cannot simply be left
+ * out of the markup -- an extension needs somewhere to put one. `:has(*)` asks
+ * whether anything actually rendered, which the whitespace around a PHP loop
+ * would otherwise answer wrongly.
+ */
+.card-labels:not(:has(*)) {
+  display: none;
+}
+/* Likewise a description nobody wrote: 19px of margin around nothing. */
+.card-description:empty {
+  display: none;
+}
 .label-tag {
   font-size: 9px;
   padding: 2px 6px;

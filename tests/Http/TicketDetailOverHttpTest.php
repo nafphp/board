@@ -113,4 +113,34 @@ final class TicketDetailOverHttpTest extends AcceptanceTestCase
         $this->assertStringContainsString('data-comment-composer', $fragment);
         $this->assertStringNotContainsString('<html', $fragment, 'the fragment carried a whole page');
     }
+
+    /**
+     * The one assignment people reach for, as one click.
+     *
+     * Offered only to somebody the board already knows -- a person who is not a
+     * member cannot hold a ticket, and a shortcut for it would be a promise the
+     * endpoint breaks. It carries their id, because the button works the picker
+     * rather than a second route to the server.
+     */
+    public function testAnUnassignedTicketOffersToAssignItself(): void
+    {
+        $detail = $this->page($this->alice, $this->url . '?fragment=1');
+
+        $this->assertMatchesRegularExpression(
+            '/data-assign-self="1"/',
+            $detail,
+            'the shortcut is missing or does not name the person it assigns',
+        );
+    }
+
+    public function testAViewerIsNotOfferedIt(): void
+    {
+        $detail = $this->page($this->viewer, $this->url . '?fragment=1');
+
+        $this->assertStringNotContainsString(
+            'data-assign-self',
+            $detail,
+            'somebody who may not edit was offered a shortcut that edits',
+        );
+    }
 }

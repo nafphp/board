@@ -4,6 +4,13 @@ import { csrf, toast } from './app.js';
 import { celebrate } from './fireworks.js';
 
 const board = document.querySelector('#board');
+/*
+ * Where this board was read from, kept because the address does not stay put:
+ * opening a ticket in the drawer rewrites it to the ticket's, and creating one
+ * rewrites it again. Refetching `location.href` after that fetches the ticket.
+ * The query string is part of it, so whatever is filtered stays filtered.
+ */
+const boardUrl = board ? location.href : null;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const spring = 'cubic-bezier(.2,1.1,.3,1)';
 // Cards making room glide without overshoot: they are rearranged over and over during a drag,
@@ -596,6 +603,47 @@ if (board) {
     if (card) setTimeout(() => celebrate(card), 480);
   }
 }
+
+/*
+ * Bring the board up to date without leaving the page.
+ *
+ * The children of #board are replaced rather than the element itself: the drag
+ * handlers below are bound to that node, and swapping it would take them with
+ * it. The counts above the board come from the same response, because a card
+ * that appears without the number beside it changing is a board that disagrees
+ * with itself.
+ *
+ * The current address is refetched, query string and all, so whatever is
+ * filtered stays filtered -- a new ticket that does not match simply does not
+ * show up, which is the truthful answer.
+ */
+async function refreshBoard(created) {
+  if (!board) return;
+  const response = await fetch(boardUrl, { headers: { Accept: 'text/html' } }).catch(() => null);
+  if (!response?.ok || response.redirected) return;
+  const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+  const fresh = parsed.querySelector('#board');
+  if (!fresh) return;
+
+  // Only the new card is worth an entrance. Replaying it on every card would
+  // shift the whole board for something that happened to one of them.
+  for (const card of fresh.querySelectorAll('.ticket-card[data-enter]')) {
+    const own = card.querySelector('[data-ticket-link]')?.getAttribute('href');
+    if (!created || own !== created) delete card.dataset.enter;
+  }
+
+  board.replaceChildren(...fresh.children);
+  board.dataset.revision = fresh.dataset.revision ?? board.dataset.revision;
+  const meta = document.querySelector('.board-meta');
+  const rechnung = parsed.querySelector('.board-meta');
+  if (meta && rechnung) meta.replaceWith(rechnung);
+  const banner = document.querySelector('#board-update');
+  if (banner) banner.hidden = true;
+  document.dispatchEvent(new CustomEvent('nafinity:fragment-updated', { detail: { node: board } }));
+}
+document.addEventListener('nafinity:board-changed', (event) => {
+  refreshBoard(event.detail?.url);
+});
 
 if (board && board.dataset.filtered === '0') {
   board.addEventListener('pointerdown', onDown);
