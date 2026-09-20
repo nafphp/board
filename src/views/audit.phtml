@@ -1,0 +1,130 @@
+<?php
+
+/**
+ * Everything this installation recorded, in one place.
+ *
+ * Grouped by day, because that is how somebody looks for a change: they know
+ * roughly when, not which id. Each row says who, what, where and what exactly --
+ * the four questions a history is opened to answer, and the "what exactly" is
+ * the one the old list never had.
+ *
+ * @var list<array<string,mixed>> $entries
+ * @var array<string,string>      $scopes
+ * @var array<int,string>         $actors
+ * @var array<string,string>      $types
+ * @var array<string,string>      $chosen
+ * @var array                     $preferences
+ */
+
+use Naf\Board\Support\ActivityDetail;
+use Naf\Board\Support\ActivityLabel;
+use Naf\Board\Support\Format;
+use Naf\Board\Support\Icon;
+
+use function Naf\Board\choice;
+use function Naf\Board\template;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$this->setLayout(template('layout'));
+$this->block('content');
+
+$day = null;
+?>
+<section class="page-heading settings-heading">
+    <div>
+        <span class="eyebrow"><?= s(t('DIESE INSTALLATION')) ?></span>
+        <h1><?= s(t('Protokoll')) ?></h1>
+        <p><?= s(t('Jede aufgezeichnete Änderung, auch außerhalb der Boards.')) ?></p>
+    </div>
+</section>
+
+<form method="get" class="filterbar" action="<?= s(route('audit')) ?>">
+    <?= choice([
+        'name'    => 'scope',
+        'label'   => 'Bereich',
+        'value'   => $chosen['scope'],
+        'options' => ['alle' => t('Alle Bereiche')] + array_map(t(...), $scopes),
+        'id'      => 'audit-scope',
+    ]) ?>
+    <?= choice([
+        'name'        => 'actor',
+        'label'       => 'Person',
+        'value'       => $chosen['actor'],
+        'options'     => ['' => t('Alle Personen')] + $actors,
+        'id'          => 'audit-actor',
+        'searchLabel' => 'Personen suchen',
+    ]) ?>
+    <?= choice([
+        'name'        => 'type',
+        'label'       => 'Art',
+        'value'       => $chosen['type'],
+        'options'     => ['' => t('Alle Arten')] + array_map(t(...), $types),
+        'id'          => 'audit-type',
+        'searchLabel' => 'Arten suchen',
+    ]) ?>
+    <button class="button subtle" data-apply><?= s(t('Filtern')) ?></button>
+    <?php if ($chosen['scope'] !== 'alle' || $chosen['actor'] !== '' || $chosen['type'] !== ''): ?>
+        <a class="clear-filter" href="<?= s(route('audit')) ?>"><?= s(t('Zurücksetzen')) ?></a>
+    <?php endif ?>
+</form>
+
+<?php if ($entries === []): ?>
+    <p class="muted small"><?= s(t('Für diese Auswahl wurde nichts aufgezeichnet.')) ?></p>
+<?php else: ?>
+    <ol class="audit-log">
+        <?php foreach ($entries as $entry): ?>
+            <?php
+            $moment = Format::moment((string) $entry['created_at'], $preferences);
+            $detail = ActivityDetail::of($entry);
+            $icon   = ActivityLabel::icon((string) $entry['event_type']) ?? 'radio_button_unchecked';
+            $where  = (string) ($entry['project_name'] ?? '') ?: t('Installation');
+            ?>
+            <?php if ($moment['day'] !== $day): ?>
+                <?php $day = $moment['day']; ?>
+                <li class="audit-day"><span><?= s($moment['date']) ?></span></li>
+            <?php endif ?>
+            <li class="audit-entry">
+                <span class="audit-icon" aria-hidden="true"><?= Icon::mark($icon, 'sm') ?></span>
+                <div class="audit-what">
+                    <p>
+                        <?php // An account can be deleted; what it did cannot.?>
+                        <strong><?= s($entry['actor_name'] ?? t('Gelöschter Benutzer')) ?></strong>
+                        <?= s(ActivityLabel::for((string) $entry['event_type'])) ?>
+                        <?php if ($entry['ticket_id'] && $entry['ticket_number']): ?>
+                            <a href="<?= s(route('ticket', [
+                                'project' => (int) $entry['project_id'],
+                                'ticket'  => Format::ticket((string) $entry['ticket_key'], $entry['ticket_number']),
+                            ])) ?>"><?= s(Format::ticket((string) $entry['ticket_key'], $entry['ticket_number'])) ?></a>
+                        <?php endif ?>
+                    </p>
+                    <?php if ($detail !== ''): ?>
+                        <p class="audit-detail"><?= s($detail) ?></p>
+                    <?php endif ?>
+                </div>
+                <div class="audit-where">
+                    <span class="pill"><?= s($where) ?></span>
+                    <time datetime="<?= s((string) $entry['created_at']) ?>"><?= s($moment['time']) ?></time>
+                </div>
+            </li>
+        <?php endforeach ?>
+    </ol>
+    <?php
+    // Paged by the oldest id on this page, not by an offset: entries arrive
+    // while somebody reads, and an offset would show one row twice and skip
+    // another.
+    $oldest = (int) end($entries)['id'];
+?>
+    <p class="audit-more">
+        <a class="button subtle" href="<?= s(route('audit') . '?' . http_build_query([
+            ...array_filter([
+                'scope' => $chosen['scope'] === 'alle' ? null : $chosen['scope'],
+                'actor' => $chosen['actor'] ?: null,
+                'type'  => $chosen['type'] ?: null,
+            ], static fn($value) => $value !== null),
+            'before' => $oldest,
+        ])) ?>"><?= s(t('Ältere anzeigen')) ?></a>
+    </p>
+<?php endif ?>
+<?php $this->endblock('content'); ?>

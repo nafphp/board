@@ -21,6 +21,7 @@ use Naf\Board\Contracts\TicketServiceInterface;
 use Naf\Board\Contracts\TimerServiceInterface;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Rbac\Installation;
+use Naf\Board\Services\AuditLog;
 use Naf\Board\Support\CardContext;
 use Naf\Board\Support\Input;
 use Naf\Board\Support\LiveConnection;
@@ -64,6 +65,7 @@ final class AppController
         private AccountServiceInterface $accounts,
         private Session $session,
         private PageRendererInterface $pages,
+        private AuditLog $audit,
     ) {
     }
 
@@ -342,6 +344,52 @@ final class AppController
      * rather than "the newest fifty" means two people watching at once are not
      * handed each other's duplicates.
      */
+    /**
+     * The installation's own history.
+     *
+     * Its own page and its own right: what a board records is part of that
+     * board, but who changed a role, who was given an account and which switch
+     * was flipped belongs to nobody's board and has to be readable somewhere.
+     */
+    public function audit(): ResponseInterface
+    {
+        return $this->read(function () {
+            $actor = $this->access->actor();
+            if (!rbac()->allows($actor, Installation::VIEW_AUDIT)) {
+                throw new Failure('Für das Protokoll fehlt dir die Berechtigung.', 403);
+            }
+
+            $query  = request()->getQueryParams();
+            $filter = [];
+            // An empty scope means the installation and is a real choice, so it
+            // is told apart from "no filter" by whether the parameter is there.
+            if (isset($query['scope']) && $query['scope'] !== 'alle') {
+                $filter['scope'] = (string) $query['scope'];
+            }
+            foreach (['actor', 'type'] as $key) {
+                if (!empty($query[$key])) {
+                    $filter[$key] = $query[$key];
+                }
+            }
+
+            $before = (int) ($query['before'] ?? 0);
+
+            return $this->page('audit', [
+                'title'   => 'Protokoll',
+                'entries' => $this->audit->entries($filter, $before),
+                'scopes'  => $this->audit->scopes(),
+                'actors'  => $this->audit->actors(),
+                'types'   => $this->audit->types(),
+                'filter'  => $filter,
+                'chosen'  => [
+                    'scope' => $query['scope'] ?? 'alle',
+                    'actor' => (string) ($query['actor'] ?? ''),
+                    'type'  => (string) ($query['type'] ?? ''),
+                ],
+            ]);
+        });
+    }
+
     public function activityEntries(string $project): ResponseInterface
     {
         return $this->read(function () use ($project) {

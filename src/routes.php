@@ -107,6 +107,7 @@ $routes = [
     ['GET', '/projects', 'projectList', 'projects'],
     ['POST', '/projects', 'createProject', 'projects.create'],
     ['GET', '/settings', 'installation', 'installation.settings'],
+    ['GET', '/audit', 'audit', 'audit'],
     ['GET', '/preferences', 'preferences', 'preferences'],
     ['POST', '/preferences', 'savePreferences', 'preferences.save'],
     ['POST', '/preferences/language', 'saveLanguage', 'preferences.language'],

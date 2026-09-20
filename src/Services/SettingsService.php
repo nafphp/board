@@ -10,6 +10,7 @@ use Naf\Board\Contracts\ProjectServiceInterface;
 use Naf\Board\Contracts\SettingsServiceInterface;
 use Naf\Board\Contracts\SettingsStoreInterface;
 use Naf\Board\Definition\SettingDefinition;
+use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Domain\ProjectScope;
 use Naf\Board\Support\Settings\PreferenceStore;
@@ -20,6 +21,7 @@ use Throwable;
 
 use function Naf\Board\extensions;
 use function Naf\config;
+use function Naf\event;
 
 /**
  * Reading and writing declared settings, with their types and their rights.
@@ -142,10 +144,43 @@ final class SettingsService implements SettingsServiceInterface
             }
 
             $this->persist($context, $definitions, $normalized, $resetKeys, $scope);
+            $this->record($context, array_keys($normalized), $resetKeys);
         });
     }
 
     /**
+     * Put a settings change in the history.
+     *
+     * The keys and never the values. Settings hold SMTP passwords, OAuth secrets
+     * and the key that signs socket tokens, and a log that copies them is the
+     * worst-protected place any of them would ever live. What somebody needs
+     * from a history is which switch was touched and by whom; the value is in
+     * the setting, where it is guarded.
+     *
+     * What one person chose for themselves is left out on purpose. A record of
+     * whose theme changed when is surveillance rather than traceability -- an
+     * audit log is for what affects other people.
+     *
+     * @param list<string> $keys
+     * @param list<string> $resetKeys
+     */
+    private function record(SettingsContext $context, array $keys, array $resetKeys): void
+    {
+        if ($context->scope !== 'project' || ($keys === [] && $resetKeys === [])) {
+            return;
+        }
+
+        event()->dispatch('nafinity.changed', new Change(
+            $context->projectId,
+            null,
+            $this->access->actor(),
+            'settings.changed',
+            ['keys' => array_values($keys), 'reset' => array_values($resetKeys)],
+        ));
+    }
+
+    /**
+     * Definitions of this scope the actor may read    /**
      * Definitions of this scope the actor may read
      *
      * @param SettingsContext $context Scope and owner

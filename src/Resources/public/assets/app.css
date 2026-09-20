@@ -1892,6 +1892,99 @@ fieldset:disabled select {
   bottom: 1px;
   left: 3px;
 }
+/* The installation's own history. Read as days: one heading, then the times
+   under it, because that is how somebody looks for a change -- they know roughly
+   when, not which id. */
+.audit-log {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0 0;
+}
+.audit-day {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 22px 0 8px;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.audit-day:first-child {
+  margin-top: 4px;
+}
+.audit-day:after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.audit-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  transition: background 0.16s;
+}
+.audit-entry:hover {
+  background: var(--hover);
+}
+.audit-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.audit-what {
+  flex: 1;
+  min-width: 0;
+}
+.audit-what p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.audit-what strong {
+  font-weight: 620;
+}
+.audit-what a {
+  margin-left: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.audit-detail {
+  color: var(--muted);
+  font-size: 10px;
+  /* A description that ran long is a line, not a paragraph: the log is a list
+     first, and the ticket behind it holds the whole of anything. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.audit-where {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: none;
+  color: var(--muted);
+  font-size: 10px;
+}
+.audit-more {
+  margin-top: 18px;
+}
+@media (max-width: 760px) {
+  .audit-where {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+  }
+}
+
 /* What the payload recorded: which fields, which column it came from and went
    to. The log said that something happened and never what. */
 .activity-detail {

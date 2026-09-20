@@ -56,12 +56,15 @@ final class ActivityDetail
         return match ((string) $item['event_type']) {
             'ticket.created', 'project.created' => self::quoted($payload['title'] ?? $payload['name'] ?? null),
             'ticket.updated'                    => self::fields($payload),
-            'ticket.moved'                      => self::move($payload),
-            'timer.recorded'                    => self::minutes($payload['minutes'] ?? null),
-            'attachment.added'                  => self::quoted($payload['name'] ?? null),
-            'project.member_changed'            => self::text($payload['role'] ?? null),
-            'board.structure_changed'           => self::text($payload['kind'] ?? null),
-            default                             => '',
+            // Which switches, never what they were set to: settings hold the
+            // passwords and keys a log must not become a second copy of.
+            'settings.changed'        => self::settings($payload),
+            'ticket.moved'            => self::move($payload),
+            'timer.recorded'          => self::minutes($payload['minutes'] ?? null),
+            'attachment.added'        => self::quoted($payload['name'] ?? null),
+            'project.member_changed'  => self::text($payload['role'] ?? null),
+            'board.structure_changed' => self::text($payload['kind'] ?? null),
+            default                   => '',
         };
     }
 
@@ -79,6 +82,20 @@ final class ActivityDetail
         }
 
         return implode(', ', array_unique($names));
+    }
+
+    /** @param array<string,mixed> $payload */
+    private static function settings(array $payload): string
+    {
+        $touched = [
+            ...array_map(self::text(...), (array) ($payload['keys'] ?? [])),
+            ...array_map(
+                static fn(mixed $key): string => self::text($key) . ' ' . t('zurückgesetzt'),
+                (array) ($payload['reset'] ?? []),
+            ),
+        ];
+
+        return implode(', ', array_filter($touched));
     }
 
     /** @param array<string,mixed> $payload */

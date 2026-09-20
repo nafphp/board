@@ -23,15 +23,29 @@ use function Naf\View\s;
 
 $actor = (int) (auth()->user()?->getIdentifier() ?? 0);
 
-if ($actor === 0 || !rbac()->allows($actor, Installation::MANAGE_SETTINGS)) {
+if ($actor === 0) {
     return;
 }
 ?>
-<a
-    class="side-link <?= route()->active(['installation.settings']) ?>"
-    href="<?= s(route('installation.settings')) ?>"
-    title="<?= s(t('Einstellungen der Installation')) ?>"
->
-    <span class="nav-icon"><?= Icon::mark('settings', 'lg') ?></span>
-    <span class="link-label"><?= s(t('Einstellungen')) ?></span>
-</a>
+<?php if (rbac()->allows($actor, Installation::MANAGE_SETTINGS)): ?>
+    <a
+        class="side-link <?= route()->active(['installation.settings']) ?>"
+        href="<?= s(route('installation.settings')) ?>"
+        title="<?= s(t('Einstellungen der Installation')) ?>"
+    >
+        <span class="nav-icon"><?= Icon::mark('settings', 'lg') ?></span>
+        <span class="link-label"><?= s(t('Einstellungen')) ?></span>
+    </a>
+<?php endif ?>
+<?php /* Its own right, so its own condition: reading what happened here is not
+         the same as being allowed to change it. */ ?>
+<?php if (rbac()->allows($actor, Installation::VIEW_AUDIT)): ?>
+    <a
+        class="side-link <?= route()->active(['audit']) ?>"
+        href="<?= s(route('audit')) ?>"
+        title="<?= s(t('Protokoll dieser Installation')) ?>"
+    >
+        <span class="nav-icon"><?= Icon::mark('history', 'lg') ?></span>
+        <span class="link-label"><?= s(t('Protokoll')) ?></span>
+    </a>
+<?php endif ?>

@@ -20,6 +20,29 @@ final class Format
     }
 
     /**
+     * The same moment, split into the day it belongs to and the time of day.
+     *
+     * A log reads as days: one heading, then the times under it. Splitting here
+     * rather than in the template keeps the timezone in one place -- a log whose
+     * headings and rows disagree about which day it is would be worse than one
+     * without headings.
+     *
+     * @return array{day: string, date: string, time: string}
+     */
+    public static function moment(string $value, array $preferences): array
+    {
+        $local = (new DateTimeImmutable($value, new DateTimeZone('UTC')))
+            ->setTimezone(new DateTimeZone($preferences['timezone']));
+        $english = $preferences['locale'] === 'en';
+
+        return [
+            'day'  => $local->format('Y-m-d'),
+            'date' => $local->format($english ? 'D, j M Y' : 'D, j.n.Y'),
+            'time' => $local->format('H:i'),
+        ];
+    }
+
+    /**
      * How a ticket is named everywhere: in the interface and in its address.
      */
     public static function ticket(string $key, int|string $number): string
