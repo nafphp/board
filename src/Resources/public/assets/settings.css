@@ -171,6 +171,15 @@
 .settings-detail.is-moving .settings-detail-heading {
   opacity: 0;
 }
+/*
+ * The scrollbar belongs to the body, so while the shell is travelling it rides
+ * along with it -- a bar sliding in from the corner, which is the one part of
+ * the movement the eye follows instead of the dialog. Clipped until it lands;
+ * the scroll position is untouched, so nothing jumps when it comes back.
+ */
+.settings-detail.is-moving .settings-detail-body {
+  overflow: hidden;
+}
 .settings-detail fieldset {
   border: 0;
   padding: 0;
@@ -191,32 +200,22 @@
   gap: 12px;
   margin-bottom: 28px;
 }
-.role-defaults details,
-.role-editor {
+.role-defaults details {
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 16px 20px;
 }
-.role-defaults summary,
-.role-editor summary {
-  cursor: var(--cursor-pointer, pointer);
-  font-size: 14px;
+/* The cards keep their grid; their heads read like every other row. */
+.role-defaults .settings-row-head {
+  padding: 0;
 }
-.role-defaults .badge {
-  margin-left: 10px;
-  font-size: 10px;
-  color: var(--muted);
+.role-defaults .settings-row-head:hover {
+  background: none;
 }
 .role-defaults p,
 .role-defaults li {
   font-size: 12px;
   line-height: 1.8;
-}
-.role-editor {
-  margin-bottom: 15px;
-}
-.role-editor form {
-  margin-top: 20px;
 }
 .permission-grid {
   display: grid;
@@ -273,4 +272,233 @@
   .settings-tile:hover {
     transform: none;
   }
+}
+
+/* Board structure: one row per entry, and opening a row is the edit. */
+.settings-row-empty {
+  margin: 0 0 6px;
+  padding: 18px 2px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.settings-row {
+  border-bottom: 1px solid var(--line);
+}
+/* The row that adds one closes the list, so it carries no divider. */
+.settings-rows > .settings-row:last-child {
+  border-bottom: 0;
+}
+.settings-row-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 4px;
+  cursor: pointer;
+  border-radius: 10px;
+  list-style: none;
+  transition: background 0.15s;
+}
+.settings-row-head::-webkit-details-marker {
+  display: none;
+}
+.settings-row-head:hover {
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+.structure-swatch {
+  width: 6px;
+  height: 26px;
+  border-radius: 3px;
+  /* Fallback so a row without a usable colour still shows a bar rather than a gap. */
+  background: var(--swatch, var(--line));
+  flex-shrink: 0;
+}
+.settings-row-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  flex-shrink: 0;
+}
+.settings-row-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+.settings-row.is-add .settings-row-title {
+  color: var(--accent);
+}
+.settings-row-marks {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.settings-row-mark {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.settings-row-mark.is-closing {
+  border-color: transparent;
+  color: #10b981;
+  background: #10b98118;
+}
+.structure-order {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.structure-nudge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.structure-nudge:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--text);
+}
+.structure-nudge:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.settings-row-caret {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.settings-row-body {
+  padding: 4px 4px 22px;
+}
+/* The label carries its own bottom margin, so the grid only spaces columns. */
+.settings-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0 20px;
+  align-items: start;
+}
+
+/* A field is a <label> wherever the control can be labelled, and a named group
+   where it cannot -- a colour picker, whose swatches are buttons. Both lay out
+   the same, so a card does not read differently for the sake of its controls. */
+.field {
+  display: block;
+  margin: 0 0 16px;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 550;
+}
+.field-label {
+  display: block;
+}
+.field-hint,
+label > small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.field-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  margin-top: 7px;
+}
+.field-pick {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: var(--swatch);
+  cursor: pointer;
+  transition:
+    transform 0.14s,
+    box-shadow 0.14s;
+}
+.field-pick:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+.field-pick[aria-pressed='true'] {
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px var(--swatch);
+}
+.field-pick:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+/* Two classes deep on purpose: app.css gives every colour input the width of a
+   field, and here it is one more swatch in the row. */
+.field-palette .field-custom {
+  width: 22px;
+  min-width: 0;
+  height: 22px;
+  padding: 2px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+/* One row of buttons, wherever a settings form ends. Replaces the hand-placed
+   margins that used to sit in three templates. */
+/* A second block inside one card: a rule instead of the <hr /> two templates
+   used to draw by hand. */
+.settings-section {
+  margin-top: 30px;
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
+}
+.settings-section h3 {
+  margin: 0 0 14px;
+  font-size: 14px;
+}
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 18px 0 0;
+}
+.settings-actions [role='status'] {
+  color: var(--muted);
+  font-size: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .field-pick,
+  .structure-nudge,
+  .settings-row-head {
+    transition: none;
+  }
+}
+
+/* The role editor naf/rbac ships, in this application's colours. Its own
+   defaults are neutral so that this is the whole of the mapping. */
+.rbac-roles,
+.rbac-grants {
+  --rbac-line: var(--line);
+  --rbac-muted: var(--muted);
+  --rbac-accent: var(--accent);
+  --rbac-danger: var(--danger, #e05260);
+  --rbac-surface: var(--input);
+  --rbac-radius: 10px;
 }

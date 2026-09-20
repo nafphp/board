@@ -2,8 +2,8 @@
 
 use Naf\Board\Support\ActivityLabel;
 use Naf\Board\Support\Format;
-use Naf\Board\Support\Icon;
 
+use function Naf\Board\partial;
 use function Naf\Board\slot;
 use function Naf\Board\template;
 use function Naf\I18n\t;
@@ -13,19 +13,19 @@ use function Naf\View\s;
 $this->setLayout(template('layout'));
 $this->block('content');
 ?>
-<section class="page-heading">
-    <div>
-        <span class="eyebrow"><?= s(t('PROJEKTVERLAUF')) ?></span>
-        <h1><?= s(t('Aktivität')) ?></h1>
-        <p>
-            <?= count($activity) >= 100
-                ? s(t('Die letzten 100 Einträge'))
-                : s(Format::count(count($activity), 'Eintrag', 'Einträge')) ?>
-        </p>
-    </div>
-    <?= slot('activity.actions', $uiContext) ?>
-    <a class="button subtle" href="<?= s(route('board', ['project' => $project['id']])) ?>"><?= Icon::mark('arrow_back', 'sm') ?> Zum Board</a>
-</section>
+<?= partial('project/header', [
+    'project' => $project,
+    'scope'   => $scope,
+    'members' => $members,
+    'total'   => $total,
+    'view'    => 'activity',
+    'actions' => slot('activity.actions', $uiContext),
+]) ?>
+<p class="muted small">
+    <?= count($activity) >= 100
+        ? s(t('Die letzten 100 Einträge'))
+        : s(Format::count(count($activity), 'Eintrag', 'Einträge')) ?>
+</p>
 <section class="settings-card preferences-card">
     <ol class="activity-list">
         <?php foreach ($activity as $item): ?>

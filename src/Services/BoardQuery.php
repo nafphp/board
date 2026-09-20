@@ -9,10 +9,12 @@ use Naf\Board\Contracts\BoardQueryInterface;
 use Naf\Board\Contracts\TicketServiceInterface;
 use Naf\Board\Contracts\TimerServiceInterface;
 use Naf\Board\Domain\Failure;
+use Naf\Board\Rbac\Installation;
 use Naf\Board\Support\BoardFilterContext;
 use PDO;
 
 use function Naf\Board\extensions;
+use function Naf\Rbac\rbac;
 
 /** @internal */
 final class BoardQuery implements BoardQueryInterface
@@ -28,10 +30,28 @@ final class BoardQuery implements BoardQueryInterface
 
     public function projects(): array
     {
+        $actor = $this->access->actor();
+
+        /*
+         * Somebody who administers every board sees every board. Reaching one by
+         * its address and having it listed are the same right: a list that hides
+         * what the next click opens is not a smaller permission, only a worse
+         * way to use it.
+         *
+         * The membership join becomes a LEFT JOIN for them, so a board they are
+         * actually in still shows the role they hold there rather than the one
+         * they fall back to. `is_member` says which of the two a row is, because
+         * "may open it" and "holds a role in it" are different questions and the
+         * surfaces that ask them are different too.
+         */
+        $administers = rbac()->allows($actor, Installation::ADMIN_PROJECTS);
+        $join        = $administers ? 'LEFT JOIN' : 'JOIN';
+
         $statement = $this->pdo->prepare(
-            <<<'SQL'
+            <<<SQL
             SELECT p.*,
-                   COALESCE(r.name, m.role) AS role,
+                   COALESCE(r.name, m.role, ?) AS role,
+                   CASE WHEN m.user_id IS NULL THEN 0 ELSE 1 END AS is_member,
 
                 (SELECT COUNT(*)
                  FROM tickets t
@@ -39,10 +59,8 @@ final class BoardQuery implements BoardQueryInterface
                      AND t.archived_at IS NULL
                      AND t.status = 'open') AS open_count
             FROM projects p
-            JOIN project_members m ON m.project_id = p.id
+            $join project_members m ON m.project_id = p.id AND m.user_id = ? AND m.active = 1
             LEFT JOIN project_roles r ON r.project_id=m.project_id AND r.id=m.custom_role_id
-            WHERE m.user_id = ?
-                AND m.active = 1
             ORDER BY CASE
                          WHEN p.archived_at IS NULL THEN 0
                          ELSE 1
@@ -50,7 +68,7 @@ final class BoardQuery implements BoardQueryInterface
                      p.id
             SQL,
         );
-        $statement->execute([$this->access->actor()]);
+        $statement->execute([Installation::ADMIN_ROLE_NAME, $actor]);
 
         return $statement->fetchAll();
     }

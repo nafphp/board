@@ -15,6 +15,7 @@ use Naf\Board\Modules\Providers\PersonalSectionProvider;
 use Naf\Board\Modules\Providers\ProjectSectionProvider;
 use Naf\Board\Modules\Providers\RolesSectionProvider;
 use Naf\Board\Modules\Providers\StructureSectionProvider;
+use Naf\Board\Modules\Providers\UsersSectionProvider;
 use Naf\Board\Support\Locales;
 
 /**
@@ -259,10 +260,37 @@ final class CoreSettings implements ExtensionProviderInterface
         $context->settingSections()->add(new SettingSection(
             'application',
             'application',
-            'Installation',
+            'Allgemein',
             null,
             null,
             100,
+        ));
+
+        /*
+         * The role editor the rbac package ships, as a card like any other.
+         * Its id is not "roles" because the project card already has that one
+         * and sections are keyed by id -- the second would replace the first.
+         */
+        $context->settingSections()->add(new SettingSection(
+            'installation_users',
+            'application',
+            'Nutzer',
+            'settings/users',
+            UsersSectionProvider::class,
+            150,
+            null,
+            'group',
+        ));
+
+        $context->settingSections()->add(new SettingSection(
+            'installation_roles',
+            'application',
+            'Rollen & Rechte',
+            'rbac/roles',
+            null,
+            200,
+            null,
+            'shield',
         ));
 
         $settings->add(new SettingDefinition(

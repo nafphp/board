@@ -20,6 +20,7 @@ use Naf\ORM\Core\EntityManager;
 use PDO;
 use Throwable;
 
+use function Naf\Board\extensions;
 use function Naf\event;
 
 /** @internal */
@@ -449,16 +450,29 @@ final class TicketService implements TicketServiceInterface
 
     private function fields(array $data): array
     {
-        $validated = Input::validate($data, [
-            'title'       => 'required|string|max:200',
-            'description' => 'string|max:50000',
-            'priority'    => 'required|string',
-        ]);
+        $rules = [
+            'title'    => 'required|string|max:200',
+            'priority' => 'required|string',
+        ];
+        /*
+         * A plain description only arrives from a form that ran without
+         * JavaScript: the rich-text editor renames that field to
+         * description_html, and the plain text is derived from it further down.
+         *
+         * The rule has to be absent rather than optional. A field that was not
+         * sent is validated as null, and every rule still runs on it -- so
+         * `string` on a missing description fails with "Must be text", which is
+         * exactly what it did.
+         */
+        if (array_key_exists('description', $data)) {
+            $rules['description'] = 'string|max:50000';
+        }
+        $validated          = Input::validate($data, $rules);
         $validated['title'] = trim($validated['title']);
         if ($validated['title'] === '') {
             throw new Failure('Ein Titel wird benötigt.');
         }
-        if (!in_array($validated['priority'], ['low', 'normal', 'high', 'urgent'], true)) {
+        if (!in_array($validated['priority'], extensions()->priorities()->keys(), true)) {
             throw new Failure('Ungültige Priorität.');
         }
         $validated['color'] = $this->projects->color($data['color'] ?? '#6366f1');

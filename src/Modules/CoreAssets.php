@@ -8,6 +8,8 @@ use Naf\Board\Contracts\ExtensionProviderInterface;
 use Naf\Board\Definition\AssetDefinition;
 use Naf\Board\Definition\AssetPackage;
 use Naf\Board\ExtensionContext;
+use Naf\Rbac\Rbac;
+use ReflectionClass;
 
 /**
  * The assets Nafinity contributes through the registry.
@@ -36,6 +38,28 @@ final class CoreAssets implements ExtensionProviderInterface
             0,
             true,
         ));
+
+        /*
+         * The role editor naf/rbac ships. The package has no document root of
+         * its own and no business knowing this one has an assets/ directory, so
+         * the host that embeds its screens is the one that serves its file --
+         * under plugins/, where a package's files belong.
+         */
+        // Asked of the class rather than guessed from here: the package sits in
+        // vendor/ in an installation and beside the others in development, and
+        // only its own file knows which.
+        $rbac = dirname((new ReflectionClass(Rbac::class))->getFileName(), 2)
+            . '/src/Resources/public';
+        if (is_dir($rbac)) {
+            $context->assetPackages()->add(new AssetPackage('naf/rbac', $rbac, 10));
+            $context->assets()->add(new AssetDefinition(
+                'core.rbac',
+                '/plugins/naf/rbac/assets/rbac.css',
+                'css',
+                110,
+                true,
+            ));
+        }
 
         $context->assets()->add(new AssetDefinition(
             'core.extensions',

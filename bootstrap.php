@@ -7,7 +7,10 @@ use Naf\Auth\Ldap\LdapProvider;
 use Naf\Auth\Ldap\NativeDirectory;
 use Naf\Auth\Provider\OrmProvider;
 use Naf\Auth\Session\StateStoreInterface;
+use Naf\Board\Commands\AdminCommand;
 use Naf\Board\Commands\CheckAssetsCommand;
+use Naf\Board\Commands\CreateUserCommand;
+use Naf\Board\Commands\GrantDefaultCommand;
 use Naf\Board\Commands\PublishAssetsCommand;
 use Naf\Board\Commands\RemoveAssetsCommand;
 use Naf\Board\Commands\RenameMigrationNamespaceCommand;
@@ -20,6 +23,9 @@ use Naf\Board\Jobs\MaintenanceJob;
 use Naf\Board\Modules\CoreTicket;
 use Naf\Board\Modules\NafinityDefaults;
 use Naf\Board\Policies\ProjectPolicy;
+use Naf\Board\Rbac\Boards;
+use Naf\Board\Rbac\Installation;
+use Naf\Board\Rbac\Project;
 use Naf\Board\Support\AccountStateStore;
 use Naf\Board\Support\AttachmentStorage;
 use Naf\Board\Support\ContainerLogger;
@@ -39,6 +45,8 @@ use function Naf\Board\extensions;
 use function Naf\config;
 use function Naf\event;
 use function Naf\I18n\translation_paths;
+use function Naf\Rbac\permissions;
+use function Naf\Rbac\roles;
 
 // Installed in a host, this file is the board's plugin bootstrap: NAF loads it
 // through CoreFileLoader::BOOTSTRAP_FILES once the host has defined BASE_PATH
@@ -88,6 +96,9 @@ event()->listen(
         ->record($change),
 );
 $commands = $container->get(CommandRegistry::class);
+$commands->add(AdminCommand::class);
+$commands->add(CreateUserCommand::class);
+$commands->add(GrantDefaultCommand::class);
 $commands->add(SeedCommand::class);
 $commands->add(RenameMigrationNamespaceCommand::class);
 $commands->add(PublishAssetsCommand::class);
@@ -152,6 +163,17 @@ $extensions->initialize($container);
 // The provider pass is over, so every group a ticket field points at must now
 // have a panel. Saying which field and which group beats a later missing panel.
 $extensions->ticketFields()->assertGroups(CoreTicket::groups($context));
+
+/*
+ * What this installation can grant, and the one role that can grant it.
+ *
+ * Declared during plugin boot, which is when the registry is still being
+ * filled. Nothing is written to the database here -- "naf rbac:sync" does
+ * that, so installing a package never quietly widens anybody's access.
+ */
+Installation::declare(permissions(), roles());
+Project::declare(permissions(), roles());
+roles()->scope(new Boards(static fn(): PDO => $container->get(PDO::class)));
 
 // The host has the last word: an optional file that may replace or remove any
 // definition, including one an extension just registered.

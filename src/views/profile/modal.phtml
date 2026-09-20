@@ -1,6 +1,7 @@
 <?php
 use Naf\Board\Support\Icon;
 
+use function Naf\Board\partial;
 use function Naf\Board\slot;
 use function Naf\I18n\t;
 use function Naf\route;
@@ -27,15 +28,40 @@ use function Naf\View\s;
             <div>
                 <h2 id="profile-title"><?= s($profile->name) ?></h2>
                 <p data-profile-email><?= s($profile->email) ?></p>
+                <?php
+                /*
+                 * What kind of account this is belongs to the identity, not to
+                 * the list of things you can change -- between two cards it read
+                 * as a setting somebody could act on, and it is not one.
+                 *
+                 * Empty and hidden until the fetch answers: the header renders
+                 * at once, and naming a kind before we know it would be a guess
+                 * that is right most of the time.
+                 */
+?>
+                <span class="profile-account-kind" data-profile-account-kind hidden></span>
             </div>
         </div>
     </header>
     <div class="profile-body">
-        <?php if ($projects): ?>
+        <?php
+        /*
+         * Only boards this person actually holds a role in. Somebody who
+         * administers every board sees all of them in the sidebar, which answers
+         * "what may I open" -- this list answers "what am I here", and on a board
+         * they were never added to the answer is nothing. Putting the two in one
+         * column made an installation-wide role look like a project one.
+         */
+        $memberships = array_values(array_filter(
+            $projects,
+            static fn(array $project) => (int) ($project['is_member'] ?? 1) === 1,
+        ));
+?>
+        <?php if ($memberships): ?>
             <section class="profile-memberships" aria-labelledby="profile-projects-title">
                 <h3 id="profile-projects-title"><?= s(t('Deine Projektrollen')) ?></h3>
                 <ul>
-                    <?php foreach ($projects as $membership): ?>
+                    <?php foreach ($memberships as $membership): ?>
                         <li>
                             <a
                                 href="<?= s(route('board', ['project' => $membership['id']])) ?>"
@@ -49,15 +75,52 @@ use function Naf\View\s;
                 </ul>
             </section>
         <?php endif ?>
+
+        <?php
+/*
+ * A person's own settings, where the rest of their account already is.
+ * They used to be a page of their own reached from the sidebar, beside a
+ * gear that meant something different depending on where you stood --
+ * one word, two meanings.
+ *
+ * Rendered here rather than behind the fetch below: they need no account
+ * details and should be there the moment the modal opens. Outside the
+ * condition above, because how you want the interface to look has
+ * nothing to do with whether anybody has put you on a board.
+ */
+?>
+            <details class="profile-section" name="profile-section">
+                <summary>
+                    <span class="profile-section-icon" aria-hidden="true"><?= Icon::mark('tune', 'sm') ?></span>
+                    <span>
+                        <strong><?= s(t('Darstellung & Sprache')) ?></strong>
+                        <small><?= s(t('Gelten für dich, in jedem Projekt')) ?></small>
+                    </span>
+                    <span class="profile-chevron" aria-hidden="true"><?= Icon::mark('expand_more', 'sm') ?></span>
+                </summary>
+                <div class="profile-settings">
+                    <?= partial('settings/personal', ['preferences' => $preferences, 'user' => $user]) ?>
+                </div>
+            </details>
+
+            <details class="profile-section" name="profile-section">
+                <summary>
+                    <span class="profile-section-icon" aria-hidden="true"><?= Icon::mark('auto_awesome', 'sm') ?></span>
+                    <span>
+                        <strong><?= s(t('Lokale AI')) ?></strong>
+                        <small data-settings-summary="ai"><?= s(t('Läuft auf deinem Gerät')) ?></small>
+                    </span>
+                    <span class="profile-chevron" aria-hidden="true"><?= Icon::mark('expand_more', 'sm') ?></span>
+                </summary>
+                <div class="profile-settings">
+                    <?= partial('settings/ai', ['user' => $user, 'projectId' => $currentProject]) ?>
+                </div>
+            </details>
         <p class="profile-notice" data-profile-status role="status" aria-live="polite">
             Kontoeinstellungen werden geladen …
         </p>
         <button type="button" class="button subtle" data-profile-retry hidden>Erneut laden</button>
         <div data-profile-content hidden>
-            <div class="profile-account-line">
-                <span>Anmeldung</span>
-                <span data-profile-account-kind>Lokales Konto</span>
-            </div>
             <p class="profile-external" data-profile-external hidden>
                 Deine Zugangsdaten werden extern verwaltet. Bitte ändere sie bei deinem Anmeldeanbieter.
             </p>

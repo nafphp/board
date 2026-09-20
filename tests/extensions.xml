@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    The suite that runs inside a throwaway host, not in the development one, so
+    it has a configuration of its own. bin/check-extensions builds the host,
+    installs the example packages into it and runs one of these suites per phase:
+    the same installation asked a different question each time.
+-->
+<phpunit
+    bootstrap="extensions-bootstrap.php"
+    colors="true"
+    failOnRisky="true"
+    failOnWarning="true"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+    cacheResult="false"
+    failOnDeprecation="true"
+    displayDetailsOnPhpunitDeprecations="true"
+    displayDetailsOnTestsThatTriggerDeprecations="true"
+>
+    <testsuites>
+        <testsuite name="Extensions">
+            <directory>Extensions/Installed</directory>
+        </testsuite>
+        <testsuite name="ExtensionsHttp">
+            <directory>Extensions/Http</directory>
+        </testsuite>
+        <testsuite name="ExtensionsOrder">
+            <directory>Extensions/Order</directory>
+        </testsuite>
+        <testsuite name="ExtensionsAssets">
+            <directory>Extensions/Assets</directory>
+        </testsuite>
+        <testsuite name="ExtensionsWithout">
+            <directory>Extensions/Without</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <ini name="error_reporting" value="-1" />
+        <ini name="display_errors" value="1" />
+        <const name="PHPUNIT_RUNNING" value="true" />
+    </php>
+</phpunit>

@@ -20,6 +20,7 @@ use Naf\Board\Contracts\RoleServiceInterface;
 use Naf\Board\Contracts\TicketServiceInterface;
 use Naf\Board\Contracts\TimerServiceInterface;
 use Naf\Board\Domain\Failure;
+use Naf\Board\Rbac\Installation;
 use Naf\Board\Support\Input;
 use Naf\RateLimit\PdoLimiter;
 use Naf\Session\Core\Session;
@@ -33,6 +34,7 @@ use function Naf\Board\template;
 use function Naf\config;
 use function Naf\Form\csrf;
 use function Naf\json;
+use function Naf\Rbac\rbac;
 use function Naf\redirect;
 use function Naf\request;
 use function Naf\View\render;
@@ -190,6 +192,34 @@ final class AppController
                     static fn($field) => $field->showOnCreate,
                 ),
                 'metaUnknown' => [],
+            ]);
+        });
+    }
+
+    /**
+     * What holds for the whole installation, for whoever may change it.
+     *
+     * Gated here rather than by hiding the cards: a page that refuses is a
+     * page somebody can be sent a link to and understand. The permission is
+     * asked of naf/rbac directly, because the board's own scope object answers
+     * for a project and this page belongs to none.
+     */
+    public function installation(): ResponseInterface
+    {
+        return $this->read(function () {
+            $actor = $this->access->actor();
+
+            if (!rbac()->allows($actor, Installation::MANAGE_SETTINGS)) {
+                throw new Failure('Diese Seite ist Administratoren vorbehalten.', 403);
+            }
+
+            return $this->page('settings', [
+                'title'   => 'Installation',
+                'eyebrow' => 'DIESE INSTALLATION',
+                'heading' => 'Installation',
+                'lede'    => 'Gilt für alle Projekte und alle Mitglieder.',
+                'scopes'  => ['application'],
+                'return'  => '/settings',
             ]);
         });
     }

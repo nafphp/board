@@ -7,6 +7,7 @@ namespace Naf\Board\Modules;
 use Naf\Board\Contracts\ExtensionProviderInterface;
 use Naf\Board\Definition\BoardFilterDefinition;
 use Naf\Board\Domain\Failure;
+use Naf\Board\Domain\Status;
 use Naf\Board\ExtensionContext;
 use Naf\Board\Support\BoardFilterContext;
 use Naf\Board\Support\Input;
@@ -14,6 +15,7 @@ use Naf\Board\Support\SqlCondition;
 use PDO;
 
 use function Naf\app;
+use function Naf\Board\extensions;
 
 /**
  * The board filters Nafinity already had, as definitions.
@@ -26,11 +28,8 @@ use function Naf\app;
  */
 final class CoreBoard implements ExtensionProviderInterface
 {
-    /** Choice filters and the values they accept. */
-    private const array CHOICES = [
-        'status'   => ['open', 'closed'],
-        'priority' => ['low', 'normal', 'high', 'urgent'],
-    ];
+    /** Choice filters whose accepted values are fixed. */
+    private const array CHOICES = ['status' => Status::class];
 
     /** Relation filters and the pivot they look in. */
     private const array RELATIONS = [
@@ -72,12 +71,36 @@ final class CoreBoard implements ExtensionProviderInterface
             $index += 100;
         }
 
-        foreach (self::CHOICES as $id => $allowed) {
+        /*
+         * Priorities are asked for when the filter runs, not when it is
+         * registered. Whoever brings one registers it during boot, and the
+         * order that happens in is not this provider's to know -- capturing the
+         * list here would accept exactly those declared before this line ran.
+         */
+        $filters->add(new BoardFilterDefinition(
+            'priority',
+            'Priorität',
+            static function (mixed $value) {
+                if (!is_string($value) || !in_array($value, extensions()->priorities()->keys(), true)) {
+                    throw new Failure('Ungültiger Filter: priority');
+                }
+
+                return $value;
+            },
+            static fn(mixed $value, BoardFilterContext $filterContext) => new SqlCondition(
+                $filterContext->alias . '.priority=?',
+                [$value],
+            ),
+            $index,
+        ));
+        $index += 100;
+
+        foreach (self::CHOICES as $id => $enum) {
             $filters->add(new BoardFilterDefinition(
                 $id,
                 ucfirst($id),
-                static function (mixed $value) use ($id, $allowed) {
-                    if (!is_string($value) || !in_array($value, $allowed, true)) {
+                static function (mixed $value) use ($id, $enum) {
+                    if (!is_string($value) || !in_array($value, $enum::keys(), true)) {
                         throw new Failure('Ungültiger Filter: ' . $id);
                     }
 

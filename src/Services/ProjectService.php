@@ -11,6 +11,7 @@ use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Estimation;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Domain\ProjectScope;
+use Naf\Board\Rbac\Grants;
 use Naf\Board\Support\Input;
 use Naf\ORM\Core\EntityManager;
 use PDO;
@@ -41,6 +42,7 @@ final class ProjectService implements ProjectServiceInterface
             $this->pdo
                 ->prepare('INSERT INTO project_members(project_id,user_id,role,custom_role_id) VALUES(?,?,?,?)')
                 ->execute([$id, $actor, 'owner', null]);
+            Grants::inProject($actor, $id, 'owner');
             $board = $this->insert('boards', ['project_id' => $id, 'name' => 'Projektboard']);
             foreach (
                 [
@@ -233,6 +235,15 @@ final class ProjectService implements ProjectServiceInterface
                     ->prepare('INSERT INTO project_members(project_id,user_id,role,custom_role_id) VALUES(?,?,?,?)')
                     ->execute([$project, $user, $storedRole, $customRoleId]);
             }
+            // The membership row above says whether they are in the project; this
+            // says what that means. A project's own role writes none: it still
+            // answers the old way until that half moves.
+            Grants::inProject(
+                $user,
+                $project,
+                $role === 'remove' || $customRoleId !== null ? null : $storedRole,
+            );
+
             if ($role === 'remove') {
                 $this->pdo
                     ->prepare('DELETE FROM ticket_assignees WHERE project_id=? AND user_id=?')

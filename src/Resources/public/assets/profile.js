@@ -72,9 +72,9 @@ if (dialog) {
       dialog.querySelector('[data-profile-email]').textContent = profile.email;
       dialog.querySelector('[data-profile-local]').hidden = !profile.local_password;
       dialog.querySelector('[data-profile-external]').hidden = profile.local_password;
-      dialog.querySelector('[data-profile-account-kind]').textContent = profile.local_password
-        ? 'Lokales Konto'
-        : 'Extern verwaltetes Konto';
+      const kind = dialog.querySelector('[data-profile-account-kind]');
+      kind.textContent = profile.local_password ? 'Lokales Konto' : 'Extern verwaltetes Konto';
+      kind.hidden = false;
       setPending(profile.pending);
       setEmailState(profile);
       if (profile.pending) dialog.querySelector('[data-profile-email-section]').open = true;

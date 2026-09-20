@@ -1,64 +1,87 @@
 <?php
-use function Naf\Board\choice;
+
+/**
+ * What one person chooses for themselves, in every project.
+ *
+ * @var array  $preferences
+ * @var object $user
+ */
+
+use Naf\Board\Support\Locales;
+
+use function Naf\Board\field;
+use function Naf\config;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
 
 $zones = ['Europe/Berlin', 'Europe/London', 'America/New_York', 'UTC'];
+// The same list the top bar offers, so a package that brings a language makes it
+// selectable in both places at once.
+$languages = Locales::available();
+$flags     = [];
+foreach ($languages as $code => $name) {
+    $flags[$code] = ['mark' => Locales::flag($code)];
+}
+$logins = (array) config('auth:logins', []);
 ?>
 <form method="post" data-enhanced action="<?= s(route('preferences.save')) ?>">
     <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
-    <label>
-        <?= s(t('Darstellung')) ?>
-        <?= choice([
-            'name'    => 'theme',
-            'label'   => 'Darstellung',
-            'value'   => $preferences['theme'],
-            'options' => ['system' => t('Wie mein Gerät'), 'light' => t('Hell'), 'dark' => t('Dunkel')],
-        ]) ?>
-    </label>
-    <label>
-        <?= s(t('Sprache')) ?>
-        <?= choice([
-            'name'    => 'locale',
-            'label'   => 'Sprache',
-            'value'   => $preferences['locale'],
-            'options' => ['de' => 'Deutsch', 'en' => 'English'],
-        ]) ?>
-    </label>
-    <label>
-        <?= s(t('Zeitzone')) ?>
-        <?= choice([
-            'name'        => 'timezone',
-            'label'       => 'Zeitzone',
-            'value'       => $preferences['timezone'],
-            'options'     => array_combine($zones, $zones),
-            'searchLabel' => 'Zeitzonen suchen',
-        ]) ?>
-    </label>
+    <?= field([
+        'label'   => 'Darstellung',
+        'name'    => 'theme',
+        'type'    => 'select',
+        'value'   => $preferences['theme'],
+        'options' => ['system' => t('Wie mein Gerät'), 'light' => t('Hell'), 'dark' => t('Dunkel')],
+    ]) ?>
+    <?= field([
+        'label'   => 'Sprache',
+        'name'    => 'locale',
+        'type'    => 'select',
+        'value'   => $preferences['locale'],
+        'options' => $languages,
+        'choice'  => ['optionData' => $flags, 'searchLabel' => 'Sprachen suchen'],
+    ]) ?>
+    <?= field([
+        'label'   => 'Zeitzone',
+        'name'    => 'timezone',
+        'type'    => 'select',
+        'value'   => $preferences['timezone'],
+        'options' => array_combine($zones, $zones),
+        'choice'  => ['searchLabel' => 'Zeitzonen suchen'],
+    ]) ?>
     <div class="checkbox-list">
-        <label>
-            <input type="checkbox" name="notify_in_app" value="1" <?= (int) $preferences['notify_in_app'] ? 'checked' : '' ?> />
-            <?= s(t('Benachrichtigungen in Nafinity')) ?>
-        </label>
-        <label>
-            <input type="checkbox" name="notify_mail" value="1" <?= (int) $preferences['notify_mail'] ? 'checked' : '' ?> />
-            <?= s(t('Zusätzlich per E-Mail, wenn für den Workspace aktiviert')) ?>
-        </label>
+        <?= field([
+            'label' => 'Benachrichtigungen in Nafinity',
+            'name'  => 'notify_in_app',
+            'type'  => 'checkbox',
+            'value' => (int) $preferences['notify_in_app'],
+        ]) ?>
+        <?= field([
+            'label' => 'Zusätzlich per E-Mail, wenn für den Workspace aktiviert',
+            'name'  => 'notify_mail',
+            'type'  => 'checkbox',
+            'value' => (int) $preferences['notify_mail'],
+        ]) ?>
     </div>
     <div class="form-errors" role="alert"></div>
-    <button class="button primary" style="margin-top: 20px"><?= s(t('Einstellungen speichern')) ?></button>
+    <div class="settings-actions">
+        <button class="button primary"><?= s(t('Einstellungen speichern')) ?></button>
+    </div>
 </form>
-
-<?php if (\Naf\config('auth:logins', [])): ?>
-    <hr />
-    <h3>Externe Konten</h3>
-    <p>Verknüpfe dein angemeldetes Konto ausdrücklich mit deinem Firmenkonto.</p>
-    <?php foreach ((array) \Naf\config('auth:logins', []) as $key => $login): ?>
-        <a class="button subtle" href="<?= s(route('oauth.connect', ['provider' => $key])) ?>">
-            <?= s($login['label'] ?? $key) ?>
-            verknüpfen
-        </a>
-    <?php endforeach ?>
+<?php if ($logins): ?>
+    <section class="settings-section">
+        <h3><?= s(t('Externe Konten')) ?></h3>
+        <p class="settings-hint">
+            <?= s(t('Verknüpfe dein angemeldetes Konto ausdrücklich mit deinem Firmenkonto.')) ?>
+        </p>
+        <div class="settings-actions">
+            <?php foreach ($logins as $key => $login): ?>
+                <a class="button subtle" href="<?= s(route('oauth.connect', ['provider' => $key])) ?>">
+                    <?= s(t(':provider verknüpfen', ['provider' => $login['label'] ?? $key])) ?>
+                </a>
+            <?php endforeach ?>
+        </div>
+    </section>
 <?php endif ?>

@@ -1,0 +1,9 @@
+{
+  "name": "naf-board",
+  "private": true,
+  "type": "module",
+  "description": "Project-isolated Kanban boards for NAF, with an extension platform.",
+  "scripts": {
+    "test": "node --test tests/js/*.test.js"
+  }
+}

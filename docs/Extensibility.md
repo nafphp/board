@@ -827,7 +827,7 @@ php vendor/bin/naf nafinity:assets:remove  [--package=vendor/name]
 The candidate build publishes registered plugin assets before the image is finished:
 
 ```sh
-python3 bin/build-candidate --source work/extension-host --tag nafinity:candidate-extensions
+node bin/build-candidate --source work/extension-host --tag nafinity:candidate-extensions
 ```
 
 The result contains no source mounts, no symlinks and no Composer; the packages and their
@@ -908,11 +908,11 @@ it is still there.
 
 ## Negative cases
 
-Every extension point has an executed negative test in
-[`tests/extensions.php`](../tests/extensions.php),
-[`extensions_http.php`](../tests/extensions_http.php),
-[`extensions_assets.php`](../tests/extensions_assets.php) and
-[`extensions_without.php`](../tests/extensions_without.php):
+Every extension point has an executed negative test under
+[`tests/Extensions/`](../tests/Extensions), in the phase it belongs to:
+`Installed/` boots the host with both packages, `Http/` asks it over real HTTP,
+`Order/` lists them the other way round, `Assets/` publishes their files and
+`Without/` boots the same installation with the packages gone.
 
 | Point | Negative case |
 |---|---|

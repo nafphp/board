@@ -17,6 +17,7 @@ use Naf\Board\Registry\EstimationScaleRegistry;
 use Naf\Board\Registry\FieldTypeRegistry;
 use Naf\Board\Registry\NavigationRegistry;
 use Naf\Board\Registry\PermissionRegistry;
+use Naf\Board\Registry\PriorityRegistry;
 use Naf\Board\Registry\SettingRegistry;
 use Naf\Board\Registry\SettingSectionRegistry;
 use Naf\Board\Registry\TicketFieldRegistry;
@@ -48,6 +49,7 @@ final class ExtensionRegistry
     private bool $initializing = false;
 
     private ?PermissionRegistry $permissions         = null;
+    private ?PriorityRegistry $priorities            = null;
     private ?UiRegistry $ui                          = null;
     private ?NavigationRegistry $navigation          = null;
     private ?ViewRegistry $views                     = null;
@@ -176,6 +178,11 @@ final class ExtensionRegistry
     public function permissions(): PermissionRegistry
     {
         return $this->permissions ??= new PermissionRegistry();
+    }
+
+    public function priorities(): PriorityRegistry
+    {
+        return $this->priorities ??= new PriorityRegistry();
     }
 
     public function ui(): UiRegistry

@@ -147,6 +147,12 @@ document.addEventListener('click', (event) => {
   else if (dialog.dispatchEvent(new Event('cancel', { cancelable: true }))) dialog.close();
 });
 
+// Not form.action: a form exposes its own controls by name, and a control called
+// "action" -- which is how half these forms say delete or archive -- shadows the
+// property, so reading it hands back a button instead of the URL. The attribute
+// is the URL either way.
+const endpoint = (form) => form.getAttribute('action') || location.pathname;
+
 document.addEventListener('submit', async (event) => {
   const form = event.target;
   if (!form.matches('form[data-enhanced]')) return;
@@ -157,7 +163,7 @@ document.addEventListener('submit', async (event) => {
   if (submitter?.name) data.append(submitter.name, submitter.value);
   if (button) button.disabled = true;
   try {
-    const response = await fetch(form.action, {
+    const response = await fetch(endpoint(form), {
       method: (form.method || 'POST').toUpperCase(),
       body: data,
       headers: { Accept: 'application/json' },
@@ -184,7 +190,7 @@ document.addEventListener('submit', async (event) => {
         sessionStorage.setItem('nafinity.celebrate', form.dataset.ticket);
       }
     }
-    if (form.action.endsWith('/preferences')) {
+    if (endpoint(form).endsWith('/preferences')) {
       localStorage.setItem('nafinity.theme', data.get('theme'));
     }
     if (form.closest('#settings-detail')) {

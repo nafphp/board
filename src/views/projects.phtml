@@ -1,11 +1,14 @@
 <?php
 
+use Naf\Board\Rbac\Installation;
 use Naf\Board\Support\Format;
 use Naf\Board\Support\ProjectSlotContext;
 
+use function Naf\Auth\auth;
 use function Naf\Board\slot;
 use function Naf\Board\template;
 use function Naf\I18n\t;
+use function Naf\Rbac\rbac;
 use function Naf\route;
 use function Naf\View\s;
 
@@ -13,11 +16,28 @@ $this->setLayout(template('layout'));
 $this->block('content');
 $openTickets = array_sum(array_column($projects, 'open_count'));
 $archived    = count(array_filter($projects, static fn($item) => $item['archived_at'] !== null));
+
+/*
+ * Whose projects these are depends on who is looking. Somebody who administers
+ * every board is shown every board, so calling the page "deine" would be a
+ * quiet lie about half the list -- and the one place a person checks whether
+ * they are seeing everything is the heading.
+ *
+ * The list itself is decided in BoardQuery; this only names what it returned.
+ */
+$actor      = (int) (auth()->user()?->getIdentifier() ?? 0);
+$everyBoard = $actor !== 0 && rbac()->allows($actor, Installation::ADMIN_PROJECTS);
+$heading    = $everyBoard ? 'Alle Projekte' : 'Deine Projekte';
+
+// The layout is handed the variables after this file has run, so the tab says
+// the same as the heading rather than the one the controller guessed before it
+// knew who was asking.
+$this->setVariable('title', $heading);
 ?>
 <section class="page-heading">
     <div>
         <span class="eyebrow"><?= s(t('PROJEKTÜBERSICHT')) ?></span>
-        <h1><?= s(t('Deine Projekte')) ?></h1>
+        <h1><?= s(t($heading)) ?></h1>
         <?php if ($projects): ?>
             <p>
                 <?= s(Format::count(count($projects), 'Projekt', 'Projekte')) ?>

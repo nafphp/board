@@ -11,6 +11,7 @@ use Naf\Board\Contracts\ProjectServiceInterface;
 use Naf\Board\Contracts\TicketServiceInterface;
 use Naf\Board\Contracts\TimerServiceInterface;
 use Naf\Board\Models\User;
+use Naf\Board\Rbac\Grants;
 use Naf\CLI\Core\AbstractCommand;
 use Naf\CLI\Core\Input;
 use Naf\CLI\Core\Output;
@@ -64,8 +65,18 @@ final class SeedCommand extends AbstractCommand
                 'created_at'    => gmdate('Y-m-d H:i:s'),
             ]);
             $entityManager->save($user);
+            Grants::ensureDefault((int) $user->getId());
             $users[] = $user;
         }
+        /*
+         * The demo installation gets its administrator, because an installation
+         * without one is one where half of it cannot be reached -- and the seed
+         * is what sets this installation up. It is the same appointment
+         * "nafinity:admin" makes, which is why that command finds the door shut
+         * afterwards.
+         */
+        Grants::makeAdmin((int) $users[0]->getId());
+
         $auth = $c->get(Auth::class);
         $auth->setIdentity($users[0]);
         $projects = $c->get(ProjectServiceInterface::class);

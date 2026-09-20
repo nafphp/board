@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    No result cache: the package is mounted read-only in the container that
+    tests it, which is how a dependency should be served, and a suite this
+    size has little to gain from running last run's failures first.
+-->
+<phpunit
+    bootstrap="tests/bootstrap.php"
+    colors="true"
+    failOnRisky="true"
+    failOnWarning="true"
+    failOnDeprecation="true"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+    displayDetailsOnPhpunitDeprecations="true"
+    cacheResult="false"
+>
+    <testsuites>
+        <!--
+            Unit needs nothing but the classes under test and runs anywhere.
+            Everything below it needs the disposable nafinity_test schema, and
+            Http additionally needs the application served over HTTPS, which is
+            why the Makefile has a target per suite rather than one for all.
+        -->
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Database">
+            <directory>tests/Database</directory>
+        </testsuite>
+        <testsuite name="Worker">
+            <directory>tests/Worker</directory>
+        </testsuite>
+        <testsuite name="Http">
+            <directory>tests/Http</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <ini name="error_reporting" value="-1" />
+        <ini name="display_errors" value="1" />
+        <const name="PHPUNIT_RUNNING" value="true" />
+    </php>
+</phpunit>

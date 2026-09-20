@@ -6,6 +6,8 @@ use Naf\Board\Support\Format;
 use Naf\Board\Support\Icon;
 
 use function Naf\Board\choice;
+use function Naf\Board\extensions;
+use function Naf\Board\partial;
 use function Naf\Board\slot;
 use function Naf\Board\template;
 use function Naf\Form\csrf;
@@ -16,7 +18,6 @@ use function Naf\View\s;
 $this->setLayout(template('layout'));
 $this->block('content');
 $canWrite  = $scope->allows('write');
-$canManage = true;
 $isLimited = $total > 300;
 $canDrag   = $canWrite && !$filters && !$isLimited;
 
@@ -51,19 +52,21 @@ foreach ($cards as $card) {
         + (int) $card['estimate_points'];
 }
 
-$priorityLabels = [
-    'urgent' => t('Dringend'),
-    'high'   => t('Hoch'),
-    'normal' => t('Normal'),
-    'low'    => t('Niedrig'),
-];
-$prioritySymbols = [
-    'urgent' => Icon::mark('keyboard_double_arrow_up', 'sm'),
-    'high'   => Icon::mark('arrow_upward', 'sm'),
-    'normal' => Icon::mark('remove', 'sm'),
-    'low'    => Icon::mark('arrow_downward', 'sm'),
-];
-$boardHint = match (true) {
+$priorityLabels  = extensions()->priorities()->options();
+$prioritySymbols = array_map(
+    static fn($priority) => Icon::mark($priority->icon, 'sm'),
+    extensions()->priorities()->all(),
+);
+/*
+ * The same for a card: drawing an undeclared priority as one of the known
+ * symbols would be a guess, and failing the whole board over a single card would
+ * be worse than admitting that one value is not understood. The wrapper's title
+ * already carries the stored id, so the mark only has to be neutral -- `info`
+ * rather than a question mark because the icon font is subset to what the
+ * interface uses, and a glyph that is not in it renders as its own name.
+ */
+$unknownPriority = Icon::mark('info', 'sm');
+$boardHint       = match (true) {
     $project['archived_at'] !== null => t('Archiviertes Projekt · Tickets können gelesen, aber nicht geändert werden'),
     !$canWrite                       => t('Du hast Lesezugriff auf dieses Board'),
     (bool) $filters                  => t('Gefilterte Ansicht · Verschieben über das Kartenmenü'),
@@ -74,44 +77,14 @@ $emptyCellHint = $filters
     ? t('Keine Treffer mit diesen Filtern')
     : t('Keine Tickets in diesem Bereich');
 ?>
-<section class="page-heading">
-    <div>
-        <div class="heading-kicker">
-            <span class="project-symbol large" style="--project-color: <?= s($project['color']) ?>">
-                <?= s($project['icon']) ?>
-            </span>
-            <span><?= s(t('PROJEKTWORKSPACE')) ?></span>
-            <?php if ($project['archived_at']): ?>
-                <span class="pill">Archiviert</span>
-            <?php endif ?>
-        </div>
-        <h1><?= s($project['name']) ?></h1>
-        <p><?= s($project['description']) ?></p>
-    </div>
-    <div class="heading-actions">
-        <?= slot('board.actions', $boardSlot) ?>
-        <div class="avatar-stack">
-            <?php foreach (array_slice($members, 0, 4) as $member): ?>
-                <span class="avatar avatar-small" title="<?= s($member['name']) ?>"><?= s(mb_substr($member['name'], 0, 1)) ?></span>
-            <?php endforeach ?>
-        </div>
-        <?php if ($canWrite): ?>
-            <a class="button primary" data-ticket-link data-ticket-create-link href="<?= s(route('ticket.new', ['project' => $projectId])) ?>"><?= s(t('+ Neues Ticket')) ?></a>
-        <?php endif ?>
-    </div>
-</section>
-<nav class="tabs" aria-label="Projektansichten">
-    <a class="active" href="<?= s(route('board', ['project' => $projectId])) ?>">
-        <?= Icon::mark('view_kanban') ?> Board
-        <span><?= $total ?></span>
-    </a>
-    <a href="<?= s(route('project.activity', ['project' => $projectId])) ?>"><?= Icon::mark('history') ?> Aktivität</a>
-    <?php if ($canManage): ?>
-        <a href="<?= s(route('project.settings', ['project' => $projectId])) ?>"><?= Icon::mark('settings') ?> Einstellungen</a>
-    <?php endif ?>
-    <div class="tabs-spacer"></div>
-    <span class="role-badge" title="<?= s($scope->roleName ?? ucfirst($scope->role)) ?>"><?= s($scope->roleName ?? ucfirst($scope->role)) ?></span>
-</nav>
+<?= partial('project/header', [
+    'project' => $project,
+    'scope'   => $scope,
+    'members' => $members,
+    'total'   => $total,
+    'view'    => 'board',
+    'actions' => slot('board.actions', $boardSlot),
+]) ?>
 <form method="get" class="filterbar" action="<?= s(route('board', ['project' => $projectId])) ?>">
     <label class="search-field">
         <?= Icon::mark('search') ?>
@@ -122,11 +95,31 @@ $emptyCellHint = $filters
             value="<?= s($filters['q'] ?? '') ?>"
         />
     </label>
+    <?php
+    /*
+     * Your own name first and marked as yours. "Was liegt bei mir?" is the
+     * question this filter gets asked most, and hunting for your own name in an
+     * alphabetical list of colleagues is a poor way to answer it.
+     *
+     * The value stays the plain user id, so the filter, the query and a shared
+     * link are unchanged -- only what the entry is called and where it sits.
+     */
+    $people = array_column($members, 'name', 'id');
+$me         = (int) $scope->userId;
+$mine       = [];
+
+// Somebody who administers a board without being a member of it is not in
+// this list, and then there is no "me" entry to show.
+if (isset($people[$me])) {
+    $mine = [$me => t('Ich (:name)', ['name' => $people[$me]])];
+    unset($people[$me]);
+}
+?>
     <?= choice([
         'name'        => 'assignee',
         'label'       => 'Verantwortliche',
         'value'       => $filters['assignee'] ?? '',
-        'options'     => ['' => t('Alle Verantwortlichen')] + array_column($members, 'name', 'id'),
+        'options'     => ['' => t('Alle Verantwortlichen')] + $mine + $people,
         'id'          => 'filter-assignee',
         'searchLabel' => 'Personen suchen',
     ]) ?>
@@ -145,7 +138,11 @@ $emptyCellHint = $filters
         'options' => ['' => t('Priorität')] + $priorityLabels,
         'id'      => 'filter-priority',
     ]) ?>
-    <details class="extra-filters">
+    <?php /* A menu, not a section: its panel lies over the board rather than
+             growing inside the bar. Without this the sweep in disclosure.js
+             animates the element's own height, which pushes the board down for
+             the length of the animation and snaps it back at the end. */ ?>
+    <details class="extra-filters" data-menu>
         <summary><?= s(t('Weitere Filter')) ?></summary>
         <div>
             <label>
@@ -255,11 +252,11 @@ $emptyCellHint = $filters
                         aria-label="<?= s($lane['name'] . ' · ' . $column['name']) ?>"
                     >
                         <?php
-                        $cell = array_filter(
-                            $cards,
-                            static fn($ticket) => (int) $ticket['column_id'] === (int) $column['id']
-                                && (int) $ticket['swimlane_id'] === (int) $lane['id'],
-                        );
+                    $cell = array_filter(
+                        $cards,
+                        static fn($ticket) => (int) $ticket['column_id'] === (int) $column['id']
+                            && (int) $ticket['swimlane_id'] === (int) $lane['id'],
+                    );
                     ?>
                         <?php foreach ($cell as $card): ?>
                             <article
@@ -282,7 +279,7 @@ $emptyCellHint = $filters
                                             class="priority priority-<?= s($card['priority']) ?>"
                                             title="<?= s($card['priority']) ?>"
                                         >
-                                            <?= $prioritySymbols[$card['priority']] ?>
+                                            <?= $prioritySymbols[$card['priority']] ?? $unknownPriority ?>
                                         </span>
                                         <?php if ($canWrite && !$card['archived_at']): ?>
                                             <button

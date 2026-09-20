@@ -1,23 +1,30 @@
 <?php
 use Naf\Board\Domain\ProjectPermissions;
 use Naf\Board\Support\Format;
+use Naf\Board\Support\Icon;
 
 use function Naf\Board\extensions;
+use function Naf\Board\field;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
 
 ?>
-<div class="settings-note">
-    Alle Rollen dürfen das Projekt lesen. Nur Owner verwalten eigene Rollen und andere Owner.
-    Mindestens ein Owner bleibt immer erhalten.
-</div>
+<p class="settings-note">
+    <?= s(t(
+        'Alle Rollen dürfen das Projekt lesen. Nur Owner verwalten eigene Rollen und andere '
+        . 'Owner. Mindestens ein Owner bleibt immer erhalten.',
+    )) ?>
+</p>
 <div class="role-defaults">
     <?php foreach (['owner', 'manager', 'member', 'viewer'] as $builtIn): ?>
         <details>
-            <summary>
-                <strong><?= s(ucfirst($builtIn)) ?></strong>
-                <span class="badge">Standardrolle</span>
+            <summary class="settings-row-head">
+                <span class="settings-row-title"><?= s(ucfirst($builtIn)) ?></span>
+                <span class="settings-row-marks">
+                    <span class="settings-row-mark"><?= s(t('Standardrolle')) ?></span>
+                </span>
+                <?= Icon::mark('expand_more', 'sm', 'mi-turn settings-row-caret') ?>
             </summary>
             <ul>
                 <?php foreach (ProjectPermissions::LABELS as $permission => $label): ?>
@@ -27,83 +34,113 @@ use function Naf\View\s;
                 <?php endforeach ?>
             </ul>
             <?php if ($builtIn === 'viewer'): ?>
-                <p>Lesen, suchen und private Anhänge herunterladen.</p>
+                <p><?= s(t('Lesen, suchen und private Anhänge herunterladen.')) ?></p>
             <?php endif ?>
             <?php if ($builtIn === 'owner'): ?>
-                <p>Zusätzlich Rollen und Owner verwalten, Projekt archivieren und wiederherstellen.</p>
+                <p>
+                    <?= s(t('Zusätzlich Rollen und Owner verwalten, Projekt archivieren und wiederherstellen.')) ?>
+                </p>
             <?php endif ?>
         </details>
     <?php endforeach ?>
 </div>
-<h3>
-    Eigene Rollen
-    <span class="count"><?= count($customRoles) ?></span>
-</h3>
-<?php foreach ([...$customRoles, ...($scope->allows('roles') ? [null] : [])] as $role): ?>
-    <details class="role-editor" <?= $role === null && !$customRoles ? 'open' : '' ?>>
-        <summary><?= $role ? s($role['name']) . ' · ' . s(Format::count((int) $role['member_count'], 'Mitglied', 'Mitglieder')) : '+ Eigene Rolle anlegen' ?></summary>
-        <form method="post" data-enhanced action="<?= s(route('project.roles', ['project' => $projectId])) ?>">
-            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-            <?php if ($role): ?>
-                <input type="hidden" name="id" value="<?= (int) $role['id'] ?>" />
-                <input type="hidden" name="version" value="<?= (int) $role['version'] ?>" />
-            <?php endif ?>
-            <fieldset <?= !$scope->allows('roles') ? 'disabled' : '' ?>>
-                <label>
-                    Rollenname
-                    <input
-                        name="name"
-                        required
-                        maxlength="60"
-                        value="<?= s($role['name'] ?? '') ?>"
-                        placeholder="Zum Beispiel: Redaktion"
-                    />
-                </label>
-                <label>
-                    Beschreibung
-                    <input
-                        name="description"
-                        maxlength="255"
-                        value="<?= s($role['description'] ?? '') ?>"
-                        placeholder="Wofür ist diese Rolle zuständig?"
-                    />
-                </label>
-                <div class="permission-grid">
-                    <?php foreach (extensions()->permissions()->assignable() as $permission => $definition): ?>
-                        <label title="<?= s(t($definition->description)) ?>">
-                            <input
-                                type="checkbox"
-                                name="permissions[]"
-                                value="<?= s($permission) ?>"
-                                <?= in_array($permission, $role['permissions'] ?? [], true) ? 'checked' : '' ?>
-                            />
-                            <span><?= s(t($definition->label)) ?></span>
-                        </label>
-                    <?php endforeach ?>
-                </div>
-                <?php if ($role['unavailable'] ?? []): ?>
-                    <p class="settings-hint">
-                        <?= s(t(
-                            'Diese Rolle hält :count Recht(e) einer Erweiterung, die gerade nicht '
-                            . 'installiert ist. Sie bleiben gespeichert und wirken erst wieder, '
-                            . 'wenn die Erweiterung zurück ist.',
-                            ['count' => count($role['unavailable'])],
-                        )) ?>
-                    </p>
-                <?php endif ?>
-                <?php if ($scope->allows('roles')): ?>
-                    <div class="form-errors" role="alert"></div>
-                    <button class="button primary"><?= $role ? 'Rolle speichern' : 'Rolle anlegen' ?></button>
-                    <?php if ($role): ?>
-                        <button class="button subtle danger" name="action" value="delete" formnovalidate>
-                            Rolle löschen
-                        </button>
+<section class="settings-section">
+    <h3>
+        <?= s(t('Eigene Rollen')) ?>
+        <span class="count"><?= count($customRoles) ?></span>
+    </h3>
+    <div class="settings-rows">
+        <?php if (!$customRoles && !$scope->allows('roles')): ?>
+            <p class="settings-row-empty">
+                <?= s(t('Für dieses Projekt wurden noch keine eigenen Rollen angelegt.')) ?>
+            </p>
+        <?php endif ?>
+        <?php foreach ([...$customRoles, ...($scope->allows('roles') ? [null] : [])] as $role): ?>
+            <details class="settings-row<?= $role === null ? ' is-add' : '' ?>" <?= $role === null && !$customRoles ? 'open' : '' ?>>
+                <summary class="settings-row-head">
+                    <?php if ($role === null): ?>
+                        <span class="settings-row-add"><?= Icon::mark('add', 'sm') ?></span>
                     <?php endif ?>
-                <?php endif ?>
-            </fieldset>
-        </form>
-    </details>
-<?php endforeach ?>
-<?php if (!$customRoles && !$scope->allows('roles')): ?>
-    <p class="muted">Für dieses Projekt wurden noch keine eigenen Rollen angelegt.</p>
-<?php endif ?>
+                    <span class="settings-row-title">
+                        <?= s($role ? $role['name'] : t('Eigene Rolle anlegen')) ?>
+                    </span>
+                    <span class="settings-row-marks">
+                        <?php if ($role): ?>
+                            <span class="settings-row-mark">
+                                <?= s(Format::count((int) $role['member_count'], 'Mitglied', 'Mitglieder')) ?>
+                            </span>
+                        <?php endif ?>
+                    </span>
+                    <?= Icon::mark('expand_more', 'sm', 'mi-turn settings-row-caret') ?>
+                </summary>
+                <form
+                    class="settings-row-body"
+                    method="post"
+                    data-enhanced
+                    action="<?= s(route('project.roles', ['project' => $projectId])) ?>"
+                >
+                    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                    <?php if ($role): ?>
+                        <input type="hidden" name="id" value="<?= (int) $role['id'] ?>" />
+                        <input type="hidden" name="version" value="<?= (int) $role['version'] ?>" />
+                    <?php endif ?>
+                    <fieldset <?= !$scope->allows('roles') ? 'disabled' : '' ?>>
+                        <div class="settings-fields">
+                            <?= field([
+                                'label'      => 'Rollenname',
+                                'name'       => 'name',
+                                'value'      => (string) ($role['name'] ?? ''),
+                                'required'   => true,
+                                'id'         => 'role-name-' . ($role['id'] ?? 'new'),
+                                'attributes' => ['maxlength' => 60, 'placeholder' => t('Zum Beispiel: Redaktion')],
+                            ]) ?>
+                            <?= field([
+                                'label'      => 'Beschreibung',
+                                'name'       => 'description',
+                                'value'      => (string) ($role['description'] ?? ''),
+                                'id'         => 'role-description-' . ($role['id'] ?? 'new'),
+                                'attributes' => ['maxlength' => 255, 'placeholder' => t('Wofür ist diese Rolle zuständig?')],
+                            ]) ?>
+                        </div>
+                        <div class="permission-grid">
+                            <?php foreach (extensions()->permissions()->assignable() as $permission => $definition): ?>
+                                <label title="<?= s(t($definition->description)) ?>">
+                                    <input
+                                        type="checkbox"
+                                        name="permissions[]"
+                                        value="<?= s($permission) ?>"
+                                        <?= in_array($permission, $role['permissions'] ?? [], true) ? 'checked' : '' ?>
+                                    />
+                                    <span><?= s(t($definition->label)) ?></span>
+                                </label>
+                            <?php endforeach ?>
+                        </div>
+                        <?php if ($role['unavailable'] ?? []): ?>
+                            <p class="settings-hint">
+                                <?= s(t(
+                                    'Diese Rolle hält :count Recht(e) einer Erweiterung, die gerade nicht '
+                                    . 'installiert ist. Sie bleiben gespeichert und wirken erst wieder, '
+                                    . 'wenn die Erweiterung zurück ist.',
+                                    ['count' => count($role['unavailable'])],
+                                )) ?>
+                            </p>
+                        <?php endif ?>
+                        <?php if ($scope->allows('roles')): ?>
+                            <div class="form-errors" role="alert"></div>
+                            <div class="settings-actions">
+                                <button class="button primary">
+                                    <?= s($role ? t('Rolle speichern') : t('Rolle anlegen')) ?>
+                                </button>
+                                <?php if ($role): ?>
+                                    <button class="button danger subtle" name="action" value="delete" formnovalidate>
+                                        <?= s(t('Rolle löschen')) ?>
+                                    </button>
+                                <?php endif ?>
+                            </div>
+                        <?php endif ?>
+                    </fieldset>
+                </form>
+            </details>
+        <?php endforeach ?>
+    </div>
+</section>

@@ -12,18 +12,45 @@
 .profile-open {
   overflow: hidden;
 }
+/*
+ * One size, whatever is open.
+ *
+ * Sized to content, opening a section grew the dialog by some three hundred
+ * pixels and moved every edge of it -- the eye follows the frame instead of the
+ * thing that unfolded. Now the frame stays put and the section expands inside
+ * it, which is what the sweep was drawing attention to in the first place.
+ *
+ * The height is close to what the collapsed content needs, so a little slack at
+ * the bottom is the cost of the frame holding still.
+ */
 .profile-dialog {
   width: min(570px, calc(100vw - 32px));
   max-width: none;
-  max-height: calc(100dvh - 48px);
+  /* Measured against the containing block rather than in dvh: a modal dialog is
+     positioned against the viewport, so 100% is exactly the room there is --
+     while a dynamic viewport unit can report more than is on screen and push the
+     box past the bottom edge, where auto margins can no longer centre it. */
+  height: min(800px, calc(100% - 48px));
+  max-height: calc(100% - 48px);
   padding: 0;
   border: 1px solid var(--line);
   border-radius: 24px;
   color: var(--text);
   background: var(--surface);
   box-shadow: 0 32px 120px #0a081855;
-  overflow: auto;
-  scrollbar-width: thin;
+  overflow: hidden;
+}
+/*
+ * Only while it is open.
+ *
+ * A closed dialog is hidden by the browser's own `dialog:not([open])
+ * { display: none }`, and any display an author writes in the plain rule beats
+ * it -- the dialog then stands in the page the whole time, in the flow, with no
+ * backdrop and no way to close it.
+ */
+.profile-dialog[open] {
+  display: flex;
+  flex-direction: column;
 }
 .profile-dialog::backdrop {
   background: #090b1770;
@@ -31,6 +58,7 @@
 }
 .profile-header {
   position: relative;
+  flex: none;
   padding: 30px 30px 30px;
   background:
     radial-gradient(
@@ -89,7 +117,12 @@
   box-shadow: 0 6px 20px #6558e818;
 }
 .profile-body {
+  flex: 1;
   padding: 24px 28px 28px;
+  overflow: auto;
+  /* What scrolls here stays here: reaching the end of the list must not start
+     scrolling the board behind the dialog. */
+  overscroll-behavior: contain;
 }
 .profile-intro {
   color: var(--muted);
@@ -110,7 +143,6 @@
   padding: 0;
   max-height: 150px;
   overflow: auto;
-  scrollbar-width: thin;
   border: 1px solid var(--line);
   border-radius: 12px;
 }
@@ -147,20 +179,21 @@
   font-size: 11px;
   font-weight: 550;
 }
-.profile-account-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 11px;
+/* A quiet mark under the address, the way a badge sits beside a name. It states
+   something about the account rather than offering anything, so it carries no
+   border a thumb would read as a target. */
+.profile-account-kind {
+  display: inline-block;
+  margin-top: 7px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  /* Translucent rather than a flat fill: the header behind it is a gradient, and
+     a solid surface colour sits on it as a patch in one theme or disappears into
+     it in the other. */
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
   color: var(--muted);
-  margin-bottom: 16px;
-}
-.profile-account-line > span:last-child {
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 4px 8px;
-  color: var(--text);
+  font-size: 11px;
+  letter-spacing: 0.2px;
 }
 .profile-section {
   border: 1px solid var(--line);
@@ -299,6 +332,9 @@
   text-underline-offset: 3px;
 }
 .profile-footer {
+  /* Held at its own height like the header: in a short window the body is what
+     gives way, never the row that carries the way out. */
+  flex: none;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -334,7 +370,10 @@
 }
 @media (max-width: 540px) {
   .profile-dialog {
-    max-height: calc(100dvh - 24px);
+    /* Both, or the two disagree and the height wins against a clamp meant to
+       stop it. */
+    height: min(800px, calc(100% - 24px));
+    max-height: calc(100% - 24px);
     border-radius: 18px;
   }
   .profile-header {
@@ -370,4 +409,17 @@
   .profile-avatar {
     border: 1px solid CanvasText;
   }
+}
+
+/* The settings cards inside the modal: they bring their own labels and spacing,
+   so this only gives them room and keeps the modal's rhythm. */
+.profile-settings {
+  padding: 4px 18px 20px;
+}
+.profile-settings .settings-actions {
+  margin-top: 14px;
+}
+.profile-settings .settings-note,
+.profile-settings .settings-hint {
+  font-size: 12px;
 }

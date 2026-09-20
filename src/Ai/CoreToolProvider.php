@@ -12,6 +12,8 @@ use Naf\Board\Contracts\TicketServiceInterface;
 use Naf\Board\Support\AiToolContext;
 use Naf\Board\Support\Input;
 
+use function Naf\Board\extensions;
+
 /**
  * The tools Nafinity itself offers the local chat.
  *
@@ -102,7 +104,7 @@ final class CoreToolProvider implements AiToolProviderInterface
         $ticketFields = [
             'title'          => $text,
             'description'    => $text,
-            'priority'       => ['type' => 'string', 'enum' => ['low', 'normal', 'high', 'urgent']],
+            'priority'       => ['type' => 'string', 'enum' => extensions()->priorities()->keys()],
             'column_id'      => $identifier,
             'swimlane_id'    => $identifier,
             'board_revision' => $identifier,

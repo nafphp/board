@@ -13,6 +13,7 @@ use Naf\Board\Registry\EstimationScaleRegistry;
 use Naf\Board\Registry\FieldTypeRegistry;
 use Naf\Board\Registry\NavigationRegistry;
 use Naf\Board\Registry\PermissionRegistry;
+use Naf\Board\Registry\PriorityRegistry;
 use Naf\Board\Registry\SettingRegistry;
 use Naf\Board\Registry\SettingSectionRegistry;
 use Naf\Board\Registry\TicketFieldRegistry;
@@ -47,6 +48,11 @@ final readonly class ExtensionContext
     public function permissions(): PermissionRegistry
     {
         return $this->extensions->permissions();
+    }
+
+    public function priorities(): PriorityRegistry
+    {
+        return $this->extensions->priorities();
     }
 
     public function ui(): UiRegistry

@@ -58,13 +58,15 @@ $writable = match ($section->scope) {
             </label>
         <?php endforeach ?>
         <?php if (!$definitions): ?>
-            <p class="muted"><?= s(t('Für diesen Bereich sind keine Felder registriert.')) ?></p>
+            <p class="settings-row-empty">
+                <?= s(t('Für diesen Bereich sind keine Felder registriert.')) ?>
+            </p>
         <?php endif ?>
         <?php if ($writable): ?>
             <div class="form-errors" role="alert"></div>
-            <button class="button primary" style="margin-top: 20px">
-                <?= s(t('Einstellungen speichern')) ?>
-            </button>
+            <div class="settings-actions">
+                <button class="button primary"><?= s(t('Einstellungen speichern')) ?></button>
+            </div>
         <?php endif ?>
     </fieldset>
 </form>

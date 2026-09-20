@@ -1,93 +1,200 @@
 <?php
+
+/**
+ * One editor for the three kinds of board structure.
+ *
+ * A row says what it does before anybody opens it: the colour it paints on the
+ * board, its name, and the behaviour behind it. Opening a row is the edit, and
+ * it offers the same fields as the row that adds one -- so a new column is
+ * finished when it is created rather than created and then corrected.
+ *
+ * @var string $kind      column, swimlane or label
+ * @var array  $items     the entries of that kind, in board order
+ * @var int    $projectId
+ * @var string $token
+ */
+
 use Naf\Board\Support\Icon;
 
-use function Naf\Board\choice;
+use function Naf\Board\field;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
 
+$action  = route('project.structure', ['project' => $projectId]);
+$colored = $kind !== 'swimlane';
+$ordered = $kind !== 'label';
+// Indexed, because the first and the last row are the ones whose arrows are
+// disabled and a keyed array would quietly disable neither.
+$items = array_values($items);
+$last  = count($items) - 1;
+
+$nouns = [
+    'column'   => ['Spalte', 'Neue Spalte', 'Noch keine Spalte angelegt'],
+    'swimlane' => ['Swimlane', 'Neue Swimlane', 'Noch keine Swimlane angelegt'],
+    'label'    => ['Label', 'Neues Label', 'Noch kein Label angelegt'],
+];
+[$noun, $addLabel, $emptyLabel] = $nouns[$kind];
+
+/**
+ * A colour that is safe to write into a style attribute.
+ *
+ * ProjectService::color() already refuses anything but six hex digits, so a
+ * value that fails here did not come through the application. The row reads it
+ * back into CSS rather than into an inert input, which is the one place where
+ * being sure beats trusting the write path.
+ */
+$swatchOf = static fn(mixed $color): string => preg_match('/^#[0-9a-f]{6}$/iD', (string) $color) === 1
+    ? strtolower((string) $color)
+    : '#6366f1';
+
+/**
+ * Echoes the fields of one entry, the same whether it exists yet or not.
+ *
+ * Through field(), like every other settings card: label, control and hint come
+ * out the same here as they do anywhere else. Ids are per entry because several
+ * of these forms stand on one page.
+ */
+$fields = static function (array $item) use ($kind, $colored, $noun): void {
+    $key = (string) ($item['id'] ?? 'new');
+
+    echo field([
+        'label'      => 'Name',
+        'name'       => 'name',
+        'value'      => (string) ($item['name'] ?? ''),
+        'required'   => true,
+        'id'         => 'structure-name-' . $kind . '-' . $key,
+        'attributes' => ['maxlength' => 60, 'autocomplete' => 'off', 'placeholder' => $noun],
+    ]);
+
+    if ($colored) {
+        echo field([
+            'label' => 'Farbe',
+            'name'  => 'color',
+            'type'  => 'color',
+            'value' => (string) ($item['color'] ?? ''),
+            'id'    => 'structure-color-' . $kind . '-' . $key,
+        ]);
+    }
+
+    if ($kind !== 'column') {
+        return;
+    }
+
+    echo field([
+        'label'   => 'Beim Verschieben hierher',
+        'name'    => 'closes_tickets',
+        'type'    => 'select',
+        'value'   => (string) (int) ($item['closes_tickets'] ?? 0),
+        'options' => [
+            '0' => t('Ticket bleibt offen'),
+            '1' => t('Ticket gilt als erledigt'),
+        ],
+        'id' => 'structure-closes-' . $key,
+    ]);
+
+    echo field([
+        'label'      => 'WIP-Richtwert',
+        'name'       => 'wip_limit',
+        'type'       => 'number',
+        'value'      => (string) ($item['wip_limit'] ?? ''),
+        'hint'       => 'Ab wie vielen Tickets die Spalte als voll gilt.',
+        'id'         => 'structure-wip-' . $key,
+        'attributes' => ['min' => 1, 'max' => 999, 'inputmode' => 'numeric', 'placeholder' => t('ohne')],
+    ]);
+};
 ?>
-<?php foreach ($items as $item): ?>
-    <form method="post" data-enhanced class="structure-row" action="<?= s(route('project.structure', ['project' => $projectId])) ?>">
-        <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-        <input type="hidden" name="kind" value="<?= s($kind) ?>" />
-        <input type="hidden" name="id" value="<?= (int) $item['id'] ?>" />
-        <div class="form-grid">
-            <label>
-                <?= s(t('Name')) ?>
-                <input name="name" required maxlength="60" value="<?= s($item['name']) ?>" />
-            </label>
-            <?php if ($kind !== 'swimlane'): ?>
-                <label>
-                    <?= s(t('Farbe')) ?>
-                    <input type="color" name="color" value="<?= s($item['color']) ?>" />
-                </label>
-            <?php else: ?>
-                <span class="muted small"><?= (int) $item['is_default'] === 1 ? 'Standard-Swimlane' : '' ?></span>
-            <?php endif ?>
-        </div>
-        <?php if ($kind === 'column'): ?>
-            <div class="form-grid">
-                <label>
-                    Ticketstatus beim Verschieben
-                    <?= choice([
-                        'name'    => 'closes_tickets',
-                        'label'   => 'Wirkung',
-                        'value'   => (string) (int) $item['closes_tickets'],
-                        'options' => ['0' => t('Offen'), '1' => t('Geschlossen')],
-                        'id'      => 'closes-' . (int) $item['id'],
-                    ]) ?>
-                </label>
-                <label>
-                    WIP-Richtwert (optional)
-                    <input type="number" name="wip_limit" min="1" value="<?= s((string) ($item['wip_limit'] ?? '')) ?>" />
-                </label>
+<div class="settings-rows" data-kind="<?= s($kind) ?>">
+    <?php if ($kind === 'column'): ?>
+        <p class="settings-note">
+            <?= s(t('Spalten sind die Schritte, die ein Ticket durchläuft. Die Reihenfolge hier ist die Reihenfolge auf dem Board.')) ?>
+        </p>
+    <?php endif ?>
+    <?php if (!$items): ?>
+        <p class="settings-row-empty"><?= s(t($emptyLabel)) ?></p>
+    <?php endif ?>
+    <?php foreach ($items as $position => $item): ?>
+        <?php
+        $id     = (int) $item['id'];
+        $formId = 'structure-' . $kind . '-' . $id;
+        $fixed  = $kind === 'swimlane' && (int) ($item['is_default'] ?? 0) === 1;
+        ?>
+        <details class="settings-row">
+            <summary class="settings-row-head">
+                <?php if ($colored): ?>
+                    <span class="structure-swatch" style="--swatch: <?= s($swatchOf($item['color'] ?? null)) ?>"></span>
+                <?php endif ?>
+                <span class="settings-row-title"><?= s($item['name']) ?></span>
+                <span class="settings-row-marks">
+                    <?php if ($kind === 'column' && (int) ($item['closes_tickets'] ?? 0) === 1): ?>
+                        <span class="settings-row-mark is-closing"><?= s(t('erledigt')) ?></span>
+                    <?php endif ?>
+                    <?php if ($kind === 'column' && !empty($item['wip_limit'])): ?>
+                        <span class="settings-row-mark"><?= s(t('WIP')) ?> <?= (int) $item['wip_limit'] ?></span>
+                    <?php endif ?>
+                    <?php if ($fixed): ?>
+                        <span class="settings-row-mark"><?= s(t('Standard')) ?></span>
+                    <?php endif ?>
+                </span>
+                <?php if ($ordered): ?>
+                    <span class="structure-order">
+                        <button
+                            form="<?= s($formId) ?>"
+                            name="direction"
+                            value="up"
+                            class="structure-nudge"
+                            <?= $position === 0 ? 'disabled' : '' ?>
+                            aria-label="<?= s($item['name']) ?> <?= s(t('nach oben')) ?>"
+                        ><?= Icon::mark('arrow_upward', 'sm') ?></button>
+                        <button
+                            form="<?= s($formId) ?>"
+                            name="direction"
+                            value="down"
+                            class="structure-nudge"
+                            <?= $position === $last ? 'disabled' : '' ?>
+                            aria-label="<?= s($item['name']) ?> <?= s(t('nach unten')) ?>"
+                        ><?= Icon::mark('arrow_downward', 'sm') ?></button>
+                    </span>
+                <?php endif ?>
+                <?= Icon::mark('expand_more', 'sm', 'mi-turn settings-row-caret') ?>
+            </summary>
+            <form
+                id="<?= s($formId) ?>"
+                class="settings-row-body"
+                method="post"
+                data-enhanced
+                action="<?= s($action) ?>"
+            >
+                <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                <input type="hidden" name="kind" value="<?= s($kind) ?>" />
+                <input type="hidden" name="id" value="<?= $id ?>" />
+                <div class="settings-fields"><?php $fields($item) ?></div>
+                <div class="form-errors" role="alert"></div>
+                <div class="settings-actions">
+                    <button class="button primary"><?= s(t('Speichern')) ?></button>
+                    <?php if (!$fixed): ?>
+                        <button class="button danger subtle" name="action" value="delete">
+                            <?= s(t('Entfernen')) ?>
+                        </button>
+                    <?php endif ?>
+                </div>
+            </form>
+        </details>
+    <?php endforeach ?>
+    <details class="settings-row is-add">
+        <summary class="settings-row-head">
+            <span class="settings-row-add"><?= Icon::mark('add', 'sm') ?></span>
+            <span class="settings-row-title"><?= s(t($addLabel)) ?></span>
+            <?= Icon::mark('expand_more', 'sm', 'mi-turn settings-row-caret') ?>
+        </summary>
+        <form class="settings-row-body" method="post" data-enhanced action="<?= s($action) ?>">
+            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+            <input type="hidden" name="kind" value="<?= s($kind) ?>" />
+            <div class="settings-fields"><?php $fields([]) ?></div>
+            <div class="form-errors" role="alert"></div>
+            <div class="settings-actions">
+                <button class="button primary"><?= s(t('Hinzufügen')) ?></button>
             </div>
-        <?php endif ?>
-        <div class="form-errors" role="alert"></div>
-        <button class="button subtle"><?= s(t('Speichern')) ?></button>
-        <?php if ($kind !== 'label'): ?>
-            <button
-                class="button subtle"
-                name="direction"
-                value="up"
-                aria-label="<?= s($item['name']) ?> nach oben"
-            >
-                <?= Icon::mark('arrow_upward', 'sm') ?>
-            </button>
-            <button
-                class="button subtle"
-                name="direction"
-                value="down"
-                aria-label="<?= s($item['name']) ?> nach unten"
-            >
-                <?= Icon::mark('arrow_downward', 'sm') ?>
-            </button>
-        <?php endif ?>
-        <?php if ($kind !== 'swimlane' || !(int) $item['is_default']): ?>
-            <button class="button danger subtle" name="action" value="delete">Entfernen</button>
-        <?php endif ?>
-    </form>
-<?php endforeach ?>
-<details style="margin-top: 18px">
-    <summary class="text-button">
-        +
-        <?= s($kind === 'column' ? t('Neue Spalte') : ($kind === 'swimlane' ? t('Neue Swimlane') : t('Neues Label'))) ?>
-    </summary>
-    <form method="post" data-enhanced action="<?= s(route('project.structure', ['project' => $projectId])) ?>">
-        <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-        <input type="hidden" name="kind" value="<?= s($kind) ?>" />
-        <label>
-            <?= s(t('Name')) ?>
-            <input name="name" required maxlength="60" />
-        </label>
-        <?php if ($kind !== 'swimlane'): ?>
-            <label>
-                <?= s(t('Farbe')) ?>
-                <input type="color" name="color" value="#6366f1" />
-            </label>
-        <?php endif ?>
-        <div class="form-errors" role="alert"></div>
-        <button class="button primary"><?= s(t('Hinzufügen')) ?></button>
-    </form>
-</details>
+        </form>
+    </details>
+</div>

@@ -62,6 +62,26 @@ html[data-theme='dark'] {
 * {
   box-sizing: border-box;
 }
+/*
+ * Nothing in this application shows a scrollbar.
+ *
+ * Nineteen places set overflow, and a rule per place is a rule somebody forgets
+ * the twentieth time -- a rail that grows by one project, a drawer that gains a
+ * field, and a bar slides in and shifts the layout beside it. So it is said once
+ * here, for everything.
+ *
+ * Scrolling itself is untouched: wheel, trackpad, keyboard and the scrollbar
+ * gutter all behave as before, and only the painted bar is gone. What that costs
+ * is the hint that there is more below, so anything that scrolls has to show it
+ * some other way -- a cut-off row, a fade, a count.
+ */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
 body {
   margin: 0;
   background: var(--bg);
@@ -155,6 +175,11 @@ label > .sr-only:not([type='checkbox']) {
   grid-template-columns: 244px minmax(0, 1fr);
   min-height: 100vh;
 }
+/*
+ * The column may scroll, but the person at the bottom of it does not scroll away
+ * -- that row is how you reach your own account, and it fell off the end of a
+ * tall sidebar. It is stuck to the bottom instead; see `.sidebar-bottom`.
+ */
 .sidebar {
   height: 100dvh;
   position: sticky;
@@ -166,7 +191,18 @@ label > .sr-only:not([type='checkbox']) {
   padding: 32px 18px 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scrollbar-width: thin;
+}
+/*
+ * Nothing in the column compresses to make room.
+ *
+ * A flex item shrinks before its container overflows, so the hint card arriving
+ * squeezed every row above it by a pixel or two and the whole rail appeared to
+ * settle downwards. Holding each row at its own height means the column
+ * overflows instead -- which is what the scroll is for, and what the row stuck
+ * to the bottom keeps reachable.
+ */
+.sidebar > * {
+  flex-shrink: 0;
 }
 .brand {
   display: flex;
@@ -280,18 +316,47 @@ label > .sr-only:not([type='checkbox']) {
   font-size: 11px;
   color: var(--muted);
 }
+/*
+ * Three projects, then it scrolls.
+ *
+ * The cap is counted in rows rather than in viewport height, so the list ends on
+ * a whole entry instead of slicing one wherever 30dvh happened to fall. The
+ * extra `--side-peek` is the top of the fourth row showing under the fade: with
+ * no scrollbar left to say so, that sliver is what tells you the list goes on.
+ *
+ * The row height is fixed here rather than left to the padding, because the cap
+ * is arithmetic on it -- change one and the other follows.
+ */
 .project-nav {
+  --side-row: 42px;
+  --side-gap: 5px;
+  --side-peek: 20px;
+
   display: grid;
-  gap: 5px;
+  gap: var(--side-gap);
   min-width: 0;
   overflow-x: hidden;
   overflow-y: auto;
   flex-shrink: 0;
-  max-height: 30dvh;
+  align-content: start;
+  max-height: calc(var(--side-row) * 3 + var(--side-gap) * 2 + var(--side-peek));
+}
+.project-nav .side-link {
+  height: var(--side-row);
+  min-height: 0;
+}
+/*
+ * The fade only exists when there is something under it. PHP knows how many
+ * projects it rendered, so it says so on the element rather than leaving the
+ * stylesheet to guess -- a list of exactly three would otherwise have its last
+ * entry fading into nothing.
+ */
+.project-nav[data-scrolls] {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 34px), transparent);
 }
 .sidebar-note {
   display: block;
-  margin: 44px 10px 20px;
+  margin: 20px 10px 16px;
   padding: 17px 14px;
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -324,9 +389,21 @@ label > .sr-only:not([type='checkbox']) {
   color: var(--accent);
   margin-bottom: 8px;
 }
+/*
+ * Pushed to the foot of the column when it fits, stuck to it when it does not.
+ *
+ * `margin-top: auto` alone only holds while the column fits in the window; past
+ * that the account row travelled off the end and there was no way to reach it
+ * from the rail. Sticking the block keeps it there. The cost is that on a window
+ * too short for everything it covers the hint card until you scroll, which is
+ * the right thing to give up first.
+ */
 .sidebar-bottom {
+  position: sticky;
+  bottom: 0;
   margin-top: auto;
   padding-bottom: 15px;
+  background: var(--sidebar);
 }
 .user-row {
   display: flex;
@@ -456,11 +533,26 @@ label > .sr-only:not([type='checkbox']) {
   .sidebar :is(.workspace-caption, .section-caption, .brand, .side-link, .user-row) {
     white-space: nowrap;
   }
+  /*
+   * The logo travels with the panel rather than partly with it.
+   *
+   * Most of its journey comes from the column's own padding, which eases over
+   * 0.24s -- but these four pixels had no transition and jumped, so the mark
+   * slid smoothly and then snapped the last bit of the way. Same curve, same
+   * delays as the width, and a touch longer so it settles rather than arrives.
+   */
   .sidebar .brand {
     margin-left: 5px;
+    transition: margin-left 0.3s cubic-bezier(0.2, 1.1, 0.3, 1);
+    transition-delay: 0.16s;
   }
   :is(.sidebar:hover, .sidebar:focus-within, html[data-sidebar='pinned'] .sidebar) .brand {
     margin-left: 9px;
+    transition-delay: 0.1s;
+  }
+  /* Pinned is a decision, not a hover, so it does not wait to be meant. */
+  html[data-sidebar='pinned'] .sidebar .brand {
+    transition-delay: 0s;
   }
   /* One flag drives every label, so the list of them lives in a single place. Labels fade
      with opacity and stay in the accessibility tree, which keeps the icon links named. */
@@ -493,12 +585,65 @@ label > .sr-only:not([type='checkbox']) {
     :where(.sidebar-note, .section-caption .icon-button) {
     visibility: visible;
   }
+  /*
+   * The hint card is out of the rail's layout, not merely invisible in it.
+   * `visibility: hidden` keeps a box, and this one is 152px tall -- in a 56px
+   * rail that is a column of empty space that pushed the person at the bottom
+   * off the end of it.
+   *
+   * Its box is collapsed rather than switched off with `display`. An element
+   * that was `display: none` is not rendered, so no transition starts for it and
+   * `allow-discrete` puts it back on the very first frame of the hover -- the
+   * card rode out with the panel instead of arriving after it, whatever delay
+   * was written. These properties are continuous, so a delay means what it says.
+   *
+   * `--note-room` only has to be larger than the card ever gets; `overflow:
+   * hidden` keeps the extra from showing.
+   */
+  .sidebar .sidebar-note {
+    --note-room: 260px;
+
+    max-height: 0;
+    margin-block: 0;
+    padding-block: 0;
+    border-block-width: 0;
+    overflow: hidden;
+  }
+  :is(.sidebar:hover, .sidebar:focus-within, html[data-sidebar='pinned'] .sidebar) .sidebar-note {
+    max-height: var(--note-room);
+    margin-block: 20px 16px;
+    padding-block: 17px;
+    border-block-width: 1px;
+  }
+  /*
+   * On a window too short for the whole column, the hint is the thing that goes.
+   *
+   * It is the least important element here, and the alternative is worse: the
+   * account row is stuck to the foot of the column, so a card that does not fit
+   * is not merely cramped -- it is rendered underneath that row and invisible,
+   * which costs the same space and shows nothing for it.
+   *
+   * The threshold is what the rest of the column needs plus the card. The
+   * project list is capped at three rows, so this does not drift with the number
+   * of projects.
+   */
+  @media (max-height: 950px) {
+    :is(.sidebar:hover, .sidebar:focus-within, html[data-sidebar='pinned'] .sidebar) .sidebar-note,
+    .sidebar .sidebar-note {
+      display: none;
+    }
+  }
   /* The hint card rewraps every time the panel gets wider, so it waits for the panel to
-     arrive instead of stretching along with it. Closing still hides it straight away. */
+     arrive instead of stretching along with it. Closing still hides it straight away.
+     `display` rides in this list so the open delay below applies to it too. */
   .sidebar .sidebar-note {
     transition:
       opacity 0.16s,
       visibility 0.16s,
+      max-height 0.2s,
+      margin 0.2s,
+      padding 0.2s,
+      border-width 0.2s,
       border-color 0.18s,
       background 0.18s;
   }
@@ -575,58 +720,30 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   gap: 21px;
   align-items: center;
 }
-/* The picker keeps the native select as its control, so the keyboard, the screen reader and
-   the platform's own menu all stay; only the chip around it is styled. */
+/* The picker is the application's own select, drawn as a chip: a top bar wants a pill
+   rather than a form field, and the list that opens is the one every select here opens. */
 .language-picker {
-  position: relative;
   display: inline-flex;
-  align-items: center;
+}
+.language-picker .choice-trigger {
+  width: auto;
   gap: 7px;
   padding: 5px 11px 5px 10px;
   border-radius: 999px;
-  border: 1px solid var(--line);
   background: color-mix(in srgb, var(--surface) 45%, transparent);
   font-size: 12px;
+  font-weight: 550;
   color: var(--muted);
   transition:
     border-color 0.18s,
     color 0.18s,
     background 0.18s;
 }
-.language-picker:hover {
+.language-picker .choice-trigger:hover,
+.language-picker .choice-trigger[aria-expanded='true'] {
   color: var(--text);
   border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
   background: color-mix(in srgb, var(--accent) 9%, transparent);
-}
-.language-picker:focus-within {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-.language-picker select {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-  font: inherit;
-}
-.language-flag {
-  font-size: 14px;
-  line-height: 1;
-}
-.language-name {
-  font-weight: 550;
-}
-.language-picker::after {
-  content: '';
-  width: 5px;
-  height: 5px;
-  margin-left: 1px;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  transform: translateY(-1px) rotate(45deg);
-  opacity: 0.7;
 }
 .language-picker[data-busy] {
   opacity: 0.6;
@@ -778,7 +895,12 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   color: var(--muted);
   letter-spacing: 0;
 }
+/* One height for every control in the row, named once. A filter bar is read as a
+   single line, so a control that is a few pixels taller than its neighbours is
+   not a detail -- it is the thing that makes the row look ragged. */
 .filterbar {
+  --filter-height: 35px;
+
   display: flex;
   gap: 9px;
   align-items: center;
@@ -786,29 +908,46 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 }
 .filterbar input,
 .filterbar select,
-.filterbar .choice-trigger {
-  height: 35px;
+.filterbar .choice-trigger,
+.filterbar .extra-filters summary,
+.filterbar .button {
+  height: var(--filter-height);
   font-size: 11px;
-  padding: 7px 10px;
   min-width: 100px;
+  border-radius: 7px;
+}
+.filterbar input,
+.filterbar select,
+.filterbar .choice-trigger {
+  padding: 7px 10px;
 }
 .filterbar select,
 .filterbar .choice {
-  max-width: 180px;
+  max-width: 190px;
 }
+/* The three of them share what is left over instead of each taking the width of
+   its longest entry, so they line up as a set rather than as three sizes. */
 .filterbar .choice {
-  min-width: 100px;
-  flex: 0 1 auto;
+  min-width: 118px;
+  flex: 1 1 150px;
 }
+/* What narrows first when the row runs out of room: a search field keeps working
+   at half its width, a label that reads "Alle Verantwortlichen" does not. */
 .search-field {
   display: flex !important;
   align-items: center;
   gap: 5px;
   position: relative;
-  flex: 1;
-  min-width: 190px;
+  flex: 2 1 190px;
+  min-width: 150px;
   max-width: 280px;
   margin: 0 !important;
+}
+/* Fields inside a label are pushed down to clear the label's text. This one has
+   no text -- only the search icon, which is positioned out of the flow -- so the
+   margin is what lifted the whole row out of alignment. */
+.search-field input {
+  margin: 0;
 }
 .search-field span {
   position: absolute;
@@ -820,24 +959,42 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   padding-left: 34px;
   width: 100%;
 }
-.filterbar .button {
-  height: 35px;
-  min-height: 35px;
-  padding: 5px 10px;
-  font-size: 11px;
-}
+/* Criteria on the left, what you do with them on the right. The gap that opens
+   between the two is the only separator the row needs. */
 .extra-filters {
   position: relative;
+  margin-left: auto;
   font-size: 11px;
   white-space: nowrap;
 }
 .extra-filters summary {
+  display: flex;
+  align-items: center;
   list-style: none;
   border: 1px solid var(--line);
-  padding: 8px 11px;
+  padding: 0 11px;
   border-radius: 7px;
   background: var(--surface);
   cursor: var(--cursor-pointer, pointer);
+}
+.extra-filters summary:hover,
+.extra-filters[open] summary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* Applying is the one thing in this row that changes what you see, so it reads
+   as the action and the rest as the settings for it. It stays quieter than the
+   page's own primary button, which creates tickets rather than narrowing them. */
+.filterbar .button {
+  min-height: var(--filter-height);
+  padding: 5px 14px;
+  border-color: transparent;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.filterbar .button:hover {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 .extra-filters > div {
   position: absolute;
@@ -1854,35 +2011,6 @@ fieldset:disabled select {
   color: var(--muted);
   font-size: 10px;
 }
-.structure-row {
-  padding: 15px 0;
-  border-bottom: 1px solid var(--line);
-}
-.structure-row:first-of-type {
-  padding-top: 0;
-}
-.structure-row .form-grid {
-  gap: 10px;
-  margin: 10px 0;
-}
-.structure-row input,
-.structure-row select,
-.structure-row .choice-trigger {
-  padding: 7px;
-  font-size: 11px;
-}
-.structure-row input[type='color'] {
-  height: 33px;
-}
-.structure-row label {
-  font-size: 10px;
-}
-.structure-row .button {
-  font-size: 10px;
-  padding: 5px 9px;
-  min-height: 29px;
-  margin-right: 3px;
-}
 .preferences-card {
   max-width: 620px;
 }
@@ -2141,12 +2269,12 @@ fieldset:disabled select {
   .topbar-right {
     margin-left: auto;
   }
-  /* Narrow screens keep the picker but drop the written name; the flag and the native menu
-     are enough to reach it, and the menu itself still names every language in full. */
-  .topbar-right .language-name {
+  /* Narrow screens keep the picker but drop the written name; the flag is enough to
+     reach it, and the list itself still names every language in full. */
+  .topbar-right .language-picker .choice-text {
     display: none;
   }
-  .topbar-right .language-picker {
+  .topbar-right .language-picker .choice-trigger {
     padding: 5px 9px;
   }
   .breadcrumb {
@@ -2390,9 +2518,19 @@ label > .choice {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* The glyph sits on a text baseline, which leaves it a little below the middle of the
+   line it is on. Centring it here puts it in the middle of the control -- and gives the
+   turn an axis through the glyph rather than through the box around it. */
 .choice-chevron {
+  display: flex;
+  align-items: center;
   color: var(--muted);
   margin-left: auto;
+}
+.choice-mark {
+  flex: none;
+  font-size: 14px;
+  line-height: 1;
 }
 .choice-count {
   font-size: 10px;
@@ -2422,6 +2560,11 @@ label > .choice {
   overflow: hidden;
   font-size: 12px;
 }
+/* An author's display always beats the browser's own rule for [hidden], so a part that
+   hides itself has to say so here as well -- the popup above does the same. */
+.choice-search-wrap[hidden] {
+  display: none;
+}
 .choice-search-wrap {
   display: flex;
   align-items: center;
@@ -2433,12 +2576,41 @@ label > .choice {
 .choice-search-wrap:focus-within {
   border-color: var(--accent);
 }
+/* Opening: the list unfolds out of the control it belongs to -- a short rise and a slight
+   stretch, with the entries arriving just behind it. Which way it grows comes from the
+   placement, so a list that opens upwards unfolds upwards. */
+.choice-popup {
+  --choice-rise: -6px;
+  transform-origin: top center;
+  animation: choice-unfold 0.18s cubic-bezier(0.16, 0.9, 0.3, 1);
+}
+.choice-popup[data-direction='up'] {
+  --choice-rise: 6px;
+  transform-origin: bottom center;
+}
+@keyframes choice-unfold {
+  from {
+    opacity: 0;
+    transform: translateY(var(--choice-rise)) scale(0.98, 0.92);
+  }
+}
+@keyframes choice-entry {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
 .choice-list {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-top: 4px;
 }
+.choice-option[hidden] {
+  display: none;
+}
 .choice-option {
+  animation: choice-entry 0.16s both;
+  animation-delay: calc(var(--choice-index, 0) * 20ms);
   display: flex;
   align-items: center;
   gap: 9px;
@@ -2472,4 +2644,10 @@ label > .choice {
   margin: 0;
   padding: 17px 9px;
   color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .choice-popup,
+  .choice-option {
+    animation: none;
+  }
 }

@@ -3,6 +3,19 @@
 const choices = new WeakMap();
 let activeChoice;
 
+// A short symbol in front of an entry -- a flag, a sign -- carried by the option as
+// data-mark. It recognises where the label names, so it is decoration: it never
+// replaces the written label and never takes part in the search.
+function markOf(item) {
+  if (!item.mark) return null;
+  const node = document.createElement('span');
+  node.className = 'choice-mark';
+  node.setAttribute('aria-hidden', 'true');
+  node.textContent = item.mark;
+
+  return node;
+}
+
 function renderValue(state) {
   const selected = state.items.filter((item) => item.selected());
   const value = state.root.querySelector('[data-choice-value]');
@@ -18,7 +31,10 @@ function renderValue(state) {
       avatar.setAttribute('aria-hidden', 'true');
       value.append(avatar);
     }
+    const mark = markOf(item);
+    if (mark) value.append(mark);
     const label = document.createElement('span');
+    label.className = 'choice-text';
     label.textContent = item.label;
     value.append(label);
   }
@@ -58,11 +74,23 @@ function position(state) {
   const left = viewport?.offsetLeft || 0;
   const width = viewport?.width || innerWidth;
   const bottom = top + (viewport?.height || innerHeight);
-  const popupWidth = Math.min(Math.max(rect.width, 260), width - 24);
+  const room = width - 24;
   const below = bottom - rect.bottom - 16;
   const above = rect.top - top - 16;
   const upwards = below < 220 && above > below;
-  state.popup.style.width = `${popupWidth}px`;
+  // Which way it unfolds, so the animation grows out of the control rather than towards it.
+  state.popup.dataset.direction = upwards ? 'up' : 'down';
+  // A list is never narrower than the control it belongs to and never wider than the
+  // viewport. In between it takes the width a select's list should have -- unless it was
+  // asked to fit its entries, and then the browser sizes it, which it can do in fractions
+  // of a pixel. A width measured into a whole pixel here would round the longest entry
+  // into a second line.
+  state.popup.style.minWidth = `${Math.min(rect.width, room)}px`;
+  state.popup.style.maxWidth = `${room}px`;
+  state.popup.style.width = state.fit
+    ? 'max-content'
+    : `${Math.min(Math.max(rect.width, 260), room)}px`;
+  const popupWidth = state.popup.offsetWidth;
   state.popup.style.maxHeight = `${Math.max(100, Math.min(330, upwards ? above : below))}px`;
   state.popup.style.left = `${Math.max(left + 12, Math.min(rect.left, left + width - popupWidth - 12))}px`;
   state.popup.style.top = `${upwards ? Math.max(top + 12, rect.top - state.popup.offsetHeight - 6) : rect.bottom + 6}px`;
@@ -118,6 +146,7 @@ function buildItems(state) {
     : [...state.select.options].map((option) => ({
         value: option.value,
         label: option.text,
+        mark: option.dataset.mark,
         selected: () => option.selected,
       }));
   state.items.forEach((item, index) => {
@@ -127,6 +156,8 @@ function buildItems(state) {
     option.tabIndex = -1;
     option.id = `${state.list.id}-${index}`;
     option.setAttribute('role', 'option');
+    // Capped, so a long list does not take longer to appear than a short one.
+    option.style.setProperty('--choice-index', String(Math.min(index, 6)));
     if (state.avatars && item.value) {
       const avatar = document.createElement('span');
       avatar.className = 'avatar avatar-small';
@@ -134,7 +165,10 @@ function buildItems(state) {
       avatar.setAttribute('aria-hidden', 'true');
       option.append(avatar);
     }
+    const mark = markOf(item);
+    if (mark) option.append(mark);
     const label = document.createElement('span');
+    label.className = 'choice-text';
     label.textContent = item.label;
     option.append(label);
     const check = document.createElement('span');
@@ -178,6 +212,7 @@ export function enhanceChoices(scope = document) {
     };
     state.multiple = !state.select;
     state.avatars = root.dataset.choiceAvatars !== undefined;
+    state.fit = root.dataset.choiceWidth === 'fit';
     buildItems(state);
     state.search.addEventListener('input', (event) => {
       event.stopPropagation();
@@ -233,7 +268,10 @@ export function enhanceChoices(scope = document) {
   });
 }
 export function openChoice(root) {
-  enhanceChoices(root.parentElement);
+  // Only a root nobody has enhanced yet -- a form that was just inserted, say. An
+  // enhanced one is left alone: enhancing it again rebuilds the trigger's contents,
+  // and the node that was clicked to get here would be detached mid-click.
+  if (!choices.has(root)) enhanceChoices(root.parentElement);
   const state = choices.get(root);
   if (activeChoice && activeChoice !== state) close(activeChoice, false, true);
   activeChoice = state;
@@ -263,9 +301,16 @@ export function closeChoices(scope) {
     if (state) close(state);
   });
 }
-document.addEventListener('click', (event) => {
-  if (activeChoice && !activeChoice.root.contains(event.target)) close(activeChoice, false, true);
-});
+// In the capture phase, because by the time a click has finished bubbling the element
+// it started on may no longer be in the document -- and a target that is no longer
+// anywhere is in no open choice either, which would read as a click outside.
+document.addEventListener(
+  'click',
+  (event) => {
+    if (activeChoice && !activeChoice.root.contains(event.target)) close(activeChoice, false, true);
+  },
+  true,
+);
 function reposition(event) {
   if (!activeChoice) return;
   if (!activeChoice.root.isConnected) {

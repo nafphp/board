@@ -13,6 +13,7 @@ use Naf\Board\Domain\Failure;
 use Naf\Board\Jobs\AccountSecurityNoticeJob;
 use Naf\Board\Models\User;
 use Naf\Board\Support\Input;
+use Naf\Board\Support\PasswordRule;
 use Naf\Mail\Core\Mailer;
 use Naf\Mail\Models\Mail;
 use Naf\ORM\Core\EntityManager;
@@ -92,8 +93,8 @@ final class AccountService implements AccountServiceInterface
             'password_confirmation' => 'required|string|max:1024',
         ]);
         $password = $data['password'];
-        if (mb_strlen($password) < 15 || strlen($password) > 72 || str_contains($password, "\0")) {
-            throw new Failure('Das neue Passwort braucht mindestens 15 Zeichen und darf höchstens 72 Bytes lang sein.');
+        if (null !== $complaint = PasswordRule::complaint($password)) {
+            throw new Failure($complaint);
         }
         if (!hash_equals($password, $data['password_confirmation'])) {
             throw new Failure('Die neuen Passwörter stimmen nicht überein.');

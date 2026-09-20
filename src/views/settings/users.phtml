@@ -1,0 +1,55 @@
+<?php
+
+/**
+ * The accounts of this installation, each with what they hold and where.
+ *
+ * Opening one is the edit, like everywhere else in these settings. The editor
+ * itself comes from naf/rbac -- this card only says who there is to edit.
+ *
+ * @var array $people
+ */
+
+use Naf\Board\Support\Icon;
+
+use function Naf\Board\partial;
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+?>
+<div class="settings-rows" data-kind="user">
+    <p class="settings-note">
+        <?= s(t(
+            'Eine Rolle ohne Ort gilt überall, eine mit Ort nur dort. Deine eigenen Rollen kann '
+            . 'nur jemand anderes ändern.',
+        )) ?>
+    </p>
+    <?php foreach ($people as $person): ?>
+        <details class="settings-row">
+            <summary class="settings-row-head">
+                <span class="settings-row-title"><?= s($person['name']) ?></span>
+                <span class="settings-row-marks">
+                    <?php if (!$person['active']): ?>
+                        <span class="settings-row-mark"><?= s(t('inaktiv')) ?></span>
+                    <?php endif ?>
+                    <?php if ($person['roles'] === []): ?>
+                        <span class="settings-row-mark"><?= s(t('keine Rolle')) ?></span>
+                    <?php endif ?>
+                    <?php foreach ($person['roles'] as $grant): ?>
+                        <span class="settings-row-mark">
+                            <?= s($grant['label']) ?><?= $grant['scope'] === '' ? '' : ' · ' . s($grant['scope']) ?>
+                        </span>
+                    <?php endforeach ?>
+                </span>
+                <?= Icon::mark('expand_more', 'sm', 'mi-turn settings-row-caret') ?>
+            </summary>
+            <div class="settings-row-body">
+                <p class="settings-hint"><?= s($person['email']) ?></p>
+                <?= partial('rbac/grants', [
+                    'user'   => $person['id'],
+                    'name'   => $person['name'],
+                    'return' => '/settings',
+                ]) ?>
+            </div>
+        </details>
+    <?php endforeach ?>
+</div>

@@ -20,6 +20,7 @@ use Naf\Board\Definition\BoardFilterDefinition;
 use Naf\Board\Definition\EstimationScale;
 use Naf\Board\Definition\NavigationItem;
 use Naf\Board\Definition\PermissionDefinition;
+use Naf\Board\Definition\PriorityDefinition;
 use Naf\Board\Definition\SettingDefinition;
 use Naf\Board\Definition\SettingSection;
 use Naf\Board\Definition\TicketFieldDefinition;
@@ -169,6 +170,19 @@ final class ExtensionAProvider implements ExtensionProviderInterface
             index: 600,
             default: false,
             nullable: false,
+        ));
+
+        /*
+         * A fifth priority, brought by a package that has never heard of the
+         * board's own four. Nothing here names the Priority enum: that enum is
+         * the board's own vocabulary, and this registry is the open set both it
+         * and this line write into.
+         */
+        $context->priorities()->add(new PriorityDefinition(
+            'example.blocker',
+            'Blockiert',
+            'block',
+            500,
         ));
 
         // Index 150 puts this between the links widget (100) and attachments (200).
