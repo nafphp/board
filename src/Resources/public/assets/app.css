@@ -1205,18 +1205,36 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   align-items: center;
   gap: 5px;
 }
+/* The symbol sat at the top of the card as a thin coloured glyph, and "urgent"
+   read as quietly as "normal". The two that mean "look at this" now wear a chip
+   in their own colour; the two that do not stay bare, because a board where
+   every card shouts is a board where nothing does.
+
+   The weight is not set: the bundled symbol font carries one weight, so asking
+   for a heavier one described an intention rather than a result. Size and a
+   background do the work instead. */
 .priority {
-  font-size: 13px;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
   color: var(--muted);
   line-height: 1;
 }
+.priority-urgent,
+.priority-high {
+  background: color-mix(in srgb, currentColor 17%, transparent);
+}
+.priority-urgent .mi,
+.priority-high .mi {
+  font-size: 19px;
+}
 .priority-urgent {
   color: #e95171;
-  font-weight: 800;
 }
 .priority-high {
   color: #e3a645;
-  font-weight: 750;
 }
 .priority-low {
   color: #8893ac;
