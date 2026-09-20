@@ -85,8 +85,11 @@ available.
   messages and dynamic texts stay German in the prototype.
 - The file allowlist and MIME check are not a virus scanner. At most 10 MiB per file, 30 MiB per
   ticket and 200 MiB per project; storage stays private.
-- One board per project, no WIP enforcement, no saved filters, no WebSockets, no public full API
-  and no inbound mail processing. All explicitly outside the MVP.
+- One board per project, no WIP enforcement, no saved filters, no public full API and no inbound
+  mail processing. All explicitly outside the MVP.
+- Live updates arrive over a socket when an installation runs naf/websocket, which is optional and
+  off by default. What travels is that a board changed and at which revision; the board itself is
+  fetched over the ordinary authorised path, so a page without a socket is behind and never wrong.
 - The native drag-and-drop path is not manually accepted; the automated drag gesture produced no
   visible change in the browser tooling used. The move dialog and the same server-side move path
   are verified.

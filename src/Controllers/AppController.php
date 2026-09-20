@@ -23,6 +23,7 @@ use Naf\Board\Domain\Failure;
 use Naf\Board\Rbac\Installation;
 use Naf\Board\Support\CardContext;
 use Naf\Board\Support\Input;
+use Naf\Board\Support\LiveConnection;
 use Naf\Board\Support\UiContext;
 use Naf\RateLimit\PdoLimiter;
 use Naf\Session\Core\Session;
@@ -316,6 +317,31 @@ final class AppController
                 'columns'  => $columns,
                 'lanes'    => $lanes,
             ]);
+        });
+    }
+
+    /**
+     * Another token for this board, for a browser whose last one has expired.
+     *
+     * A token is short-lived on purpose -- it rides in a query string, and query
+     * strings end up in logs -- so a connection dropped for longer than that
+     * cannot come back with the one the page was rendered with. This is where it
+     * asks for the next one, and the answer goes through the same membership
+     * check as the board itself: somebody who has lost access quietly stops
+     * being given tokens, and the socket they hold carries nothing anyway.
+     *
+     * An installation with no server answers without a token. That is not an
+     * error either; it is how the client is told to stop asking.
+     */
+    public function boardSocket(string $project): ResponseInterface
+    {
+        return $this->read(function () use ($project) {
+            $id = Input::id($project);
+            $this->access->project($id);
+
+            return json(
+                LiveConnection::forProject($id, (string) $this->auth->id()) ?? ['live' => false],
+            );
         });
     }
 

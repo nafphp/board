@@ -2,12 +2,12 @@
 
 use Naf\Board\Support\Format;
 use Naf\Board\Support\Icon;
+use Naf\Board\Support\LiveConnection;
 
 use function Naf\Board\choice;
 use function Naf\Board\extensions;
 use function Naf\Board\partial;
 use function Naf\Board\slot;
-use function Naf\config;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
@@ -139,26 +139,22 @@ $hintUrl = $current
         </div>
         <?php
         /*
-         * Where the browser connects, and the token that says what it may
-         * hear. Issued here because this is the last moment with a request, and
-         * a request is what makes "may this person hear this board" cheap to
-         * answer -- the socket server has no session to ask.
+         * Where the browser connects, the token that says what it may hear, and
+         * where to ask for the next one. Issued here because this is the last
+         * moment with a request, and a request is what makes "may this person
+         * hear this board" cheap to answer -- the socket server has no session
+         * to ask.
          *
          * Nothing is rendered when an installation has no server. The client
          * module then finds no settings and does nothing, which is the whole of
          * what switching it off has to do.
          */
-        $socket = $current !== null && function_exists('Naf\Websocket\live') && \Naf\Websocket\live()
-            ? [
-                'url'   => (string) config('websocket:url', ''),
-                'token' => \Naf\Websocket\token(
-                    (string) $user->getIdentifier(),
-                    ['project:' . $current],
-                ),
-            ]
-            : null;
+        $socket = $current === null ? null : LiveConnection::forProject(
+            (int) $current,
+            (string) $user->getIdentifier(),
+        );
 ?>
-        <?php if ($socket !== null && $socket['url'] !== '' && $socket['token'] !== ''): ?>
+        <?php if ($socket !== null): ?>
             <script type="application/json" data-naf-websocket><?= json_encode($socket, JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>
         <?php endif ?>
         <?= partial('profile.modal', [
