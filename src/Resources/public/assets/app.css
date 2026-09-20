@@ -20,6 +20,7 @@
   --input: #fff;
   --hover: #f3f3fc;
   --danger: #cf4261;
+  --ok: #1f9d62;
   --radius: 12px;
   --rail: 56px;
   --panel: 244px;
@@ -40,6 +41,7 @@ html[data-theme='dark'] {
   --input: #202230;
   --hover: #282a3d;
   --danger: #fb7b99;
+  --ok: #58d6a0;
 }
 @media (prefers-color-scheme: dark) {
   html[data-theme='system'] {
@@ -57,6 +59,7 @@ html[data-theme='dark'] {
     --input: #202230;
     --hover: #282a3d;
     --danger: #fb7b99;
+    --ok: #58d6a0;
   }
 }
 * {
@@ -878,14 +881,35 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 .tabs-spacer {
   flex: 1;
 }
-.tabs .role-badge {
+/* Version and connection, at the end of the tab row. Both are pills, so they
+   read as one quiet strip rather than two announcements. */
+.status-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   min-width: 0;
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+.live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   white-space: nowrap;
 }
-.role-badge,
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  /* Until the socket has said anything, neither colour would be true. */
+  background: var(--muted);
+  flex: none;
+}
+.live-status[data-live-status='on'] .live-dot {
+  background: var(--ok);
+}
+.live-status[data-live-status='off'] .live-dot,
+.live-status[data-live-status='gone'] .live-dot {
+  background: var(--danger);
+}
 .pill {
   font-size: 10px;
   background: var(--surface);
@@ -2328,10 +2352,10 @@ fieldset:disabled select {
   .tabs a {
     font-size: 11px;
   }
-  .role-badge {
+  .status-strip {
     font-size: 9px;
   }
-  .tabs .role-badge,
+  .status-strip,
   .tabs-spacer {
     display: none;
   }

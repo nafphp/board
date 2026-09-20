@@ -16,6 +16,8 @@
  */
 
 use Naf\Board\Support\Icon;
+use Naf\Board\Support\LiveConnection;
+use Naf\Board\Support\Version;
 
 use function Naf\I18n\t;
 use function Naf\route;
@@ -79,7 +81,39 @@ $views    = [
         </a>
     <?php endforeach ?>
     <div class="tabs-spacer"></div>
-    <span class="role-badge" title="<?= s($scope->roleName ?? ucfirst($scope->role)) ?>">
-        <?= s($scope->roleName ?? ucfirst($scope->role)) ?>
-    </span>
+    <?php
+    /*
+     * What this corner is worth saying. It used to repeat the role, which stands
+     * beside the person's own name in the sidebar anyway; what nothing else on
+     * the page says is which build this is and whether it is still hearing the
+     * server -- the two things you want before you believe what a board shows.
+     *
+     * The wording is passed in rather than written into the module: a status
+     * that changes in the browser still has its text translated on the server.
+     */
+    $version = Version::current();
+?>
+    <div class="status-strip">
+        <?php if ($version !== ''): ?>
+            <span class="pill" title="<?= s(t('Installierte Version von naf/board')) ?>">
+                <?= s('v' . $version) ?>
+            </span>
+        <?php endif ?>
+        <?php if (LiveConnection::running()): ?>
+            <span
+                class="pill live-status"
+                data-live-status="waiting"
+                data-live-on="<?= s(t('Live-Verbindung steht')) ?>"
+                data-live-off="<?= s(t('Keine Live-Verbindung -- Änderungen anderer kommen erst beim Neuladen an')) ?>"
+                data-live-gone="<?= s(t('Live-Verbindung beendet -- die Seite neu laden')) ?>"
+                data-live-waiting="<?= s(t('Live-Verbindung wird aufgebaut')) ?>"
+                title="<?= s(t('Live-Verbindung wird aufgebaut')) ?>"
+                role="status"
+            >
+                <span class="live-dot" aria-hidden="true"></span>
+                <span aria-hidden="true"><?= s(t('Live')) ?></span>
+                <span class="sr-only" data-live-text><?= s(t('Live-Verbindung wird aufgebaut')) ?></span>
+            </span>
+        <?php endif ?>
+    </div>
 </nav>

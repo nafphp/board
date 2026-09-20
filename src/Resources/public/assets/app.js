@@ -332,3 +332,7 @@ document.addEventListener('keydown', (event) => {
 // Versioned here because this is the only place that loads it; a second
 // importer with a different spelling would be a second module instance.
 if (board) import('./board.js?v=1');
+
+// Only where there is something to report: an installation without a socket
+// server renders no status to keep up to date.
+if (document.querySelector('[data-live-status]')) import('./live.js?v=1');

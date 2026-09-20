@@ -23,6 +23,18 @@ use function Naf\route;
  */
 final class LiveConnection
 {
+    /**
+     * Whether this installation offers live updates at all.
+     *
+     * The package is optional, so its functions may not be there to call; an
+     * installation that has it can still have it switched off, or be without the
+     * key that makes a token worth anything.
+     */
+    public static function running(): bool
+    {
+        return function_exists('Naf\Websocket\live') && \Naf\Websocket\live();
+    }
+
     /** @return list<string> */
     public static function channels(int $project): array
     {
@@ -36,8 +48,7 @@ final class LiveConnection
      */
     public static function forProject(int $project, string $subject): ?array
     {
-        // The package is optional, so its functions may not be there at all.
-        if (!function_exists('Naf\Websocket\live') || !\Naf\Websocket\live()) {
+        if (!self::running()) {
             return null;
         }
 
