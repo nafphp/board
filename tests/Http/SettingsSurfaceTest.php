@@ -232,4 +232,33 @@ final class SettingsSurfaceTest extends AcceptanceTestCase
             );
         }
     }
+
+    /**
+     * The two numbers on the sidebar card come from one list.
+     *
+     * The held count used to be every permission the person has anywhere. Once
+     * administrators started carrying `rbac.all` that included the
+     * installation's own, and against a total of only the board's it read
+     * "20 von 11" -- a fraction larger than one, which is the tell that the
+     * numerator and the denominator were counting different things.
+     */
+    public function testTheRightsCardCountsBothNumbersFromTheSameList(): void
+    {
+        $page = $this->page($this->alice, '/projects/' . self::PROJECT);
+
+        $this->assertSame(
+            1,
+            preg_match('/(\d+) von (\d+) Rechten/u', $page, $found),
+            'the rights card was not rendered',
+        );
+
+        [, $held, $total] = $found;
+        $this->assertGreaterThan(0, (int) $total);
+        $this->assertLessThanOrEqual(
+            (int) $total,
+            (int) $held,
+            'somebody holds more board rights than the board has',
+        );
+        $this->assertSame($total, $held, 'an owner who administers everything holds all of them');
+    }
 }

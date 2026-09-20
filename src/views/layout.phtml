@@ -21,11 +21,21 @@ $roleName = isset($scope)
     : t('Persönliches Konto');
 $roleContext = $current ? $roleName . ' · ' . $project['name'] : $roleName;
 $hintTitle   = $current ? t('Deine Projektrechte') : t('Projekt auswählen');
+/*
+ * Both numbers come from the same list: what there is to do inside a board.
+ *
+ * The held count used to be every permission the person has anywhere, which
+ * since administrators carry `rbac.all` includes the installation's own -- and
+ * against a total of only the board's, that read "20 von 11". Counting the
+ * intersection asks the question the card is actually asking: of the things one
+ * can do here, how many may you.
+ */
+$boardRights = extensions()->permissions()->names();
 $hintText    = $current
     ? t(':role · :count von :total Rechten', [
         'role'  => $roleName,
-        'count' => count($scope->permissions),
-        'total' => count(extensions()->permissions()->all()),
+        'count' => count(array_intersect($boardRights, $scope->permissions)),
+        'total' => count($boardRights),
     ])
     : Format::count(count($projects), 'Projekt verfügbar', 'Projekte verfügbar');
 $hintUrl = $current
