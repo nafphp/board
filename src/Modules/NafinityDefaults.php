@@ -24,6 +24,7 @@ final class NafinityDefaults implements ExtensionProviderInterface
     private const array PROVIDERS = [
         CorePermissions::class,
         CorePriorities::class,
+        CoreLive::class,
         CoreFieldTypes::class,
         CoreEstimation::class,
         CoreActivity::class,

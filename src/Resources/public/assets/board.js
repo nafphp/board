@@ -645,6 +645,22 @@ document.addEventListener('nafinity:board-changed', (event) => {
   refreshBoard(event.detail?.url);
 });
 
+/*
+ * Somebody else changed something.
+ *
+ * The message carries a revision and nothing else, so the only question worth
+ * asking is whether it is newer than what is on screen. It usually is not: the
+ * message about your own change arrives right after you made it, and refetching
+ * for that would undo the card that just animated in.
+ */
+document.addEventListener('naf:websocket-message', (event) => {
+  const message = event.detail;
+  if (!board || message?.channel !== `project:${board.dataset.project}`) return;
+  if (Number(message.revision) <= Number(board.dataset.revision)) return;
+
+  refreshBoard();
+});
+
 if (board && board.dataset.filtered === '0') {
   board.addEventListener('pointerdown', onDown);
   // The native drag image would fight the pointer ghost, so it never starts.
