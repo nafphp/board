@@ -331,7 +331,7 @@ document.addEventListener('keydown', (event) => {
 // The board brings its own drag, drop and celebration layer and is only needed there.
 // Versioned here because this is the only place that loads it; a second
 // importer with a different spelling would be a second module instance.
-if (board) import('./board.js?v=1');
+if (board) import('./board.js?v=4');
 
 // Only where there is something to report: an installation without a socket
 // server renders no status to keep up to date.

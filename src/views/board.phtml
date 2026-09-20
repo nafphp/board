@@ -204,6 +204,7 @@ if (isset($people[$me])) {
     class="board-scroll"
     id="board"
     data-project="<?= (int) $projectId ?>"
+    data-cards="<?= s(route('board.cards', ['project' => $projectId])) ?>"
     data-revision="<?= (int) $board['revision'] ?>"
     data-filtered="<?= $filters || $isLimited ? '1' : '0' ?>"
     data-empty-hint="<?= s($emptyCellHint) ?>"

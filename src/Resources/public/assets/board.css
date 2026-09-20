@@ -12,21 +12,38 @@
   opacity: 1;
 }
 
-@keyframes card-enter {
+/* A card somebody else just put here. It is the only thing on the board that
+   moves during an update, so it is allowed to say so -- once, briefly, and then
+   it is an ordinary card like the rest.
+
+   An outline rather than a border or a shadow: it sits outside the box without
+   moving anything, and it is the one decoration this card does not already
+   use for hovering, dragging or celebrating. */
+@keyframes card-arrive {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.97);
+    transform: translateY(-8px) scale(0.98);
   }
   to {
     opacity: 1;
     transform: none;
   }
 }
-/* Marked once per page load and cleared when it has played. A dropped card is taken out of
-   the document and put back, which would otherwise replay this and blank the card first. */
-.ticket-card[data-enter] {
-  animation: card-enter 0.52s cubic-bezier(0.2, 1.1, 0.3, 1) backwards;
-  animation-delay: var(--enter-delay, 0ms);
+@keyframes card-lit {
+  0%,
+  35% {
+    outline-color: var(--accent);
+  }
+  100% {
+    outline-color: transparent;
+  }
+}
+.ticket-card[data-arrived] {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  animation:
+    card-arrive 0.34s cubic-bezier(0.22, 0.7, 0.3, 1),
+    card-lit 1.6s ease-out;
 }
 
 .ticket-card {
@@ -256,7 +273,7 @@ html.board-dragging .ticket-card::after {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ticket-card[data-enter],
+  .ticket-card[data-arrived],
   .ticket-card.celebrating,
   .ticket-card.celebrating::before,
   .ticket-card.rejected,
