@@ -1188,11 +1188,17 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 .ticket-card[draggable='true'] .card-title {
   cursor: grab;
 }
+.card-id {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
 .card-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 18px;
+  min-height: 22px;
   margin-bottom: 9px;
 }
 .ticket-number {
@@ -1216,8 +1222,9 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 .priority {
   display: inline-grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  flex: none;
+  width: 21px;
+  height: 21px;
   border-radius: 6px;
   color: var(--muted);
   line-height: 1;

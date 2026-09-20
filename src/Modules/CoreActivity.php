@@ -38,6 +38,7 @@ final class CoreActivity implements ExtensionProviderInterface
         'project.settings_saved'  => ['Projekteinstellungen gespeichert', 'tune'],
         'board.structure_changed' => ['Board-Struktur geändert', 'view_kanban'],
         'settings.changed'        => ['Einstellungen geändert', 'tune'],
+        'rbac.granted'            => ['Rollen geändert', 'shield'],
         'ticket.created'          => ['Ticket erstellt', 'add'],
         'ticket.updated'          => ['Ticket bearbeitet', 'edit'],
         'ticket.moved'            => ['Ticket verschoben', 'swap_horiz'],

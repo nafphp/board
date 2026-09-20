@@ -59,6 +59,7 @@ final class ActivityDetail
             // Which switches, never what they were set to: settings hold the
             // passwords and keys a log must not become a second copy of.
             'settings.changed'        => self::settings($payload),
+            'rbac.granted'            => self::grant($payload),
             'ticket.moved'            => self::move($payload),
             'timer.recorded'          => self::minutes($payload['minutes'] ?? null),
             'attachment.added'        => self::quoted($payload['name'] ?? null),
@@ -82,6 +83,30 @@ final class ActivityDetail
         }
 
         return implode(', ', array_unique($names));
+    }
+
+    /**
+     * Who, and from what to what.
+     *
+     * Both ends, because "Rollen geändert" without them is the entry people
+     * open this log for and do not find. The roles were recorded by label when
+     * the grant was made, so this still reads after one was renamed or deleted.
+     *
+     * @param array<string,mixed> $payload
+     */
+    private static function grant(array $payload): string
+    {
+        $person = self::text($payload['person'] ?? null);
+        $moved  = self::roles($payload['before'] ?? []) . ' → ' . self::roles($payload['after'] ?? []);
+
+        return $person === '' ? $moved : $person . ': ' . $moved;
+    }
+
+    private static function roles(mixed $roles): string
+    {
+        $named = array_filter(array_map(self::text(...), (array) $roles));
+
+        return $named === [] ? t('keine') : implode(', ', $named);
     }
 
     /** @param array<string,mixed> $payload */

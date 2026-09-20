@@ -6,6 +6,9 @@ namespace Naf\Board\Tests\Database;
 
 use Naf\Board\Domain\Change;
 use Naf\Board\Tests\Support\BoardTestCase;
+use Naf\Rbac\Events\GrantsChanged;
+
+use function Naf\event;
 
 /**
  * The history as a log of the whole installation.
@@ -96,6 +99,35 @@ final class AuditLogTest extends BoardTestCase
 
         $this->assertContains('title', $payload['fields']);
         $this->assertContains('priority', $payload['fields']);
+    }
+
+    /**
+     * naf/rbac reports what moved; this is the half that decides it is worth
+     * keeping. In a ticket system, who was given which rights where is the entry
+     * people come looking for long after everything else is forgotten.
+     */
+    public function testAChangeOfSomebodysRolesIsRecordedWhereItHappened(): void
+    {
+        event()->dispatch('rbac.granted', new GrantsChanged(
+            (int) $this->alice->getId(),
+            (int) $this->bob->getId(),
+            'project:' . $this->projectA,
+            ['Viewer'],
+            ['Manager'],
+        ));
+
+        $entry = $this->fetchOne(
+            "SELECT scope, payload FROM activities WHERE event_type='rbac.granted' ORDER BY id DESC",
+        );
+
+        $this->assertNotNull($entry, 'a change of roles left no trace');
+        $this->assertSame('project:' . $this->projectA, $entry['scope']);
+
+        $payload = json_decode((string) $entry['payload'], true);
+        $this->assertSame(['Viewer'], $payload['before']);
+        $this->assertSame(['Manager'], $payload['after']);
+        // Resolved when it happened: an id names nothing once the row is gone.
+        $this->assertNotSame('', $payload['person']);
     }
 
     private function entriesFor(int $ticket, string $type): int

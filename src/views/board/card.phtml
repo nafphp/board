@@ -51,17 +51,23 @@ use function Naf\View\s;
         data-points="<?= (int) $card['estimate_points'] ?>"
     >
         <div class="card-top">
-            <span class="ticket-number"><?= s(Format::ticket($project['ticket_key'], $card['number'])) ?></span>
-            <?php if (in_array((int) $card['id'], $running_timers, true)): ?>
-                <span class="timer-pulse" title="<?= s(t('Deine Zeiterfassung läuft')) ?>"></span>
-            <?php endif ?>
-            <div>
+            <?php /* Everything that says what this ticket *is* stands together on
+                     the left: its priority, its number, the tick a closed one
+                     wears and the pulse of a running timer. The right side is
+                     then only what you can do to it. */ ?>
+            <span class="card-id">
                 <span
                     class="priority priority-<?= s($card['priority']) ?>"
                     title="<?= s($card['priority']) ?>"
                 >
                     <?= $prioritySymbols[$card['priority']] ?? $unknownPriority ?>
                 </span>
+                <span class="ticket-number"><?= s(Format::ticket($project['ticket_key'], $card['number'])) ?></span>
+                <?php if (in_array((int) $card['id'], $running_timers, true)): ?>
+                    <span class="timer-pulse" title="<?= s(t('Deine Zeiterfassung läuft')) ?>"></span>
+                <?php endif ?>
+            </span>
+            <div>
                 <?php if ($canWrite && !$card['archived_at']): ?>
                     <button
                         type="button"
