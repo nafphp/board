@@ -199,7 +199,9 @@ $hintUrl = $current
                     </label>
                     <label>
                         <?= s(t('Symbol')) ?>
-                        <input name="icon" maxlength="2" value="N" />
+                        <?php // Empty, so the server takes it from the name. A fixed
+                              // letter here meant every project started life as an N.?>
+                        <input name="icon" maxlength="2" placeholder="<?= s(t('Aus dem Namen')) ?>" />
                     </label>
                     <label>
                         <?= s(t('Ticketkürzel')) ?>

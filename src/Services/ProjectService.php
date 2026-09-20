@@ -13,6 +13,7 @@ use Naf\Board\Domain\Failure;
 use Naf\Board\Domain\Placement;
 use Naf\Board\Domain\ProjectScope;
 use Naf\Board\Rbac\Grants;
+use Naf\Board\Support\Abbreviation;
 use Naf\Board\Support\Input;
 use Naf\ORM\Core\EntityManager;
 use PDO;
@@ -413,16 +414,21 @@ final class ProjectService implements ProjectServiceInterface
         if ($name === '') {
             throw new Failure('Ein Projektname wird benötigt.');
         }
-        $icon = $data['icon'] ?? mb_substr($name, 0, 1);
+        $icon = $data['icon'] ?? '';
         if (!is_string($icon) || mb_strlen($icon) > 2) {
             throw new Failure('Das Icon darf höchstens zwei Zeichen haben.');
         }
+        if (trim($icon) === '') {
+            $icon = Abbreviation::mark($name);
+        }
         // The key names every ticket of the project and rides in its address, so it stays
-        // within the characters an address can carry without escaping.
+        // within the characters an address can carry without escaping. Left empty it is
+        // taken from the name, which is what the field has always promised.
         $key = strtoupper(trim((string) ($data['ticket_key'] ?? '')));
         if ($key === '') {
-            $key = strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $name));
-            $key = substr($key, 0, 3) ?: 'P';
+            // A name with nothing alphanumeric in it abbreviates to nothing, and a
+            // project still needs something in front of its ticket numbers.
+            $key = Abbreviation::key($name) ?: 'P';
         }
         if (!preg_match('/^[A-Z0-9]{1,6}$/', $key)) {
             throw new Failure('Das Ticketkürzel darf nur ein bis sechs Buchstaben oder Ziffern haben.', 422, [
