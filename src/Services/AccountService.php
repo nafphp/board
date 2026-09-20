@@ -9,9 +9,12 @@ use Naf\Auth\Credentials\PasswordCredentials;
 use Naf\Auth\Support\PasswordHasher;
 use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\AccountServiceInterface;
+use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Jobs\AccountSecurityNoticeJob;
 use Naf\Board\Models\User;
+use Naf\Board\Rbac\Grants;
+use Naf\Board\Rbac\Installation;
 use Naf\Board\Support\Input;
 use Naf\Board\Support\PasswordRule;
 use Naf\Mail\Core\Mailer;
@@ -25,7 +28,9 @@ use SensitiveParameter;
 use Throwable;
 
 use function Naf\config;
+use function Naf\event;
 use function Naf\I18n\t;
+use function Naf\Rbac\rbac;
 
 /** @internal */
 final class AccountService implements AccountServiceInterface
@@ -63,6 +68,75 @@ final class AccountService implements AccountServiceInterface
             $this->auth->logout();
             throw $exception;
         }
+    }
+
+    /**
+     * Open an account for somebody else.
+     *
+     * Until now this existed only on the command line, which meant that adding
+     * a colleague required a shell on the server. It is a right -- `users.manage`
+     * -- and not a role, so an installation can hand it out without handing out
+     * everything else that comes with administering one.
+     *
+     * The password is set here and the person changes it afterwards. An
+     * invitation they answer themselves would be better, and is what this should
+     * become; what it must not stay is a shell command.
+     *
+     * @param array<string, mixed> $input
+     */
+    public function create(#[SensitiveParameter] array $input): int
+    {
+        $actor = $this->access->actor();
+        if (!rbac()->allows($actor, Installation::MANAGE_USERS)) {
+            throw new Failure(t('Du hast für diese Aktion keine Berechtigung.'), 403);
+        }
+
+        $data = Input::validate($input, [
+            'name'     => 'required|string|max:120',
+            'email'    => 'required|string|email|max:190',
+            'password' => 'required|string|max:1024',
+        ]);
+
+        $name  = trim((string) $data['name']);
+        $email = strtolower(trim((string) $data['email']));
+        if ($name === '') {
+            throw new Failure(t('Ein Name wird benötigt.'));
+        }
+        if (null !== $complaint = PasswordRule::complaint((string) $data['password'])) {
+            throw new Failure($complaint);
+        }
+
+        $this->availableEmail($email);
+
+        // One transaction for the account, its default grant and the entry that
+        // says it was opened. An account recorded but not created, or created
+        // and not recorded, would each be a lie the log cannot be cured of.
+        $this->entityManager->begin();
+
+        try {
+            $user = new User([
+                'name'          => $name,
+                'email'         => $email,
+                'password_hash' => $this->hasher->hash((string) $data['password']),
+                'created_at'    => gmdate('Y-m-d H:i:s'),
+            ]);
+            $this->entityManager->save($user);
+            $id = (int) $user->getId();
+            Grants::ensureDefault($id);
+
+            // Not a personal event: who opened an account for whom is
+            // administration, and that concerns whoever may read the log.
+            event()->dispatch('nafinity.changed', Change::inInstallation($actor, 'account.created', [
+                'person' => $name,
+            ]));
+            $this->entityManager->commit();
+        } catch (Throwable $failure) {
+            $this->entityManager->rollback();
+
+            throw $failure;
+        }
+
+        return $id;
     }
 
     public function profile(): array
@@ -111,6 +185,7 @@ final class AccountService implements AccountServiceInterface
             $statement->execute([$hash, $id]);
             $this->deletePending($id);
             $this->notice($user['email'], 'password.changed');
+            $this->record($id, 'account.password_changed');
         });
     }
 
@@ -158,6 +233,7 @@ final class AccountService implements AccountServiceInterface
                 throw new Failure(t('Der Bestätigungscode konnte nicht versendet werden. Bitte versuche es später erneut.'), 503);
             }
             $this->notice($user['email'], 'email.requested');
+            $this->record($id, 'account.email_requested');
 
             return ['request_id' => $requestId, 'email' => $email, 'expires_at' => $expires];
         });
@@ -199,6 +275,7 @@ final class AccountService implements AccountServiceInterface
             $statement->execute([$pending['email'], gmdate('Y-m-d H:i:s'), $id]);
             $this->deletePending($id);
             $this->notice($user['email'], 'email.changed');
+            $this->record($id, 'account.email_changed');
 
             return true;
         });
@@ -291,5 +368,27 @@ final class AccountService implements AccountServiceInterface
     {
         // The native PDO queue shares this transaction. Passwords/codes never enter it.
         $this->queue->push(AccountSecurityNoticeJob::class, ['recipient' => $recipient, 'event' => $event]);
+    }
+
+    /**
+     * Put a change to somebody's own account in the installation's history.
+     *
+     * That it happened and to whom, never what it became. An address belongs to
+     * the account, where it is guarded and can be corrected; a password belongs
+     * nowhere at all. What a history is asked is when somebody's credentials
+     * last moved, and by whom -- and that is answered without copying either.
+     *
+     * Only readable by somebody holding the right for it: these are the entries
+     * about a person rather than about their work.
+     */
+    private function record(int $user, string $type): void
+    {
+        $name = $this->pdo->prepare('SELECT name FROM users WHERE id=?');
+        $name->execute([$user]);
+
+        event()->dispatch(
+            'nafinity.changed',
+            Change::inInstallation($user, $type, ['person' => (string) $name->fetchColumn()]),
+        );
     }
 }

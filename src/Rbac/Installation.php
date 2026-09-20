@@ -39,6 +39,15 @@ final class Installation
      */
     public const string VIEW_AUDIT = 'audit.view';
 
+    /*
+     * The entries about a person rather than about their work: when their
+     * password last changed, when they moved their address. Reading the log at
+     * all and reading those are two different questions, and somebody who may
+     * follow what happened on the boards need not be told when a colleague last
+     * changed a password.
+     */
+    public const string VIEW_PERSONAL_AUDIT = 'audit.personal';
+
     /**
      * What somebody is called in a board they administer without being in it.
      *
@@ -101,6 +110,13 @@ final class Installation
                 'Installation',
                 20,
             ),
+            new PermissionDefinition(
+                self::VIEW_PERSONAL_AUDIT,
+                'Persönliche Vorgänge im Protokoll lesen',
+                'Auch Passwort- und E-Mail-Änderungen einzelner Konten sehen.',
+                'Installation',
+                30,
+            ),
         );
 
         /*
@@ -125,6 +141,7 @@ final class Installation
                 self::ADMIN_PROJECTS,
                 self::MANAGE_SETTINGS,
                 self::VIEW_AUDIT,
+                self::VIEW_PERSONAL_AUDIT,
             ],
             index: 10,
         ));

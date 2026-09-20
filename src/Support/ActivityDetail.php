@@ -98,8 +98,13 @@ final class ActivityDetail
             'ticket.updated' => self::fields($payload),
             // Which switches, never what they were set to: settings hold the
             // passwords and keys a log must not become a second copy of.
-            'settings.changed'        => self::settings($payload),
-            'rbac.granted'            => self::grant($payload),
+            'settings.changed' => self::settings($payload),
+            'rbac.granted'     => self::grant($payload),
+            // Whose account, and nothing about what it became: an address
+            // belongs to the account, a password nowhere at all.
+            'account.created', 'account.password_changed',
+            'account.email_requested', 'account.email_changed'
+                                      => self::text($payload['person'] ?? null),
             'ticket.moved'            => self::move($payload),
             'timer.recorded'          => self::minutes($payload['minutes'] ?? null),
             'attachment.added'        => self::quoted($payload['name'] ?? null),

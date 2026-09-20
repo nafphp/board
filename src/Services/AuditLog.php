@@ -25,19 +25,45 @@ use function Naf\Board\extensions;
  */
 final class AuditLog
 {
+    /**
+     * The entries about a person rather than about their work.
+     *
+     * Named here because two places need the same list and must not disagree:
+     * the query that leaves them out, and the filter that offers them. A type
+     * added to the log without being added here is visible to everybody who may
+     * read the log at all -- which is the safe direction for work and the wrong
+     * one for this, so the list is short and deliberate.
+     */
+    public const array PERSONAL = [
+        'account.password_changed',
+        'account.email_requested',
+        'account.email_changed',
+    ];
+
     public function __construct(private PDO $pdo)
     {
     }
 
     /**
-     * @param array{scope?: string, actor?: int, type?: string} $filter
+     * @param array{scope?: string, actor?: int, type?: string, q?: string} $filter
+     * @param bool $personal whether the reader may see what happened to accounts
      *
      * @return list<array<string,mixed>>
      */
-    public function entries(array $filter = [], int $before = 0, int $limit = 100): array
-    {
+    public function entries(
+        array $filter = [],
+        int $before = 0,
+        int $limit = 100,
+        bool $personal = false,
+    ): array {
         $where  = [];
         $values = [];
+
+        if (!$personal) {
+            $where[] = 'a.event_type NOT IN ('
+                . implode(',', array_fill(0, count(self::PERSONAL), '?')) . ')';
+            $values = [...$values, ...self::PERSONAL];
+        }
 
         // An empty scope is the installation itself, which is a filter and not
         // the absence of one -- so it is only applied when it was asked for.
@@ -144,7 +170,7 @@ final class AuditLog
     }
 
     /** @return array<string,string> */
-    public function types(): array
+    public function types(bool $personal = false): array
     {
         $recorded = $this->pdo
             ->query('SELECT DISTINCT event_type FROM activities ORDER BY event_type')
@@ -152,6 +178,10 @@ final class AuditLog
 
         $named = [];
         foreach ($recorded as $type) {
+            // Not offered as a filter to somebody who would be shown nothing.
+            if (!$personal && in_array((string) $type, self::PERSONAL, true)) {
+                continue;
+            }
             $named[(string) $type] = extensions()->activityTypes()->get((string) $type)?->label
                 ?? (string) $type;
         }

@@ -9,14 +9,48 @@
  * @var array $people
  */
 
+use Naf\Board\Rbac\Installation;
 use Naf\Board\Support\Icon;
 
+use function Naf\Auth\auth;
+use function Naf\Board\field;
 use function Naf\Board\partial;
+use function Naf\Form\csrf;
 use function Naf\I18n\t;
+use function Naf\Rbac\rbac;
+use function Naf\route;
 use function Naf\View\s;
 
 ?>
 <div class="settings-rows" data-kind="user">
+    <?php if (rbac()->allows((int) (auth()->user()?->getIdentifier() ?? 0), Installation::MANAGE_USERS)): ?>
+        <?php /* Opening an account used to mean having a shell on the server. */ ?>
+        <details class="settings-row">
+            <summary class="settings-row-head">
+                <span class="settings-row-title"><?= s(t('Konto anlegen')) ?></span>
+                <?= Icon::mark('person_add', 'sm', 'settings-row-caret') ?>
+            </summary>
+            <div class="settings-row-body">
+                <form method="post" data-enhanced action="<?= s(route('installation.users.create')) ?>">
+                    <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
+                    <?= field(['label' => 'Name', 'name' => 'name', 'required' => true, 'attributes' => ['maxlength' => 120]]) ?>
+                    <?= field(['label' => 'E-Mail', 'name' => 'email', 'type' => 'email', 'required' => true, 'attributes' => ['maxlength' => 190]]) ?>
+                    <?= field([
+                        'label'      => 'Erstes Passwort',
+                        'name'       => 'password',
+                        'type'       => 'password',
+                        'required'   => true,
+                        'hint'       => 'Die Person ändert es danach selbst. Sag es ihr auf einem anderen Weg als per E-Mail.',
+                        'attributes' => ['autocomplete' => 'new-password'],
+                    ]) ?>
+                    <div class="form-errors" role="alert"></div>
+                    <div class="settings-actions">
+                        <button class="button primary"><?= s(t('Konto anlegen')) ?></button>
+                    </div>
+                </form>
+            </div>
+        </details>
+    <?php endif ?>
     <p class="settings-note">
         <?= s(t(
             'Eine Rolle ohne Ort gilt überall, eine mit Ort nur dort. Deine eigenen Rollen kann '

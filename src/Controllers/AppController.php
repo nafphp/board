@@ -345,6 +345,16 @@ final class AppController
      * rather than "the newest fifty" means two people watching at once are not
      * handed each other's duplicates.
      */
+    /** Open an account for somebody else; the service decides whether you may. */
+    public function createAccount(): ResponseInterface
+    {
+        return $this->mutation(function ($data) {
+            $this->accounts->create($data);
+
+            return ['url' => route('installation.settings')];
+        });
+    }
+
     /**
      * The installation's own history.
      *
@@ -375,12 +385,16 @@ final class AppController
 
             $before = (int) ($query['before'] ?? 0);
 
+            // Reading the log and reading what happened to accounts are two
+            // questions, so they are asked separately.
+            $personal = rbac()->allows($actor, Installation::VIEW_PERSONAL_AUDIT);
+
             return $this->page('audit', [
                 'title'   => 'Protokoll',
-                'entries' => $this->audit->entries($filter, $before),
+                'entries' => $this->audit->entries($filter, $before, 100, $personal),
                 'scopes'  => $this->audit->scopes(),
                 'actors'  => $this->audit->actors(),
-                'types'   => $this->audit->types(),
+                'types'   => $this->audit->types($personal),
                 'filter'  => $filter,
                 'chosen'  => [
                     'scope' => $query['scope'] ?? 'alle',

@@ -442,5 +442,14 @@
   "Das Projekt braucht mindestens einen aktiven Owner.": "The project needs at least one active owner.",
   "Bitte gib eine gültige E-Mail-Adresse an.": "Please enter a valid email address.",
   "Mindestens %d Zeichen.": "At least %d characters.",
-  "Höchstens %d Zeichen.": "Maximum of %d characters."
+  "Höchstens %d Zeichen.": "Maximum of %d characters.",
+  "Passwort geändert": "Password changed",
+  "E-Mail-Wechsel angefragt": "Email change requested",
+  "E-Mail geändert": "Email changed",
+  "Persönliche Vorgänge im Protokoll lesen": "Read personal events in the log",
+  "Auch Passwort- und E-Mail-Änderungen einzelner Konten sehen.": "Also see password and email changes of individual accounts.",
+  "Konto anlegen": "Create account",
+  "Erstes Passwort": "First password",
+  "Die Person ändert es danach selbst. Sag es ihr auf einem anderen Weg als per E-Mail.": "They change it themselves afterwards. Tell them by some means other than email.",
+  "Konto angelegt": "Account created"
 }

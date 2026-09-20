@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Naf\Board\Tests\Database;
 
 use Naf\Board\Domain\Change;
+use Naf\Board\Services\AuditLog;
 use Naf\Board\Tests\Support\BoardTestCase;
 use Naf\Rbac\Events\GrantsChanged;
 
@@ -128,6 +129,31 @@ final class AuditLogTest extends BoardTestCase
         $this->assertSame(['Manager'], $payload['after']);
         // Resolved when it happened: an id names nothing once the row is gone.
         $this->assertNotSame('', $payload['person']);
+    }
+
+    /**
+     * What happened to somebody's account is not what happened to the boards.
+     * Reading the log and reading those are two rights, so they are two answers.
+     */
+    public function testPersonalEntriesAreLeftOutWithoutTheRight(): void
+    {
+        $this->pdo->prepare(
+            'INSERT INTO activities(scope,project_id,ticket_id,actor_id,event_type,payload,created_at)'
+            . " VALUES('',NULL,NULL,?,'account.password_changed',?,?)",
+        )->execute([
+            $this->alice->getId(),
+            json_encode(['person' => 'Alice Winter'], JSON_THROW_ON_ERROR),
+            gmdate('Y-m-d H:i:s'),
+        ]);
+
+        $log      = new AuditLog($this->pdo);
+        $without  = array_column($log->entries(), 'event_type');
+        $withThem = array_column($log->entries([], 0, 100, true), 'event_type');
+
+        $this->assertNotContains('account.password_changed', $without);
+        $this->assertContains('account.password_changed', $withThem);
+        $this->assertArrayNotHasKey('account.password_changed', $log->types());
+        $this->assertArrayHasKey('account.password_changed', $log->types(true));
     }
 
     private function entriesFor(int $ticket, string $type): int
