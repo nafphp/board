@@ -23,12 +23,14 @@ final class ActivityListener
         if (!$this->pdo->inTransaction()) {
             throw new LogicException('Activity requires the domain transaction.');
         }
-        $sql = 'INSERT INTO activities(project_id,ticket_id,actor_id,event_type,payload,created_at) VALUES(?,?,?,?,?,?)';
+        $sql = 'INSERT INTO activities(scope,project_id,ticket_id,actor_id,event_type,payload,created_at)'
+            . ' VALUES(?,?,?,?,?,?,?)';
         if ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql') {
             $sql .= ' RETURNING id';
         }
         $statement = $this->pdo->prepare($sql);
         $statement->execute([
+            $change->scope,
             $change->projectId,
             $change->ticketId,
             $change->actorId,

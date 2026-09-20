@@ -10,7 +10,9 @@ use Naf\Board\Contracts\TicketServiceInterface;
 use Naf\Board\Contracts\TimerServiceInterface;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Rbac\Installation;
+use Naf\Board\Rbac\Project;
 use Naf\Board\Support\BoardFilterContext;
+use Naf\Rbac\Scope;
 use PDO;
 
 use function Naf\Board\extensions;
@@ -369,14 +371,14 @@ final class BoardQuery implements BoardQueryInterface
                    u.name AS actor_name,
                    t.number AS ticket_number
             FROM activities a
-            JOIN users u ON u.id = a.actor_id
+            LEFT JOIN users u ON u.id = a.actor_id
             LEFT JOIN tickets t ON t.id = a.ticket_id
             AND t.project_id = a.project_id
-            WHERE a.project_id = ?
+            WHERE a.scope = ?
             ORDER BY a.id DESC
             LIMIT 100
             SQL,
-            [$project],
+            [(string) Scope::of(Project::SCOPE, $project)],
         );
     }
 
@@ -399,10 +401,10 @@ final class BoardQuery implements BoardQueryInterface
                    u.name AS actor_name,
                    t.number AS ticket_number
             FROM activities a
-            JOIN users u ON u.id = a.actor_id
+            LEFT JOIN users u ON u.id = a.actor_id
             LEFT JOIN tickets t ON t.id = a.ticket_id
             AND t.project_id = a.project_id
-            WHERE a.project_id = ?
+            WHERE a.scope = ?
                 AND a.id > ?
             ORDER BY a.id ASC
             SQL
@@ -410,7 +412,7 @@ final class BoardQuery implements BoardQueryInterface
             // and it is not interpolated into the query above -- that block is a
             // nowdoc, which is the point of writing SQL in one.
             . ' LIMIT ' . max(1, min(200, $limit)),
-            [$project, $after],
+            [(string) Scope::of(Project::SCOPE, $project), $after],
         );
     }
 

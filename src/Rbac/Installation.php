@@ -32,6 +32,13 @@ final class Installation
     public const string ADMIN_PROJECTS  = 'projects.administer';
     public const string MANAGE_SETTINGS = 'settings.manage';
 
+    /*
+     * Reading the installation's own history is its own right, and not part of
+     * managing anything. A log that records who changed a role is a log that
+     * must not be readable by everyone whose role was changed.
+     */
+    public const string VIEW_AUDIT = 'audit.view';
+
     /**
      * What somebody is called in a board they administer without being in it.
      *
@@ -87,6 +94,13 @@ final class Installation
                 'Installation',
                 10,
             ),
+            new PermissionDefinition(
+                self::VIEW_AUDIT,
+                'Protokoll lesen',
+                'Die aufgezeichneten Änderungen dieser Installation einsehen, auch außerhalb der Boards.',
+                'Installation',
+                20,
+            ),
         );
 
         /*
@@ -110,6 +124,7 @@ final class Installation
                 self::CREATE_PROJECTS,
                 self::ADMIN_PROJECTS,
                 self::MANAGE_SETTINGS,
+                self::VIEW_AUDIT,
             ],
             index: 10,
         ));
