@@ -1,7 +1,17 @@
 import { requestOllama } from './ollama-client.js';
 import { renderMessageContent } from './markdown.js';
 import { normalizeToolCalls, ollamaTools } from './tools.js';
-import { api, configFor, localUrl, read, storageFor, systemPrompt, write } from './store.js';
+import {
+  api,
+  configFor,
+  localUrl,
+  read,
+  readSession,
+  storageFor,
+  systemPrompt,
+  write,
+  writeSession,
+} from './store.js';
 import { initSettings } from './settings.js';
 import { selectTools } from './tool-router.js';
 
@@ -188,11 +198,82 @@ function initChat(root) {
       toggle.focus({ preventScroll: true });
     }
   }
+  /*
+   * Whether this browser can actually reach Ollama.
+   *
+   * Nobody else can answer it. Ollama runs on the machine this page is open on,
+   * its address is in this browser's own storage, and the server sits in a
+   * container that has no Ollama and has no business having one -- it could only
+   * ever answer for itself. The socket is further away still: it carries that a
+   * board changed and deliberately knows nothing else.
+   *
+   * So the browser asks, once, and remembers the answer for as long as the tab
+   * is open. Asking again on every page would be a request per navigation for
+   * something that only changes when somebody starts a program.
+   *
+   * And when they do start one, the answer has to change. A timer would be the
+   * obvious way and the wrong one: it asks hardest exactly when nobody is there.
+   * Coming back to the tab is the better moment, because it is the one a person
+   * creates -- you switch away, you start Ollama, you come back, and the question
+   * is asked again. Only a "no" is worth re-asking; a "yes" that has since gone
+   * away shows up as a failed request the moment the assistant is used, which is
+   * where it belongs.
+   */
+  let reachable = null;
+  let asked = 0;
+
+  // Long enough that returning to the tab twice in a row asks once, short enough
+  // that starting Ollama and switching back is answered by the time you look.
+  const stale = 30000;
+
+  /** What this session already found out about this address, if anything. */
+  function remembered(config) {
+    const seen = readSession(keys.reach, null);
+
+    return seen && seen.url === config.url ? Boolean(seen.ok) : null;
+  }
+
+  /** How long ago that was, or Infinity when it was never asked. */
+  function answeredAt() {
+    return Number(readSession(keys.reach, null)?.at ?? 0);
+  }
+
+  async function ask(config) {
+    const mine = ++asked;
+    let answered = false;
+    try {
+      // The cheapest thing Ollama replies to, and the same call the settings
+      // page makes to list models.
+      await requestOllama(config.url, '/api/tags', null, null, AbortSignal.timeout(2500));
+      answered = true;
+    } catch {
+      answered = false;
+    }
+    // A later question has overtaken this one; its answer is the current one.
+    if (mine !== asked) return;
+    writeSession(keys.reach, { url: config.url, ok: answered, at: Date.now() });
+    reachable = answered;
+    synchronize();
+  }
+
+  /**
+   * @param {{again?: boolean}} options again: the settings changed, so whatever
+   *   this session knows was about a different address or a different intent.
+   */
+  function refresh({ again = false } = {}) {
+    const config = configFor(root);
+    reachable = again ? null : remembered(config);
+    synchronize();
+    if (config.enabled && reachable === null) ask(config);
+  }
+
   function synchronize() {
     controller?.abort();
     epoch += 1;
     const config = configFor(root);
-    root.hidden = !config.enabled;
+    // Switched on and answering. Unknown counts as away: a launcher that appears
+    // and then vanishes is worse than one that arrives a moment late.
+    root.hidden = !config.enabled || reachable !== true;
     if (root.hidden) {
       motionVersion += 1;
       expanded = false;
@@ -245,11 +326,22 @@ function initChat(root) {
     input.focus({ preventScroll: true });
   });
   stop.addEventListener('click', () => controller?.abort());
-  window.addEventListener('nafinity:ai-settings', synchronize);
-  window.addEventListener('storage', (event) => {
-    if (event.key === keys.config || event.key === keys.memory) synchronize();
+  /*
+   * Back at this tab. If the answer was no and it is no longer fresh, ask once
+   * more -- this is the moment somebody has just installed or started Ollama and
+   * come back to see it work.
+   */
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    if (reachable === true || Date.now() - answeredAt() < stale) return;
+    refresh({ again: true });
   });
-  synchronize();
+
+  window.addEventListener('nafinity:ai-settings', () => refresh({ again: true }));
+  window.addEventListener('storage', (event) => {
+    if (event.key === keys.config || event.key === keys.memory) refresh();
+  });
+  refresh();
   syncComposer();
   render();
 
