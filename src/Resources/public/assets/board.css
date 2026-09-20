@@ -22,7 +22,7 @@
 @keyframes card-arrive {
   from {
     opacity: 0;
-    transform: translateY(-8px) scale(0.98);
+    transform: translateY(-7px) scale(0.96);
   }
   to {
     opacity: 1;
@@ -38,12 +38,16 @@
     outline-color: transparent;
   }
 }
+/* The delay is how long the cards around it take to make room -- `roomMade` in
+   board.js. `backwards` holds the card at nothing at all until then, so the
+   space opens on an empty spot and the card arrives into it, rather than being
+   there before anybody could see it come. */
 .ticket-card[data-arrived] {
   outline: 2px solid transparent;
   outline-offset: 2px;
   animation:
-    card-arrive 0.34s cubic-bezier(0.22, 0.7, 0.3, 1),
-    card-lit 1.6s ease-out;
+    card-arrive 0.42s cubic-bezier(0.22, 0.7, 0.3, 1) 0.19s backwards,
+    card-lit 1.7s ease-out 0.19s;
 }
 
 .ticket-card {

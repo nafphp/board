@@ -187,6 +187,16 @@ function targetCell(x, y) {
 
 const flights = new WeakMap();
 
+/*
+ * How long cards take to glide to where they now belong.
+ *
+ * Named because two other things wait exactly this long: a card arriving from
+ * somebody else's change, which must not appear until the room for it is made,
+ * and the scroll that brings it into view. The stylesheet delays its arrival by
+ * the same amount and says so.
+ */
+const roomMade = 190;
+
 // First/Last/Invert/Play so neighbouring cards glide instead of jumping.
 function flip(nodes, mutate) {
   if (reducedMotion.matches) {
@@ -215,7 +225,7 @@ function flip(nodes, mutate) {
     flights.set(node, {
       animation: node.animate(
         [{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }],
-        { duration: 190, easing: glide },
+        { duration: roomMade, easing: glide },
       ),
       top: last.top,
       left: last.left,
@@ -646,12 +656,22 @@ function asCard(markup) {
   return shell.content.querySelector('.ticket-card');
 }
 
-/** A card leaving: it goes out the way it came, rather than blinking out. */
+/**
+ * A card leaving: it fades where it stands, and only then do the cards below it
+ * close the gap. Taking it out first and fading nothing would be the same jump
+ * in the other direction.
+ */
 function dismiss(card) {
   const cell = card.parentElement;
+  const close = () => {
+    flip(cell ? cardsIn(cell).filter((node) => node !== card) : [], () => {
+      card.remove();
+      if (cell) emptyHint(cell);
+    });
+  };
+
   if (reducedMotion.matches) {
-    card.remove();
-    if (cell) emptyHint(cell);
+    close();
 
     return;
   }
@@ -661,10 +681,46 @@ function dismiss(card) {
       easing: glide,
       fill: 'forwards',
     })
-    .finished.then(() => {
-      card.remove();
-      if (cell) emptyHint(cell);
-    });
+    .finished.then(close);
+}
+
+/*
+ * Bringing what just arrived into view -- but only when it is not already there.
+ *
+ * A column long enough to scroll is exactly where a new card is invisible, and a
+ * card nobody sees arrive might as well have been there all along. `nearest`
+ * moves as little as it takes, so a card just off the edge nudges into view
+ * rather than jumping to the middle of the screen.
+ *
+ * Not while a ticket is open in front of it: scrolling the board behind a drawer
+ * moves something nobody is looking at.
+ */
+function reveal(card) {
+  // A moment passed while the room was made, and a card can be gone by now.
+  if (!card.isConnected) return;
+  if (document.querySelector('#ticket-drawer[open]')) return;
+
+  const behavior = reducedMotion.matches ? 'auto' : 'smooth';
+  // Where the card will be, not where it shows: it is one frame into its own
+  // arrival, and a rect carries that transform with it.
+  const box = layoutBox(card);
+  // Brought just inside rather than flush against the edge, which reads as cut off.
+  const air = 24;
+
+  const above = box.top - air;
+  const below = box.top + box.height + air - innerHeight;
+  // A card taller than the window shows its top half; there is no arrangement
+  // that shows all of it.
+  const down = above < 0 ? above : Math.max(0, below);
+  if (down) scrollBy({ top: down, behavior });
+
+  // The board scrolls sideways on its own, so a column off to the right is not
+  // something the window can do anything about.
+  const frame = board.getBoundingClientRect();
+  const before = box.left - air - frame.left;
+  const after = box.left + card.offsetWidth + air - frame.right;
+  const across = before < 0 ? before : Math.max(0, after);
+  if (across) board.scrollBy({ left: across, behavior });
 }
 
 /*
@@ -689,58 +745,73 @@ function applyBoard(data) {
   const cells = new Set();
   let structural = false;
 
-  for (const [key, ids] of Object.entries(data.cells)) {
-    const [column, lane] = key.split(':');
-    const cell = board.querySelector(`.board-cell[data-column="${column}"][data-lane="${lane}"]`);
-    /*
-     * A column or swimlane that did not exist when this page was drawn. Nothing
-     * here can invent one, and quietly dropping the cards would leave a board
-     * that disagrees with its own counts -- so the page says so and offers the
-     * reload that fixes it.
-     */
-    if (!cell) {
-      structural = true;
-      continue;
-    }
-    cells.add(cell);
-
-    const wanted = [];
-    for (const id of ids) {
-      const markup = data.cards[id];
-      let node = present.get(id);
-      present.delete(id);
-
-      if (!node && markup) {
-        node = asCard(markup);
-        if (node) arrived.push(node);
-      } else if (node && markup) {
-        // The version is the ticket's own, so this asks whether the card
-        // changed rather than whether its markup happens to differ.
-        const fresh = asCard(markup);
-        if (fresh && fresh.dataset.version !== node.dataset.version) {
-          node.replaceWith(fresh);
-          node = fresh;
-        }
+  /*
+   * Everything already on the board glides to where it now belongs, rather than
+   * being somewhere else the next time anybody looks. All of it, not only the
+   * cell that changed: a card arriving makes its cell taller, which makes its
+   * lane taller, which moves the lane below. A card that does not move costs a
+   * measurement and animates nothing.
+   */
+  flip([...present.values()], () => {
+    for (const [key, ids] of Object.entries(data.cells)) {
+      const [column, lane] = key.split(':');
+      const cell = board.querySelector(`.board-cell[data-column="${column}"][data-lane="${lane}"]`);
+      /*
+       * A column or swimlane that did not exist when this page was drawn. Nothing
+       * here can invent one, and quietly dropping the cards would leave a board
+       * that disagrees with its own counts -- so the page says so and offers the
+       * reload that fixes it.
+       */
+      if (!cell) {
+        structural = true;
+        continue;
       }
-      if (node) wanted.push(node);
+      cells.add(cell);
+
+      const wanted = [];
+      for (const id of ids) {
+        const markup = data.cards[id];
+        let node = present.get(id);
+        present.delete(id);
+
+        if (!node && markup) {
+          node = asCard(markup);
+          if (node) {
+            // Marked before it is put in, so it is invisible for as long as the
+            // room for it is being made. Nothing announces itself to somebody who
+            // asked for less motion.
+            if (!reducedMotion.matches) node.dataset.arrived = '';
+            arrived.push(node);
+          }
+        } else if (node && markup) {
+          // The version is the ticket's own, so this asks whether the card
+          // changed rather than whether its markup happens to differ.
+          const fresh = asCard(markup);
+          if (fresh && fresh.dataset.version !== node.dataset.version) {
+            node.replaceWith(fresh);
+            node = fresh;
+          }
+        }
+        if (node) wanted.push(node);
+      }
+
+      wanted.forEach((node, index) => {
+        const here = cardsIn(cell)[index];
+        if (here !== node) cell.insertBefore(node, here ?? null);
+      });
     }
 
-    wanted.forEach((node, index) => {
-      const here = cardsIn(cell)[index];
-      if (here !== node) cell.insertBefore(node, here ?? null);
-    });
-  }
+    for (const cell of cells) emptyHint(cell);
+  });
 
   // Whatever the board no longer names: moved out of sight by a filter, moved
-  // to a cell this page does not have, or gone.
-  for (const node of present.values()) {
-    if (node.parentElement) cells.add(node.parentElement);
-    dismiss(node);
-  }
+  // to a cell this page does not have, or gone. Each fades where it stands and
+  // the gap closes behind it.
+  for (const node of present.values()) dismiss(node);
 
-  for (const cell of cells) emptyHint(cell);
-  // Nothing announces itself to somebody who asked for less motion.
-  if (!reducedMotion.matches) for (const node of arrived) node.dataset.arrived = '';
+  // Once the room is made, the newcomer appears -- and the board carries the eye
+  // to it if it landed somewhere nobody can see.
+  if (arrived[0]) setTimeout(() => reveal(arrived[0]), roomMade);
 
   syncCounts();
   board.dataset.revision = String(data.revision ?? board.dataset.revision);
