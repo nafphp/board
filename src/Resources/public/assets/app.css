@@ -1016,9 +1016,25 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   background: var(--accent-soft);
   color: var(--accent);
   font-weight: 600;
+  transition:
+    background 0.18s,
+    color 0.18s,
+    box-shadow 0.18s;
 }
 .filterbar .button:hover {
   background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+/* The row no longer describes the board under it. Filling the button is the
+   difference between a control that is available and one with something waiting
+   in it -- the same difference the page's primary button carries. */
+.filterbar .button[data-changed],
+.filterbar .button[data-changed]:hover {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 3px 8px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.filterbar .button[data-changed]:hover {
+  filter: brightness(1.08);
 }
 .extra-filters > div {
   position: absolute;

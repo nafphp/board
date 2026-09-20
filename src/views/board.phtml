@@ -179,7 +179,7 @@ if (isset($people[$me])) {
             </label>
         </div>
     </details>
-    <button class="button subtle"><?= s(t('Filtern')) ?></button>
+    <button class="button subtle" data-apply><?= s(t('Filtern')) ?></button>
     <?php if ($filters): ?>
         <a class="clear-filter" href="<?= s(route('board', ['project' => $projectId])) ?>"><?= s(t('Zurücksetzen')) ?></a>
     <?php endif ?>
