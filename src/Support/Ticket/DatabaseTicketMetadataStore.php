@@ -9,6 +9,8 @@ use Naf\Board\Contracts\TicketMetadataStoreInterface;
 use Naf\Board\Domain\Failure;
 use PDO;
 
+use function Naf\I18n\t;
+
 /**
  * Where contributed ticket metadata is persisted.
  *
@@ -127,37 +129,40 @@ final class DatabaseTicketMetadataStore implements TicketMetadataStoreInterface
 
         if (count($combined) > self::MAX_KEYS) {
             throw new Failure(
-                'Dieses Ticket hat bereits ' . self::MAX_KEYS . ' Metadatenfelder.',
+                t('Dieses Ticket hat bereits :count Metadatenfelder.', ['count' => self::MAX_KEYS]),
                 422,
             );
         }
 
         if (array_sum(array_map('strlen', $combined)) > self::MAX_TICKET_BYTES) {
-            throw new Failure('Die Metadaten dieses Tickets sind insgesamt zu groß.', 422);
+            throw new Failure(t('Die Metadaten dieses Tickets sind insgesamt zu groß.'), 422);
         }
     }
 
     private function encode(mixed $value, string $key): string
     {
         if (is_resource($value) || is_object($value)) {
-            throw new Failure('Der Wert von "' . $key . '" lässt sich nicht speichern.', 422);
+            throw new Failure(t('Der Wert von ":key" lässt sich nicht speichern.', ['key' => $key]), 422);
         }
 
         if (is_float($value) && (is_nan($value) || is_infinite($value))) {
-            throw new Failure('Der Wert von "' . $key . '" ist keine gültige Zahl.', 422);
+            throw new Failure(t('Der Wert von ":key" ist keine gültige Zahl.', ['key' => $key]), 422);
         }
 
         try {
             $json = json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
         } catch (JsonException $exception) {
             throw new Failure(
-                'Der Wert von "' . $key . '" lässt sich nicht speichern: ' . $exception->getMessage(),
+                t('Der Wert von ":key" lässt sich nicht speichern: :reason', [
+                    'key'    => $key,
+                    'reason' => $exception->getMessage(),
+                ]),
                 422,
             );
         }
 
         if (strlen($json) > self::MAX_VALUE_BYTES) {
-            throw new Failure('Der Wert von "' . $key . '" ist zu groß.', 422);
+            throw new Failure(t('Der Wert von ":key" ist zu groß.', ['key' => $key]), 422);
         }
 
         return $json;
@@ -169,7 +174,10 @@ final class DatabaseTicketMetadataStore implements TicketMetadataStoreInterface
             return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $exception) {
             throw new Failure(
-                'Der gespeicherte Wert von "' . $key . '" ist beschädigt: ' . $exception->getMessage(),
+                t('Der gespeicherte Wert von ":key" ist beschädigt: :reason', [
+                    'key'    => $key,
+                    'reason' => $exception->getMessage(),
+                ]),
                 500,
             );
         }

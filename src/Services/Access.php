@@ -17,6 +17,7 @@ use PDO;
 use Throwable;
 
 use function Naf\Board\extensions;
+use function Naf\I18n\t;
 use function Naf\Rbac\rbac;
 
 /** @internal */
@@ -85,7 +86,7 @@ final class Access implements AccessInterface
         }
         $scope = new ProjectScope($row, (string) $user, $row['role'], $permissions, $roleName);
         if (!$this->auth->allows($action, $scope)) {
-            throw new Failure('Du hast für diese Aktion keine Berechtigung.', 403);
+            throw new Failure(t('Du hast für diese Aktion keine Berechtigung.'), 403);
         }
 
         return $scope;
@@ -109,7 +110,7 @@ final class Access implements AccessInterface
     private function asAdministrator(int $id, int $user, bool $locked): array
     {
         if (!rbac()->allows($user, Installation::ADMIN_PROJECTS)) {
-            throw new Failure('Projekt nicht gefunden.', 404);
+            throw new Failure(t('Projekt nicht gefunden.'), 404);
         }
 
         $statement = $this->pdo->prepare(
@@ -118,7 +119,7 @@ final class Access implements AccessInterface
         $statement->execute([$id]);
         $project = $statement->fetch();
         if (!$project) {
-            throw new Failure('Projekt nicht gefunden.', 404);
+            throw new Failure(t('Projekt nicht gefunden.'), 404);
         }
 
         /*

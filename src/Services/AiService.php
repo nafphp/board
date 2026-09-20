@@ -18,6 +18,7 @@ use Naf\RateLimit\PdoLimiter;
 
 use function Naf\app;
 use function Naf\Board\extensions;
+use function Naf\I18n\t;
 
 /** @internal */
 final class AiService implements AiServiceInterface
@@ -50,26 +51,26 @@ final class AiService implements AiServiceInterface
     {
         $actor = $this->access->actor();
         if (!$this->limiter->consume('ai:tools:' . $actor, 60, 60)['allowed']) {
-            throw new Failure('Zu viele AI-Aktionen. Bitte warte kurz.', 429);
+            throw new Failure(t('Zu viele AI-Aktionen. Bitte warte kurz.'), 429);
         }
         $name      = Input::validate($data, ['name' => 'required|string|max:80'])['name'];
         $arguments = $data['arguments'] ?? [];
         if (!is_array($arguments)) {
-            throw new Failure('Ungültige Werkzeugargumente.');
+            throw new Failure(t('Ungültige Werkzeugargumente.'));
         }
         $registry = $this->registry($project);
         if (!in_array($name, array_column($registry->definitions(), 'name'), true)) {
-            throw new Failure('Dieses Werkzeug ist für dich hier nicht verfügbar.', 403);
+            throw new Failure(t('Dieses Werkzeug ist für dich hier nicht verfügbar.'), 403);
         }
         $tool = $registry->getTool($name);
         if ($tool->permission() !== 'read' && ($data['confirmed'] ?? false) !== true) {
-            throw new Failure('Bitte bestätige die Änderung zuerst im Chat.', 422);
+            throw new Failure(t('Bitte bestätige die Änderung zuerst im Chat.'), 422);
         }
 
         // Checked again right before running: the catalogue may be a moment old,
         // and a right can be taken away between asking and doing.
         if (!$this->permitted($tool, $project === null ? null : $this->access->project($project))) {
-            throw new Failure('Dieses Werkzeug ist für dich hier nicht verfügbar.', 403);
+            throw new Failure(t('Dieses Werkzeug ist für dich hier nicht verfügbar.'), 403);
         }
 
         return $registry->call($name, $arguments);
@@ -97,7 +98,7 @@ final class AiService implements AiServiceInterface
 
             if (!$provider instanceof AiToolProviderInterface) {
                 throw new Failure(
-                    'Der AI-Werkzeuganbieter "' . $definition->id . '" ist ungültig.',
+                    t('Der AI-Werkzeuganbieter ":provider" ist ungültig.', ['provider' => $definition->id]),
                     500,
                 );
             }
@@ -107,8 +108,11 @@ final class AiService implements AiServiceInterface
 
                 if (isset($owners[$name]) && !in_array($name, $definition->replaceNames, true)) {
                     throw new Failure(
-                        'Das Werkzeug "' . $name . '" ist bereits von "' . $owners[$name]
-                        . '" belegt. Nenne es in replaceNames, um es zu ersetzen.',
+                        t(
+                            'Das Werkzeug ":tool" ist bereits von ":owner" belegt.'
+                            . ' Nenne es in replaceNames, um es zu ersetzen.',
+                            ['tool' => $name, 'owner' => $owners[$name]],
+                        ),
                         500,
                     );
                 }

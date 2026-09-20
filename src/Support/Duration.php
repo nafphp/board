@@ -6,6 +6,8 @@ namespace Naf\Board\Support;
 
 use Naf\Board\Domain\Failure;
 
+use function Naf\I18n\t;
+
 /**
  * Durations are stored as whole minutes but written the way people say them: 2h 40m, 90m,
  * 1:30 or a bare 90. A bare decimal stays refused, because "1.5" alone says neither
@@ -82,7 +84,7 @@ final class Duration
 
     private static function refuse(string $field): Failure
     {
-        return new Failure('Bitte gib eine Dauer wie 2h 40m, 90m oder 1:30 an.', 422, [
+        return new Failure(t('Bitte gib eine Dauer wie 2h 40m, 90m oder 1:30 an.'), 422, [
             $field => ['Ungültige Dauer.'],
         ]);
     }

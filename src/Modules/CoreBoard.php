@@ -16,6 +16,7 @@ use PDO;
 
 use function Naf\app;
 use function Naf\Board\extensions;
+use function Naf\I18n\t;
 
 /**
  * The board filters Nafinity already had, as definitions.
@@ -82,7 +83,7 @@ final class CoreBoard implements ExtensionProviderInterface
             'Priorität',
             static function (mixed $value) {
                 if (!is_string($value) || !in_array($value, extensions()->priorities()->keys(), true)) {
-                    throw new Failure('Ungültiger Filter: priority');
+                    throw new Failure(t('Ungültiger Filter: priority'));
                 }
 
                 return $value;
@@ -101,7 +102,7 @@ final class CoreBoard implements ExtensionProviderInterface
                 ucfirst($id),
                 static function (mixed $value) use ($id, $enum) {
                     if (!is_string($value) || !in_array($value, $enum::keys(), true)) {
-                        throw new Failure('Ungültiger Filter: ' . $id);
+                        throw new Failure(t('Ungültiger Filter: :filter', ['filter' => $id]));
                     }
 
                     return $value;

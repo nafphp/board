@@ -11,6 +11,7 @@ use Naf\Board\Domain\Failure;
 use PDO;
 
 use function Naf\event;
+use function Naf\I18n\t;
 
 /**
  * A person works on one thing at a time, so starting a timer settles whatever was running.
@@ -42,7 +43,7 @@ final class TimerService implements TimerServiceInterface
     {
         $action = $data['action'] ?? null;
         if (!is_string($action) || !in_array($action, self::ACTIONS, true)) {
-            throw new Failure('Unbekannte Aktion für die Zeiterfassung.');
+            throw new Failure(t('Unbekannte Aktion für die Zeiterfassung.'));
         }
 
         return $this->access->write($project, 'write', function () use ($project, $ticket, $action) {
@@ -50,10 +51,10 @@ final class TimerService implements TimerServiceInterface
             $statement->execute([$project, $ticket]);
             $row = $statement->fetch();
             if (!$row) {
-                throw new Failure('Ticket nicht gefunden.', 404);
+                throw new Failure(t('Ticket nicht gefunden.'), 404);
             }
             if ($row['archived_at'] !== null) {
-                throw new Failure('Für ein archiviertes Ticket wird keine Zeit erfasst.');
+                throw new Failure(t('Für ein archiviertes Ticket wird keine Zeit erfasst.'));
             }
             $actor = (int) $this->access->actor();
             if ($action === 'start') {

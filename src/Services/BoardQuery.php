@@ -16,6 +16,7 @@ use Naf\Rbac\Scope;
 use PDO;
 
 use function Naf\Board\extensions;
+use function Naf\I18n\t;
 use function Naf\Rbac\rbac;
 
 /** @internal */
@@ -135,7 +136,7 @@ final class BoardQuery implements BoardQueryInterface
             $definition = extensions()->boardFilters()->get($id);
 
             if ($definition === null) {
-                throw new Failure('Unbekannter Filter: ' . $id, 422);
+                throw new Failure(t('Unbekannter Filter: :filter', ['filter' => $id]), 422);
             }
 
             $normalized   = $definition->normalize($value);
@@ -249,7 +250,7 @@ final class BoardQuery implements BoardQueryInterface
         $contributed = $query['filters'] ?? [];
 
         if (!is_array($contributed)) {
-            throw new Failure('Ungültige Filter.', 422);
+            throw new Failure(t('Ungültige Filter.'), 422);
         }
 
         foreach ($contributed as $id => $value) {
@@ -258,7 +259,7 @@ final class BoardQuery implements BoardQueryInterface
             }
 
             if (!is_string($id)) {
-                throw new Failure('Ungültiger Filtername.', 422);
+                throw new Failure(t('Ungültiger Filtername.'), 422);
             }
 
             $requested[$id] = $value;

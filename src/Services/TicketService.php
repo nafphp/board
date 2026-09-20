@@ -24,6 +24,7 @@ use Throwable;
 
 use function Naf\Board\extensions;
 use function Naf\event;
+use function Naf\I18n\t;
 
 /** @internal */
 final class TicketService implements TicketServiceInterface
@@ -109,7 +110,7 @@ final class TicketService implements TicketServiceInterface
             $this->version($row, $data);
             $this->revision($this->board($project), $data);
             if ($row['archived_at'] !== null) {
-                throw new Failure('Ein archiviertes Ticket kann nicht bearbeitet werden.');
+                throw new Failure(t('Ein archiviertes Ticket kann nicht bearbeitet werden.'));
             }
             // Metadata is validated before anything is written, so an invalid value
             // stops the whole change instead of leaving half a ticket behind.
@@ -144,7 +145,7 @@ final class TicketService implements TicketServiceInterface
             $board = $this->board($project);
             $this->revision($board, $data);
             if ($row['archived_at'] !== null) {
-                throw new Failure('Ein archiviertes Ticket kann nicht verschoben werden.');
+                throw new Failure(t('Ein archiviertes Ticket kann nicht verschoben werden.'));
             }
             $column = $this->target(
                 $project,
@@ -184,7 +185,7 @@ final class TicketService implements TicketServiceInterface
             $rightIndex = $right === null ? count($rows) : array_search($right, $ids, true);
             if ($leftIndex === false || $rightIndex === false || $rightIndex !== $leftIndex + 1) {
                 throw new Failure(
-                    'Die Zielposition hat sich geändert. Bitte lade das Board neu.',
+                    t('Die Zielposition hat sich geändert. Bitte lade das Board neu.'),
                     409,
                 );
             }
@@ -197,7 +198,7 @@ final class TicketService implements TicketServiceInterface
                 $position = $this->between($rows, $leftIndex, $rightIndex);
             }
             if ($position === null) {
-                throw new Failure('Keine freie Kartenposition verfügbar.', 409);
+                throw new Failure(t('Keine freie Kartenposition verfügbar.'), 409);
             }
             $now    = gmdate('Y-m-d H:i:s');
             $closed = (int) $column['closes_tickets'] === 1;
@@ -241,7 +242,7 @@ final class TicketService implements TicketServiceInterface
     {
         $target = Input::id($data['project_id'] ?? null, 'project_id');
         if ($target === $project) {
-            throw new Failure('Das Ticket liegt bereits in diesem Projekt.');
+            throw new Failure(t('Das Ticket liegt bereits in diesem Projekt.'));
         }
         $this->entityManager->begin();
 
@@ -257,7 +258,7 @@ final class TicketService implements TicketServiceInterface
             $row         = $this->ticket($project, $id);
             $this->version($row, $data);
             if ($row['archived_at'] !== null) {
-                throw new Failure('Ein archiviertes Ticket kann nicht verschoben werden.');
+                throw new Failure(t('Ein archiviertes Ticket kann nicht verschoben werden.'));
             }
             $board  = $this->board($target);
             $column = $this->firstOf($target, (int) $board['id'], 'board_columns', 'position,id');
@@ -331,7 +332,7 @@ final class TicketService implements TicketServiceInterface
     {
         $action = $data['action'] ?? '';
         if (!in_array($action, ['close', 'reopen', 'archive', 'restore'], true)) {
-            throw new Failure('Ungültige Ticketaktion.');
+            throw new Failure(t('Ungültige Ticketaktion.'));
         }
         $this->access->write($project, 'write', function () use ($project, $id, $data, $action) {
             $row = $this->ticket($project, $id);
@@ -422,14 +423,14 @@ final class TicketService implements TicketServiceInterface
             $row = $this->ticket($project, $id);
             $this->version($row, $data);
             if ($row['archived_at'] !== null) {
-                throw new Failure('Ein archiviertes Ticket kann nicht bearbeitet werden.');
+                throw new Failure(t('Ein archiviertes Ticket kann nicht bearbeitet werden.'));
             }
             $number    = Input::id($data['number'] ?? null, 'number');
             $statement = $this->pdo->prepare('SELECT id FROM tickets WHERE project_id=? AND number=?');
             $statement->execute([$project, $number]);
             $related = (int) $statement->fetchColumn();
             if (!$related || $related === $id) {
-                throw new Failure('Wähle ein anderes Ticket aus diesem Projekt.');
+                throw new Failure(t('Wähle ein anderes Ticket aus diesem Projekt.'));
             }
             $pair   = [$project, min($id, $related), max($id, $related)];
             $remove = ($data['action'] ?? '') === 'delete';
@@ -459,17 +460,17 @@ final class TicketService implements TicketServiceInterface
         $statement->execute([$project]);
         $key = $statement->fetchColumn();
         if ($key === false) {
-            throw new Failure('Projekt nicht gefunden.', 404);
+            throw new Failure(t('Projekt nicht gefunden.'), 404);
         }
         $expected = '/^' . preg_quote((string) $key, '/') . '-([1-9][0-9]{0,17})$/i';
         if (!preg_match($expected, trim($reference), $found)) {
-            throw new Failure('Unbekannte Ticketnummer: ' . $reference, 404);
+            throw new Failure(t('Unbekannte Ticketnummer: :reference', ['reference' => $reference]), 404);
         }
         $statement = $this->pdo->prepare('SELECT id FROM tickets WHERE project_id=? AND number=?');
         $statement->execute([$project, (int) $found[1]]);
         $id = $statement->fetchColumn();
         if ($id === false) {
-            throw new Failure('Ticket nicht gefunden.', 404);
+            throw new Failure(t('Ticket nicht gefunden.'), 404);
         }
 
         return (int) $id;
@@ -493,7 +494,7 @@ final class TicketService implements TicketServiceInterface
         $statement->execute([$project, $id]);
         $row = $statement->fetch();
         if (!$row) {
-            throw new Failure('Ticket nicht gefunden.', 404);
+            throw new Failure(t('Ticket nicht gefunden.'), 404);
         }
 
         return Format::ticket($row['ticket_key'], $row['number']);
@@ -505,7 +506,7 @@ final class TicketService implements TicketServiceInterface
         $statement->execute([$project, $id]);
         $row = $statement->fetch();
         if (!$row) {
-            throw new Failure('Ticket nicht gefunden.', 404);
+            throw new Failure(t('Ticket nicht gefunden.'), 404);
         }
 
         return $row;
@@ -516,7 +517,7 @@ final class TicketService implements TicketServiceInterface
         $statement = $this->pdo->prepare('SELECT * FROM boards WHERE project_id=?');
         $statement->execute([$project]);
 
-        return $statement->fetch() ?: throw new Failure('Board nicht gefunden.', 404);
+        return $statement->fetch() ?: throw new Failure(t('Board nicht gefunden.'), 404);
     }
 
     private function fields(array $data): array
@@ -541,10 +542,10 @@ final class TicketService implements TicketServiceInterface
         $validated          = Input::validate($data, $rules);
         $validated['title'] = trim($validated['title']);
         if ($validated['title'] === '') {
-            throw new Failure('Ein Titel wird benötigt.');
+            throw new Failure(t('Ein Titel wird benötigt.'));
         }
         if (!in_array($validated['priority'], extensions()->priorities()->keys(), true)) {
-            throw new Failure('Ungültige Priorität.');
+            throw new Failure(t('Ungültige Priorität.'));
         }
         $validated['color'] = $this->projects->color($data['color'] ?? '#6366f1');
         $due                = $data['due_date'] ?? null;
@@ -560,11 +561,11 @@ final class TicketService implements TicketServiceInterface
         foreach (['start_date' => $start, 'due_date' => $due] as $field => $date) {
             if ($date !== null && (!is_string($date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/D', $date)
                 || !checkdate((int) substr($date, 5, 2), (int) substr($date, 8, 2), (int) substr($date, 0, 4)))) {
-                throw new Failure('Bitte wähle ein gültiges Datum.', 422, [$field => ['Ungültiges Datum.']]);
+                throw new Failure(t('Bitte wähle ein gültiges Datum.'), 422, [$field => ['Ungültiges Datum.']]);
             }
         }
         if ($start !== null && $due !== null && $start > $due) {
-            throw new Failure('Das Startdatum darf nicht nach dem Fälligkeitsdatum liegen.');
+            throw new Failure(t('Das Startdatum darf nicht nach dem Fälligkeitsdatum liegen.'));
         }
         $validated['start_date'] = $start;
         foreach (['estimate_minutes' => null, 'spent_minutes' => 0] as $field => $default) {
@@ -579,7 +580,7 @@ final class TicketService implements TicketServiceInterface
         if ($points !== null && ((!is_string($points) && !is_int($points))
             || filter_var($points, FILTER_VALIDATE_INT) === false
             || (int) $points < 0 || (int) $points > Estimation::MAX)) {
-            throw new Failure('Bitte gib eine Schätzung zwischen 0 und ' . Estimation::MAX . ' ein.', 422, [
+            throw new Failure(t('Bitte gib eine Schätzung zwischen 0 und :max ein.', ['max' => Estimation::MAX]), 422, [
                 'estimate_points' => ['Ungültige Schätzung.'],
             ]);
         }
@@ -618,7 +619,7 @@ final class TicketService implements TicketServiceInterface
                 );
                 $statement->execute([$project, $id]);
                 if ((int) $statement->fetchColumn() !== 1) {
-                    throw new Failure('Die Auswahl gehört nicht zu diesem Projekt.', 422, [
+                    throw new Failure(t('Die Auswahl gehört nicht zu diesem Projekt.'), 422, [
                         $field => ['Ungültige Zuordnung.'],
                     ]);
                 }
@@ -641,7 +642,7 @@ final class TicketService implements TicketServiceInterface
         );
         $statement->execute([$project, $board]);
 
-        return $statement->fetch() ?: throw new Failure('Dem Zielprojekt fehlt ein Board.', 422);
+        return $statement->fetch() ?: throw new Failure(t('Dem Zielprojekt fehlt ein Board.'), 422);
     }
 
     /**
@@ -730,13 +731,13 @@ final class TicketService implements TicketServiceInterface
         $statement = $this->pdo->prepare("SELECT * FROM $table WHERE project_id=? AND board_id=? AND id=?");
         $statement->execute([$project, $board, $id]);
 
-        return $statement->fetch() ?: throw new Failure('Das Ziel gehört nicht zu diesem Board.', 422);
+        return $statement->fetch() ?: throw new Failure(t('Das Ziel gehört nicht zu diesem Board.'), 422);
     }
 
     private function version(array $row, array $data): void
     {
         if (Input::id($data['version'] ?? null, 'version') !== (int) $row['version']) {
-            throw new Failure('Dieses Ticket wurde inzwischen geändert. Bitte lade es neu.', 409);
+            throw new Failure(t('Dieses Ticket wurde inzwischen geändert. Bitte lade es neu.'), 409);
         }
     }
 
@@ -746,7 +747,7 @@ final class TicketService implements TicketServiceInterface
             Input::id($data['board_revision'] ?? null, 'board_revision')
             !== (int) $board['revision']
         ) {
-            throw new Failure('Das Board wurde inzwischen geändert. Bitte lade es neu.', 409);
+            throw new Failure(t('Das Board wurde inzwischen geändert. Bitte lade es neu.'), 409);
         }
     }
 

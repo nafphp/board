@@ -38,6 +38,7 @@ use function Naf\Board\partial;
 use function Naf\Board\template;
 use function Naf\config;
 use function Naf\Form\csrf;
+use function Naf\I18n\t;
 use function Naf\json;
 use function Naf\Rbac\rbac;
 use function Naf\redirect;
@@ -217,7 +218,7 @@ final class AppController
             $actor = $this->access->actor();
 
             if (!rbac()->allows($actor, Installation::MANAGE_SETTINGS)) {
-                throw new Failure('Diese Seite ist Administratoren vorbehalten.', 403);
+                throw new Failure(t('Diese Seite ist Administratoren vorbehalten.'), 403);
             }
 
             return $this->page('settings', [
@@ -356,7 +357,7 @@ final class AppController
         return $this->read(function () {
             $actor = $this->access->actor();
             if (!rbac()->allows($actor, Installation::VIEW_AUDIT)) {
-                throw new Failure('Für das Protokoll fehlt dir die Berechtigung.', 403);
+                throw new Failure(t('Für das Protokoll fehlt dir die Berechtigung.'), 403);
             }
 
             $query  = request()->getQueryParams();
@@ -673,7 +674,7 @@ final class AppController
         return $this->mutation(function () use ($project, $ticket) {
             $file = request()->getUploadedFiles()['attachment'] ?? null;
             if (!($file instanceof UploadedFileInterface)) {
-                throw new Failure('Bitte wähle eine Datei.');
+                throw new Failure(t('Bitte wähle eine Datei.'));
             }
             $projectId = Input::id($project);
             $this->attachments->upload($projectId, $this->tickets->resolve($projectId, $ticket), $file);

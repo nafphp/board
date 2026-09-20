@@ -14,6 +14,7 @@ use Naf\Board\Support\SettingsContext;
 use Psr\Http\Message\ResponseInterface;
 
 use function Naf\Board\extensions;
+use function Naf\I18n\t;
 use function Naf\json;
 use function Naf\redirect;
 use function Naf\request;
@@ -103,7 +104,7 @@ final class SettingsApiController
         }
 
         if (!is_string($key) || !array_key_exists($key, $values)) {
-            throw new Failure('Diese Einstellung gibt es hier nicht.', 404);
+            throw new Failure(t('Diese Einstellung gibt es hier nicht.'), 404);
         }
 
         return ['values' => [$key => $values[$key]]];
@@ -121,7 +122,7 @@ final class SettingsApiController
             $resetKeys = $body['resetKeys'] ?? [];
 
             if (!is_array($values) || !is_array($resetKeys)) {
-                throw new Failure('Erwartet wird {"values": {...}, "resetKeys": [...]}.', 422);
+                throw new Failure(t('Erwartet wird {"values": {...}, "resetKeys": [...]}.'), 422);
             }
 
             $this->settings->save($context, $this->coerce($context, $values), array_values($resetKeys));

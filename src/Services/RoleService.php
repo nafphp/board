@@ -12,6 +12,7 @@ use Naf\Board\Support\Input;
 use PDO;
 
 use function Naf\Board\extensions;
+use function Naf\I18n\t;
 
 /** @internal */
 final class RoleService implements RoleServiceInterface
@@ -48,20 +49,20 @@ final class RoleService implements RoleServiceInterface
                 $statement->execute([$project, $id]);
                 $version = $statement->fetchColumn();
                 if ($version === false) {
-                    throw new Failure('Rolle nicht gefunden.', 404);
+                    throw new Failure(t('Rolle nicht gefunden.'), 404);
                 }
                 if (Input::id($data['version'] ?? null) !== (int) $version) {
-                    throw new Failure('Diese Rolle wurde inzwischen geändert. Bitte lade den aktuellen Stand.', 409);
+                    throw new Failure(t('Diese Rolle wurde inzwischen geändert. Bitte lade den aktuellen Stand.'), 409);
                 }
             }
             if (($data['action'] ?? 'save') === 'delete') {
                 if ($id === null) {
-                    throw new Failure('Rolle fehlt.');
+                    throw new Failure(t('Rolle fehlt.'));
                 }
                 $statement = $this->pdo->prepare('SELECT COUNT(*) FROM project_members WHERE project_id=? AND custom_role_id=?');
                 $statement->execute([$project, $id]);
                 if ((int) $statement->fetchColumn() > 0) {
-                    throw new Failure('Diese Rolle ist noch zugeordnet. Weise den Benutzern zuerst eine andere Rolle zu.');
+                    throw new Failure(t('Diese Rolle ist noch zugeordnet. Weise den Benutzern zuerst eine andere Rolle zu.'));
                 }
                 $this->pdo->prepare('DELETE FROM project_role_permissions WHERE project_id=? AND role_id=?')->execute([$project, $id]);
                 $this->pdo->prepare('DELETE FROM project_roles WHERE project_id=? AND id=?')->execute([$project, $id]);
@@ -74,18 +75,18 @@ final class RoleService implements RoleServiceInterface
             $permissions = $data['permissions'] ?? [];
             $assignable  = array_keys(extensions()->permissions()->assignable());
             if ($name === '' || in_array(strtolower($name), ['owner', 'manager', 'member', 'viewer'], true)) {
-                throw new Failure('Bitte verwende einen eigenen Rollennamen.');
+                throw new Failure(t('Bitte verwende einen eigenen Rollennamen.'));
             }
             if (!is_array($permissions) || array_filter($permissions, static fn($value) => !is_string($value) || !in_array($value, $assignable, true))) {
-                throw new Failure('Ungültiges Recht.');
+                throw new Failure(t('Ungültiges Recht.'));
             }
             if (in_array('moderate', $permissions, true) && !in_array('comment', $permissions, true)) {
-                throw new Failure('Zum Moderieren wird auch das Recht zum Kommentieren benötigt.');
+                throw new Failure(t('Zum Moderieren wird auch das Recht zum Kommentieren benötigt.'));
             }
             $statement = $this->pdo->prepare('SELECT id FROM project_roles WHERE project_id=? AND LOWER(name)=LOWER(?) AND id<>?');
             $statement->execute([$project, $name, $id ?? 0]);
             if ($statement->fetchColumn()) {
-                throw new Failure('Eine Rolle mit diesem Namen existiert bereits.');
+                throw new Failure(t('Eine Rolle mit diesem Namen existiert bereits.'));
             }
             if ($id === null) {
                 $postgres  = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql';

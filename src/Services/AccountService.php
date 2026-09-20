@@ -25,6 +25,7 @@ use SensitiveParameter;
 use Throwable;
 
 use function Naf\config;
+use function Naf\I18n\t;
 
 /** @internal */
 final class AccountService implements AccountServiceInterface
@@ -71,7 +72,7 @@ final class AccountService implements AccountServiceInterface
         $statement->execute([$id]);
         $user = $statement->fetch();
         if (!$user) {
-            throw new Failure('Dein Konto ist nicht verfügbar.', 401);
+            throw new Failure(t('Dein Konto ist nicht verfügbar.'), 401);
         }
 
         return [
@@ -97,13 +98,13 @@ final class AccountService implements AccountServiceInterface
             throw new Failure($complaint);
         }
         if (!hash_equals($password, $data['password_confirmation'])) {
-            throw new Failure('Die neuen Passwörter stimmen nicht überein.');
+            throw new Failure(t('Die neuen Passwörter stimmen nicht überein.'));
         }
 
         $this->write($id, function (array $user) use ($id, $data, $password): void {
             $this->verifyPassword($user, $data['current_password']);
             if ($this->hasher->verify($password, $user['password_hash'])) {
-                throw new Failure('Bitte wähle ein anderes Passwort als dein bisheriges.');
+                throw new Failure(t('Bitte wähle ein anderes Passwort als dein bisheriges.'));
             }
             $hash      = $this->hasher->hash($password);
             $statement = $this->pdo->prepare('UPDATE users SET password_hash=?, security_version=security_version+1 WHERE id=?');
@@ -127,7 +128,7 @@ final class AccountService implements AccountServiceInterface
         return $this->write($id, function (array $user) use ($id, $data, $email): array {
             $this->verifyPassword($user, $data['current_password']);
             if ($email === strtolower($user['email'])) {
-                throw new Failure('Das ist bereits deine aktuelle E-Mail-Adresse.');
+                throw new Failure(t('Das ist bereits deine aktuelle E-Mail-Adresse.'));
             }
             $this->availableEmail($email);
             $requestId = bin2hex(random_bytes(16));
@@ -150,11 +151,11 @@ final class AccountService implements AccountServiceInterface
 
             try {
                 if (!$this->mailer->send($mail)) {
-                    throw new Failure('Versand fehlgeschlagen.', 503);
+                    throw new Failure(t('Versand fehlgeschlagen.'), 503);
                 }
             } catch (Throwable) {
                 // Roll back the pending request; never publish a successful dummy workflow.
-                throw new Failure('Der Bestätigungscode konnte nicht versendet werden. Bitte versuche es später erneut.', 503);
+                throw new Failure(t('Der Bestätigungscode konnte nicht versendet werden. Bitte versuche es später erneut.'), 503);
             }
             $this->notice($user['email'], 'email.requested');
 
@@ -203,7 +204,7 @@ final class AccountService implements AccountServiceInterface
         });
         // Failed attempts/expiry must commit instead of being rolled back with the error.
         if (!$confirmed) {
-            throw new Failure('Der Code ist ungültig oder abgelaufen. Nach fünf Fehlversuchen brauchst du einen neuen Code.');
+            throw new Failure(t('Der Code ist ungültig oder abgelaufen. Nach fünf Fehlversuchen brauchst du einen neuen Code.'));
         }
     }
 
@@ -242,7 +243,7 @@ final class AccountService implements AccountServiceInterface
             }
             $identity = $this->auth->user();
             if (!$user || !$identity instanceof User || $identity->securityVersion() !== (int) $user['security_version']) {
-                throw new Failure('Dein Konto wurde inzwischen geändert. Bitte melde dich erneut an.', 401);
+                throw new Failure(t('Dein Konto wurde inzwischen geändert. Bitte melde dich erneut an.'), 401);
             }
             $result = $operation($user);
             $this->entityManager->commit();
@@ -251,7 +252,7 @@ final class AccountService implements AccountServiceInterface
         } catch (Throwable $exception) {
             $this->entityManager->rollback();
             if ($exception instanceof PDOException && in_array($exception->errorInfo[0] ?? '', ['23000', '23505'], true)) {
-                throw new Failure('Diese E-Mail-Adresse ist nicht verfügbar.', 409);
+                throw new Failure(t('Diese E-Mail-Adresse ist nicht verfügbar.'), 409);
             }
             throw $exception;
         }
@@ -260,7 +261,7 @@ final class AccountService implements AccountServiceInterface
     private function verifyPassword(array $user, #[SensitiveParameter] string $password): void
     {
         if (!$this->hasher->verify($password, $user['password_hash'])) {
-            throw new Failure('Das aktuelle Passwort stimmt nicht.', 403);
+            throw new Failure(t('Das aktuelle Passwort stimmt nicht.'), 403);
         }
     }
 
@@ -269,7 +270,7 @@ final class AccountService implements AccountServiceInterface
         $statement = $this->pdo->prepare('SELECT id FROM users WHERE email=?');
         $statement->execute([$email]);
         if ($statement->fetchColumn() !== false) {
-            throw new Failure('Diese E-Mail-Adresse ist nicht verfügbar.', 409);
+            throw new Failure(t('Diese E-Mail-Adresse ist nicht verfügbar.'), 409);
         }
     }
 
@@ -282,7 +283,7 @@ final class AccountService implements AccountServiceInterface
     {
         $limit = $this->limiter->consume('account:' . $action . ':' . $id, $maximum, $seconds);
         if (!$limit['allowed']) {
-            throw new Failure('Zu viele Versuche. Bitte versuche es später erneut.', 429);
+            throw new Failure(t('Zu viele Versuche. Bitte versuche es später erneut.'), 429);
         }
     }
 

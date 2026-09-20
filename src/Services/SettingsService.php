@@ -22,6 +22,7 @@ use Throwable;
 use function Naf\Board\extensions;
 use function Naf\config;
 use function Naf\event;
+use function Naf\I18n\t;
 
 /**
  * Reading and writing declared settings, with their types and their rights.
@@ -99,7 +100,7 @@ final class SettingsService implements SettingsServiceInterface
     public function save(SettingsContext $context, array $values, array $resetKeys = []): void
     {
         if ($context->scope === 'application') {
-            throw new Failure('Anwendungseinstellungen sind schreibgeschützt.', 403);
+            throw new Failure(t('Anwendungseinstellungen sind schreibgeschützt.'), 403);
         }
 
         $definitions = $this->definitionsFor($context, [...array_keys($values), ...$resetKeys]);
@@ -107,8 +108,9 @@ final class SettingsService implements SettingsServiceInterface
 
         if ($overlap) {
             throw new Failure(
-                'Ein Schlüssel kann nicht gleichzeitig gesetzt und zurückgesetzt werden: '
-                . implode(', ', $overlap),
+                t('Ein Schlüssel kann nicht gleichzeitig gesetzt und zurückgesetzt werden: :keys', [
+                    'keys' => implode(', ', $overlap),
+                ]),
                 422,
             );
         }
@@ -140,7 +142,7 @@ final class SettingsService implements SettingsServiceInterface
             }
 
             if ($errors !== []) {
-                throw new Failure('Bitte prüfe die Eingaben.', 422, $errors);
+                throw new Failure(t('Bitte prüfe die Eingaben.'), 422, $errors);
             }
 
             $this->persist($context, $definitions, $normalized, $resetKeys, $scope);
@@ -301,7 +303,7 @@ final class SettingsService implements SettingsServiceInterface
         $scope = $this->access->project((int) $context->projectId);
 
         if ($definition->readPermission !== null && !$scope->allows($definition->readPermission)) {
-            throw new Failure('Du hast für diese Einstellung keine Berechtigung.', 403);
+            throw new Failure(t('Du hast für diese Einstellung keine Berechtigung.'), 403);
         }
     }
 
@@ -321,7 +323,7 @@ final class SettingsService implements SettingsServiceInterface
             }
 
             if ($scope === null || !$scope->allows($definition->writePermission)) {
-                throw new Failure('Du hast für diese Einstellung keine Berechtigung.', 403);
+                throw new Failure(t('Du hast für diese Einstellung keine Berechtigung.'), 403);
             }
 
             return;
@@ -332,7 +334,7 @@ final class SettingsService implements SettingsServiceInterface
             : $definition->writePermission ?? self::LEGACY_PROJECT_PERMISSION;
 
         if ($scope === null || !$scope->allows($required)) {
-            throw new Failure('Du hast für diese Einstellung keine Berechtigung.', 403);
+            throw new Failure(t('Du hast für diese Einstellung keine Berechtigung.'), 403);
         }
     }
 
@@ -451,7 +453,7 @@ final class SettingsService implements SettingsServiceInterface
                 $scope = $this->access->project((int) $context->projectId, 'read', true);
 
                 if ($scope->project['archived_at'] !== null) {
-                    throw new Failure('Dieses Projekt ist archiviert.', 403);
+                    throw new Failure(t('Dieses Projekt ist archiviert.'), 403);
                 }
             }
 
@@ -483,13 +485,13 @@ final class SettingsService implements SettingsServiceInterface
 
         foreach ($keys as $key) {
             if (!is_string($key)) {
-                throw new Failure('Ungültiger Einstellungsschlüssel.', 422);
+                throw new Failure(t('Ungültiger Einstellungsschlüssel.'), 422);
             }
 
             $definition = $registry->find($context->scope, $key);
 
             if ($definition === null) {
-                throw new Failure('Unbekannte Einstellung: ' . $key, 422);
+                throw new Failure(t('Unbekannte Einstellung: :key', ['key' => $key]), 422);
             }
 
             $definitions[$key] = $definition;
@@ -515,7 +517,10 @@ final class SettingsService implements SettingsServiceInterface
 
         if ($type === null) {
             throw new Failure(
-                'Für "' . $definition->key . '" fehlt der Feldtyp "' . $definition->type . '".',
+                t('Für ":key" fehlt der Feldtyp ":type".', [
+                    'key'  => $definition->key,
+                    'type' => $definition->type,
+                ]),
                 500,
             );
         }

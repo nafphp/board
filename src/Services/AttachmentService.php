@@ -19,6 +19,7 @@ use RuntimeException;
 use Throwable;
 
 use function Naf\event;
+use function Naf\I18n\t;
 use function Naf\Queue\queue;
 
 /** @internal */
@@ -52,7 +53,7 @@ final class AttachmentService implements AttachmentServiceInterface
                 $file,
             ) {
                 if ($this->tickets->ticket($project, $ticket)['archived_at'] !== null) {
-                    throw new Failure('Archivierte Tickets nehmen keine neuen Anhänge an.');
+                    throw new Failure(t('Archivierte Tickets nehmen keine neuen Anhänge an.'));
                 }
                 $statement = $this->pdo->prepare(
                     "SELECT COALESCE(SUM(byte_size),0) FROM attachments WHERE project_id=? AND state<>'deleting'",
@@ -61,7 +62,7 @@ final class AttachmentService implements AttachmentServiceInterface
                 $projectBytesAfterUpload = (int) $statement->fetchColumn() + $file['size'];
 
                 if ($projectBytesAfterUpload > 200 * 1024 * 1024) {
-                    throw new Failure('Das Projektlimit von 200 MiB ist erreicht.');
+                    throw new Failure(t('Das Projektlimit von 200 MiB ist erreicht.'));
                 }
                 $statement = $this->pdo->prepare(
                     "SELECT COALESCE(SUM(byte_size),0) FROM attachments WHERE project_id=? AND ticket_id=? AND state<>'deleting'",
@@ -70,7 +71,7 @@ final class AttachmentService implements AttachmentServiceInterface
                 $ticketBytesAfterUpload = (int) $statement->fetchColumn() + $file['size'];
 
                 if ($ticketBytesAfterUpload > 30 * 1024 * 1024) {
-                    throw new Failure('Das Ticketlimit von 30 MiB ist erreicht.');
+                    throw new Failure(t('Das Ticketlimit von 30 MiB ist erreicht.'));
                 }
                 $sql = <<<'SQL'
                 INSERT INTO attachments(project_id, ticket_id, uploaded_by, storage_key, original_name, mime_type, byte_size, sha256, state, created_at)
@@ -148,13 +149,13 @@ final class AttachmentService implements AttachmentServiceInterface
         $this->tickets->ticket($project, $ticket);
         $row = $this->row($project, $ticket, $id);
         if ($row['state'] !== 'ready') {
-            throw new Failure('Anhang ist noch nicht verfügbar.', 404);
+            throw new Failure(t('Anhang ist noch nicht verfügbar.'), 404);
         }
 
         try {
             $row['stream'] = $this->storage->open($row['storage_key']);
         } catch (RuntimeException) {
-            throw new Failure('Anhang ist nicht verfügbar.', 404);
+            throw new Failure(t('Anhang ist nicht verfügbar.'), 404);
         }
 
         return $row;
@@ -252,6 +253,6 @@ final class AttachmentService implements AttachmentServiceInterface
         );
         $statement->execute([$project, $ticket, $id]);
 
-        return $statement->fetch() ?: throw new Failure('Anhang nicht gefunden.', 404);
+        return $statement->fetch() ?: throw new Failure(t('Anhang nicht gefunden.'), 404);
     }
 }

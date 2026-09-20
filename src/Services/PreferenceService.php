@@ -12,6 +12,8 @@ use Naf\Board\Domain\Placement;
 use Naf\Board\Support\Locales;
 use Naf\Board\Support\Settings\PreferenceStore;
 
+use function Naf\I18n\t;
+
 /** @internal */
 final class PreferenceService implements PreferenceServiceInterface
 {
@@ -31,7 +33,7 @@ final class PreferenceService implements PreferenceServiceInterface
             || !is_string($zone)
             || !in_array($zone, DateTimeZone::listIdentifiers(), true)
         ) {
-            throw new Failure('Ungültige Einstellungen.');
+            throw new Failure(t('Ungültige Einstellungen.'));
         }
         $this->store->writeUser($user, [
             'theme'         => $theme,
@@ -52,7 +54,7 @@ final class PreferenceService implements PreferenceServiceInterface
     public function language(mixed $locale): void
     {
         if (!Locales::supports($locale)) {
-            throw new Failure('Diese Sprache steht nicht zur Verfügung.');
+            throw new Failure(t('Diese Sprache steht nicht zur Verfügung.'));
         }
         $this->store->writeUser($this->access->actor(), ['locale' => $locale]);
     }

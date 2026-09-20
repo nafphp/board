@@ -15,6 +15,7 @@ use Naf\Board\Commands\PublishAssetsCommand;
 use Naf\Board\Commands\RemoveAssetsCommand;
 use Naf\Board\Commands\RenameMigrationNamespaceCommand;
 use Naf\Board\Commands\SeedCommand;
+use Naf\Board\Contracts\BoardQueryInterface;
 use Naf\Board\Domain\Change;
 use Naf\Board\Domain\ProjectScope;
 use Naf\Board\Events\ActivityListener;
@@ -89,6 +90,29 @@ foreach (['host', 'database', 'username', 'password'] as $field) {
 $container->set(StateStoreInterface::class, static fn() => $container->make(AccountStateStore::class));
 $container->get(Auth::class)->policy(ProjectScope::class, new ProjectPolicy());
 $container->set(ActivityListener::class, static fn() => $container->make(ActivityListener::class));
+/*
+ * The language of the whole answer, not only of a rendered page.
+ *
+ * It used to be set while a page was being drawn, so a JSON endpoint answered in
+ * whatever language the process happened to start in -- the same message came
+ * back German to somebody reading the application in English. It is a property
+ * of the request and belongs where the request begins.
+ *
+ * Quietly ignored when it cannot be answered: a request without a session, a
+ * command line with no person behind it, an installation whose database is not
+ * up yet. None of those is a reason to refuse a request.
+ */
+event()->listen('request.start', static function () use ($container): void {
+    try {
+        $language = $container->get(BoardQueryInterface::class)->preferences()['locale'] ?? null;
+        if (is_string($language) && $language !== '') {
+            \Naf\I18n\translator()->setLanguage($language);
+        }
+    } catch (Throwable) {
+        // Whatever this installation's default is, it stays.
+    }
+});
+
 event()->listen(
     'nafinity.changed',
     static fn(Change $change) => $container
