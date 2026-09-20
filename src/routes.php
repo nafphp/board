@@ -119,6 +119,7 @@ $routes = [
     ['POST', '/projects/{project}/archive', 'archiveProject', 'project.archive'],
     ['GET', '/projects/{project}/activity', 'activity', 'project.activity'],
     ['GET', '/projects/{project}/state', 'boardState', 'board.state'],
+    ['GET', '/projects/{project}/cards', 'boardCards', 'board.cards'],
     ['GET', '/projects/{project}/tickets/new', 'newTicket', 'ticket.new'],
     ['POST', '/projects/{project}/tickets', 'createTicket', 'ticket.create'],
     ['POST', '/projects/{project}/tickets/{ticket}/attachments', 'upload', 'attachment.upload'],

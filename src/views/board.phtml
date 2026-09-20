@@ -1,8 +1,7 @@
 <?php
 
 use Naf\Board\Domain\Estimation;
-use Naf\Board\Support\BoardSlotContext;
-use Naf\Board\Support\Format;
+use Naf\Board\Support\CardContext;
 use Naf\Board\Support\Icon;
 
 use function Naf\Board\choice;
@@ -17,56 +16,52 @@ use function Naf\View\s;
 
 $this->setLayout(template('layout'));
 $this->block('content');
-$canWrite  = $scope->allows('write');
-$isLimited = $total > 300;
-$canDrag   = $canWrite && !$filters && !$isLimited;
+$token     = csrf()->token();
+$isLimited = $total > CardContext::LIMIT;
 
-$token        = csrf()->token();
-$projectId    = $project['id'];
-$labelMap     = array_column($labels, null, 'id');
-$memberMap    = array_column($members, null, 'id');
+/*
+ * Everything a card needs that is not the card, built once and shared with the
+ * endpoint that hands cards out for a live update -- see CardContext. The page
+ * then reads what it needs for the grid around them out of the same array.
+ */
+$cardContext = CardContext::build([
+    'project'        => $project,
+    'scope'          => $scope,
+    'cards'          => $cards,
+    'filters'        => $filters,
+    'total'          => $total,
+    'labels'         => $labels,
+    'members'        => $members,
+    'card_metadata'  => $card_metadata ?? [],
+    'uiContext'      => $uiContext,
+    'token'          => $token,
+    'running_timers' => $running_timers,
+    'tags'           => $tags,
+    'assignments'    => $assignments,
+]);
+[
+    'canDrag'         => $canDrag,
+    'canWrite'        => $canWrite,
+    'projectId'       => $projectId,
+    'boardSlot'       => $boardSlot,
+    'labelMap'        => $labelMap,
+    'memberMap'       => $memberMap,
+    'scale'           => $scale,
+    'estimating'      => $estimating,
+    'estimateUnit'    => $estimateUnit,
+    'prioritySymbols' => $prioritySymbols,
+    'unknownPriority' => $unknownPriority,
+] = $cardContext;
+
 $columnCounts = array_count_values(array_column($cards, 'column_id'));
 $laneCounts   = array_count_values(array_column($cards, 'swimlane_id'));
-
-// What the board offers its contributions. The metadata of every card was
-// loaded with the board in one query, so a badge reads from here rather than
-// asking again per card.
-$boardSlot = new BoardSlotContext(
-    $uiContext,
-    $project,
-    $scope,
-    $labelMap,
-    $memberMap,
-    $card_metadata ?? [],
-    $token,
-);
-
-// One estimate read through the project's scale. The sums describe what is on screen, so
-// a filtered board reports the filtered total and says so in its existing hint.
-$scale        = Estimation::scale($project['estimation_scale']);
-$estimating   = Estimation::active($scale);
-$estimateUnit = Estimation::unit($scale);
 $columnPoints = [];
 foreach ($cards as $card) {
     $columnPoints[$card['column_id']] = ($columnPoints[$card['column_id']] ?? 0)
         + (int) $card['estimate_points'];
 }
-
-$priorityLabels  = extensions()->priorities()->options();
-$prioritySymbols = array_map(
-    static fn($priority) => Icon::mark($priority->icon, 'sm'),
-    extensions()->priorities()->all(),
-);
-/*
- * The same for a card: drawing an undeclared priority as one of the known
- * symbols would be a guess, and failing the whole board over a single card would
- * be worse than admitting that one value is not understood. The wrapper's title
- * already carries the stored id, so the mark only has to be neutral -- `info`
- * rather than a question mark because the icon font is subset to what the
- * interface uses, and a glyph that is not in it renders as its own name.
- */
-$unknownPriority = Icon::mark('info', 'sm');
-$boardHint       = match (true) {
+$priorityLabels = extensions()->priorities()->options();
+$boardHint      = match (true) {
     $project['archived_at'] !== null => t('Archiviertes Projekt · Tickets können gelesen, aber nicht geändert werden'),
     !$canWrite                       => t('Du hast Lesezugriff auf dieses Board'),
     (bool) $filters                  => t('Gefilterte Ansicht · Verschieben über das Kartenmenü'),
@@ -259,80 +254,7 @@ if (isset($people[$me])) {
                     );
                     ?>
                         <?php foreach ($cell as $card): ?>
-                            <article
-                                class="ticket-card"
-                                draggable="<?= $canDrag ? 'true' : 'false' ?>"
-                                data-ticket="<?= (int) $card['id'] ?>"
-                                data-key="<?= s(Format::ticket($project['ticket_key'], $card['number'])) ?>"
-                                data-version="<?= (int) $card['version'] ?>"
-                                data-status="<?= s($card['status']) ?>"
-                                data-title="<?= s($card['title']) ?>"
-                                data-points="<?= (int) $card['estimate_points'] ?>"
-                            >
-                                <div class="card-top">
-                                    <span class="ticket-number"><?= s(Format::ticket($project['ticket_key'], $card['number'])) ?></span>
-                                    <?php if (in_array((int) $card['id'], $running_timers, true)): ?>
-                                        <span class="timer-pulse" title="<?= s(t('Deine Zeiterfassung läuft')) ?>"></span>
-                                    <?php endif ?>
-                                    <div>
-                                        <span
-                                            class="priority priority-<?= s($card['priority']) ?>"
-                                            title="<?= s($card['priority']) ?>"
-                                        >
-                                            <?= $prioritySymbols[$card['priority']] ?? $unknownPriority ?>
-                                        </span>
-                                        <?php if ($canWrite && !$card['archived_at']): ?>
-                                            <button
-                                                type="button"
-                                                class="card-menu"
-                                                data-move-card
-                                                aria-label="<?= s(t('Ticket :key verschieben', ['key' => Format::ticket($project['ticket_key'], $card['number'])])) ?>"
-                                            >
-<?= Icon::mark('more_horiz') ?>                                            </button>
-                                        <?php endif ?>
-                                        <?= slot('board.card.actions', $boardSlot->withCard($card)) ?>
-                                    </div>
-                                </div>
-                                <a class="card-title" data-ticket-link href="<?= s(route('ticket', ['project' => $projectId, 'ticket' => Format::ticket($project['ticket_key'], $card['number'])])) ?>">
-                                    <?= s($card['title']) ?>
-                                </a>
-                                <p class="card-description"><?= s(mb_strimwidth($card['description'], 0, 95, '…')) ?></p>
-                                <div class="card-labels">
-                                    <?php foreach ($tags[$card['id']] ?? [] as $labelId): ?>
-                                        <?php $label = $labelMap[$labelId]; ?>
-                                        <span class="label-tag" style="--tag-color: <?= s($label['color']) ?>">
-                                            <?= s($label['name']) ?>
-                                        </span>
-                                    <?php endforeach ?>
-                                    <?= slot('board.card.badges', $boardSlot->withCard($card)) ?>
-                                </div>
-                                <?= slot('board.card.details', $boardSlot->withCard($card)) ?>
-                                <div class="card-bottom">
-                                    <span class="due-date"><?= $card['due_date'] ? Icon::mark('schedule', 'sm') . ' ' . s(date('d. M', strtotime($card['due_date']))) : 'Kein Termin' ?></span>
-                                    <?php if ($estimating && $card['estimate_points'] !== null): ?>
-                                        <span
-                                            class="card-points <?= Estimation::offScale($scale, (int) $card['estimate_points']) ? 'off-scale' : '' ?>"
-                                            title="<?= s(Estimation::offScale($scale, (int) $card['estimate_points'])
-                                                ? t('Wert außerhalb der Skala dieses Projekts')
-                                                : t(Estimation::label($scale))) ?>"
-                                        >
-                                            <?= s(Estimation::display($scale, (int) $card['estimate_points'])) ?><small><?= s($estimateUnit) ?></small>
-                                        </span>
-                                    <?php endif ?>
-                                    <div class="card-assignees">
-                                        <?php foreach ($assignments[$card['id']] ?? [] as $userId): ?>
-                                            <?php
-                                        if (!isset($memberMap[$userId])) {
-                                            continue;
-                                        }
-                                            ?>
-                                            <span class="avatar tiny" title="<?= s($memberMap[$userId]['name']) ?>">
-                                                <?= s(mb_substr($memberMap[$userId]['name'], 0, 1)) ?>
-                                            </span>
-                                        <?php endforeach ?>
-                                    </div>
-                                </div>
-                            </article>
+                            <?= partial('board/card', ['card' => $card, 'board' => $cardContext]) ?>
                         <?php endforeach ?>
                         <?php if (!$cell): ?>
                             <div class="empty-cell">

@@ -21,7 +21,9 @@ use Naf\Board\Contracts\TicketServiceInterface;
 use Naf\Board\Contracts\TimerServiceInterface;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Rbac\Installation;
+use Naf\Board\Support\CardContext;
 use Naf\Board\Support\Input;
+use Naf\Board\Support\UiContext;
 use Naf\RateLimit\PdoLimiter;
 use Naf\Session\Core\Session;
 use Nyholm\Psr7\Stream;
@@ -30,6 +32,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UploadedFileInterface;
 
 use function Naf\Board\extensions;
+use function Naf\Board\partial;
 use function Naf\Board\template;
 use function Naf\config;
 use function Naf\Form\csrf;
@@ -37,6 +40,7 @@ use function Naf\json;
 use function Naf\Rbac\rbac;
 use function Naf\redirect;
 use function Naf\request;
+use function Naf\route;
 use function Naf\View\render;
 
 /** @internal */
@@ -251,6 +255,68 @@ final class AppController
                 'activity' => $this->query->activity(Input::id($project)),
             ]),
         );
+    }
+
+    /**
+     * The board as data, with its cards already rendered.
+     *
+     * Placement is JSON because the client owns it: which cell a card sits in,
+     * what the counters say, which revision this is. The card itself is HTML
+     * because the server owns that -- the five extension slots on a card are
+     * PHP, and so are the registries behind a priority symbol or an estimate.
+     * Rendering a card in the browser would mean a second implementation of all
+     * of it, and a card that means something different depending on how it
+     * arrived.
+     *
+     * The query string comes along, so a board that is filtered answers
+     * filtered: a live update cannot smuggle in a card the filter excludes.
+     */
+    public function boardCards(string $project): ResponseInterface
+    {
+        return $this->read(function () use ($project) {
+            $id    = Input::id($project);
+            $board = $this->query->board($id, request()->getQueryParams());
+
+            $context = CardContext::build([
+                ...$board,
+                'uiContext' => new UiContext(
+                    (int) $this->auth->id(),
+                    $board['scope'],
+                    UiContext::MODE_PAGE,
+                    route()->current(),
+                ),
+                'token' => csrf()->token(),
+            ]);
+
+            $cells   = [];
+            $cards   = [];
+            $columns = [];
+            $lanes   = [];
+            foreach ($board['cards'] as $card) {
+                $cells[$card['column_id'] . ':' . $card['swimlane_id']][] = (string) $card['id'];
+                $cards[(string) $card['id']]                              = partial(
+                    'board/card',
+                    ['card' => $card, 'board' => $context],
+                );
+
+                $column                     = (string) $card['column_id'];
+                $columns[$column]['count']  = ($columns[$column]['count'] ?? 0) + 1;
+                $columns[$column]['points'] = ($columns[$column]['points'] ?? 0)
+                    + (int) $card['estimate_points'];
+                $lane         = (string) $card['swimlane_id'];
+                $lanes[$lane] = ($lanes[$lane] ?? 0) + 1;
+            }
+
+            return json([
+                'revision' => (string) $board['board']['revision'],
+                'total'    => (int) $board['total'],
+                'limited'  => (int) $board['total'] > CardContext::LIMIT,
+                'cells'    => $cells,
+                'cards'    => $cards,
+                'columns'  => $columns,
+                'lanes'    => $lanes,
+            ]);
+        });
     }
 
     public function boardState(string $project): ResponseInterface
