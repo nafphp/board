@@ -139,7 +139,7 @@ $hintUrl = $current
         </div>
         <?php
         /*
-         * Where the browser connects, and the ticket that says what it may
+         * Where the browser connects, and the token that says what it may
          * hear. Issued here because this is the last moment with a request, and
          * a request is what makes "may this person hear this board" cheap to
          * answer -- the socket server has no session to ask.
@@ -150,15 +150,15 @@ $hintUrl = $current
          */
         $socket = $current !== null && function_exists('Naf\Websocket\live') && \Naf\Websocket\live()
             ? [
-                'url'    => (string) config('websocket:url', ''),
-                'ticket' => \Naf\Websocket\ticket(
+                'url'   => (string) config('websocket:url', ''),
+                'token' => \Naf\Websocket\token(
                     (string) $user->getIdentifier(),
                     ['project:' . $current],
                 ),
             ]
             : null;
 ?>
-        <?php if ($socket !== null && $socket['url'] !== '' && $socket['ticket'] !== ''): ?>
+        <?php if ($socket !== null && $socket['url'] !== '' && $socket['token'] !== ''): ?>
             <script type="application/json" data-naf-websocket><?= json_encode($socket, JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>
         <?php endif ?>
         <?= partial('profile.modal', [
