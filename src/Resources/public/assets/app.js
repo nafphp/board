@@ -212,7 +212,31 @@ document.addEventListener('submit', async (event) => {
   }
 });
 const board = document.querySelector('#board');
+
+/*
+ * Something changed a ticket from inside the page: the drawer saved one, or the
+ * assistant did.
+ *
+ * The board behind it was then out of date, and the banner was how it said so.
+ * It is not out of date any more -- the change is announced over the socket and
+ * the board brings itself up to date before anybody could act on the banner, so
+ * all it did was ask the reader to fix something that was not broken. It is
+ * still the honest answer for a page that is not listening: live updates
+ * switched off, or a connection that has dropped.
+ *
+ * The banner itself stays. A refused move and a column this page does not have
+ * are still worth a sentence and a reload button.
+ */
+let listening = false;
+document.addEventListener('naf:websocket-open', () => {
+  listening = true;
+});
+document.addEventListener('naf:websocket-closed', () => {
+  listening = false;
+});
+
 document.addEventListener('nafinity:ai-changed', () => {
+  if (listening) return;
   const update = document.querySelector('#board-update');
   if (update) update.hidden = false;
 });
