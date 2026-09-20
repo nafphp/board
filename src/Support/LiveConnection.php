@@ -50,20 +50,42 @@ final class LiveConnection
      */
     public static function wanted(): bool
     {
-        if (!self::running()) {
-            return false;
-        }
-
-        $user = self::viewer();
-
-        return $user !== null
-            && (bool) app()->container()->get(PreferenceStore::class)->user($user)['live_updates'];
+        return (bool) (self::preferences()['live_updates'] ?? false);
     }
 
-    /** @return list<string> */
+    /**
+     * Whether this person is taking part in who-is-here.
+     *
+     * A second preference, and a second question: hearing that a board changed
+     * and being seen reading it are not the same thing to everybody. It needs a
+     * connection, so it cannot be truer than `wanted()` -- an installation with
+     * no server, or a person who switched live updates off, has no socket for
+     * presence to travel on either.
+     */
+    public static function seen(): bool
+    {
+        return self::wanted() && (bool) (self::preferences()['presence'] ?? false);
+    }
+
+    /**
+     * The channels a token for this project may name.
+     *
+     * The presence channel is left out for somebody who does not want it, which
+     * is what makes that switch worth anything: it is not a token that carries
+     * the channel and a page that declines to draw it, it is a token that never
+     * held the channel. The server will not send them a roster, and will not
+     * pass on anything they try to say.
+     *
+     * @return list<string>
+     */
     public static function channels(int $project): array
     {
-        return ['project:' . $project];
+        $channels = ['project:' . $project];
+        if (self::seen()) {
+            $channels[] = 'presence:project:' . $project;
+        }
+
+        return $channels;
     }
 
     /**
@@ -97,5 +119,36 @@ final class LiveConnection
         $id = app()->container()->get(Auth::class)->id();
 
         return $id === null ? null : (int) $id;
+    }
+
+    /**
+     * What this person decided, asked once however often it is wanted.
+     *
+     * A page asks these questions several times over -- the status beside the
+     * breadcrumb, the roster in the bar, and the token that has to agree with
+     * both -- and each was a query of its own. Held for the length of the
+     * request that asked, and keyed by person, so nothing here has to be
+     * invalidated: the request that writes a preference answers with a redirect
+     * and renders none of this, and the page that follows asks again.
+     *
+     * Empty when there is nothing to connect to or nobody to connect, so both
+     * switches read false without either having to ask again.
+     *
+     * @return array<string, mixed>
+     */
+    private static function preferences(): array
+    {
+        static $held = [];
+
+        if (!self::running()) {
+            return [];
+        }
+
+        $user = self::viewer();
+        if ($user === null) {
+            return [];
+        }
+
+        return $held[$user] ??= app()->container()->get(PreferenceStore::class)->user($user);
     }
 }

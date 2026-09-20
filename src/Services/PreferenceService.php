@@ -42,6 +42,7 @@ final class PreferenceService implements PreferenceServiceInterface
             'notify_in_app' => isset($data['notify_in_app']) ? 1 : 0,
             'notify_mail'   => isset($data['notify_mail']) ? 1 : 0,
             'live_updates'  => isset($data['live_updates']) ? 1 : 0,
+            'presence'      => isset($data['presence']) ? 1 : 0,
             'new_tickets'   => Placement::person($data['new_tickets'] ?? null),
         ]);
     }

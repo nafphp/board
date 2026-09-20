@@ -125,6 +125,71 @@ final class LiveConnectionOverHttpTest extends AcceptanceTestCase
     }
 
     /**
+     * The presence channel is a second thing the token may carry, and a second
+     * decision -- so it is checked for separately rather than assumed to follow
+     * the first.
+     */
+    public function testATokenSaysWhoMaySeeWhoElseIsHere(): void
+    {
+        $token = Token::verify((string) config('websocket:key', ''), $this->live()['body']['token']);
+
+        $this->assertNotNull($token);
+        $this->assertTrue(
+            $token->mayJoin('presence:project:' . self::PROJECT),
+            'a member was not let in on who else is on their board',
+        );
+        $this->assertFalse(
+            $token->mayJoin('presence:project:' . self::OTHER_PROJECT),
+            'a token issued for one board showed who is on another',
+        );
+    }
+
+    /**
+     * Switching presence off takes the channel out of the token rather than
+     * hiding a list on the page.
+     *
+     * That is the whole difference between a preference and a promise: a page
+     * that merely declined to draw the roster would still be receiving it, and
+     * the person would still be in everybody else's. Nothing is sent, so nothing
+     * is seen -- which also means they stop seeing the others, and the setting
+     * says so.
+     */
+    public function testSomebodyWhoDoesNotWantToBeSeenIsNotSendingAnything(): void
+    {
+        if (!LiveConnection::running()) {
+            $this->markTestSkipped('This installation issues no tokens.');
+        }
+
+        $this->liveUpdatesFor($this->viewer, true, false);
+
+        try {
+            $page = $this->viewer->request('/projects/' . self::PROJECT)['body'];
+            $body = $this->socket($this->viewer)['body'];
+            $this->assertArrayHasKey('token', $body, 'live updates went off with presence');
+
+            $token = Token::verify((string) config('websocket:key', ''), $body['token']);
+            $this->assertNotNull($token);
+            $this->assertTrue(
+                $token->mayJoin('project:' . self::PROJECT),
+                'the board itself stopped being heard',
+            );
+            $this->assertFalse(
+                $token->mayJoin('presence:project:' . self::PROJECT),
+                'somebody who switched presence off was still joined to it',
+            );
+            $this->assertStringNotContainsString('data-presence', $page, 'the page still draws a roster');
+        } finally {
+            $this->liveUpdatesFor($this->viewer, true);
+        }
+
+        $this->assertStringContainsString(
+            'data-presence',
+            $this->viewer->request('/projects/' . self::PROJECT)['body'],
+            'switching it back on did not bring it back',
+        );
+    }
+
+    /**
      * The history, asked the way a watching page asks: everything after the
      * entry it already holds, rendered.
      */
@@ -168,9 +233,12 @@ final class LiveConnectionOverHttpTest extends AcceptanceTestCase
         ];
     }
 
-    private function liveUpdatesFor(HttpClient $client, bool $on): void
+    private function liveUpdatesFor(HttpClient $client, bool $on, bool $seen = true): void
     {
-        // save() writes the whole form, so everything it governs travels with it.
+        // save() writes the whole form, so everything it governs travels with it
+        // -- including the switches this call is not about, which is why they
+        // are named rather than left out. A checkbox nobody sends is a checkbox
+        // that was cleared.
         $body = [
             '_csrf'         => $client->token($client->request('/preferences')['body']),
             'theme'         => 'system',
@@ -180,6 +248,9 @@ final class LiveConnectionOverHttpTest extends AcceptanceTestCase
         ];
         if ($on) {
             $body['live_updates'] = '1';
+        }
+        if ($seen) {
+            $body['presence'] = '1';
         }
 
         $response = $client->request('/preferences', $body);

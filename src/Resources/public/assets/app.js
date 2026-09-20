@@ -411,3 +411,7 @@ if (document.querySelector('[data-activity]')) import('./activity.js?v=1');
 // Only where there is something to report: an installation without a socket
 // server renders no status to keep up to date.
 if (document.querySelector('[data-live-status]')) import('./live.js?v=1');
+
+// Only inside a project, and only for somebody who takes part in presence: the
+// bar is not rendered otherwise, because their token holds no channel to fill it.
+if (document.querySelector('[data-presence]')) import('./presence.js?v=1');

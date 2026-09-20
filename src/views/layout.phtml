@@ -3,6 +3,7 @@
 use Naf\Board\Support\Format;
 use Naf\Board\Support\Icon;
 use Naf\Board\Support\LiveConnection;
+use Naf\Board\Support\Presence;
 
 use function Naf\Board\choice;
 use function Naf\Board\extensions;
@@ -42,6 +43,27 @@ $hintText    = $current
 $hintUrl = $current
     ? route('project.settings', ['project' => $current]) . '#roles'
     : route('projects');
+
+/*
+ * What the bar above every page of a project needs in order to show who else is
+ * in it: who this reader is, so they are not shown themselves; the project's
+ * people, so a subject becomes a face; where this page is; and the words for
+ * saying where anybody else is -- translated here, because the browser at the
+ * other end may be reading this application in another language.
+ *
+ * Only the project's own members are named. An administrator who can open any
+ * board without being on one is still shown, as somebody rather than as
+ * themselves, which tells the members nothing they were not already told.
+ *
+ * Null for somebody who switched presence off: their token carries no such
+ * channel, so there would be nothing to fill this with.
+ */
+$presence = $current === null || !LiveConnection::seen() ? null : json_encode([
+    'me'     => (string) $uiContext->actorId,
+    'people' => Presence::people($members ?? []),
+    'at'     => Presence::place($uiContext->routeName),
+    'words'  => Presence::words(),
+], JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP);
 ?>
 <!doctype html>
 <html lang="<?= s($preferences['locale']) ?>" data-theme="<?= s($preferences['theme'] ?? 'system') ?>">
@@ -52,7 +74,7 @@ $hintUrl = $current
         <title><?= s(t($title ?? 'Board')) ?> · Nafinity</title>
         <script src="/assets/boot.js"></script>
         <link rel="stylesheet" href="/assets/icons.css?v=2" />
-        <link rel="stylesheet" href="/assets/app.css?v=32" />
+        <link rel="stylesheet" href="/assets/app.css?v=34" />
         <script type="module" src="/assets/app.js"></script>
         <script type="module" src="/assets/settings.js?v=5"></script>
         <script type="module" src="/assets/profile.js?v=1"></script>
@@ -131,6 +153,25 @@ $hintUrl = $current
                         <strong><?= s($project['name'] ?? t($title ?? 'Board')) ?></strong>
                     </div>
                     <div class="topbar-right">
+                        <?php // Rendered empty and hidden: the roster arrives over the
+                              // socket a moment after the page does, and a bar that
+                              // reserved room for it would jump.?>
+                        <?php if ($presence !== null): ?>
+                            <div class="presence" data-presence hidden>
+                                <button
+                                    type="button"
+                                    class="presence-stack"
+                                    data-presence-stack
+                                    aria-expanded="false"
+                                    aria-controls="presence-panel"
+                                ></button>
+                                <div class="presence-panel" id="presence-panel" role="group">
+                                    <p class="presence-heading"><?= s(t('Gerade hier')) ?></p>
+                                    <ul data-presence-list></ul>
+                                </div>
+                            </div>
+                            <script type="application/json" data-presence-settings><?= $presence ?></script>
+                        <?php endif ?>
                         <?= slot('topbar.actions', $uiContext) ?>
                     </div>
                 </header>

@@ -68,13 +68,25 @@ $logins = (array) config('auth:logins', []);
     </div>
     <?php // A board that rearranges itself while you are reading it is not what
           // everybody wants from a board. Off, the page still works -- it simply
-          // shows what it showed when it was loaded, like any other page.?>
+          // shows what it showed when it was loaded, like any other page.
+          //
+          // The second switch cuts both ways on purpose, and says so: it takes
+          // the presence channel out of this person's token, so they send
+          // nothing and therefore also see nobody. Being invisible while
+          // watching the others is not a setting worth offering.?>
     <div class="checkbox-list">
         <?= field([
             'label' => 'Änderungen anderer sofort auf dem Board zeigen',
             'name'  => 'live_updates',
             'type'  => 'checkbox',
             'value' => (int) ($preferences['live_updates'] ?? 1),
+        ]) ?>
+        <?= field([
+            'label' => 'Anzeigen, wer gerade im Projekt ist',
+            'name'  => 'presence',
+            'type'  => 'checkbox',
+            'value' => (int) ($preferences['presence'] ?? 1),
+            'hint'  => 'Die anderen sehen, auf welcher Seite du gerade bist und welches Ticket du geöffnet hast. Aus siehst du sie ebenfalls nicht mehr.',
         ]) ?>
     </div>
     <?= field([
