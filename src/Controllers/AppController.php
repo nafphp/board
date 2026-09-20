@@ -333,6 +333,36 @@ final class AppController
      * An installation with no server answers without a token. That is not an
      * error either; it is how the client is told to stop asking.
      */
+    /**
+     * What has happened here since the page was drawn, already rendered.
+     *
+     * The socket says a board changed and nothing more, so a page watching the
+     * history asks the same way the board does: through its own authorised path,
+     * naming the last entry it holds. Answering "everything newer than this"
+     * rather than "the newest fifty" means two people watching at once are not
+     * handed each other's duplicates.
+     */
+    public function activityEntries(string $project): ResponseInterface
+    {
+        return $this->read(function () use ($project) {
+            $id          = Input::id($project);
+            $board       = $this->query->board($id);
+            $preferences = $this->query->preferences();
+            $after       = (int) (request()->getQueryParams()['after'] ?? 0);
+
+            $entries = [];
+            foreach ($this->query->activitySince($id, $after) as $item) {
+                $entries[(string) $item['id']] = partial('activity/entry', [
+                    'item'        => $item,
+                    'project'     => $board['project'],
+                    'preferences' => $preferences,
+                ]);
+            }
+
+            return json(['entries' => $entries]);
+        });
+    }
+
     public function boardSocket(string $project): ResponseInterface
     {
         return $this->read(function () use ($project) {

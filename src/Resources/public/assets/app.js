@@ -359,6 +359,9 @@ if (board) import('./board.js?v=10');
 // Only where there is a filter row to watch.
 if (document.querySelector('.filterbar')) import('./filters.js?v=1');
 
+// Only on the page that shows the history.
+if (document.querySelector('[data-activity]')) import('./activity.js?v=1');
+
 // Only where there is something to report: an installation without a socket
 // server renders no status to keep up to date.
 if (document.querySelector('[data-live-status]')) import('./live.js?v=1');

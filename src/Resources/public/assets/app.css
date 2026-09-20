@@ -1892,6 +1892,33 @@ fieldset:disabled select {
   bottom: 1px;
   left: 3px;
 }
+/* What the payload recorded: which fields, which column it came from and went
+   to. The log said that something happened and never what. */
+.activity-detail {
+  color: var(--muted);
+  font-size: 10px;
+  margin: 2px 0 0;
+}
+/* An entry that arrived while the page was open. Same idea as a card landing on
+   the board: it is the only thing moving, so it is allowed to say so once. */
+@keyframes entry-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.activity-list li[data-arrived] {
+  animation: entry-arrive 0.36s cubic-bezier(0.22, 0.7, 0.3, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .activity-list li[data-arrived] {
+    animation: none;
+  }
+}
 .activity-dot {
   height: 7px;
   width: 7px;

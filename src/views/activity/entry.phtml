@@ -1,0 +1,41 @@
+<?php
+
+/**
+ * One line of history, wherever it is asked for.
+ *
+ * The page renders these into a list and the endpoint renders the same template
+ * for the ones that arrive afterwards, so an entry that comes in live is the
+ * entry the page would have drawn. Two renderers would be two truths about what
+ * a change looked like.
+ *
+ * @var array $item        one activity row, payload included
+ * @var array $project
+ * @var array $preferences
+ */
+
+use Naf\Board\Support\ActivityDetail;
+use Naf\Board\Support\ActivityLabel;
+use Naf\Board\Support\Format;
+
+use function Naf\route;
+use function Naf\View\s;
+
+$detail = ActivityDetail::of($item);
+?>
+<li data-activity-entry="<?= (int) $item['id'] ?>">
+    <span class="activity-dot"></span>
+    <div>
+        <strong><?= s($item['actor_name']) ?></strong>
+        <p>
+            <?= s(ActivityLabel::for($item['event_type'])) ?>
+            <?php if ($item['ticket_id']): ?>
+                ·
+                <a href="<?= s(route('ticket', ['project' => $project['id'], 'ticket' => Format::ticket($project['ticket_key'], $item['ticket_number'])])) ?>"><?= s(Format::ticket($project['ticket_key'], $item['ticket_number'])) ?></a>
+            <?php endif ?>
+        </p>
+        <?php if ($detail !== ''): ?>
+            <p class="activity-detail"><?= s($detail) ?></p>
+        <?php endif ?>
+        <time><?= s(Format::dateTime($item['created_at'], $preferences)) ?></time>
+    </div>
+</li>

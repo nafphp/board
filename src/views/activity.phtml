@@ -1,6 +1,5 @@
 <?php
 
-use Naf\Board\Support\ActivityLabel;
 use Naf\Board\Support\Format;
 
 use function Naf\Board\partial;
@@ -27,22 +26,19 @@ $this->block('content');
         : s(Format::count(count($activity), 'Eintrag', 'Einträge')) ?>
 </p>
 <section class="settings-card preferences-card">
-    <ol class="activity-list">
+    <ol
+        class="activity-list"
+        data-activity
+        data-project="<?= (int) $project['id'] ?>"
+        data-entries="<?= s(route('project.activity.entries', ['project' => $project['id']])) ?>"
+        data-latest="<?= (int) ($activity[0]['id'] ?? 0) ?>"
+    >
         <?php foreach ($activity as $item): ?>
-            <li>
-                <span class="activity-dot"></span>
-                <div>
-                    <strong><?= s($item['actor_name']) ?></strong>
-                    <p>
-                        <?= s(ActivityLabel::for($item['event_type'])) ?>
-                        <?php if ($item['ticket_id']): ?>
-                            ·
-                            <a href="<?= s(route('ticket', ['project' => $project['id'], 'ticket' => Format::ticket($project['ticket_key'], $item['ticket_number'])])) ?>"><?= s(Format::ticket($project['ticket_key'], $item['ticket_number'])) ?></a>
-                        <?php endif ?>
-                    </p>
-                    <time><?= s(Format::dateTime($item['created_at'], $preferences)) ?></time>
-                </div>
-            </li>
+            <?= partial('activity/entry', [
+                'item'        => $item,
+                'project'     => $project,
+                'preferences' => $preferences,
+            ]) ?>
         <?php endforeach ?>
     </ol>
 </section>

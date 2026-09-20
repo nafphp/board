@@ -213,10 +213,14 @@ final class TicketService implements TicketServiceInterface
             ]);
             $this->entityManager->save($ticket);
             $this->changed($project, $id, 'ticket.moved', [
-                'from'     => $row['column_id'],
-                'to'       => (string) $column['id'],
-                'column'   => $column['name'],
-                'swimlane' => $lane['name'],
+                'from' => $row['column_id'],
+                // The column's name and not only its id: a log entry has to be
+                // readable years later, when that column may have been renamed
+                // or removed, and an id would then name nothing at all.
+                'from_column' => $this->columnName($project, (int) $row['column_id']),
+                'to'          => (string) $column['id'],
+                'column'      => $column['name'],
+                'swimlane'    => $lane['name'],
             ]);
         });
     }
@@ -698,6 +702,17 @@ final class TicketService implements TicketServiceInterface
             $this->preferences->user($this->access->actor())['new_tickets'] ?? null,
             $statement->fetchColumn(),
         );
+    }
+
+    /** What a column was called at the moment a card left it. */
+    private function columnName(int $project, int $column): string
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT name FROM board_columns WHERE project_id=? AND id=?',
+        );
+        $statement->execute([$project, $column]);
+
+        return (string) $statement->fetchColumn();
     }
 
     /** Above everything in the cell, the mirror of appending below it. */

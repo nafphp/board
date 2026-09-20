@@ -124,6 +124,50 @@ final class LiveConnectionOverHttpTest extends AcceptanceTestCase
         );
     }
 
+    /**
+     * The history, asked the way a watching page asks: everything after the
+     * entry it already holds, rendered.
+     */
+    public function testTheHistoryAnswersOnlyWhatIsNewerThanWhatAPageHolds(): void
+    {
+        $all = $this->entries($this->alice, 0);
+        $ids = array_map(intval(...), array_keys($all['body']['entries']));
+        $this->assertNotEmpty($ids, 'the seeded project has no history');
+
+        // The promise the watching page rests on: never an entry it already has.
+        // Not "the newest few" -- the answer is capped, so the cap must never be
+        // the reason something is left out or handed over twice.
+        $held = $ids[0];
+        $next = array_map(intval(...), array_keys($this->entries($this->alice, $held)['body']['entries']));
+
+        $this->assertNotEmpty($next, 'nothing came back after an entry that is not the last one');
+        foreach ($next as $id) {
+            $this->assertGreaterThan($held, $id, 'an entry the page already holds came back');
+        }
+
+        $this->assertStringContainsString(
+            'data-activity-entry=',
+            (string) reset($all['body']['entries']),
+            'an entry came back as something other than the markup the page draws',
+        );
+    }
+
+    public function testAStrangerIsNotToldWhatHappenedHere(): void
+    {
+        $this->assertSame(404, $this->entries($this->bob, 0)['status']);
+    }
+
+    /** @return array{status:int, body:array<string,mixed>} */
+    private function entries(HttpClient $client, int $after): array
+    {
+        $response = $client->request('/projects/' . self::PROJECT . '/activity/entries?after=' . $after);
+
+        return [
+            'status' => $response['status'],
+            'body'   => json_decode($response['body'], true) ?? [],
+        ];
+    }
+
     private function liveUpdatesFor(HttpClient $client, bool $on): void
     {
         // save() writes the whole form, so everything it governs travels with it.

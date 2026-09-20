@@ -380,6 +380,40 @@ final class BoardQuery implements BoardQueryInterface
         );
     }
 
+    /**
+     * The entries recorded after the one a page already shows.
+     *
+     * Oldest first, because they are put on top one after another and the last
+     * one placed has to end up highest. Capped, because a page that was left
+     * open over a weekend should not be handed a weekend.
+     *
+     * @return list<array<string,mixed>>
+     */
+    public function activitySince(int $project, int $after, int $limit = 50): array
+    {
+        $this->access->project($project);
+
+        return $this->rows(
+            <<<'SQL'
+            SELECT a.*,
+                   u.name AS actor_name,
+                   t.number AS ticket_number
+            FROM activities a
+            JOIN users u ON u.id = a.actor_id
+            LEFT JOIN tickets t ON t.id = a.ticket_id
+            AND t.project_id = a.project_id
+            WHERE a.project_id = ?
+                AND a.id > ?
+            ORDER BY a.id ASC
+            SQL
+            // Appended rather than bound: a LIMIT is not a value to every driver,
+            // and it is not interpolated into the query above -- that block is a
+            // nowdoc, which is the point of writing SQL in one.
+            . ' LIMIT ' . max(1, min(200, $limit)),
+            [$project, $after],
+        );
+    }
+
     public function preferences(): array
     {
         return $this->rows('SELECT * FROM user_preferences WHERE user_id=?', [
