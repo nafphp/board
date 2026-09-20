@@ -208,6 +208,10 @@ function flip(nodes, mutate) {
   const before = new Map(targets.map((node) => [node, node.getBoundingClientRect()]));
   mutate();
   for (const node of targets) {
+    // The mutation may have taken it out -- an empty-cell hint the last card
+    // just displaced, say. A rect of nothing is zeros, and animating to them
+    // would fling a node that is already gone.
+    if (!node.isConnected) continue;
     const first = before.get(node);
     // Read past any running glide: where the card belongs now, not where it currently shows.
     const last = layoutBox(node);
@@ -712,7 +716,13 @@ function reveal(card) {
   // A card taller than the window shows its top half; there is no arrangement
   // that shows all of it.
   const down = above < 0 ? above : Math.max(0, below);
-  if (down) scrollBy({ top: down, behavior });
+  /*
+   * Carrying the eye a little is helpful; hauling the page a thousand pixels is
+   * not -- it is the reader who ends up somewhere else, and they did not ask to
+   * go. Past a screenful, the card keeps its place and the counts above the
+   * board say that something arrived.
+   */
+  if (down && Math.abs(down) <= innerHeight) scrollBy({ top: down, behavior });
 
   // The board scrolls sideways on its own, so a column off to the right is not
   // something the window can do anything about.
@@ -746,13 +756,20 @@ function applyBoard(data) {
   let structural = false;
 
   /*
-   * Everything already on the board glides to where it now belongs, rather than
-   * being somewhere else the next time anybody looks. All of it, not only the
-   * cell that changed: a card arriving makes its cell taller, which makes its
-   * lane taller, which moves the lane below. A card that does not move costs a
-   * measurement and animates nothing.
+   * Everything on the board that has a position of its own, not only the cards.
+   *
+   * A card arriving makes its cell taller, which makes its lane taller, which
+   * moves the lane below -- headings, empty-cell hints and all. Gliding only the
+   * cards left the rest to snap to the new layout at once, so for the length of
+   * the glide a lane's first card sat ninety pixels above its own heading and
+   * then caught up. That is what the flicker was: not a card appearing, a lane
+   * coming apart and back together.
+   *
+   * Nothing here is inside anything else here, so no node carries another's
+   * transform. A block that does not move costs a measurement and animates
+   * nothing.
    */
-  flip([...present.values()], () => {
+  flip([...board.querySelectorAll('.ticket-card, .empty-cell, .lane-heading')], () => {
     for (const [key, ids] of Object.entries(data.cells)) {
       const [column, lane] = key.split(':');
       const cell = board.querySelector(`.board-cell[data-column="${column}"][data-lane="${lane}"]`);

@@ -330,7 +330,7 @@ document.addEventListener('keydown', (event) => {
 // The board brings its own drag, drop and celebration layer and is only needed there.
 // Versioned here because this is the only place that loads it; a second
 // importer with a different spelling would be a second module instance.
-if (board) import('./board.js?v=8');
+if (board) import('./board.js?v=9');
 
 // Only where there is a filter row to watch.
 if (document.querySelector('.filterbar')) import('./filters.js?v=1');
