@@ -1,4 +1,5 @@
 import { requestOllama } from './ollama-client.js';
+import { toast } from '../app.js';
 import { renderMessageContent } from './markdown.js';
 import { normalizeToolCalls, ollamaTools } from './tools.js';
 import {
@@ -211,20 +212,22 @@ function initChat(root) {
    * is open. Asking again on every page would be a request per navigation for
    * something that only changes when somebody starts a program.
    *
-   * And when they do start one, the answer has to change. A timer would be the
-   * obvious way and the wrong one: it asks hardest exactly when nobody is there.
-   * Coming back to the tab is the better moment, because it is the one a person
-   * creates -- you switch away, you start Ollama, you come back, and the question
-   * is asked again. Only a "no" is worth re-asking; a "yes" that has since gone
-   * away shows up as a failed request the moment the assistant is used, which is
-   * where it belongs.
+   * And when that changes -- started, or stopped -- the answer has to change with
+   * it. A timer would be the obvious way and the wrong one: it asks hardest
+   * exactly when nobody is there. The moments a person makes are better, and
+   * there are two: coming back to the tab, and reaching for the launcher. Both
+   * ask again when what this session knows has gone stale, in either direction.
+   *
+   * Which leaves one gap, and it is deliberate: sitting on the page touching
+   * nothing while Ollama stops. Nothing asks, so the launcher is briefly wrong --
+   * until the moment it is used, which is the moment it matters.
    */
   let reachable = null;
   let asked = 0;
 
   // Long enough that returning to the tab twice in a row asks once, short enough
-  // that starting Ollama and switching back is answered by the time you look.
-  const stale = 30000;
+  // that starting or stopping Ollama is noticed at the next thing you do.
+  const staleAfter = 30000;
 
   /** What this session already found out about this address, if anything. */
   function remembered(config) {
@@ -286,7 +289,23 @@ function initChat(root) {
       toggle.setAttribute('aria-expanded', 'false');
     }
   }
-  toggle.addEventListener('click', () => open(!expanded));
+  toggle.addEventListener('click', async () => {
+    /*
+     * Asked before it opens, and only when opening. A launcher that opens onto a
+     * connection that is gone has already broken the promise it makes by being
+     * there -- so if the answer has turned, the widget leaves instead, and says
+     * why rather than vanishing under the cursor.
+     */
+    if (!expanded && stale()) {
+      await ask(configFor(root));
+      if (reachable !== true) {
+        toast('Nafinity AI ist nicht erreichbar. Läuft Ollama noch?');
+
+        return;
+      }
+    }
+    open(!expanded);
+  });
   root.querySelector('[data-ai-close]').addEventListener('click', () => open(false));
   panel.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && confirmation.hidden) {
@@ -331,10 +350,13 @@ function initChat(root) {
    * more -- this is the moment somebody has just installed or started Ollama and
    * come back to see it work.
    */
+  /** What this session knows is old enough to be worth asking about again. */
+  function stale() {
+    return Date.now() - answeredAt() >= staleAfter;
+  }
+
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState !== 'visible') return;
-    if (reachable === true || Date.now() - answeredAt() < stale) return;
-    refresh({ again: true });
+    if (document.visibilityState === 'visible' && stale()) refresh({ again: true });
   });
 
   window.addEventListener('nafinity:ai-settings', () => refresh({ again: true }));
