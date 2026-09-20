@@ -10,6 +10,7 @@ use Naf\Board\Contracts\ProjectServiceInterface;
 use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Estimation;
 use Naf\Board\Domain\Failure;
+use Naf\Board\Domain\Placement;
 use Naf\Board\Domain\ProjectScope;
 use Naf\Board\Rbac\Grants;
 use Naf\Board\Support\Input;
@@ -87,7 +88,7 @@ final class ProjectService implements ProjectServiceInterface
         $remap  = !empty($data['remap_estimates']);
         $this->access->write($project, 'manage', function () use ($project, $fields, $remap) {
             $this->pdo
-                ->prepare('UPDATE projects SET name=?,description=?,ticket_key=?,estimation_scale=?,color=?,icon=? WHERE id=?')
+                ->prepare('UPDATE projects SET name=?,description=?,ticket_key=?,estimation_scale=?,color=?,icon=?,new_tickets=? WHERE id=?')
                 ->execute([...array_values($fields), $project]);
             if ($remap) {
                 $this->remapEstimates($project, $fields['estimation_scale']);
@@ -436,6 +437,7 @@ final class ProjectService implements ProjectServiceInterface
             'estimation_scale' => Estimation::scale($data['estimation_scale'] ?? null),
             'color'            => $this->color($data['color'] ?? '#6366f1'),
             'icon'             => $icon,
+            'new_tickets'      => Placement::board($data['new_tickets'] ?? null),
         ];
     }
 

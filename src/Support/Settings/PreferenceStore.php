@@ -25,6 +25,7 @@ final class PreferenceStore
         'notify_in_app' => 1,
         'notify_mail'   => 0,
         'live_updates'  => 1,
+        'new_tickets'   => 'inherit',
     ];
 
     /** The per-project columns of a membership. */

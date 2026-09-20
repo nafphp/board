@@ -7,6 +7,7 @@
  * @var object $user
  */
 
+use Naf\Board\Domain\Placement;
 use Naf\Board\Support\Locales;
 
 use function Naf\Board\field;
@@ -76,6 +77,14 @@ $logins = (array) config('auth:logins', []);
             'value' => (int) ($preferences['live_updates'] ?? 1),
         ]) ?>
     </div>
+    <?= field([
+        'label'   => 'Neue Tickets',
+        'name'    => 'new_tickets',
+        'type'    => 'select',
+        'value'   => Placement::person($preferences['new_tickets'] ?? null),
+        'options' => array_map(t(...), Placement::forPerson()),
+        'hint'    => 'Gilt für die Tickets, die du anlegst. Unten anhängen kann in einer langen Spalte heißen, dass du dein eigenes Ticket erst suchen musst.',
+    ]) ?>
     <div class="form-errors" role="alert"></div>
     <div class="settings-actions">
         <button class="button primary"><?= s(t('Einstellungen speichern')) ?></button>

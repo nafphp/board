@@ -11,11 +11,13 @@ use Naf\Board\Contracts\TimerServiceInterface;
 use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Estimation;
 use Naf\Board\Domain\Failure;
+use Naf\Board\Domain\Placement;
 use Naf\Board\Models\Ticket;
 use Naf\Board\Support\Duration;
 use Naf\Board\Support\Format;
 use Naf\Board\Support\Input;
 use Naf\Board\Support\RichText;
+use Naf\Board\Support\Settings\PreferenceStore;
 use Naf\ORM\Core\EntityManager;
 use PDO;
 use Throwable;
@@ -33,6 +35,7 @@ final class TicketService implements TicketServiceInterface
         private ProjectServiceInterface $projects,
         private TimerServiceInterface $timers,
         private TicketMetadataWriter $metadata,
+        private PreferenceStore $preferences,
     ) {
     }
 
@@ -71,11 +74,9 @@ final class TicketService implements TicketServiceInterface
                 'updated_at'  => $now,
                 'closed_at'   => $closed ? $now : null,
                 'archived_at' => null,
-                'position'    => $this->appendPosition(
-                    $project,
-                    (int) $column['id'],
-                    (int) $lane['id'],
-                ),
+                'position'    => $this->placement($project) === Placement::TOP
+                    ? $this->leadPosition($project, (int) $column['id'], (int) $lane['id'])
+                    : $this->appendPosition($project, (int) $column['id'], (int) $lane['id']),
                 'version' => 1,
             ]);
             $this->entityManager->save($ticket);
@@ -677,6 +678,43 @@ final class TicketService implements TicketServiceInterface
         ) {
             throw new Failure('Das Board wurde inzwischen geändert. Bitte lade es neu.', 409);
         }
+    }
+
+    /**
+     * Where the person creating this ticket wants it, or where this board puts
+     * them when they have not said.
+     *
+     * Asked of the creator and not of whoever is looking: a ticket has one
+     * position, and it is decided once, when it is made. Two people who disagree
+     * about where new tickets belong each get their way for the ones they create,
+     * which is the only reading of this setting that a shared list can honour.
+     */
+    private function placement(int $project): string
+    {
+        $statement = $this->pdo->prepare('SELECT new_tickets FROM projects WHERE id=?');
+        $statement->execute([$project]);
+
+        return Placement::resolve(
+            $this->preferences->user($this->access->actor())['new_tickets'] ?? null,
+            $statement->fetchColumn(),
+        );
+    }
+
+    /** Above everything in the cell, the mirror of appending below it. */
+    private function leadPosition(int $project, int $column, int $lane): int
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT COALESCE(MIN(position),0) FROM tickets WHERE project_id=? AND column_id=? AND swimlane_id=?',
+        );
+        $statement->execute([$project, $column, $lane]);
+        $position = (int) $statement->fetchColumn();
+        if ($position < PHP_INT_MIN + 1024) {
+            $this->rebalance($project, $column, $lane);
+            $statement->execute([$project, $column, $lane]);
+            $position = (int) $statement->fetchColumn();
+        }
+
+        return $position - 1024;
     }
 
     private function appendPosition(int $project, int $column, int $lane): int

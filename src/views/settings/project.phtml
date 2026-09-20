@@ -1,5 +1,6 @@
 <?php
 use Naf\Board\Domain\Estimation;
+use Naf\Board\Domain\Placement;
 
 use function Naf\Board\extensions;
 use function Naf\Board\field;
@@ -54,6 +55,14 @@ if (!$knownScale) {
             'options' => $scaleOptions,
             'hint'    => 'Gilt für alle Tickets des Projekts. Nur eine Skala gleichzeitig; das Board summiert sie über jeder Spalte.',
             'choice'  => ['searchLabel' => 'Skalen suchen'],
+        ]) ?>
+        <?= field([
+            'label'   => 'Neue Tickets',
+            'name'    => 'new_tickets',
+            'type'    => 'select',
+            'value'   => Placement::board($project['new_tickets'] ?? null),
+            'options' => array_map(t(...), Placement::forBoard()),
+            'hint'    => 'Wo ein neues Ticket in seiner Spalte landet. Gilt für alle, die nichts anderes für sich eingestellt haben.',
         ]) ?>
         <?php if ($offScale): ?>
             <p class="settings-hint">
