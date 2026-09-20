@@ -53,6 +53,34 @@ final class Input
     }
 
     /**
+     * What a broken rule is called here.
+     *
+     * naf/form ships English defaults, and they cannot be translated where they
+     * are written: the package is a dependency, not a working copy, so anything
+     * edited there is gone at the next install. It takes a message per field and
+     * rule, though, so this application says it in its own words and the package
+     * keeps its defaults for whoever does not.
+     *
+     * `%d` rather than a named placeholder, because the validator fills these in
+     * with sprintf and the number is its to insert.
+     *
+     * A rule not named here keeps the English the package gave it. That is not
+     * pretty, but a message in the wrong language is still an answer, where a
+     * blank one is not.
+     */
+    private const array SAID = [
+        'required' => 'Dieses Feld wird benötigt.',
+        'string'   => 'Bitte gib einen Text ein.',
+        'array'    => 'Bitte triff eine Auswahl.',
+        'integer'  => 'Bitte gib eine ganze Zahl ein.',
+        'email'    => 'Bitte gib eine gültige E-Mail-Adresse an.',
+        'min'      => 'Mindestens %d Zeichen.',
+        'max'      => 'Höchstens %d Zeichen.',
+        'boolean'  => 'Bitte wähle Ja oder Nein.',
+        'date'     => 'Bitte gib ein Datum im Format JJJJ-MM-TT an.',
+    ];
+
+    /**
      * @param array<string, mixed>  $data
      * @param array<string, string> $rules
      *
@@ -60,12 +88,35 @@ final class Input
      */
     public static function validate(array $data, array $rules): array
     {
-        $validation = validator()->validate($data, $rules);
+        $validation = validator()->validate($data, $rules, self::wording($rules));
         if (!$validation->isValid()) {
             throw new Failure(t('Bitte prüfe deine Eingaben.'), 422, $validation->getErrorMessages());
         }
 
         return array_intersect_key($data, $rules);
+    }
+
+    /**
+     * The message for every rule these fields are checked against.
+     *
+     * @param array<string, string> $rules
+     *
+     * @return array<string, array<string, string>>
+     */
+    private static function wording(array $rules): array
+    {
+        $wording = [];
+
+        foreach ($rules as $field => $spec) {
+            foreach (explode('|', (string) $spec) as $rule) {
+                $name = explode(':', $rule, 2)[0];
+                if (isset(self::SAID[$name])) {
+                    $wording[$field][$name] = t(self::SAID[$name]);
+                }
+            }
+        }
+
+        return $wording;
     }
 
     public static function id(mixed $value, string $field = 'id'): int

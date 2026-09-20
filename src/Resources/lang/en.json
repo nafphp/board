@@ -439,5 +439,8 @@
   "Bitte wähle ein gültiges Datum.": "Please choose a valid date.",
   "Bitte wähle eine Datei.": "Please choose a file.",
   "Board nicht gefunden.": "Board not found.",
-  "Das Projekt braucht mindestens einen aktiven Owner.": "The project needs at least one active owner."
+  "Das Projekt braucht mindestens einen aktiven Owner.": "The project needs at least one active owner.",
+  "Bitte gib eine gültige E-Mail-Adresse an.": "Please enter a valid email address.",
+  "Mindestens %d Zeichen.": "At least %d characters.",
+  "Höchstens %d Zeichen.": "Maximum of %d characters."
 }
