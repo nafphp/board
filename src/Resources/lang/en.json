@@ -471,5 +471,7 @@
   "Labels": "Labels",
   "Fällig": "Due",
   "Dieses Exportformat gibt es nicht: :format": "There is no such export format: :format",
-  "Das Exportformat :format kann nicht schreiben.": "The export format :format cannot write."
+  "Das Exportformat :format kann nicht schreiben.": "The export format :format cannot write.",
+  "Angemeldet": "Signed in",
+  "Anmeldung abgelehnt": "Sign-in refused"
 }

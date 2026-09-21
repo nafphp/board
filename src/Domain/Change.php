@@ -30,7 +30,7 @@ final readonly class Change
     public function __construct(
         public ?int $projectId,
         public ?int $ticketId,
-        public int $actorId,
+        public ?int $actorId,
         public string $type,
         public array $data = [],
         ?string $scope = null,
@@ -40,8 +40,15 @@ final readonly class Change
             : (string) Scope::of(Project::SCOPE, $this->projectId));
     }
 
-    /** What changed about the installation itself, outside every board. */
-    public static function inInstallation(int $actor, string $type, array $data = []): self
+    /**
+     * What changed about the installation itself, outside every board.
+     *
+     * The actor may be absent. Almost everything recorded here was done by
+     * somebody, but not quite everything: a refused sign-in is the work of
+     * whoever typed the address, and naming them would mean asserting who they
+     * were on the strength of a password that did not match.
+     */
+    public static function inInstallation(?int $actor, string $type, array $data = []): self
     {
         return new self(null, null, $actor, $type, $data);
     }

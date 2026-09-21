@@ -8,6 +8,8 @@ use Naf\Auth\Credentials\PasswordCredentials;
 use Naf\Board\Contracts\AccountServiceInterface;
 use Naf\Board\Events\SignIn;
 use Naf\Board\Models\User;
+use Naf\Board\Modules\CoreSignInAudit;
+use Naf\Board\Services\AuditLog;
 use Naf\Board\Tests\Support\AccountTestCase;
 
 use function Naf\app;
@@ -83,6 +85,67 @@ final class SignInEventTest extends AccountTestCase
         $this->assertCount(1, $this->heard);
         $this->assertFalse($this->heard[0]->succeeded);
         $this->assertSame('nobody@example.test', $this->heard[0]->email);
+    }
+
+    /**
+     * The entry the log did not have: somebody came in.
+     *
+     * Recorded from outside the transaction that published the session, in one
+     * of its own -- a sign-in that already happened must not be undone by the
+     * writing down of it.
+     */
+    public function testASuccessfulSignInIsWrittenToTheLog(): void
+    {
+        [$user] = $this->newAccount();
+        $this->auth->logout();
+        $this->attempt($this->emailOf($user), self::CURRENT_PASSWORD);
+
+        $entry = $this->lastEntry(CoreSignInAudit::SUCCEEDED);
+
+        $this->assertNotNull($entry, 'a sign-in left no trace');
+        $this->assertSame((int) $user->getId(), (int) $entry['actor_id']);
+        $this->assertSame('', (string) $entry['scope'], 'a sign-in was filed under a project');
+        $this->assertSame('users', json_decode((string) $entry['payload'], true)['provider']);
+    }
+
+    /**
+     * And the one it needed more: somebody tried and did not get in.
+     *
+     * With no actor, on purpose. Naming one would mean asserting who it was on
+     * the strength of a password that did not match; the address as typed is
+     * what a run of attempts is grouped by, and it is kept whether or not any
+     * account answers to it.
+     */
+    public function testARefusedSignInIsWrittenWithNoActorAndTheAddressAsTyped(): void
+    {
+        [$user] = $this->newAccount();
+        $this->auth->logout();
+        $email = $this->emailOf($user);
+        $this->attempt($email, 'not the password');
+
+        $entry = $this->lastEntry(CoreSignInAudit::REFUSED);
+
+        $this->assertNotNull($entry, 'a refused sign-in left no trace');
+        $this->assertNull($entry['actor_id'], 'a refused sign-in named somebody');
+        $this->assertSame($email, json_decode((string) $entry['payload'], true)['person']);
+    }
+
+    /** Both kinds are account business, behind the permission that exists for it. */
+    public function testSignInEntriesAreOnlyVisibleWithThePersonalPermission(): void
+    {
+        $this->assertContains(CoreSignInAudit::SUCCEEDED, AuditLog::PERSONAL);
+        $this->assertContains(CoreSignInAudit::REFUSED, AuditLog::PERSONAL);
+    }
+
+    /** @return array<string,mixed>|null */
+    private function lastEntry(string $type): ?array
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT actor_id, scope, payload FROM activities WHERE event_type=? ORDER BY id DESC LIMIT 1',
+        );
+        $statement->execute([$type]);
+
+        return $statement->fetch() ?: null;
     }
 
     /** The model is built from a row and exposes no accessor for this. */
