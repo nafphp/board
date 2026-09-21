@@ -1,60 +1,60 @@
 {
-  "name": "naf/board",
-  "description": "Project-isolated Kanban boards for NAF, with an extension platform.",
-  "type": "naf-plugin",
-  "license": "proprietary",
-  "require": {
-    "php": ">=8.3",
-    "ext-pdo": "*",
-    "ext-mbstring": "*",
-    "ext-fileinfo": "*",
-    "naf/framework": "^0.2.4",
-    "naf/database": "^0.2.2",
-    "naf/form": "^0.2.3",
-    "naf/session": "^0.2.2",
-    "naf/orm": "^0.2.2",
-    "naf/queue": "^0.2.3",
-    "naf/schedule": "^0.2.3",
-    "naf/mail": "^0.2.2",
-    "naf/auth": "^0.2.1",
-    "naf/view": "^0.2.1",
-    "naf/cli": "^0.2.2",
-    "naf/i18n": "^0.2.2",
-    "naf/client": "^0.2.2",
-    "naf/oauth-client": "^0.2.2",
-    "naf/storage": "^0.1.0",
-    "naf/rate-limit": "^0.1.0",
-    "naf/rbac": "^0.1.0",
-    "naf/auth-ldap": "^0.1.0",
-    "naf/mcp": "^0.2.1",
-    "symfony/html-sanitizer": "^7.4",
-    "ext-dom": "*"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^12.1"
-  },
-  "autoload": {
-    "psr-4": {
-      "Naf\\Board\\": "src/"
+    "name": "naf/board",
+    "description": "Project-isolated Kanban boards for NAF, with an extension platform.",
+    "type": "naf-plugin",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.3",
+        "ext-pdo": "*",
+        "ext-mbstring": "*",
+        "ext-fileinfo": "*",
+        "naf/framework": "^0.2.6",
+        "naf/database": "^0.2.2",
+        "naf/form": "^0.2.3",
+        "naf/session": "^0.2.2",
+        "naf/orm": "^0.2.2",
+        "naf/queue": "^0.2.3",
+        "naf/schedule": "^0.2.3",
+        "naf/mail": "^0.2.2",
+        "naf/auth": "^0.2.1",
+        "naf/view": "^0.2.1",
+        "naf/cli": "^0.2.2",
+        "naf/i18n": "^0.2.2",
+        "naf/client": "^0.2.2",
+        "naf/oauth-client": "^0.2.2",
+        "naf/storage": "^0.1.0",
+        "naf/rate-limit": "^0.1.0",
+        "naf/rbac": "^0.1.1",
+        "naf/auth-ldap": "^0.1.0",
+        "naf/mcp": "^0.2.1",
+        "symfony/html-sanitizer": "^7.4",
+        "ext-dom": "*"
     },
-    "files": [
-      "src/functions.php"
-    ]
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Naf\\Board\\Tests\\": "tests/"
+    "require-dev": {
+        "phpunit/phpunit": "^12.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Naf\\Board\\": "src/"
+        },
+        "files": [
+            "src/functions.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Naf\\Board\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": false
+    },
+    "scripts": {
+        "test": "phpunit --colors=always",
+        "test:js": "node --test tests/js/*.test.js"
+    },
+    "conflict": {
+        "nyholm/psr7": "<1.8.2"
     }
-  },
-  "config": {
-    "sort-packages": true,
-    "allow-plugins": false
-  },
-  "scripts": {
-    "test": "phpunit --colors=always",
-    "test:js": "node --test tests/js/*.test.js"
-  },
-  "conflict": {
-    "nyholm/psr7": "<1.8.2"
-  }
 }

@@ -39,7 +39,7 @@ final class CoreGrantAudit implements ExtensionProviderInterface
             return;
         }
 
-        event()->listen('rbac.granted', static function (GrantsChanged $grant): void {
+        event()->listen(GrantsChanged::class, static function (GrantsChanged $grant): void {
             $pdo   = app()->container()->get(PDO::class);
             $scope = Scope::parse($grant->scope);
             // A grant on one board can be joined to it; one held on every board
@@ -54,7 +54,7 @@ final class CoreGrantAudit implements ExtensionProviderInterface
             }
 
             try {
-                event()->dispatch('nafinity.changed', Change::at(
+                event()->dispatch(Change::at(
                     $grant->scope,
                     $project,
                     $grant->actorId,

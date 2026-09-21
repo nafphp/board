@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Naf\Board\Tests\Extensions\Installed;
 
 use Example\ExtensionA\Export\StatusForExternalSystem;
+use Naf\Board\Export\ExportFinished;
+use Naf\Board\Export\ExportStarted;
 use Naf\Board\Services\ExportService;
 use Naf\Board\Support\Resolver;
 use Naf\Board\Tests\Support\ExtensionInstalledTestCase;
 
 use function Naf\app;
 use function Naf\Board\extensions;
+use function Naf\event;
 
 /**
  * The case the export was built around, run by a package the board never heard of.
@@ -104,6 +107,50 @@ final class ExportContributionTest extends ExtensionInstalledTestCase
             'status=open',
             $this->exported(StatusForExternalSystem::FORMAT),
         );
+    }
+
+    /**
+     * The frame around the records, and the count only the export knows.
+     *
+     * A package writing into somebody else's system opens something before the
+     * first record and closes it after the last. Counting the lines itself to
+     * report how many there were would mean listening to every one of them for
+     * a number that was already to hand.
+     */
+    public function testAnExportAnnouncesItsBeginningAndItsEnd(): void
+    {
+        $seen = [];
+        event()->listen(ExportStarted::class, static function (ExportStarted $run) use (&$seen): void {
+            $seen['started'] = $run->exporter;
+            $seen['columns'] = array_key_exists('example.external_id', $run->columns);
+        });
+        event()->listen(ExportFinished::class, static function (ExportFinished $run) use (&$seen): void {
+            $seen['finished'] = $run->exporter;
+            $seen['written']  = $run->written;
+        });
+
+        $this->exported('csv');
+
+        $this->assertSame('csv', $seen['started'] ?? null, 'the export began without saying so');
+        $this->assertSame('csv', $seen['finished'] ?? null, 'the export ended without saying so');
+        $this->assertTrue($seen['columns'] ?? false, 'the frame did not carry the columns of this run');
+        $this->assertGreaterThan(0, $seen['written'] ?? 0, 'the count came back empty');
+    }
+
+    /** The count is the records, not the lines: a heading is not a record. */
+    public function testTheCountIsWhatWasExportedAndNotWhatWasWritten(): void
+    {
+        $written = null;
+        event()->listen(
+            ExportFinished::class,
+            static function (ExportFinished $run) use (&$written): void {
+                $written = $run->written;
+            },
+        );
+
+        $rows = substr_count(trim($this->exported('csv')), "\r\n");
+
+        $this->assertSame($rows, $written, 'the count disagrees with the file it counted');
     }
 
     private function markReviewed(): void

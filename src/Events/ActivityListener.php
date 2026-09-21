@@ -87,7 +87,7 @@ final class ActivityListener
 
         if (
             !$last
-            || (int) $last['actor_id'] !== $change->actorId
+            || ($last['actor_id'] === null ? null : (int) $last['actor_id']) !== $change->actorId
             || (string) $last['event_type'] !== $change->type
             || strtotime((string) $last['created_at'] . ' UTC') < time() - self::FOLD_WINDOW
         ) {

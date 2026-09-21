@@ -172,7 +172,7 @@ final class SettingsService implements SettingsServiceInterface
             return;
         }
 
-        event()->dispatch('nafinity.changed', new Change(
+        event()->dispatch(new Change(
             $context->projectId,
             null,
             $this->access->actor(),

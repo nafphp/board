@@ -311,5 +311,8 @@
   "Labels": "Labels",
   "Fällig": "Fällig",
   "Dieses Exportformat gibt es nicht: :format": "Dieses Exportformat gibt es nicht: :format",
-  "Das Exportformat :format kann nicht schreiben.": "Das Exportformat :format kann nicht schreiben."
+  "Das Exportformat :format kann nicht schreiben.": "Das Exportformat :format kann nicht schreiben.",
+  "Angemeldet": "Angemeldet",
+  "Anmeldung abgelehnt": "Anmeldung abgelehnt",
+  "Angemeldet bleiben": "Angemeldet bleiben"
 }

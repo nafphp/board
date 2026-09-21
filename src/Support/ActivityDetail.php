@@ -103,7 +103,10 @@ final class ActivityDetail
             // Whose account, and nothing about what it became: an address
             // belongs to the account, a password nowhere at all.
             'account.created', 'account.password_changed',
-            'account.email_requested', 'account.email_changed'
+            'account.email_requested', 'account.email_changed',
+            // A refused attempt carries the address as typed where the others
+            // carry a name: who it was is exactly what was not established.
+            'account.signed_in', 'account.sign_in_refused'
                                       => self::text($payload['person'] ?? null),
             'ticket.moved'            => self::move($payload),
             'timer.recorded'          => self::minutes($payload['minutes'] ?? null),

@@ -38,7 +38,7 @@ final class CoreLive implements ExtensionProviderInterface
             return;
         }
 
-        event()->listen('nafinity.changed', static function (Change $change): void {
+        event()->listen(Change::class, static function (Change $change): void {
             $revision = app()->container()->get(PDO::class)
                 ->prepare('SELECT revision FROM boards WHERE project_id=?');
             $revision->execute([$change->projectId]);

@@ -72,7 +72,6 @@ final class ProjectService implements ProjectServiceInterface
                 'is_default' => 1,
             ]);
             event()->dispatch(
-                'nafinity.changed',
                 new Change($id, null, $actor, 'project.created', ['name' => $data['name']]),
             );
             $this->entityManager->commit();
@@ -400,7 +399,6 @@ final class ProjectService implements ProjectServiceInterface
             ->prepare('UPDATE boards SET revision=revision+1 WHERE project_id=?')
             ->execute([$project]);
         event()->dispatch(
-            'nafinity.changed',
             new Change($project, null, $this->access->actor(), $type, $data),
         );
     }

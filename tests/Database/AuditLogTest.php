@@ -109,7 +109,7 @@ final class AuditLogTest extends BoardTestCase
      */
     public function testAChangeOfSomebodysRolesIsRecordedWhereItHappened(): void
     {
-        event()->dispatch('rbac.granted', new GrantsChanged(
+        event()->dispatch(new GrantsChanged(
             (int) $this->alice->getId(),
             (int) $this->bob->getId(),
             'project:' . $this->projectA,

@@ -23,6 +23,7 @@ use Naf\Board\Domain\Failure;
 use Naf\Board\Rbac\Installation;
 use Naf\Board\Services\AuditLog;
 use Naf\Board\Services\ExportService;
+use Naf\Board\Services\RememberService;
 use Naf\Board\Support\CardContext;
 use Naf\Board\Support\Input;
 use Naf\Board\Support\LiveConnection;
@@ -69,6 +70,7 @@ final class AppController
         private PageRendererInterface $pages,
         private AuditLog $audit,
         private ExportService $exports,
+        private RememberService $remember,
     ) {
     }
 
@@ -118,6 +120,13 @@ final class AppController
 
             csrf()->generate();
 
+            // Asked for, not assumed. A cookie that outlives the session is a
+            // convenience somebody chooses on the device they are sitting at,
+            // and not one an application decides on their behalf.
+            if (($body['remember'] ?? '') !== '') {
+                $this->remember->issue((int) $this->auth->id());
+            }
+
             return redirect('/', 303);
         } catch (Failure $exception) {
             return render(template('login'), ['error' => $exception->getMessage(), 'email' => ''])->withStatus(
@@ -128,6 +137,10 @@ final class AppController
 
     public function logout(): ResponseInterface
     {
+        // Before the session goes, because forgetting reads the cookie and needs
+        // nothing else -- but after this the person is a guest, and a guest
+        // signing out is not who this row belonged to.
+        $this->remember->forget();
         $this->auth->logout();
         csrf()->generate();
 

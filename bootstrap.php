@@ -16,6 +16,7 @@ use Naf\Board\Commands\RemoveAssetsCommand;
 use Naf\Board\Commands\RenameMigrationNamespaceCommand;
 use Naf\Board\Commands\SeedCommand;
 use Naf\Board\Contracts\BoardQueryInterface;
+use Naf\Board\Contracts\RememberStoreInterface;
 use Naf\Board\Domain\Change;
 use Naf\Board\Domain\ProjectScope;
 use Naf\Board\Events\ActivityListener;
@@ -27,6 +28,8 @@ use Naf\Board\Policies\ProjectPolicy;
 use Naf\Board\Rbac\Boards;
 use Naf\Board\Rbac\Installation;
 use Naf\Board\Rbac\Project;
+use Naf\Board\Services\RememberService;
+use Naf\Board\Services\RememberStore;
 use Naf\Board\Support\AccountStateStore;
 use Naf\Board\Support\AttachmentStorage;
 use Naf\Board\Support\ContainerLogger;
@@ -90,6 +93,10 @@ foreach (['host', 'database', 'username', 'password'] as $field) {
 $container->set(StateStoreInterface::class, static fn() => $container->make(AccountStateStore::class));
 $container->get(Auth::class)->policy(ProjectScope::class, new ProjectPolicy());
 $container->set(ActivityListener::class, static fn() => $container->make(ActivityListener::class));
+$container->set(
+    RememberStoreInterface::class,
+    static fn() => $container->make(RememberStore::class),
+);
 /*
  * The language of the whole answer, not only of a rendered page.
  *
@@ -102,6 +109,31 @@ $container->set(ActivityListener::class, static fn() => $container->make(Activit
  * command line with no person behind it, an installation whose database is not
  * up yet. None of those is a reason to refuse a request.
  */
+/*
+ * Somebody who asked to be remembered, coming back after their session is gone.
+ *
+ * Here rather than in a controller because it has to happen before anything
+ * asks whether there is a session -- request.start is the last moment that is
+ * true of, and it is true of every route at once, which is what keeps this from
+ * being a thing each controller could forget.
+ *
+ * Quiet on every failure. A cookie that has expired, been revoked, or been
+ * copied is not a reason to refuse a request; it is a reason to arrive as a
+ * guest, which is what the sign-in page is for.
+ */
+event()->listen('request.start', static function () use ($container): void {
+    try {
+        if (!$container->get(Auth::class)->check()) {
+            // make(), not get(): the service is not bound, and get() answers
+            // only for what is -- a distinction this silent catch would hide.
+            $container->make(RememberService::class)->resume();
+        }
+    } catch (Throwable) {
+        // An installation whose database is not up yet, or a table that is one
+        // migration behind. Neither is worth a broken request.
+    }
+});
+
 event()->listen('request.start', static function () use ($container): void {
     try {
         $language = $container->get(BoardQueryInterface::class)->preferences()['locale'] ?? null;
@@ -114,7 +146,7 @@ event()->listen('request.start', static function () use ($container): void {
 });
 
 event()->listen(
-    'nafinity.changed',
+    Change::class,
     static fn(Change $change) => $container
         ->get(ActivityListener::class)
         ->record($change),

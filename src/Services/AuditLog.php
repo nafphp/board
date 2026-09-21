@@ -38,6 +38,8 @@ final class AuditLog
         'account.password_changed',
         'account.email_requested',
         'account.email_changed',
+        'account.signed_in',
+        'account.sign_in_refused',
     ];
 
     public function __construct(private PDO $pdo)

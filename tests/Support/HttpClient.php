@@ -183,15 +183,22 @@ final class HttpClient
      *
      * @return string the token for the session that was just opened
      */
-    public function login(string $email, string $password = 'Test-Password-2026!'): string
-    {
+    public function login(
+        string $email,
+        string $password = 'Test-Password-2026!',
+        bool $remember = false,
+    ): string {
         $this->forgetSession();
-        $page  = $this->request('/login');
-        $entry = $this->request('/login', [
+        $page = $this->request('/login');
+        $body = [
             '_csrf'    => $this->token($page['body']),
             'email'    => $email,
             'password' => $password,
-        ]);
+        ];
+        if ($remember) {
+            $body['remember'] = '1';
+        }
+        $entry = $this->request('/login', $body);
 
         // 303 where the login form redirects, 200 where it answers the page it
         // landed on; both mean the session is open, and which one it is belongs
@@ -228,5 +235,43 @@ final class HttpClient
         if (is_file($this->jar)) {
             unlink($this->jar);
         }
+    }
+
+    /**
+     * Throw away every cookie but the named ones.
+     *
+     * What closing a browser does to a session cookie while leaving a persistent
+     * one alone -- which is the only way to ask whether somebody is remembered
+     * rather than merely still signed in.
+     *
+     * The jar is curl's Netscape format: one cookie per line, tab separated,
+     * with the name in the sixth field. A line beginning `#` is a comment --
+     * except `#HttpOnly_`, which is curl's way of marking a cookie the browser
+     * would not hand to a script. Treating that as a comment keeps every
+     * httponly cookie regardless of its name, which is every cookie worth
+     * dropping here.
+     *
+     * @param string ...$names Cookie names to keep
+     */
+    public function keepOnly(string ...$names): void
+    {
+        if (!is_file($this->jar)) {
+            return;
+        }
+
+        $kept = array_filter(
+            file($this->jar, FILE_IGNORE_NEW_LINES),
+            static function (string $line) use ($names): bool {
+                $cookie = str_starts_with($line, '#HttpOnly_') ? substr($line, 10) : $line;
+                if ($line === '' || (str_starts_with($line, '#') && $cookie === $line)) {
+                    return true;
+                }
+                $fields = explode("\t", $cookie);
+
+                return isset($fields[5]) && in_array($fields[5], $names, true);
+            },
+        );
+
+        file_put_contents($this->jar, implode("\n", $kept) . "\n");
     }
 }

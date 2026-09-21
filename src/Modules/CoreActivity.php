@@ -43,6 +43,8 @@ final class CoreActivity implements ExtensionProviderInterface
         'account.password_changed' => ['Passwort geändert', 'lock'],
         'account.email_requested'  => ['E-Mail-Wechsel angefragt', 'mail'],
         'account.email_changed'    => ['E-Mail geändert', 'mail'],
+        'account.signed_in'        => ['Angemeldet', 'person'],
+        'account.sign_in_refused'  => ['Anmeldung abgelehnt', 'close'],
         'ticket.created'           => ['Ticket erstellt', 'add'],
         'ticket.updated'           => ['Ticket bearbeitet', 'edit'],
         'ticket.moved'             => ['Ticket verschoben', 'swap_horiz'],

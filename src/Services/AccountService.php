@@ -11,6 +11,7 @@ use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\AccountServiceInterface;
 use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Failure;
+use Naf\Board\Events\SignIn;
 use Naf\Board\Jobs\AccountSecurityNoticeJob;
 use Naf\Board\Models\User;
 use Naf\Board\Rbac\Grants;
@@ -61,13 +62,31 @@ final class AccountService implements AccountServiceInterface
             $statement->execute([$credentials->username]);
             $authenticated = $this->auth->authenticate($credentials, $provider);
             $this->entityManager->commit();
-
-            return $authenticated;
         } catch (Throwable $exception) {
             $this->entityManager->rollback();
             $this->auth->logout();
             throw $exception;
         }
+
+        /*
+         * Announced after the transaction rather than inside it, which is the
+         * opposite of how a change is announced -- and deliberate. A listener
+         * that throws here must not undo a sign-in that already happened: the
+         * session is published, the person is in, and rolling that back would
+         * leave them signed in with no record of it. Refusing a sign-in is the
+         * authentication provider's job, not a listener's.
+         *
+         * Both outcomes are announced, because the interesting one is usually
+         * the failure.
+         */
+        event()->dispatch(new SignIn(
+            $credentials->username,
+            $provider,
+            $authenticated,
+            $authenticated ? (int) $this->auth->id() : null,
+        ));
+
+        return $authenticated;
     }
 
     /**
@@ -126,7 +145,7 @@ final class AccountService implements AccountServiceInterface
 
             // Not a personal event: who opened an account for whom is
             // administration, and that concerns whoever may read the log.
-            event()->dispatch('nafinity.changed', Change::inInstallation($actor, 'account.created', [
+            event()->dispatch(Change::inInstallation($actor, 'account.created', [
                 'person' => $name,
             ]));
             $this->entityManager->commit();
@@ -387,7 +406,6 @@ final class AccountService implements AccountServiceInterface
         $name->execute([$user]);
 
         event()->dispatch(
-            'nafinity.changed',
             Change::inInstallation($user, $type, ['person' => (string) $name->fetchColumn()]),
         );
     }
