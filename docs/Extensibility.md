@@ -23,12 +23,13 @@ acceptance run: [`examples/nafinity-extension-a`](../examples/nafinity-extension
 11. [Views](#views)
 12. [Board filters](#board-filters)
 13. [Estimation, activity and AI](#estimation-activity-and-ai)
-14. [Export](#export)
-15. [Assets](#assets)
-16. [Translations](#translations)
-17. [Migrations, commands, jobs](#migrations-commands-jobs)
-18. [Lifetime and uninstalling](#lifetime-and-uninstalling)
-19. [Negative cases](#negative-cases)
+14. [Events](#events)
+15. [Export](#export)
+16. [Assets](#assets)
+17. [Translations](#translations)
+18. [Migrations, commands, jobs](#migrations-commands-jobs)
+19. [Lifetime and uninstalling](#lifetime-and-uninstalling)
+20. [Negative cases](#negative-cases)
 
 ## Installation
 
@@ -790,11 +791,62 @@ definition; there is no accidental last-wins effect. A write tool still requires
 `confirmed === true` on the server. The browser router and keywords grant no authorization. The
 token-based `/mcp` access stays separate from this.
 
-Events: `Naf\event()->listen('nafinity.changed', …)` with `App\Domain\Change` is unchanged and
+Events: `Naf\event()->listen(Change::class, …)` is unchanged and
 runs **inside the domain transaction**. A listener may enqueue a job through the NAF queue in the
 same PDO transaction; external work is done by the job. Mail or webhooks in the listener are
 wrong. Metadata changes extend the change payload with the affected key names — no values, no
 request data.
+
+## Events
+
+Registries say what exists; events are how a plugin takes part in something already running.
+There are five, and each is a class: `dispatch(new Change(…))`, `listen(Change::class, …)`.
+A misspelled class is an error where it is written, while a misspelled event name used to be a
+listener that never ran and never said so.
+
+| Event | Carries | When |
+|---|---|---|
+| `Change` | project, ticket, actor, type, payload | Anything was written — 24 kinds, from `ticket.moved` to `account.created` |
+| `GrantsChanged` | actor, subject, scope, before, after | Roles or permissions moved (from `naf/rbac`) |
+| `SignIn` | email, provider, outcome, account | Somebody tried to sign in, successfully or not |
+| `ExportStarted` | format, project, columns | An export is about to write its first record |
+| `ExportLine` | format, project, ticket, row | One record, before it is written |
+| `ExportFinished` | format, project, columns, count | An export wrote its last record |
+
+`Change` is one event with twenty-four kinds rather than twenty-four events, because the
+listeners that exist mostly want all of them — the audit log and the live updates do — and a
+plugin interested in one writes one line:
+
+```php
+event()->listen(Change::class, function (Change $change): void {
+    if ($change->type !== 'ticket.moved') {
+        return;
+    }
+    …
+});
+```
+
+### A listener can refuse a write
+
+`Change` is dispatched inside the transaction that did the work, so throwing rolls the whole
+thing back:
+
+```php
+event()->listen(Change::class, function (Change $change): void {
+    if ($change->type === 'ticket.moved' && $this->isFriday()) {
+        throw new Failure(t('Freitags wird nichts nach Fertig geschoben.'), 422);
+    }
+});
+```
+
+The ticket does not move, its version does not advance, and the person is told why. This is how
+a rule that no permission can express — one depending on the data, the time or another system —
+gets to stop something. It costs doing the work and undoing it, which for a rule engine is the
+right trade: the listener sees the finished state rather than a proposal.
+
+`SignIn` is the exception that cannot refuse, and is announced *after* its transaction on
+purpose. By then the session is published and the person is in; rolling that back would leave
+them signed in with no record of it. Refusing a sign-in is the authentication provider's job.
 
 ## Export
 
@@ -829,7 +881,7 @@ the dates) are always there.
 ### Changing what an export says
 
 ```php
-event()->listen(ExportService::LINE, static function (ExportLine $line): void {
+event()->listen(ExportLine::class, static function (ExportLine $line): void {
     if (!$line->isFor('example.external')) {
         return;
     }
@@ -840,8 +892,11 @@ event()->listen(ExportService::LINE, static function (ExportLine $line): void {
 });
 ```
 
-`export.line` fires once per record of every format, after the row is built and before it is
-written. `ExportLine` carries the stored ticket as `readonly` and the outgoing row as `data`: edit
+`ExportLine` fires once per record of every format, after the row is built and before it is
+written. `ExportStarted` and `ExportFinished` frame it: the first carries the format and the
+columns before the first record, the second the same plus how many records went out — which
+is what a package reporting a transfer elsewhere needs, and what counting the lines itself
+would be a poor way to learn. `ExportLine` carries the stored ticket as `readonly` and the outgoing row as `data`: edit
 the row and the export says something else; the board still says what the board said. An export
 that edited the tickets it was reading is the worst possible way to find that out.
 

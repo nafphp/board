@@ -114,7 +114,7 @@ event()->listen('request.start', static function () use ($container): void {
 });
 
 event()->listen(
-    'nafinity.changed',
+    Change::class,
     static fn(Change $change) => $container
         ->get(ActivityListener::class)
         ->record($change),

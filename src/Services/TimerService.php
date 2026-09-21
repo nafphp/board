@@ -272,7 +272,6 @@ final class TimerService implements TimerServiceInterface
             ->prepare('UPDATE boards SET revision=revision+1 WHERE project_id=?')
             ->execute([$project]);
         event()->dispatch(
-            'nafinity.changed',
             new Change($project, $ticket, $this->access->actor(), $type, $data),
         );
     }

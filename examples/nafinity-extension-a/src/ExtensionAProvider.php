@@ -30,7 +30,6 @@ use Naf\Board\Definition\TicketFieldDefinition;
 use Naf\Board\Definition\UiContribution;
 use Naf\Board\Export\ExportLine;
 use Naf\Board\ExtensionContext;
-use Naf\Board\Services\ExportService;
 use Naf\Board\Support\BoardFilterContext;
 use Naf\Board\Support\Resolver;
 use Naf\Board\Support\SqlCondition;
@@ -258,7 +257,7 @@ final class ExtensionAProvider implements ExtensionProviderInterface
         // enqueues; the job does the work once the change is committed.
         $container = $context->container();
         event()->listen(
-            'nafinity.changed',
+            Change::class,
             static fn(Change $change) => Resolver::service($container, ReviewListener::class)
                 ->record($change),
         );
@@ -284,7 +283,7 @@ final class ExtensionAProvider implements ExtensionProviderInterface
         ));
 
         event()->listen(
-            ExportService::LINE,
+            ExportLine::class,
             static fn(ExportLine $line) => (new StatusForExternalSystem())($line),
         );
 

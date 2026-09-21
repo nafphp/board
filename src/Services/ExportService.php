@@ -8,7 +8,9 @@ use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\ExporterInterface;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Domain\ProjectScope;
+use Naf\Board\Export\ExportFinished;
 use Naf\Board\Export\ExportLine;
+use Naf\Board\Export\ExportStarted;
 use Naf\Board\Support\Format;
 use Naf\Board\Support\Resolver;
 use PDO;
@@ -34,14 +36,6 @@ use function Naf\I18n\t;
  */
 final class ExportService
 {
-    /**
-     * The event a plugin listens to in order to change what an export says.
-     *
-     * Fired for every record of every format. Listeners receive an ExportLine
-     * and may edit its `data`; the stored ticket is readonly and does not move.
-     */
-    public const string LINE = 'export.line';
-
     /** Tickets read per round trip, and metadata resolved per round trip with them. */
     private const int PAGE = 500;
 
@@ -85,6 +79,12 @@ final class ExportService
         $out = fopen('php://temp/maxmemory:' . (4 * 1024 * 1024), 'w+b');
         fwrite($out, $writer->open($columns));
 
+        // The frame around the records: everything a listener needs to open
+        // whatever it will close again below is settled by now, and nothing
+        // after this point can change which format or which columns.
+        event()->dispatch(new ExportStarted($definition->id, $project, $columns));
+        $written = 0;
+
         foreach ($this->pages($project) as $rows) {
             $ids   = array_map(intval(...), array_column($rows, 'id'));
             $meta  = $this->metadata->readable($scope, $project, $ids);
@@ -109,13 +109,15 @@ final class ExportService
                 // about it. After the row is built and before it is written, so
                 // a listener sees the finished values and the writer sees the
                 // listener's.
-                event()->dispatch(self::LINE, $line);
+                event()->dispatch($line);
 
                 fwrite($out, $writer->line($line, $columns));
+                $written++;
             }
         }
 
         fwrite($out, $writer->close());
+        event()->dispatch(new ExportFinished($definition->id, $project, $columns, $written));
         rewind($out);
 
         return [

@@ -131,7 +131,6 @@ final class AttachmentService implements AttachmentServiceInterface
                 '_job_id'      => 'attachment-delete:' . $id,
             ]);
             event()->dispatch(
-                'nafinity.changed',
                 new Change($project, $ticket, $this->access->actor(), 'attachment.deleted', [
                     'name' => $row['original_name'],
                 ]),
@@ -211,7 +210,6 @@ final class AttachmentService implements AttachmentServiceInterface
                     ->prepare('UPDATE boards SET revision=revision+1 WHERE project_id=?')
                     ->execute([$project]);
                 event()->dispatch(
-                    'nafinity.changed',
                     new Change(
                         (int) $project,
                         (int) $row['ticket_id'],
