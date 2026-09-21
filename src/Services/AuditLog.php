@@ -34,6 +34,9 @@ final class AuditLog
      * read the log at all -- which is the safe direction for work and the wrong
      * one for this, so the list is short and deliberate.
      */
+    /** Rows per statement while shortening a log for the first time. */
+    private const int BATCH = 1000;
+
     public const array PERSONAL = [
         'account.password_changed',
         'account.email_requested',
@@ -44,6 +47,57 @@ final class AuditLog
 
     public function __construct(private PDO $pdo)
     {
+    }
+
+    /**
+     * Drop entries older than the stated number of days
+     *
+     * Destructive, and therefore never the default: an installation that has
+     * said nothing keeps everything, and a history that quietly shortened itself
+     * would be worse than none at all. Nothing here decides how long is right --
+     * that is a retention policy, which belongs to whoever answers for the data.
+     *
+     * Deleted in batches rather than one statement. A log that has been running
+     * for a year and is being shortened for the first time would otherwise take
+     * one lock over a great many rows, on a table every page of the application
+     * writes to.
+     *
+     * @param int $days Keep this many days; zero or less keeps everything
+     *
+     * @return int How many entries were dropped
+     */
+    public function prune(int $days): int
+    {
+        if ($days <= 0) {
+            return 0;
+        }
+
+        $before = gmdate('Y-m-d H:i:s', time() - $days * 86400);
+
+        /*
+         * Capped per statement, and the two engines spell that differently:
+         * PostgreSQL has no LIMIT on DELETE and names the rows through a
+         * subquery instead, which needs the cutoff twice. The cap is a constant
+         * of this class and never a request, so it is written in rather than
+         * bound -- neither engine accepts a placeholder in LIMIT.
+         */
+        $postgres = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql';
+        $sql      = $postgres
+            ? 'DELETE FROM activities WHERE id IN ('
+                . 'SELECT id FROM activities WHERE created_at < ? ORDER BY id LIMIT '
+                . self::BATCH . ')'
+            : 'DELETE FROM activities WHERE created_at < ? ORDER BY id LIMIT ' . self::BATCH;
+
+        $statement = $this->pdo->prepare($sql);
+        $dropped   = 0;
+
+        do {
+            $statement->execute([$before]);
+            $batch = $statement->rowCount();
+            $dropped += $batch;
+        } while ($batch === self::BATCH);
+
+        return $dropped;
     }
 
     /**

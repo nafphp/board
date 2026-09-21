@@ -21,4 +21,4 @@ cd nafinity && make first-install
 
 ## License
 
-Proprietary.
+MIT
