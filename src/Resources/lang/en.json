@@ -473,5 +473,6 @@
   "Dieses Exportformat gibt es nicht: :format": "There is no such export format: :format",
   "Das Exportformat :format kann nicht schreiben.": "The export format :format cannot write.",
   "Angemeldet": "Signed in",
-  "Anmeldung abgelehnt": "Sign-in refused"
+  "Anmeldung abgelehnt": "Sign-in refused",
+  "Angemeldet bleiben": "Stay signed in"
 }

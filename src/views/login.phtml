@@ -85,6 +85,13 @@ use function Naf\View\s;
                             </select>
                         </label>
                     <?php endif ?>
+                    <?php // Unchecked by default. Staying signed in is a choice made
+                          // on the device somebody is sitting at, and a shared one is
+                          // exactly where the default matters.?>
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember" value="1" />
+                        <?= s(t('Angemeldet bleiben')) ?>
+                    </label>
                     <?php if ($error): ?>
                         <div class="form-errors visible" role="alert"><?= s($error) ?></div>
                     <?php endif ?>
