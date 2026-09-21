@@ -293,6 +293,22 @@ final class CoreSettings implements ExtensionProviderInterface
             'shield',
         ));
 
+        /*
+         * Off by default, and that is the whole safeguard: a history that
+         * quietly shortened itself would be worse than none at all. An
+         * installation that has to answer for how long it keeps this says so
+         * here, deliberately, and nothing decides it on their behalf.
+         */
+        $settings->add(new SettingDefinition(
+            'audit_retention_days',
+            'application',
+            'application',
+            'Protokoll aufbewahren (Tage, 0 = unbegrenzt)',
+            'number',
+            0,
+            400,
+            ['min' => 0, 'max' => 3650],
+        ));
         $settings->add(new SettingDefinition(
             'mail_enabled',
             'application',
