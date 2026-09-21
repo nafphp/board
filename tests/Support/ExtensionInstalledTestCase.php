@@ -95,8 +95,16 @@ abstract class ExtensionInstalledTestCase extends TestCase
         // Rebuilding takes the declared roles with it, and an account without
         // one may do nothing at all. This case builds its own schema rather than
         // going through DatabaseTestCase, so it writes them back itself.
+        //
+        // Reapplied, unlike in a real installation. There the rule is that what
+        // an installation changed about a role is its own and survives an
+        // upgrade -- which also means a permission declared after the roles were
+        // written reaches nobody until somebody grants it. A throwaway host has
+        // nothing of its own to protect and everything to gain from carrying
+        // exactly what the packages declare, including whatever was declared
+        // since the last run.
         $rbac = rbac();
-        $rbac->roles->syncDeclared($rbac->declared->all(), $rbac->declared);
+        $rbac->roles->syncDeclared($rbac->declared->all(), $rbac->declared, true);
         $rbac->forget();
 
         $hash = password_hash('Test-Password-2026!', PASSWORD_DEFAULT);

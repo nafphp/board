@@ -10,6 +10,7 @@ use Naf\Board\Registry\AssetPackageRegistry;
 use Naf\Board\Registry\AssetRegistry;
 use Naf\Board\Registry\BoardFilterRegistry;
 use Naf\Board\Registry\EstimationScaleRegistry;
+use Naf\Board\Registry\ExporterRegistry;
 use Naf\Board\Registry\FieldTypeRegistry;
 use Naf\Board\Registry\NavigationRegistry;
 use Naf\Board\Registry\PermissionRegistry;
@@ -113,6 +114,11 @@ final readonly class ExtensionContext
     public function activityTypes(): ActivityTypeRegistry
     {
         return $this->extensions->activityTypes();
+    }
+
+    public function exporters(): ExporterRegistry
+    {
+        return $this->extensions->exporters();
     }
 
     public function aiTools(): AiToolRegistry

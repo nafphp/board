@@ -33,6 +33,7 @@ final class NafinityDefaults implements ExtensionProviderInterface
         CoreSettings::class,
         CoreTicket::class,
         CoreBoard::class,
+        CoreExport::class,
         CoreAi::class,
         CoreAssets::class,
         AttachmentsModule::class,

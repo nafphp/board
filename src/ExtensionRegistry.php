@@ -14,6 +14,7 @@ use Naf\Board\Registry\AssetPackageRegistry;
 use Naf\Board\Registry\AssetRegistry;
 use Naf\Board\Registry\BoardFilterRegistry;
 use Naf\Board\Registry\EstimationScaleRegistry;
+use Naf\Board\Registry\ExporterRegistry;
 use Naf\Board\Registry\FieldTypeRegistry;
 use Naf\Board\Registry\NavigationRegistry;
 use Naf\Board\Registry\PermissionRegistry;
@@ -63,6 +64,7 @@ final class ExtensionRegistry
     private ?EstimationScaleRegistry $estimation     = null;
     private ?ActivityTypeRegistry $activityTypes     = null;
     private ?AiToolRegistry $aiTools                 = null;
+    private ?ExporterRegistry $exporters             = null;
 
     /**
      * Remember a provider; it runs after Nafinity's own defaults
@@ -248,6 +250,11 @@ final class ExtensionRegistry
     public function aiTools(): AiToolRegistry
     {
         return $this->aiTools ??= new AiToolRegistry();
+    }
+
+    public function exporters(): ExporterRegistry
+    {
+        return $this->exporters ??= new ExporterRegistry();
     }
 
     /**

@@ -22,6 +22,7 @@ use Naf\Board\Contracts\TimerServiceInterface;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Rbac\Installation;
 use Naf\Board\Services\AuditLog;
+use Naf\Board\Services\ExportService;
 use Naf\Board\Support\CardContext;
 use Naf\Board\Support\Input;
 use Naf\Board\Support\LiveConnection;
@@ -67,6 +68,7 @@ final class AppController
         private Session $session,
         private PageRendererInterface $pages,
         private AuditLog $audit,
+        private ExportService $exports,
     ) {
     }
 
@@ -711,6 +713,31 @@ final class AppController
             );
 
             return ['url' => \Naf\route('ticket', ['project' => $project, 'ticket' => $ticket])];
+        });
+    }
+
+    /**
+     * A board, in one of the registered formats.
+     *
+     * The format comes out of the URL and is looked up in the registry, so this
+     * method knows nothing about CSV or JSON and will keep knowing nothing about
+     * the third one. Everything it does here is turn a written stream into a
+     * download.
+     */
+    public function export(string $project, string $format): ResponseInterface
+    {
+        return $this->read(function () use ($project, $format) {
+            $file = $this->exports->write(Input::id($project), $format);
+
+            return \Naf\response()
+                ->withBody(Stream::create($file['stream']))
+                ->withHeader('Content-Type', $file['mime'])
+                ->withHeader(
+                    'Content-Disposition',
+                    'attachment; filename="' . $file['filename'] . '"',
+                )
+                ->withHeader('Cache-Control', 'private, no-store')
+                ->withHeader('X-Content-Type-Options', 'nosniff');
         });
     }
 
