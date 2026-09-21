@@ -1,8 +1,18 @@
-# Nafinity
+# Working on naf/board
 
 A ticket and kanban application built to show what NAF can carry. Business rules live in
 application services; routing, auth, policies, views, form/CSRF, PDO/migrations, ORM,
 events, queue, scheduler, mail and translation come from NAF packages.
+
+This package declares `type: naf-plugin` and is discovered after installation in a NAF host.
+The repository is not the application's web root -- `naf/nafinity` is the skeleton that
+installs it, and that is where the container, the Makefile and the suites are run from.
+
+Before changing code, read the [shared contribution workflow](https://github.com/nafphp/docs/blob/main/AGENT_WORKFLOW.md)
+and [release procedure](https://github.com/nafphp/docs/blob/main/RELEASING.md).
+In the multi-repository workspace, the same documents are in the sibling `docs/` checkout;
+use the linked copies when working from a standalone clone. Preserve other contributors' work.
+Review and update user documentation with every behavior change.
 
 ## Layout
 
@@ -46,7 +56,7 @@ or a plugin metaframework.
 An installed Composer package of `type: naf-plugin` contributes routes, controllers,
 services, menu entries, permissions, settings, ticket fields, widgets, board filters,
 translations, AI tools, commands, migrations and jobs. It registers providers in its
-bootstrap through `Nafinity\extensions()->register(...)`; all providers run in one pass
+bootstrap through `Naf\Board\extensions()->register(...)`; all providers run in one pass
 after the application's own defaults, so a package can replace what the application
 registered.
 
@@ -60,6 +70,35 @@ registered.
 - A slot hands its contributions a typed context, not a loose array. Use that context and its
   `value()` and `field` instead of reaching for an own query or form.
 - Uninstalling a package takes its contributions away and leaves the stored data alone.
+
+### Events are the other half
+
+Registries say what exists; events are how a plugin takes part in something already running.
+There are six, and each **is** a class — `dispatch(new Change(…))`, `listen(Change::class, …)`.
+A misspelled class is an error where it is written; a misspelled event name used to be a
+listener that never ran and never said so.
+
+| Event | When |
+|---|---|
+| `Change` | Anything was written — 24 kinds, from `ticket.moved` to `account.created` |
+| `GrantsChanged` | Roles or permissions moved (from `naf/rbac`) |
+| `SignIn` | Somebody tried to sign in, successfully or not |
+| `ExportStarted`, `ExportLine`, `ExportFinished` | An export, at its ends and per record |
+
+Three things about them that are decisions rather than accidents:
+
+- **One write event with 24 kinds, not 24 events.** The listeners that exist mostly want all
+  of them, and a plugin wanting one writes one `if`. Splitting it would make the audit log and
+  the live updates register twenty-four times each.
+- **`Change` is dispatched inside the transaction that did the work**, so a listener that
+  throws refuses the write. That is how a rule no permission can express — one depending on
+  the data, the time, another system — gets to stop something.
+- **`SignIn` is announced after its transaction**, deliberately the other way round. By then
+  the session is published and the person is in; rolling that back would leave them signed in
+  with no record of it.
+
+Two spellings of `rbac.granted` are **not** events: the stored change type in the audit log and
+the activity vocabulary. Those are strings in rows that already exist.
 
 `docs/Extensibility.md` is the reference: every extension point has an executed
 example and a negative case.
@@ -86,10 +125,18 @@ Both MariaDB and PostgreSQL have to pass; a change that works on only one is not
 The runners refuse to start unless `APP_ENV=test` and `DB_DATABASE=nafinity_test`. The
 development database `nafinity` is never a test target and is never reset.
 
+### What runs here and what runs on a push
+
+CI checks what can be checked without a host: the manifest, that every PHP file and every
+template parses, and the browser modules. Everything above needs the skeleton — two database
+engines, a server answering over HTTPS, throwaway hosts for the examples — so a green run on
+GitHub is not a green suite. Before a release, run `make test` and say so.
+
 ## Style
 
 PER Coding Style 3.0 with locally aligned `=` and `=>`, descriptive variable names and blank
-lines between logical steps; `.php-cs-fixer.dist.php` holds the exact rules. Keep SQL, mixed
+lines between logical steps; the shared [PHP code style](https://github.com/nafphp/docs/blob/main/CODE_STYLE.md)
+and `.php-cs-fixer.dist.php` hold the exact rules. Keep SQL, mixed
 PHP/HTML templates and build scripts readable, and preserve escaping, form-value whitespace,
 evaluation order and transaction boundaries.
 
@@ -116,7 +163,8 @@ releasing is the maintainer's decision, not the agent's.
 
 | Document | Holds |
 |---|---|
-| `README.md` | Starting the application, demo accounts, ports, daily operation |
+| `README.md` | What this is, where to install it, the licence — and nothing else |
+| [Build with NafPHP](https://nafphp.github.io/docs/built-with/nafinity/) | The skeleton, running it, the commands, how a plugin extends it |
 | `docs/Extensibility.md` | The extension API in full, with examples |
 | `docs/Tickets.md` | Ticket behaviour, data model, limits |
 | `docs/Settings-And-AI.md` | Settings cards, custom roles, local Ollama |
