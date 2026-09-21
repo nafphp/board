@@ -12,12 +12,17 @@ together. The extension reference ships with this package, in
 
 ## Install
 
-Through the skeleton, which is the installation you own:
+It is a plugin, so a NAF host requires it like any other:
 
 ```sh
-git clone git@github.com:nafphp/nafinity.git
-cd nafinity && make first-install
+composer require naf/board
+vendor/bin/naf db:migrate up
+vendor/bin/naf rbac:sync
+vendor/bin/naf nafinity:assets:publish
 ```
+
+Three things the host has to provide: a database, a session store, and a storage
+disk named `attachments`. Everything else it needs comes with it.
 
 ## License
 
