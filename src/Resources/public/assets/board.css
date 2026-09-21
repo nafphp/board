@@ -77,6 +77,49 @@
 .ticket-card:hover::after {
   opacity: 1;
 }
+
+/* A card somebody else has open right now.
+
+   Here rather than in app.css, with the rest of what a card is on a board: the
+   marker hangs off the card's own corner, and the `position: relative` that
+   makes that mean anything is declared above. A rule that depends on one
+   stylesheet from another is a rule that works until somebody renders a card
+   somewhere else.
+
+   It beats the hovered border, which is set in app.css at the same specificity
+   and therefore loses to a later stylesheet. That way round on purpose: knowing
+   a colleague is already in this ticket outlives the moment a pointer happens
+   to be over it, and saying so is the whole point. */
+.ticket-card[data-watched] {
+  border-color: color-mix(in srgb, var(--ok) 55%, var(--line));
+}
+/* Out of the flow and half outside the box, so a card does not change size when
+   somebody opens it. On a board that animates its own rearranging, a card that
+   resized because somebody elsewhere clicked would be a card that moves by
+   itself.
+
+   The top right corner: clear of the number on the left, above the menu rather
+   than beside it, and nowhere near the assignees at the foot -- those are a
+   different fact about a different set of people. */
+.card-watchers {
+  position: absolute;
+  top: 0;
+  right: 7px;
+  display: flex;
+  padding-left: 5px;
+  transform: translateY(-52%);
+  z-index: 2;
+  cursor: default;
+}
+.card-watchers .avatar {
+  margin-left: -5px;
+  box-shadow: 0 0 0 2px var(--ok);
+}
+.card-watchers .avatar.unknown {
+  background: var(--line);
+  color: var(--muted);
+  box-shadow: 0 0 0 2px var(--muted);
+}
 .ticket-card:hover {
   transform: translateY(-3px);
   box-shadow:

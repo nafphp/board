@@ -75,6 +75,11 @@ final class Presence
     /**
      * The words a browser needs to say any of that in the reader's language
      *
+     * The last one is for the corner of a card, which has room for a face and
+     * for nothing else -- so the sentence naming who is behind it is the title,
+     * and it is written here like the rest of them rather than assembled in a
+     * browser that has no business knowing how this language puts a list.
+     *
      * @return array<string, string>
      */
     public static function words(): array
@@ -88,6 +93,7 @@ final class Presence
             self::ELSEWHERE => t('im Projekt'),
             'someone'       => t('Jemand anderes'),
             'more'          => t(':count weitere'),
+            'watching'      => t('Gerade geöffnet von :names'),
         ];
     }
 }

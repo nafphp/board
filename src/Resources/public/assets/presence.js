@@ -23,6 +23,9 @@ if (settings && strip) {
   /** How many faces the bar shows before it starts counting instead. */
   const FACES = 4;
 
+  /** And how many fit in the corner of a card, where the rest are in the title. */
+  const ON_A_CARD = 3;
+
   /** subject -> place, for everybody but me. A place of null means not said yet. */
   const here = new Map();
 
@@ -59,6 +62,24 @@ if (settings && strip) {
     return (Array.from(name.trim())[0] ?? '?').toUpperCase();
   }
 
+  /** One face, however small, drawn the same wherever it is asked for. */
+  function face(person, size) {
+    const node = document.createElement('span');
+    node.className = `avatar ${size}${person.known ? '' : ' unknown'}`;
+    node.textContent = person.known ? initial(person.name) : '?';
+
+    return node;
+  }
+
+  /** @return {{name: string, known: boolean, place: string|null}} */
+  function personOf(subject) {
+    return {
+      name: people[subject] ?? words.someone,
+      known: subject in people,
+      place: here.get(subject) ?? null,
+    };
+  }
+
   /**
    * A place as this reader would put it; a ticket key stands for itself.
    *
@@ -74,11 +95,7 @@ if (settings && strip) {
   }
 
   function draw() {
-    const present = [...here.entries()].map(([subject, place]) => ({
-      name: people[subject] ?? words.someone,
-      known: subject in people,
-      place,
-    }));
+    const present = [...here.keys()].map(personOf);
     // People this board knows by name first, and among them by name. Somebody
     // with no name to sort by would otherwise take the front of a list of
     // colleagues, on the strength of what they are called instead of nothing.
@@ -91,10 +108,7 @@ if (settings && strip) {
     list.replaceChildren();
 
     for (const person of present.slice(0, FACES)) {
-      const face = document.createElement('span');
-      face.className = person.known ? 'avatar avatar-small' : 'avatar avatar-small unknown';
-      face.textContent = person.known ? initial(person.name) : '?';
-      stack.append(face);
+      stack.append(face(person, 'avatar-small'));
     }
     if (present.length > FACES) {
       const rest = document.createElement('span');
@@ -109,9 +123,6 @@ if (settings && strip) {
 
     for (const person of present) {
       const row = document.createElement('li');
-      const face = document.createElement('span');
-      face.className = person.known ? 'avatar avatar-small' : 'avatar avatar-small unknown';
-      face.textContent = person.known ? initial(person.name) : '?';
       const said = document.createElement('span');
       said.className = 'presence-who';
       const name = document.createElement('strong');
@@ -119,8 +130,67 @@ if (settings && strip) {
       const place = document.createElement('small');
       place.textContent = spoken(person.place);
       said.append(name, place);
-      row.append(face, said);
+      row.append(face(person, 'avatar-small'), said);
       list.append(row);
+    }
+
+    cards();
+  }
+
+  /*
+   * And on the board itself: the card somebody is reading.
+   *
+   * The same knowledge the bar draws, put where it is actually useful. Seeing
+   * that a colleague is on NAF-6 is worth something in the bar and worth more on
+   * NAF-6 -- it is the moment before two people edit the same ticket, which is
+   * the one moment a board can still say something about it.
+   *
+   * A card already carries its key, so nothing had to be added to the template
+   * for this: what the socket says a person is at and what the card calls itself
+   * are the same string. The marker is drawn outside the card's box and taken
+   * out of the flow, so a card does not change size when somebody opens it -- on
+   * a board that animates its own rearranging, a card that resizes because
+   * somebody elsewhere clicked is a card that appears to move by itself.
+   */
+  function cards() {
+    const watched = new Map();
+    for (const [subject, place] of here) {
+      if (typeof place === 'string' && place.startsWith('#')) {
+        watched.set(place.slice(1), [...(watched.get(place.slice(1)) ?? []), subject]);
+      }
+    }
+
+    for (const card of document.querySelectorAll('.ticket-card[data-key]')) {
+      // Sorted so that the same set of people is the same string however they
+      // arrived, and so the faces on a card sit in the order the bar lists them.
+      const subjects = (watched.get(card.dataset.key) ?? []).toSorted();
+      // Redrawn only when it would come out different. Every presence message
+      // asks every card, and a board holds a few hundred of them.
+      const signature = subjects.join(',');
+      if ((card.dataset.watched ?? '') === signature) continue;
+
+      card.querySelector('.card-watchers')?.remove();
+      if (signature === '') {
+        delete card.dataset.watched;
+        continue;
+      }
+
+      const readers = subjects.map(personOf);
+      const mark = document.createElement('div');
+      mark.className = 'card-watchers';
+      // Everybody by name, however many faces there is room for: the corner of
+      // a card is not the place to run out of, and the bar beside it is where
+      // the full list lives anyway.
+      const said = words.watching.replace(
+        ':names',
+        readers.map((person) => person.name).join(', '),
+      );
+      mark.title = said;
+      mark.setAttribute('role', 'img');
+      mark.setAttribute('aria-label', said);
+      for (const person of readers.slice(0, ON_A_CARD)) mark.append(face(person, 'tiny'));
+      card.prepend(mark);
+      card.dataset.watched = signature;
     }
   }
 
@@ -176,6 +246,14 @@ if (settings && strip) {
   // Opening and closing a ticket is the whole of what moves within a page.
   document.addEventListener('nafinity:ticket-opened', say);
   document.addEventListener('nafinity:drawer-closed', say);
+
+  /*
+   * A live update replaces the cards it changed, and a replacement card knows
+   * nothing of who was reading it. Nothing is recomputed here -- the marks are
+   * drawn again from what this page already knows, which is why they survive a
+   * board rearranging itself without anybody having to say anything twice.
+   */
+  document.addEventListener('nafinity:fragment-updated', cards);
 
   stack.addEventListener('click', () => {
     const open = strip.hasAttribute('data-open');

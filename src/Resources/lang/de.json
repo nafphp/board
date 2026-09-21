@@ -302,5 +302,6 @@
   "Jemand anderes": "Jemand anderes",
   ":count weitere": ":count weitere",
   "Anzeigen, wer gerade im Projekt ist": "Anzeigen, wer gerade im Projekt ist",
-  "Die anderen sehen, auf welcher Seite du gerade bist und welches Ticket du geöffnet hast. Aus siehst du sie ebenfalls nicht mehr.": "Die anderen sehen, auf welcher Seite du gerade bist und welches Ticket du geöffnet hast. Aus siehst du sie ebenfalls nicht mehr."
+  "Die anderen sehen, auf welcher Seite du gerade bist und welches Ticket du geöffnet hast. Aus siehst du sie ebenfalls nicht mehr.": "Die anderen sehen, auf welcher Seite du gerade bist und welches Ticket du geöffnet hast. Aus siehst du sie ebenfalls nicht mehr.",
+  "Gerade geöffnet von :names": "Gerade geöffnet von :names"
 }
