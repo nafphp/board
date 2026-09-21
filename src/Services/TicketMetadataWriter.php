@@ -46,11 +46,11 @@ final class TicketMetadataWriter
         $resets   = $data['metadata_reset'] ?? [];
 
         if ($incoming !== null && !is_array($incoming)) {
-            throw new Failure('Metadaten werden als Objekt erwartet.', 422);
+            throw new Failure(t('Metadaten werden als Objekt erwartet.'), 422);
         }
 
         if (!is_array($resets)) {
-            throw new Failure('metadata_reset wird als Liste erwartet.', 422);
+            throw new Failure(t('metadata_reset wird als Liste erwartet.'), 422);
         }
 
         $definitions = extensions()->ticketFields()->metadata();
@@ -69,8 +69,10 @@ final class TicketMetadataWriter
 
             if (in_array($definition->key, $resetKeys, true)) {
                 throw new Failure(
-                    'Der Schlüssel "' . $definition->key
-                    . '" kann nicht gleichzeitig gesetzt und zurückgesetzt werden.',
+                    t(
+                        'Der Schlüssel ":key" kann nicht gleichzeitig gesetzt und zurückgesetzt werden.',
+                        ['key' => $definition->key],
+                    ),
                     422,
                 );
             }
@@ -92,7 +94,7 @@ final class TicketMetadataWriter
         }
 
         if ($errors !== []) {
-            throw new Failure('Bitte prüfe die Eingaben.', 422, $errors);
+            throw new Failure(t('Bitte prüfe die Eingaben.'), 422, $errors);
         }
 
         return ['values' => $values, 'resetKeys' => $resetKeys];
@@ -169,7 +171,10 @@ final class TicketMetadataWriter
     private function definition(array $definitions, mixed $key): TicketFieldDefinition
     {
         if (!is_string($key) || !isset($definitions[$key])) {
-            throw new Failure('Unbekanntes Ticketfeld: ' . (is_string($key) ? $key : '?'), 422);
+            throw new Failure(
+                t('Unbekanntes Ticketfeld: :field', ['field' => is_string($key) ? $key : '?']),
+                422,
+            );
         }
 
         return $definitions[$key];
@@ -179,13 +184,13 @@ final class TicketMetadataWriter
     {
         if ($definition->readOnly) {
             throw new Failure(
-                'Das Feld "' . $definition->key . '" kann nicht geändert werden.',
+                t('Das Feld ":field" kann nicht geändert werden.', ['field' => $definition->key]),
                 403,
             );
         }
 
         if (!$scope->allows($definition->writePermission)) {
-            throw new Failure('Du hast für dieses Feld keine Berechtigung.', 403);
+            throw new Failure(t('Du hast für dieses Feld keine Berechtigung.'), 403);
         }
     }
 

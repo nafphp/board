@@ -12,21 +12,42 @@
   opacity: 1;
 }
 
-@keyframes card-enter {
+/* A card somebody else just put here. It is the only thing on the board that
+   moves during an update, so it is allowed to say so -- once, briefly, and then
+   it is an ordinary card like the rest.
+
+   An outline rather than a border or a shadow: it sits outside the box without
+   moving anything, and it is the one decoration this card does not already
+   use for hovering, dragging or celebrating. */
+@keyframes card-arrive {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.97);
+    transform: translateY(-7px) scale(0.96);
   }
   to {
     opacity: 1;
     transform: none;
   }
 }
-/* Marked once per page load and cleared when it has played. A dropped card is taken out of
-   the document and put back, which would otherwise replay this and blank the card first. */
-.ticket-card[data-enter] {
-  animation: card-enter 0.52s cubic-bezier(0.2, 1.1, 0.3, 1) backwards;
-  animation-delay: var(--enter-delay, 0ms);
+@keyframes card-lit {
+  0%,
+  35% {
+    outline-color: var(--accent);
+  }
+  100% {
+    outline-color: transparent;
+  }
+}
+/* The delay is how long the cards around it take to make room -- `roomMade` in
+   board.js. `backwards` holds the card at nothing at all until then, so the
+   space opens on an empty spot and the card arrives into it, rather than being
+   there before anybody could see it come. */
+.ticket-card[data-arrived] {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  animation:
+    card-arrive 0.42s cubic-bezier(0.22, 0.7, 0.3, 1) 0.19s backwards,
+    card-lit 1.7s ease-out 0.19s;
 }
 
 .ticket-card {
@@ -55,6 +76,49 @@
 }
 .ticket-card:hover::after {
   opacity: 1;
+}
+
+/* A card somebody else has open right now.
+
+   Here rather than in app.css, with the rest of what a card is on a board: the
+   marker hangs off the card's own corner, and the `position: relative` that
+   makes that mean anything is declared above. A rule that depends on one
+   stylesheet from another is a rule that works until somebody renders a card
+   somewhere else.
+
+   It beats the hovered border, which is set in app.css at the same specificity
+   and therefore loses to a later stylesheet. That way round on purpose: knowing
+   a colleague is already in this ticket outlives the moment a pointer happens
+   to be over it, and saying so is the whole point. */
+.ticket-card[data-watched] {
+  border-color: color-mix(in srgb, var(--ok) 55%, var(--line));
+}
+/* Out of the flow and half outside the box, so a card does not change size when
+   somebody opens it. On a board that animates its own rearranging, a card that
+   resized because somebody elsewhere clicked would be a card that moves by
+   itself.
+
+   The top right corner: clear of the number on the left, above the menu rather
+   than beside it, and nowhere near the assignees at the foot -- those are a
+   different fact about a different set of people. */
+.card-watchers {
+  position: absolute;
+  top: 0;
+  right: 7px;
+  display: flex;
+  padding-left: 5px;
+  transform: translateY(-52%);
+  z-index: 2;
+  cursor: default;
+}
+.card-watchers .avatar {
+  margin-left: -5px;
+  box-shadow: 0 0 0 2px var(--ok);
+}
+.card-watchers .avatar.unknown {
+  background: var(--line);
+  color: var(--muted);
+  box-shadow: 0 0 0 2px var(--muted);
 }
 .ticket-card:hover {
   transform: translateY(-3px);
@@ -196,11 +260,10 @@ html.board-dragging .ticket-card::after {
 }
 
 /* Closed tickets carry a quiet check, and light up once while they are celebrated. */
-.ticket-card[data-status='closed'] .ticket-number::before {
-  content: '✓ ';
-  color: #2fbf8f;
-  font-weight: 700;
-}
+/* No tick in front of the number. It was there when nothing else was, and now
+   the priority chip stands in the same place -- two marks competing over one
+   card, neither of them winning. A closed ticket still reads as closed: its
+   title goes quiet, and it is sitting in the column that closes tickets. */
 .ticket-card[data-status='closed'] .card-title {
   color: var(--muted);
 }
@@ -256,7 +319,7 @@ html.board-dragging .ticket-card::after {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ticket-card[data-enter],
+  .ticket-card[data-arrived],
   .ticket-card.celebrating,
   .ticket-card.celebrating::before,
   .ticket-card.rejected,

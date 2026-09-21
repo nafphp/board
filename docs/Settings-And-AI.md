@@ -194,7 +194,7 @@ system prompt.
 streaming, Unicode across packet boundaries, tool answers, errors, aborts, allowed local URLs and
 separated storage areas, plus selection from 500 tools, cache invalidation, permission
 revocation, dependencies and the fallback and schema limits. The optional live benchmark runs
-with `node tests/ai_routing_live.mjs PATH_TO_AUTHORIZED_TOOL_ARRAY.json`; it uses an already
+with `node tests/benchmarks/ai-routing-live.mjs PATH_TO_AUTHORIZED_TOOL_ARRAY.json`; it uses an already
 installed local model and executes no domain tools.
 
 The native migration `M202609150001ProjectRoles` adds custom roles, permissions and a

@@ -12,9 +12,41 @@ function cardTransform() {
   return `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})`;
 }
 
+const DURATION = 360;
+// The contents come in behind the shell rather than after it has landed. The
+// shell eases hard out and is visually there long before it stops, so waiting
+// for it reads as two separate movements instead of one.
+const REVEAL = 160;
+
+/** Resolve when the animation is done, or when it plainly never will be.
+ *
+ * A hidden tab freezes the timeline, and a dialog must not sit there with its
+ * contents held back because its opening animation never got a frame.
+ */
+function settled(run, duration) {
+  return Promise.race([
+    run.finished.catch(() => {}),
+    new Promise((done) => setTimeout(done, duration + 120)),
+  ]);
+}
+
 function animateCard(opening) {
   animation?.cancel();
+  // Measured without a transform of its own, or an opening that is still
+  // running would be measured instead of the dialog.
+  dialog.style.transform = '';
   const small = cardTransform();
+  const duration = reducedMotion.matches ? 0 : DURATION;
+
+  // The frame before the animation has one. An animation is only picked up on
+  // the next frame, so without this the dialog is painted once at full size and
+  // only then jumps back to the card to grow -- the flash that reads as the
+  // dialog opening, disappearing and coming back. Not without a duration: there
+  // the animation is over before that frame arrives, and the value would be all
+  // anyone saw.
+  const leads = opening && duration > 0;
+  if (leads) dialog.style.transform = small;
+
   animation = dialog.animate(
     opening
       ? [
@@ -25,9 +57,22 @@ function animateCard(opening) {
           { transform: 'none', borderRadius: '20px' },
           { transform: small, borderRadius: '24px' },
         ],
-    { duration: reducedMotion.matches ? 0 : 360, easing: 'cubic-bezier(.22,1,.36,1)' },
+    { duration, easing: 'cubic-bezier(.22,1,.36,1)' },
   );
-  return animation.finished.catch(() => {});
+
+  // Once it is running the animation owns the transform, and the inline value
+  // has to go: this animation fills neither end, so when it finishes the
+  // element falls back to whatever style it finds -- and finding the card-sized
+  // transform there would shrink the open dialog back down.
+  if (leads) {
+    animation.ready
+      .catch(() => {})
+      .then(() => {
+        dialog.style.transform = '';
+      });
+  }
+
+  return settled(animation, duration);
 }
 
 async function openCard(id, animate = true) {
@@ -46,13 +91,24 @@ async function openCard(id, animate = true) {
   dialog.querySelector('[data-settings-icon]').innerHTML =
     card.querySelector('.settings-icon').innerHTML;
   document.documentElement.classList.add('settings-open');
+  // Before showModal, so the dialog's first painted frame is already without
+  // contents. Set afterwards it would be one frame late, and the contents would
+  // be shown and taken away again.
+  if (animate) dialog.classList.add('is-moving');
   dialog.showModal();
   card.classList.add('is-open');
   card.setAttribute('aria-expanded', 'true');
   history.replaceState(history.state, '', `#${id}`);
   if (animate) {
-    dialog.classList.add('is-moving');
-    await animateCard(true);
+    const travel = animateCard(true);
+    const reveal = setTimeout(
+      () => {
+        if (!closing) dialog.classList.remove('is-moving');
+      },
+      reducedMotion.matches ? 0 : REVEAL,
+    );
+    await travel;
+    clearTimeout(reveal);
     if (!closing) dialog.classList.remove('is-moving');
   }
   if (!closing) dialog.querySelector('[data-settings-close]').focus({ preventScroll: true });
@@ -113,3 +169,36 @@ if (assistant) {
       ?.setAttribute('data-description', summary);
   });
 }
+
+// The colour palette of a field, and the reorder buttons of a structure row.
+//
+// The colour input stays the field the form submits; a swatch only writes into
+// it, so every colour field keeps working without this file. The reorder buttons
+// sit inside the summary to be part of the row they move, and a click there
+// would otherwise open the row as well -- preventing that takes the submit with
+// it, so the form is asked to submit itself instead.
+document.addEventListener('click', (event) => {
+  const swatch = event.target.closest?.('.field-pick');
+  if (swatch) {
+    const palette = swatch.closest('.field-palette');
+    palette.querySelector('.field-custom').value = swatch.dataset.color;
+    for (const pick of palette.querySelectorAll('.field-pick')) {
+      pick.setAttribute('aria-pressed', String(pick === swatch));
+    }
+    return;
+  }
+
+  const nudge = event.target.closest?.('.structure-nudge');
+  if (!nudge || nudge.disabled) return;
+  event.preventDefault();
+  document.getElementById(nudge.getAttribute('form'))?.requestSubmit(nudge);
+});
+
+// A colour the picker produced belongs to none of the swatches.
+document.addEventListener('input', (event) => {
+  const custom = event.target.closest?.('.field-custom');
+  if (!custom) return;
+  for (const pick of custom.closest('.field-palette').querySelectorAll('.field-pick')) {
+    pick.setAttribute('aria-pressed', String(pick.dataset.color === custom.value));
+  }
+});

@@ -1,5 +1,6 @@
 {
   "DEIN WORKSPACE": "DEIN WORKSPACE",
+  "Ich (:name)": "Ich (:name)",
   "PROJEKTE": "PROJEKTE",
   "Alle Projekte": "Alle Projekte",
   "Deine Projekte": "Deine Projekte",
@@ -290,5 +291,25 @@
   "Modelle laden …": "Modelle laden …",
   "Nur begrenzte Stichwortsuche": "Nur begrenzte Stichwortsuche",
   "Nicht gesetzt": "Nicht gesetzt",
-  "Erweiterung nicht installiert": "Erweiterung nicht installiert"
+  "Erweiterung nicht installiert": "Erweiterung nicht installiert",
+  "Gerade hier": "Gerade hier",
+  "am Board": "am Board",
+  "in der Aktivität": "in der Aktivität",
+  "in den Einstellungen": "in den Einstellungen",
+  "schreibt ein neues Ticket": "schreibt ein neues Ticket",
+  "in einem Ticket": "in einem Ticket",
+  "im Projekt": "im Projekt",
+  "Jemand anderes": "Jemand anderes",
+  ":count weitere": ":count weitere",
+  "Anzeigen, wer gerade im Projekt ist": "Anzeigen, wer gerade im Projekt ist",
+  "Die anderen sehen, auf welcher Seite du gerade bist und welches Ticket du geöffnet hast. Aus siehst du sie ebenfalls nicht mehr.": "Die anderen sehen, auf welcher Seite du gerade bist und welches Ticket du geöffnet hast. Aus siehst du sie ebenfalls nicht mehr.",
+  "Gerade geöffnet von :names": "Gerade geöffnet von :names",
+  "CSV-Tabelle": "CSV-Tabelle",
+  "Tickets exportieren": "Tickets exportieren",
+  "Export": "Export",
+  "Ticket": "Ticket",
+  "Labels": "Labels",
+  "Fällig": "Fällig",
+  "Dieses Exportformat gibt es nicht: :format": "Dieses Exportformat gibt es nicht: :format",
+  "Das Exportformat :format kann nicht schreiben.": "Das Exportformat :format kann nicht schreiben."
 }

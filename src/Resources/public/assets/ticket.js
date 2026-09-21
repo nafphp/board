@@ -389,6 +389,52 @@ document.addEventListener('click', (event) => {
       list.closest('form').elements.body.setAttribute('aria-expanded', 'false');
     });
 });
+/*
+ * "Mir zuweisen" works the picker rather than the endpoint: it ticks the box
+ * the picker would have ticked and lets the change handler below save it. One
+ * route to the server, so the shortcut and the list cannot disagree.
+ *
+ * The button reads the same box it ticks, rather than remembering what it did.
+ * The template hides it for somebody already on the ticket, and after that the
+ * picker can add or remove them without a reload -- so what it shows follows
+ * the field instead of the click.
+ */
+function assignSelfBox(button) {
+  return button
+    .closest('.ticket-sidebar-group')
+    ?.querySelector(
+      `[data-inline-field="assignee_ids"] input[type=checkbox][value="${CSS.escape(button.dataset.assignSelf)}"]`,
+    );
+}
+function syncAssignSelf() {
+  for (const button of document.querySelectorAll('[data-assign-self]')) {
+    const box = assignSelfBox(button);
+    button.hidden = !box || box.checked;
+    if (!button.hidden) button.disabled = false;
+  }
+}
+document.addEventListener('nafinity:ticket-opened', syncAssignSelf);
+document.addEventListener('nafinity:fragment-updated', syncAssignSelf);
+document.addEventListener('click', (event) => {
+  const button = event.target.closest?.('[data-assign-self]');
+  if (!button) return;
+  event.preventDefault();
+  const box = assignSelfBox(button);
+  if (!box || box.checked) return;
+  /*
+   * The form's baseline is captured the first time anything asks for its state.
+   * Nobody has, because this field was never opened for editing -- so it has to
+   * be taken before the box is ticked, or the save compares the new value
+   * against itself and concludes that nothing changed.
+   */
+  const form = box.closest('[data-auto-save]');
+  if (form) inlineState(form);
+  button.disabled = true;
+  box.checked = true;
+  box.dispatchEvent(new Event('input', { bubbles: true }));
+  box.dispatchEvent(new Event('change', { bubbles: true }));
+  syncAssignSelf();
+});
 document.addEventListener('change', (event) => {
   const form = event.target.closest('[data-auto-save]');
   if (!form) return;
@@ -558,6 +604,12 @@ async function performSave(form, submitter) {
       fresh.querySelector('.ticket-save-state').textContent = 'Ticket erstellt';
       fresh.querySelector('.ticket-title .inline-display')?.focus();
       toast('Ticket erstellt');
+      // The board behind the drawer does not know about this ticket yet. It is
+      // told rather than asked to reload, so whoever is listening decides what
+      // that costs -- on a page without a board, nobody is.
+      document.dispatchEvent(
+        new CustomEvent('nafinity:board-changed', { detail: { url: result.url } }),
+      );
       return;
     }
     // A ticket that has moved away no longer answers at the address this page was read

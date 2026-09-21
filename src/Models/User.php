@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace Naf\Board\Models;
 
-use Naf\Auth\Identity\UserInterface;
 use Naf\Auth\Identity\UserProfile;
 use Naf\ORM\Model\AbstractModel;
+use Naf\Rbac\Identity\GrantedInterface;
+use Naf\Rbac\Identity\ResolvesGrants;
 
 /** @internal */
-final class User extends AbstractModel implements UserInterface
+final class User extends AbstractModel implements GrantedInterface
 {
+    use ResolvesGrants;
+
     protected string $name               = '';
     protected string $email              = '';
     protected ?string $password_hash     = null;
     protected int $active                = 1;
-    protected string $global_role        = 'user';
     protected string $created_at         = '';
     protected int $security_version      = 0;
     protected ?string $email_verified_at = null;
@@ -28,16 +30,6 @@ final class User extends AbstractModel implements UserInterface
     public function getIdentifier(): string
     {
         return (string) $this->getId();
-    }
-
-    public function getRoles(): iterable
-    {
-        return [$this->global_role];
-    }
-
-    public function getPermissions(): iterable
-    {
-        return ['projects.create'];
     }
 
     public function isActive(): bool

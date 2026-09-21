@@ -14,6 +14,7 @@ use Naf\Board\Support\Input;
 use PDO;
 
 use function Naf\event;
+use function Naf\I18n\t;
 
 /** @internal */
 final class CommentService implements CommentServiceInterface
@@ -33,7 +34,7 @@ final class CommentService implements CommentServiceInterface
             ? ''
             : trim(Input::validate($data, ['body' => 'required|string|max:20000'])['body']);
         if (!$remove && $body === '') {
-            throw new Failure('Ein Kommentartext wird benötigt.');
+            throw new Failure(t('Ein Kommentartext wird benötigt.'));
         }
         $this->access->write($project, 'comment', function (ProjectScope $scope) use (
             $project,
@@ -53,16 +54,16 @@ final class CommentService implements CommentServiceInterface
                 $statement->execute([$project, $ticket, $id]);
                 $old = $statement->fetch();
                 if (!$old) {
-                    throw new Failure('Kommentar nicht gefunden.', 404);
+                    throw new Failure(t('Kommentar nicht gefunden.'), 404);
                 }
                 if (
                     (int) $old['author_id'] !== $actor
                     && !$scope->allows('moderate')
                 ) {
-                    throw new Failure('Du darfst diesen Kommentar nicht ändern.', 403);
+                    throw new Failure(t('Du darfst diesen Kommentar nicht ändern.'), 403);
                 }
                 if (Input::id($data['version'] ?? null) !== (int) $old['version']) {
-                    throw new Failure('Der Kommentar wurde inzwischen geändert.', 409);
+                    throw new Failure(t('Der Kommentar wurde inzwischen geändert.'), 409);
                 }
                 $this->pdo
                     ->prepare(
@@ -77,14 +78,14 @@ final class CommentService implements CommentServiceInterface
                     ]);
             } else {
                 if ($remove) {
-                    throw new Failure('Kommentar fehlt.');
+                    throw new Failure(t('Kommentar fehlt.'));
                 }
                 $parent = ($data['parent_id'] ?? '') === '' ? null : Input::id($data['parent_id'], 'parent_id');
                 if ($parent !== null) {
                     $statement = $this->pdo->prepare('SELECT id FROM comments WHERE project_id=? AND ticket_id=? AND id=? AND deleted_at IS NULL');
                     $statement->execute([$project, $ticket, $parent]);
                     if (!$statement->fetchColumn()) {
-                        throw new Failure('Der beantwortete Kommentar ist nicht mehr verfügbar.', 422);
+                        throw new Failure(t('Der beantwortete Kommentar ist nicht mehr verfügbar.'), 422);
                     }
                 }
                 $this->pdo

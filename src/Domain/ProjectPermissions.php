@@ -14,6 +14,8 @@ final class ProjectPermissions
         'manage'    => 'Projektdetails bearbeiten',
         'members'   => 'Mitglieder verwalten',
         'structure' => 'Spalten, Swimlanes und Labels verwalten',
+        'delete'    => 'Tickets endgültig löschen',
+        'export'    => 'Tickets exportieren',
     ];
 
     public static function defaults(string $role): array

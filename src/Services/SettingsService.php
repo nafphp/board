@@ -10,6 +10,7 @@ use Naf\Board\Contracts\ProjectServiceInterface;
 use Naf\Board\Contracts\SettingsServiceInterface;
 use Naf\Board\Contracts\SettingsStoreInterface;
 use Naf\Board\Definition\SettingDefinition;
+use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Domain\ProjectScope;
 use Naf\Board\Support\Settings\PreferenceStore;
@@ -20,6 +21,8 @@ use Throwable;
 
 use function Naf\Board\extensions;
 use function Naf\config;
+use function Naf\event;
+use function Naf\I18n\t;
 
 /**
  * Reading and writing declared settings, with their types and their rights.
@@ -97,7 +100,7 @@ final class SettingsService implements SettingsServiceInterface
     public function save(SettingsContext $context, array $values, array $resetKeys = []): void
     {
         if ($context->scope === 'application') {
-            throw new Failure('Anwendungseinstellungen sind schreibgeschützt.', 403);
+            throw new Failure(t('Anwendungseinstellungen sind schreibgeschützt.'), 403);
         }
 
         $definitions = $this->definitionsFor($context, [...array_keys($values), ...$resetKeys]);
@@ -105,8 +108,9 @@ final class SettingsService implements SettingsServiceInterface
 
         if ($overlap) {
             throw new Failure(
-                'Ein Schlüssel kann nicht gleichzeitig gesetzt und zurückgesetzt werden: '
-                . implode(', ', $overlap),
+                t('Ein Schlüssel kann nicht gleichzeitig gesetzt und zurückgesetzt werden: :keys', [
+                    'keys' => implode(', ', $overlap),
+                ]),
                 422,
             );
         }
@@ -138,14 +142,47 @@ final class SettingsService implements SettingsServiceInterface
             }
 
             if ($errors !== []) {
-                throw new Failure('Bitte prüfe die Eingaben.', 422, $errors);
+                throw new Failure(t('Bitte prüfe die Eingaben.'), 422, $errors);
             }
 
             $this->persist($context, $definitions, $normalized, $resetKeys, $scope);
+            $this->record($context, array_keys($normalized), $resetKeys);
         });
     }
 
     /**
+     * Put a settings change in the history.
+     *
+     * The keys and never the values. Settings hold SMTP passwords, OAuth secrets
+     * and the key that signs socket tokens, and a log that copies them is the
+     * worst-protected place any of them would ever live. What somebody needs
+     * from a history is which switch was touched and by whom; the value is in
+     * the setting, where it is guarded.
+     *
+     * What one person chose for themselves is left out on purpose. A record of
+     * whose theme changed when is surveillance rather than traceability -- an
+     * audit log is for what affects other people.
+     *
+     * @param list<string> $keys
+     * @param list<string> $resetKeys
+     */
+    private function record(SettingsContext $context, array $keys, array $resetKeys): void
+    {
+        if ($context->scope !== 'project' || ($keys === [] && $resetKeys === [])) {
+            return;
+        }
+
+        event()->dispatch('nafinity.changed', new Change(
+            $context->projectId,
+            null,
+            $this->access->actor(),
+            'settings.changed',
+            ['keys' => array_values($keys), 'reset' => array_values($resetKeys)],
+        ));
+    }
+
+    /**
+     * Definitions of this scope the actor may read    /**
      * Definitions of this scope the actor may read
      *
      * @param SettingsContext $context Scope and owner
@@ -266,7 +303,7 @@ final class SettingsService implements SettingsServiceInterface
         $scope = $this->access->project((int) $context->projectId);
 
         if ($definition->readPermission !== null && !$scope->allows($definition->readPermission)) {
-            throw new Failure('Du hast für diese Einstellung keine Berechtigung.', 403);
+            throw new Failure(t('Du hast für diese Einstellung keine Berechtigung.'), 403);
         }
     }
 
@@ -286,7 +323,7 @@ final class SettingsService implements SettingsServiceInterface
             }
 
             if ($scope === null || !$scope->allows($definition->writePermission)) {
-                throw new Failure('Du hast für diese Einstellung keine Berechtigung.', 403);
+                throw new Failure(t('Du hast für diese Einstellung keine Berechtigung.'), 403);
             }
 
             return;
@@ -297,7 +334,7 @@ final class SettingsService implements SettingsServiceInterface
             : $definition->writePermission ?? self::LEGACY_PROJECT_PERMISSION;
 
         if ($scope === null || !$scope->allows($required)) {
-            throw new Failure('Du hast für diese Einstellung keine Berechtigung.', 403);
+            throw new Failure(t('Du hast für diese Einstellung keine Berechtigung.'), 403);
         }
     }
 
@@ -416,7 +453,7 @@ final class SettingsService implements SettingsServiceInterface
                 $scope = $this->access->project((int) $context->projectId, 'read', true);
 
                 if ($scope->project['archived_at'] !== null) {
-                    throw new Failure('Dieses Projekt ist archiviert.', 403);
+                    throw new Failure(t('Dieses Projekt ist archiviert.'), 403);
                 }
             }
 
@@ -448,13 +485,13 @@ final class SettingsService implements SettingsServiceInterface
 
         foreach ($keys as $key) {
             if (!is_string($key)) {
-                throw new Failure('Ungültiger Einstellungsschlüssel.', 422);
+                throw new Failure(t('Ungültiger Einstellungsschlüssel.'), 422);
             }
 
             $definition = $registry->find($context->scope, $key);
 
             if ($definition === null) {
-                throw new Failure('Unbekannte Einstellung: ' . $key, 422);
+                throw new Failure(t('Unbekannte Einstellung: :key', ['key' => $key]), 422);
             }
 
             $definitions[$key] = $definition;
@@ -480,7 +517,10 @@ final class SettingsService implements SettingsServiceInterface
 
         if ($type === null) {
             throw new Failure(
-                'Für "' . $definition->key . '" fehlt der Feldtyp "' . $definition->type . '".',
+                t('Für ":key" fehlt der Feldtyp ":type".', [
+                    'key'  => $definition->key,
+                    'type' => $definition->type,
+                ]),
                 500,
             );
         }

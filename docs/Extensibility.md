@@ -23,11 +23,12 @@ acceptance run: [`examples/nafinity-extension-a`](../examples/nafinity-extension
 11. [Views](#views)
 12. [Board filters](#board-filters)
 13. [Estimation, activity and AI](#estimation-activity-and-ai)
-14. [Assets](#assets)
-15. [Translations](#translations)
-16. [Migrations, commands, jobs](#migrations-commands-jobs)
-17. [Lifetime and uninstalling](#lifetime-and-uninstalling)
-18. [Negative cases](#negative-cases)
+14. [Export](#export)
+15. [Assets](#assets)
+16. [Translations](#translations)
+17. [Migrations, commands, jobs](#migrations-commands-jobs)
+18. [Lifetime and uninstalling](#lifetime-and-uninstalling)
+19. [Negative cases](#negative-cases)
 
 ## Installation
 
@@ -795,6 +796,61 @@ same PDO transaction; external work is done by the job. Mail or webhooks in the 
 wrong. Metadata changes extend the change payload with the affected key names — no values, no
 request data.
 
+## Export
+
+Two registries' worth of question, answered by one registry and one event:
+*which formats exist* is a registration, *what a format says about a ticket* is a listener.
+
+```php
+$context->exporters()->add(new ExporterDefinition(
+    id: 'example.external',
+    label: 'External system',
+    extension: 'txt',
+    mimeType: 'text/plain; charset=utf-8',
+    writer: ExternalSystemExporter::class,
+));
+```
+
+The writer implements `ExporterInterface`: `open()`, `line()` and `close()`. It is built fresh for
+each export and may keep the state of that one export, so a format that needs to know whether it
+has written a record yet simply remembers. Records arrive one at a time and are written as they
+arrive — an export costs one ticket in memory plus a file, not a copy of the board.
+
+Registering a format is all it takes to be offered. The download menu on the project page and the
+endpoint behind it read the same registry, so a format cannot be offered and missing, or reachable
+and invisible.
+
+**Columns come from the ticket fields.** Every field you registered as ticket metadata is a column
+in every format, with no further registration — and a field the reader may not see is not a column
+for them, because the field's own `readPermission` still decides. The ticket's own attributes
+(`key`, `title`, `status`, `column`, `swimlane`, `priority`, `labels`, `assignees`, `estimate`,
+the dates) are always there.
+
+### Changing what an export says
+
+```php
+event()->listen(ExportService::LINE, static function (ExportLine $line): void {
+    if (!$line->isFor('example.external')) {
+        return;
+    }
+
+    if (($line->data['example.reviewed'] ?? false) === true) {
+        $line->data['status'] = 'done';
+    }
+});
+```
+
+`export.line` fires once per record of every format, after the row is built and before it is
+written. `ExportLine` carries the stored ticket as `readonly` and the outgoing row as `data`: edit
+the row and the export says something else; the board still says what the board said. An export
+that edited the tickets it was reading is the worst possible way to find that out.
+
+Ask `isFor()` first. A mapping that was true of every format would also rewrite the spreadsheet
+the team reads, which is rarely what anybody means by "the external system needs `done`".
+
+There is no transformer registry and no export hook manager. A listener on a documented event is
+what this application means by an extension point.
+
 ## Assets
 
 ```php
@@ -827,7 +883,7 @@ php vendor/bin/naf nafinity:assets:remove  [--package=vendor/name]
 The candidate build publishes registered plugin assets before the image is finished:
 
 ```sh
-python3 bin/build-candidate --source work/extension-host --tag nafinity:candidate-extensions
+node bin/build-candidate --source work/extension-host --tag nafinity:candidate-extensions
 ```
 
 The result contains no source mounts, no symlinks and no Composer; the packages and their
@@ -908,11 +964,11 @@ it is still there.
 
 ## Negative cases
 
-Every extension point has an executed negative test in
-[`tests/extensions.php`](../tests/extensions.php),
-[`extensions_http.php`](../tests/extensions_http.php),
-[`extensions_assets.php`](../tests/extensions_assets.php) and
-[`extensions_without.php`](../tests/extensions_without.php):
+Every extension point has an executed negative test under
+[`tests/Extensions/`](../tests/Extensions), in the phase it belongs to:
+`Installed/` boots the host with both packages, `Http/` asks it over real HTTP,
+`Order/` lists them the other way round, `Assets/` publishes their files and
+`Without/` boots the same installation with the packages gone.
 
 | Point | Negative case |
 |---|---|

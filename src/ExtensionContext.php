@@ -10,9 +10,11 @@ use Naf\Board\Registry\AssetPackageRegistry;
 use Naf\Board\Registry\AssetRegistry;
 use Naf\Board\Registry\BoardFilterRegistry;
 use Naf\Board\Registry\EstimationScaleRegistry;
+use Naf\Board\Registry\ExporterRegistry;
 use Naf\Board\Registry\FieldTypeRegistry;
 use Naf\Board\Registry\NavigationRegistry;
 use Naf\Board\Registry\PermissionRegistry;
+use Naf\Board\Registry\PriorityRegistry;
 use Naf\Board\Registry\SettingRegistry;
 use Naf\Board\Registry\SettingSectionRegistry;
 use Naf\Board\Registry\TicketFieldRegistry;
@@ -47,6 +49,11 @@ final readonly class ExtensionContext
     public function permissions(): PermissionRegistry
     {
         return $this->extensions->permissions();
+    }
+
+    public function priorities(): PriorityRegistry
+    {
+        return $this->extensions->priorities();
     }
 
     public function ui(): UiRegistry
@@ -107,6 +114,11 @@ final readonly class ExtensionContext
     public function activityTypes(): ActivityTypeRegistry
     {
         return $this->extensions->activityTypes();
+    }
+
+    public function exporters(): ExporterRegistry
+    {
+        return $this->extensions->exporters();
     }
 
     public function aiTools(): AiToolRegistry

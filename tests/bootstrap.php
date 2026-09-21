@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+use Naf\Core\App;
 
 /**
  * Boot an installation, not the package.
@@ -32,3 +33,28 @@ require_once $host . '/vendor/autoload.php';
 if (!defined('BASE_PATH')) {
     define('BASE_PATH', $host);
 }
+
+/*
+ * Booting for the command line leaves out the guards a request would install,
+ * and the escaping guard among them is what turns text into safe HTML. Anything
+ * that renders -- a description, a mention -- would otherwise be tested against
+ * a different set of rules than the one that runs in front of people.
+ */
+(new ReflectionMethod(App::class, 'loadGuards'))->invoke(Naf\app());
+
+/*
+ * The test classes, which the host's autoloader knows nothing about: it maps
+ * Naf\Board\ to this package's src/, and autoload-dev belongs to a root package
+ * rather than to an installed one. Prepended so the lookup does not first go
+ * looking for src/Tests/, which is not where any of this lives.
+ */
+spl_autoload_register(static function (string $class): void {
+    $prefix = 'Naf\\Board\\Tests\\';
+    if (!str_starts_with($class, $prefix)) {
+        return;
+    }
+    $file = __DIR__ . '/' . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
+    if (is_file($file)) {
+        require_once $file;
+    }
+}, prepend: true);

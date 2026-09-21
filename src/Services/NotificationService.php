@@ -30,6 +30,12 @@ final class NotificationService implements NotificationServiceInterface
         if (!$this->pdo->inTransaction()) {
             throw new LogicException('Notifications require the domain transaction.');
         }
+        // A change to the installation itself has no members to tell. Nobody is
+        // a member of an installation; the people who care about settings are
+        // the people who may read the log.
+        if ($change->projectId === null) {
+            return;
+        }
         $statement = $this->pdo->prepare(
             <<<'SQL'
             SELECT m.user_id,

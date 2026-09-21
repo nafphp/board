@@ -66,11 +66,12 @@ example and a negative case.
 
 ## Running and checking
 
-Everything runs from the host, because the container is the host's. Check out the skeleton
-beside this directory and work from there:
+Everything runs from the host, because the container is the host's. This package sits with
+the other NAF packages; the skeleton is checked out beside that directory, and everything
+below runs from there:
 
 ```sh
-cd ../nafinity
+cd ../../nafinity
 make first-install      # .env, certificates, image, dependencies, migrations, seed, start
 make test               # MariaDB, PostgreSQL, HTTP, profile, worker, AI and extensions
 make test-plugins       # installs both example packages, then boots the same database without them

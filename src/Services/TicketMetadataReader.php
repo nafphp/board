@@ -10,6 +10,7 @@ use Naf\Board\Contracts\TicketServiceInterface;
 use Naf\Board\Domain\Failure;
 
 use function Naf\Board\extensions;
+use function Naf\I18n\t;
 
 /**
  * The authorized way to read ticket metadata.
@@ -42,7 +43,7 @@ final class TicketMetadataReader implements TicketMetadataReaderInterface
         $this->tickets->ticket($projectId, $ticketId);
 
         if (!$scope->allows($definition->readPermission)) {
-            throw new Failure('Du hast für dieses Feld keine Berechtigung.', 403);
+            throw new Failure(t('Du hast für dieses Feld keine Berechtigung.'), 403);
         }
 
         $values = $this->metadata->readable($scope, $projectId, [$ticketId])[$ticketId] ?? [];

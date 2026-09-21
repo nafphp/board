@@ -7,11 +7,15 @@ use Naf\Auth\Ldap\LdapProvider;
 use Naf\Auth\Ldap\NativeDirectory;
 use Naf\Auth\Provider\OrmProvider;
 use Naf\Auth\Session\StateStoreInterface;
+use Naf\Board\Commands\AdminCommand;
 use Naf\Board\Commands\CheckAssetsCommand;
+use Naf\Board\Commands\CreateUserCommand;
+use Naf\Board\Commands\GrantDefaultCommand;
 use Naf\Board\Commands\PublishAssetsCommand;
 use Naf\Board\Commands\RemoveAssetsCommand;
 use Naf\Board\Commands\RenameMigrationNamespaceCommand;
 use Naf\Board\Commands\SeedCommand;
+use Naf\Board\Contracts\BoardQueryInterface;
 use Naf\Board\Domain\Change;
 use Naf\Board\Domain\ProjectScope;
 use Naf\Board\Events\ActivityListener;
@@ -20,6 +24,9 @@ use Naf\Board\Jobs\MaintenanceJob;
 use Naf\Board\Modules\CoreTicket;
 use Naf\Board\Modules\NafinityDefaults;
 use Naf\Board\Policies\ProjectPolicy;
+use Naf\Board\Rbac\Boards;
+use Naf\Board\Rbac\Installation;
+use Naf\Board\Rbac\Project;
 use Naf\Board\Support\AccountStateStore;
 use Naf\Board\Support\AttachmentStorage;
 use Naf\Board\Support\ContainerLogger;
@@ -39,6 +46,8 @@ use function Naf\Board\extensions;
 use function Naf\config;
 use function Naf\event;
 use function Naf\I18n\translation_paths;
+use function Naf\Rbac\permissions;
+use function Naf\Rbac\roles;
 
 // Installed in a host, this file is the board's plugin bootstrap: NAF loads it
 // through CoreFileLoader::BOOTSTRAP_FILES once the host has defined BASE_PATH
@@ -81,6 +90,29 @@ foreach (['host', 'database', 'username', 'password'] as $field) {
 $container->set(StateStoreInterface::class, static fn() => $container->make(AccountStateStore::class));
 $container->get(Auth::class)->policy(ProjectScope::class, new ProjectPolicy());
 $container->set(ActivityListener::class, static fn() => $container->make(ActivityListener::class));
+/*
+ * The language of the whole answer, not only of a rendered page.
+ *
+ * It used to be set while a page was being drawn, so a JSON endpoint answered in
+ * whatever language the process happened to start in -- the same message came
+ * back German to somebody reading the application in English. It is a property
+ * of the request and belongs where the request begins.
+ *
+ * Quietly ignored when it cannot be answered: a request without a session, a
+ * command line with no person behind it, an installation whose database is not
+ * up yet. None of those is a reason to refuse a request.
+ */
+event()->listen('request.start', static function () use ($container): void {
+    try {
+        $language = $container->get(BoardQueryInterface::class)->preferences()['locale'] ?? null;
+        if (is_string($language) && $language !== '') {
+            \Naf\I18n\translator()->setLanguage($language);
+        }
+    } catch (Throwable) {
+        // Whatever this installation's default is, it stays.
+    }
+});
+
 event()->listen(
     'nafinity.changed',
     static fn(Change $change) => $container
@@ -88,6 +120,9 @@ event()->listen(
         ->record($change),
 );
 $commands = $container->get(CommandRegistry::class);
+$commands->add(AdminCommand::class);
+$commands->add(CreateUserCommand::class);
+$commands->add(GrantDefaultCommand::class);
 $commands->add(SeedCommand::class);
 $commands->add(RenameMigrationNamespaceCommand::class);
 $commands->add(PublishAssetsCommand::class);
@@ -152,6 +187,17 @@ $extensions->initialize($container);
 // The provider pass is over, so every group a ticket field points at must now
 // have a panel. Saying which field and which group beats a later missing panel.
 $extensions->ticketFields()->assertGroups(CoreTicket::groups($context));
+
+/*
+ * What this installation can grant, and the one role that can grant it.
+ *
+ * Declared during plugin boot, which is when the registry is still being
+ * filled. Nothing is written to the database here -- "naf rbac:sync" does
+ * that, so installing a package never quietly widens anybody's access.
+ */
+Installation::declare(permissions(), roles());
+Project::declare(permissions(), roles());
+roles()->scope(new Boards(static fn(): PDO => $container->get(PDO::class)));
 
 // The host has the last word: an optional file that may replace or remove any
 // definition, including one an extension just registered.

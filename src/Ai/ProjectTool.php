@@ -8,6 +8,8 @@ use Closure;
 use Naf\Board\Contracts\ProjectToolInterface;
 use Naf\Board\Domain\Failure;
 
+use function Naf\I18n\t;
+
 /**
  * One definition supplies the MCP schema, chat label and confirmation policy.
  *
@@ -72,7 +74,7 @@ final readonly class ProjectTool implements ProjectToolInterface
     {
         $properties = $this->schema['properties'] ?? [];
         if (array_diff(array_keys($args), array_keys($properties)) || array_diff($this->schema['required'] ?? [], array_keys($args))) {
-            throw new Failure('Die Werkzeugargumente sind unvollständig oder ungültig.');
+            throw new Failure(t('Die Werkzeugargumente sind unvollständig oder ungültig.'));
         }
 
         return ($this->handler)($args);

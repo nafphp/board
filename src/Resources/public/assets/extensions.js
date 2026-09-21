@@ -10,7 +10,7 @@
 // affected by that, because they are not contributions.
 
 import { toast } from './app.js';
-import { refresh, saveTicket } from './ticket.js';
+import { refresh, saveTicket } from './ticket.js?v=1';
 
 const mounted = new WeakMap();
 

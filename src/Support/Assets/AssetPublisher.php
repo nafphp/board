@@ -12,6 +12,7 @@ use RecursiveIteratorIterator;
 use SplFileInfo;
 
 use function Naf\Board\extensions;
+use function Naf\I18n\t;
 
 /**
  * Copies a package's public files into the document root.
@@ -198,7 +199,10 @@ final class AssetPublisher
         }
 
         if (!isset($registered[$package])) {
-            throw new Failure('Für "' . $package . '" ist kein Asset-Verzeichnis registriert.', 404);
+            throw new Failure(
+                t('Für ":package" ist kein Asset-Verzeichnis registriert.', ['package' => $package]),
+                404,
+            );
         }
 
         return [$registered[$package]];
@@ -217,8 +221,10 @@ final class AssetPublisher
 
         if ($root === false || !is_dir($root)) {
             throw new Failure(
-                'Das Asset-Verzeichnis von "' . $package->packageName . '" fehlt: '
-                . $package->directory,
+                t('Das Asset-Verzeichnis von ":package" fehlt: :directory', [
+                    'package'   => $package->packageName,
+                    'directory' => $package->directory,
+                ]),
                 404,
             );
         }
@@ -290,11 +296,17 @@ final class AssetPublisher
         $directory = dirname($target);
 
         if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
-            throw new Failure('Zielverzeichnis lässt sich nicht anlegen: ' . $directory, 500);
+            throw new Failure(
+                t('Zielverzeichnis lässt sich nicht anlegen: :directory', ['directory' => $directory]),
+                500,
+            );
         }
 
         if (!copy($source, $target)) {
-            throw new Failure('Datei lässt sich nicht veröffentlichen: ' . $target, 500);
+            throw new Failure(
+                t('Datei lässt sich nicht veröffentlichen: :file', ['file' => $target]),
+                500,
+            );
         }
 
         chmod($target, 0664);
@@ -343,7 +355,10 @@ final class AssetPublisher
     private function storeManifest(string $package, array $files): void
     {
         if (!is_dir($this->manifestRoot) && !mkdir($this->manifestRoot, 0775, true)) {
-            throw new Failure('Manifestverzeichnis fehlt: ' . $this->manifestRoot, 500);
+            throw new Failure(
+                t('Manifestverzeichnis fehlt: :directory', ['directory' => $this->manifestRoot]),
+                500,
+            );
         }
 
         file_put_contents(
@@ -379,7 +394,7 @@ final class AssetPublisher
     private function safeName(string $package): string
     {
         if (!preg_match('#^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9]([_.-]?[a-z0-9]+)*$#D', $package)) {
-            throw new Failure('Ungültiger Paketname: ' . $package, 422);
+            throw new Failure(t('Ungültiger Paketname: :package', ['package' => $package]), 422);
         }
 
         return $package;

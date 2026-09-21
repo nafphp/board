@@ -19,32 +19,47 @@ use Naf\Board\ExtensionContext;
 final class CoreActivity implements ExtensionProviderInterface
 {
     /** Event type to sentence and icon. */
+    /*
+     * Every symbol here is one the bundled Material Symbols subset actually
+     * carries. A name outside it is drawn as its own ligature text, so a log of
+     * created tickets reads "TASK" down the left edge -- which is what happened
+     * the first time these were rendered. The list of included glyphs is in
+     * src/Resources/public/assets/vendor/material-symbols/README.md, together
+     * with how to fetch a wider one.
+     */
     private const array TYPES = [
-        'project.created'         => ['Projekt erstellt', 'add_circle'],
-        'project.updated'         => ['Projekt bearbeitet', 'edit'],
-        'project.archived'        => ['Projekt archiviert', 'inventory_2'],
-        'project.restored'        => ['Projekt wiederhergestellt', 'restore'],
-        'project.member_changed'  => ['Mitgliedschaft geändert', 'group'],
-        'project.role_saved'      => ['Rolle gespeichert', 'admin_panel_settings'],
-        'project.role_deleted'    => ['Rolle gelöscht', 'admin_panel_settings'],
-        'project.settings_saved'  => ['Projekteinstellungen gespeichert', 'tune'],
-        'board.structure_changed' => ['Board-Struktur geändert', 'view_kanban'],
-        'ticket.created'          => ['Ticket erstellt', 'add_task'],
-        'ticket.updated'          => ['Ticket bearbeitet', 'edit_note'],
-        'ticket.moved'            => ['Ticket verschoben', 'swap_horiz'],
-        'ticket.transferred'      => ['Ticket aus einem anderen Projekt verschoben', 'move_down'],
-        'ticket.linked'           => ['Ticket verknüpft', 'link'],
-        'ticket.unlinked'         => ['Ticketverknüpfung entfernt', 'link_off'],
-        'ticket.close'            => ['Ticket geschlossen', 'task_alt'],
-        'ticket.reopen'           => ['Ticket wieder geöffnet', 'restart_alt'],
-        'ticket.archive'          => ['Ticket archiviert', 'inventory_2'],
-        'ticket.restore'          => ['Ticket wiederhergestellt', 'restore'],
-        'comment.created'         => ['Kommentar erstellt', 'chat'],
-        'comment.updated'         => ['Kommentar bearbeitet', 'chat'],
-        'comment.deleted'         => ['Kommentar gelöscht', 'chat_bubble'],
-        'timer.recorded'          => ['Zeit erfasst', 'timer'],
-        'attachment.added'        => ['Anhang hinzugefügt', 'attach_file'],
-        'attachment.deleted'      => ['Anhang gelöscht', 'delete'],
+        'project.created'          => ['Projekt erstellt', 'add'],
+        'project.updated'          => ['Projekt bearbeitet', 'edit'],
+        'project.archived'         => ['Projekt archiviert', 'folder_open'],
+        'project.restored'         => ['Projekt wiederhergestellt', 'refresh'],
+        'project.member_changed'   => ['Mitgliedschaft geändert', 'group'],
+        'project.role_saved'       => ['Rolle gespeichert', 'shield'],
+        'project.role_deleted'     => ['Rolle gelöscht', 'shield'],
+        'project.settings_saved'   => ['Projekteinstellungen gespeichert', 'tune'],
+        'board.structure_changed'  => ['Board-Struktur geändert', 'view_kanban'],
+        'settings.changed'         => ['Einstellungen geändert', 'tune'],
+        'rbac.granted'             => ['Rollen geändert', 'shield'],
+        'account.created'          => ['Konto angelegt', 'person_add'],
+        'account.password_changed' => ['Passwort geändert', 'lock'],
+        'account.email_requested'  => ['E-Mail-Wechsel angefragt', 'mail'],
+        'account.email_changed'    => ['E-Mail geändert', 'mail'],
+        'ticket.created'           => ['Ticket erstellt', 'add'],
+        'ticket.updated'           => ['Ticket bearbeitet', 'edit'],
+        'ticket.moved'             => ['Ticket verschoben', 'swap_horiz'],
+        'ticket.transferred'       => ['Ticket aus einem anderen Projekt verschoben', 'drive_file_move'],
+        'ticket.linked'            => ['Ticket verknüpft', 'link'],
+        'ticket.unlinked'          => ['Ticketverknüpfung entfernt', 'remove'],
+        'ticket.close'             => ['Ticket geschlossen', 'check_circle'],
+        'ticket.reopen'            => ['Ticket wieder geöffnet', 'refresh'],
+        'ticket.archive'           => ['Ticket archiviert', 'folder_open'],
+        'ticket.restore'           => ['Ticket wiederhergestellt', 'refresh'],
+        'ticket.deleted'           => ['Ticket gelöscht', 'delete'],
+        'comment.created'          => ['Kommentar erstellt', 'comment'],
+        'comment.updated'          => ['Kommentar bearbeitet', 'comment'],
+        'comment.deleted'          => ['Kommentar gelöscht', 'chat_bubble'],
+        'timer.recorded'           => ['Zeit erfasst', 'timer'],
+        'attachment.added'         => ['Anhang hinzugefügt', 'attach_file'],
+        'attachment.deleted'       => ['Anhang gelöscht', 'delete'],
     ];
 
     public function register(ExtensionContext $context): void

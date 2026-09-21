@@ -86,6 +86,16 @@ document.addEventListener('click', (event) => {
     form.elements.password.value = 'Nafinity-Demo-2026!';
     form.querySelector('button').focus();
   }
+  if (target.hasAttribute('data-delete-card')) {
+    const card = target.closest('.ticket-card');
+    const board = card.closest('#board');
+    const form = document.querySelector('#move-card form[data-delete-ticket]');
+    if (form) {
+      form.action = `/projects/${board.dataset.project}/tickets/${card.dataset.key}/delete`;
+      form.elements.version.value = card.dataset.version;
+      form.querySelector('[data-confirm]').dataset.confirmDetail = card.dataset.title;
+    }
+  }
   if (target.hasAttribute('data-move-card')) {
     const card = target.closest('.ticket-card');
     const cell = card.closest('.board-cell');
@@ -102,6 +112,42 @@ document.addEventListener('click', (event) => {
     dialog.showModal();
   }
 });
+/*
+ * Anything grave enough to ask about first.
+ *
+ * The button says what it is asking and what the affirmative is called; the
+ * dialog is the same one every time. On yes the very same button is clicked
+ * again, marked, so the form submits exactly as it would have -- the name and
+ * value it carries reach the server untouched, which a second form built here
+ * could not promise.
+ */
+let awaitingConfirmation = null;
+
+document.addEventListener('click', (event) => {
+  const button = event.target.closest?.('[data-confirm]');
+  if (!button || button.dataset.confirmed === 'yes') return;
+
+  const dialog = document.querySelector('#confirm');
+  if (!dialog) return;
+
+  event.preventDefault();
+  dialog.querySelector('[data-confirm-title]').textContent = button.dataset.confirm;
+  dialog.querySelector('[data-confirm-detail]').textContent = button.dataset.confirmDetail || '';
+  dialog.querySelector('[data-confirm-yes]').textContent = button.dataset.confirmYes || 'Löschen';
+  awaitingConfirmation = button;
+  dialog.showModal();
+});
+
+document.querySelector('#confirm')?.addEventListener('close', (event) => {
+  const button = awaitingConfirmation;
+  awaitingConfirmation = null;
+  if (!button || event.target.returnValue !== 'yes') return;
+
+  button.dataset.confirmed = 'yes';
+  button.click();
+  delete button.dataset.confirmed;
+});
+
 // Treat a backdrop click like Escape, so each modal keeps its own close guards.
 let backdropDialog = null;
 function onDialogBackdrop(event) {
@@ -147,6 +193,12 @@ document.addEventListener('click', (event) => {
   else if (dialog.dispatchEvent(new Event('cancel', { cancelable: true }))) dialog.close();
 });
 
+// Not form.action: a form exposes its own controls by name, and a control called
+// "action" -- which is how half these forms say delete or archive -- shadows the
+// property, so reading it hands back a button instead of the URL. The attribute
+// is the URL either way.
+const endpoint = (form) => form.getAttribute('action') || location.pathname;
+
 document.addEventListener('submit', async (event) => {
   const form = event.target;
   if (!form.matches('form[data-enhanced]')) return;
@@ -157,7 +209,7 @@ document.addEventListener('submit', async (event) => {
   if (submitter?.name) data.append(submitter.name, submitter.value);
   if (button) button.disabled = true;
   try {
-    const response = await fetch(form.action, {
+    const response = await fetch(endpoint(form), {
       method: (form.method || 'POST').toUpperCase(),
       body: data,
       headers: { Accept: 'application/json' },
@@ -184,7 +236,7 @@ document.addEventListener('submit', async (event) => {
         sessionStorage.setItem('nafinity.celebrate', form.dataset.ticket);
       }
     }
-    if (form.action.endsWith('/preferences')) {
+    if (endpoint(form).endsWith('/preferences')) {
       localStorage.setItem('nafinity.theme', data.get('theme'));
     }
     if (form.closest('#settings-detail')) {
@@ -206,24 +258,47 @@ document.addEventListener('submit', async (event) => {
   }
 });
 const board = document.querySelector('#board');
+
+/*
+ * Something changed a ticket from inside the page: the drawer saved one, or the
+ * assistant did.
+ *
+ * The board behind it was then out of date, and the banner was how it said so.
+ * It is not out of date any more -- the change is announced over the socket and
+ * the board brings itself up to date before anybody could act on the banner, so
+ * all it did was ask the reader to fix something that was not broken. It is
+ * still the honest answer for a page that is not listening: live updates
+ * switched off, or a connection that has dropped.
+ *
+ * The banner itself stays. A refused move and a column this page does not have
+ * are still worth a sentence and a reload button.
+ */
+let listening = false;
+document.addEventListener('naf:websocket-open', () => {
+  listening = true;
+});
+document.addEventListener('naf:websocket-closed', () => {
+  listening = false;
+});
+
 document.addEventListener('nafinity:ai-changed', () => {
+  if (listening) return;
   const update = document.querySelector('#board-update');
   if (update) update.hidden = false;
 });
-if (board) {
-  setInterval(async () => {
-    if (document.hidden) return;
-    try {
-      const response = await fetch(`/projects/${board.dataset.project}/state`, {
-        headers: { Accept: 'application/json' },
-      });
-      if (!response.ok) return;
-      const data = await response.json();
-      if (String(data.revision) !== board.dataset.revision)
-        document.querySelector('#board-update').hidden = false;
-    } catch {}
-  }, 30000);
-}
+/*
+ * There used to be a poll here: every thirty seconds, ask the board for its
+ * revision and, if it had moved, put up a banner asking the reader to reload.
+ *
+ * That is what a page does when nothing tells it. A page is told now -- the
+ * change is announced over the socket and the board brings itself up to date --
+ * so the question was being asked of every open board every half minute in order
+ * to nag about something that had already been handled. Somebody who would
+ * rather their board held still switches live updates off in their preferences,
+ * and then it holds still: no banner, no polling, nothing moving until they
+ * reload, which is what they asked for.
+ */
+
 const drawer = document.querySelector('#ticket-drawer');
 let drawerAbort = null;
 let drawerCloseFromHistory = false;
@@ -323,4 +398,20 @@ document.addEventListener('keydown', (event) => {
 });
 
 // The board brings its own drag, drop and celebration layer and is only needed there.
-if (board) import('./board.js');
+// Versioned here because this is the only place that loads it; a second
+// importer with a different spelling would be a second module instance.
+if (board) import('./board.js?v=10');
+
+// Only where there is a filter row to watch.
+if (document.querySelector('.filterbar')) import('./filters.js?v=1');
+
+// Only on the page that shows the history.
+if (document.querySelector('[data-activity]')) import('./activity.js?v=1');
+
+// Only where there is something to report: an installation without a socket
+// server renders no status to keep up to date.
+if (document.querySelector('[data-live-status]')) import('./live.js?v=1');
+
+// Only inside a project, and only for somebody who takes part in presence: the
+// bar is not rendered otherwise, because their token holds no channel to fill it.
+if (document.querySelector('[data-presence]')) import('./presence.js?v=1');

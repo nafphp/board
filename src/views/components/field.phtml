@@ -21,6 +21,7 @@
  * @var bool        $disabled
  * @var array       $attributes  further attributes on the control, name => value
  * @var array       $choice   further arguments handed to components/choice.phtml
+ * @var array       $palette  colour fields only: the swatches offered above the picker
  */
 
 use function Naf\Board\partial;
@@ -37,6 +38,10 @@ $required ??= false;
 $disabled ??= false;
 $attributes ??= [];
 $choice ??= [];
+// Eight that stay apart from one another and keep their meaning in both themes.
+// The native picker sits beside them and answers everything else.
+$palette ??= ['#94a3b8', '#6366f1', '#8b5cf6', '#ec4899', '#ef4444', '#f59e0b', '#10b981', '#06b6d4'];
+$chosen = preg_match('/^#[0-9a-f]{6}$/iD', (string) $value) === 1 ? strtolower((string) $value) : '#6366f1';
 
 $extra = '';
 foreach ($attributes as $attribute => $content) {
@@ -52,6 +57,43 @@ if ($disabled) {
     $extra .= ' disabled';
 }
 ?>
+<?php if ($type === 'color'): ?>
+    <?php
+    /*
+     * Not a <label>: the swatches are buttons, and a click on a button inside a
+     * label is forwarded to the labelled control -- which here is the colour
+     * input, so every swatch would also open the operating system picker. A
+     * named group carries the same meaning to a screen reader.
+     */
+    ?>
+    <div class="field<?= $class === '' ? '' : ' ' . s($class) ?>" role="group" aria-label="<?= s(t($label)) ?>">
+        <span class="field-label"><?= s(t($label)) ?></span>
+        <div class="field-palette">
+            <?php foreach ($palette as $swatch): ?>
+                <button
+                    type="button"
+                    class="field-pick"
+                    data-color="<?= s($swatch) ?>"
+                    style="--swatch: <?= s($swatch) ?>"
+                    aria-pressed="<?= $swatch === $chosen ? 'true' : 'false' ?>"
+                    aria-label="<?= s($swatch) ?>"
+                    <?= $disabled ? 'disabled' : '' ?>
+                ></button>
+            <?php endforeach ?>
+            <input
+                type="color"
+                class="field-custom"
+                id="<?= s($id) ?>"
+                name="<?= s($name) ?>"
+                value="<?= s($chosen) ?>"
+                aria-label="<?= s(t('Eigene Farbe')) ?>"<?= $extra ?>
+            />
+        </div>
+        <?php if ($hint !== null): ?>
+            <small class="field-hint"><?= s(t($hint)) ?></small>
+        <?php endif ?>
+    </div>
+<?php else: ?>
 <label<?= $class === '' ? '' : ' class="' . s($class) . '"' ?><?= $type === 'checkbox' ? '' : ' for="' . s($id) . '"' ?>>
     <?php if ($type === 'checkbox'): ?>
         <input type="checkbox" id="<?= s($id) ?>" name="<?= s($name) ?>" value="1" <?= $value ? 'checked' : '' ?><?= $extra ?> />
@@ -76,6 +118,7 @@ if ($disabled) {
         <?php endif ?>
     <?php endif ?>
     <?php if ($hint !== null): ?>
-        <small><?= s(t($hint)) ?></small>
+        <small class="field-hint"><?= s(t($hint)) ?></small>
     <?php endif ?>
 </label>
+<?php endif ?>

@@ -10,13 +10,17 @@ use Naf\Board\Contracts\ProjectServiceInterface;
 use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Estimation;
 use Naf\Board\Domain\Failure;
+use Naf\Board\Domain\Placement;
 use Naf\Board\Domain\ProjectScope;
+use Naf\Board\Rbac\Grants;
+use Naf\Board\Support\Abbreviation;
 use Naf\Board\Support\Input;
 use Naf\ORM\Core\EntityManager;
 use PDO;
 use Throwable;
 
 use function Naf\event;
+use function Naf\I18n\t;
 
 /** @internal */
 final class ProjectService implements ProjectServiceInterface
@@ -41,6 +45,7 @@ final class ProjectService implements ProjectServiceInterface
             $this->pdo
                 ->prepare('INSERT INTO project_members(project_id,user_id,role,custom_role_id) VALUES(?,?,?,?)')
                 ->execute([$id, $actor, 'owner', null]);
+            Grants::inProject($actor, $id, 'owner');
             $board = $this->insert('boards', ['project_id' => $id, 'name' => 'Projektboard']);
             foreach (
                 [
@@ -85,7 +90,7 @@ final class ProjectService implements ProjectServiceInterface
         $remap  = !empty($data['remap_estimates']);
         $this->access->write($project, 'manage', function () use ($project, $fields, $remap) {
             $this->pdo
-                ->prepare('UPDATE projects SET name=?,description=?,ticket_key=?,estimation_scale=?,color=?,icon=? WHERE id=?')
+                ->prepare('UPDATE projects SET name=?,description=?,ticket_key=?,estimation_scale=?,color=?,icon=?,new_tickets=? WHERE id=?')
                 ->execute([...array_values($fields), $project]);
             if ($remap) {
                 $this->remapEstimates($project, $fields['estimation_scale']);
@@ -166,7 +171,7 @@ final class ProjectService implements ProjectServiceInterface
             !is_string($role)
             || (!in_array($role, ['owner', 'manager', 'member', 'viewer', 'remove'], true) && preg_match('/^custom:[1-9][0-9]*$/D', $role) !== 1)
         ) {
-            throw new Failure('Ungültige Projektrolle.');
+            throw new Failure(t('Ungültige Projektrolle.'));
         }
         $this->access->write($project, 'members', function (ProjectScope $scope) use (
             $project,
@@ -179,14 +184,14 @@ final class ProjectService implements ProjectServiceInterface
                 $statement = $this->pdo->prepare('SELECT id FROM project_roles WHERE project_id=? AND id=?');
                 $statement->execute([$project, $customRoleId]);
                 if (!$statement->fetchColumn()) {
-                    throw new Failure('Rolle nicht gefunden.', 404);
+                    throw new Failure(t('Rolle nicht gefunden.'), 404);
                 }
             }
             $statement = $this->pdo->prepare('SELECT id FROM users WHERE email=? AND active=1');
             $statement->execute([$email]);
             $user = $statement->fetchColumn();
             if (!$user) {
-                throw new Failure('Kein aktives Konto mit dieser E-Mail gefunden.');
+                throw new Failure(t('Kein aktives Konto mit dieser E-Mail gefunden.'));
             }
             $statement = $this->pdo->prepare(
                 'SELECT role,active,custom_role_id FROM project_members WHERE project_id=? AND user_id=?',
@@ -200,7 +205,7 @@ final class ProjectService implements ProjectServiceInterface
             $oldRights     = $old ? $this->access->permissions($project, $old['role'], $old['custom_role_id'] === null ? null : (int) $old['custom_role_id']) : [];
             $exceedsRights = array_diff([...$newRights, ...$oldRights], $scope->permissions ?? []);
             if ($scope->role !== 'owner' && ($grantsManagement || $changesManager || $exceedsRights)) {
-                throw new Failure('Diese Rolle kann nur ein Owner vergeben oder ändern.', 403);
+                throw new Failure(t('Diese Rolle kann nur ein Owner vergeben oder ändern.'), 403);
             }
             if (
                 $old
@@ -213,7 +218,7 @@ final class ProjectService implements ProjectServiceInterface
                 );
                 $statement->execute([$project]);
                 if ((int) $statement->fetchColumn() <= 1) {
-                    throw new Failure('Das Projekt braucht mindestens einen aktiven Owner.');
+                    throw new Failure(t('Das Projekt braucht mindestens einen aktiven Owner.'));
                 }
             }
             if ($old) {
@@ -233,6 +238,15 @@ final class ProjectService implements ProjectServiceInterface
                     ->prepare('INSERT INTO project_members(project_id,user_id,role,custom_role_id) VALUES(?,?,?,?)')
                     ->execute([$project, $user, $storedRole, $customRoleId]);
             }
+            // The membership row above says whether they are in the project; this
+            // says what that means. A project's own role writes none: it still
+            // answers the old way until that half moves.
+            Grants::inProject(
+                $user,
+                $project,
+                $role === 'remove' || $customRoleId !== null ? null : $storedRole,
+            );
+
             if ($role === 'remove') {
                 $this->pdo
                     ->prepare('DELETE FROM ticket_assignees WHERE project_id=? AND user_id=?')
@@ -249,7 +263,7 @@ final class ProjectService implements ProjectServiceInterface
     {
         $kind = $data['kind'] ?? '';
         if (!in_array($kind, ['column', 'swimlane', 'label'], true)) {
-            throw new Failure('Ungültige Struktur.');
+            throw new Failure(t('Ungültige Struktur.'));
         }
         $table = ['column' => 'board_columns', 'swimlane' => 'swimlanes', 'label' => 'labels'][
             $kind
@@ -273,12 +287,12 @@ final class ProjectService implements ProjectServiceInterface
                 $statement->execute([$project, $id]);
                 $old = $statement->fetch();
                 if (!$old) {
-                    throw new Failure('Eintrag nicht gefunden.', 404);
+                    throw new Failure(t('Eintrag nicht gefunden.'), 404);
                 }
             }
             if ($delete) {
                 if (!$id) {
-                    throw new Failure('Eintrag fehlt.');
+                    throw new Failure(t('Eintrag fehlt.'));
                 }
                 if ($kind === 'label') {
                     $this->pdo
@@ -286,7 +300,7 @@ final class ProjectService implements ProjectServiceInterface
                         ->execute([$project, $id]);
                 } else {
                     if ($kind === 'swimlane' && (int) $old['is_default'] === 1) {
-                        throw new Failure('Die Standard-Swimlane bleibt erhalten.');
+                        throw new Failure(t('Die Standard-Swimlane bleibt erhalten.'));
                     }
                     $column    = $kind === 'column' ? 'column_id' : 'swimlane_id';
                     $statement = $this->pdo->prepare(
@@ -294,7 +308,7 @@ final class ProjectService implements ProjectServiceInterface
                     );
                     $statement->execute([$project, $id]);
                     if ((int) $statement->fetchColumn() > 0) {
-                        throw new Failure('Verschiebe zuerst alle Tickets aus diesem Bereich.');
+                        throw new Failure(t('Verschiebe zuerst alle Tickets aus diesem Bereich.'));
                     }
                     if ($kind === 'column') {
                         $statement = $this->pdo->prepare(
@@ -302,7 +316,7 @@ final class ProjectService implements ProjectServiceInterface
                         );
                         $statement->execute([$project]);
                         if ((int) $statement->fetchColumn() <= 1) {
-                            throw new Failure('Mindestens eine Spalte bleibt erhalten.');
+                            throw new Failure(t('Mindestens eine Spalte bleibt erhalten.'));
                         }
                     }
                 }
@@ -313,7 +327,7 @@ final class ProjectService implements ProjectServiceInterface
                 $validated = Input::validate($data, ['name' => 'required|string|max:60']);
                 $fields    = ['name' => trim($validated['name'])];
                 if ($fields['name'] === '') {
-                    throw new Failure('Ein Name wird benötigt.');
+                    throw new Failure(t('Ein Name wird benötigt.'));
                 }
                 if ($kind !== 'swimlane') {
                     $fields['color'] = $this->color($data['color'] ?? '#6366f1');
@@ -399,21 +413,26 @@ final class ProjectService implements ProjectServiceInterface
         ]);
         $name = trim($validated['name']);
         if ($name === '') {
-            throw new Failure('Ein Projektname wird benötigt.');
+            throw new Failure(t('Ein Projektname wird benötigt.'));
         }
-        $icon = $data['icon'] ?? mb_substr($name, 0, 1);
+        $icon = $data['icon'] ?? '';
         if (!is_string($icon) || mb_strlen($icon) > 2) {
-            throw new Failure('Das Icon darf höchstens zwei Zeichen haben.');
+            throw new Failure(t('Das Icon darf höchstens zwei Zeichen haben.'));
+        }
+        if (trim($icon) === '') {
+            $icon = Abbreviation::mark($name);
         }
         // The key names every ticket of the project and rides in its address, so it stays
-        // within the characters an address can carry without escaping.
+        // within the characters an address can carry without escaping. Left empty it is
+        // taken from the name, which is what the field has always promised.
         $key = strtoupper(trim((string) ($data['ticket_key'] ?? '')));
         if ($key === '') {
-            $key = strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $name));
-            $key = substr($key, 0, 3) ?: 'P';
+            // A name with nothing alphanumeric in it abbreviates to nothing, and a
+            // project still needs something in front of its ticket numbers.
+            $key = Abbreviation::key($name) ?: 'P';
         }
         if (!preg_match('/^[A-Z0-9]{1,6}$/', $key)) {
-            throw new Failure('Das Ticketkürzel darf nur ein bis sechs Buchstaben oder Ziffern haben.', 422, [
+            throw new Failure(t('Das Ticketkürzel darf nur ein bis sechs Buchstaben oder Ziffern haben.'), 422, [
                 'ticket_key' => ['Ein bis sechs Buchstaben oder Ziffern.'],
             ]);
         }
@@ -425,13 +444,14 @@ final class ProjectService implements ProjectServiceInterface
             'estimation_scale' => Estimation::scale($data['estimation_scale'] ?? null),
             'color'            => $this->color($data['color'] ?? '#6366f1'),
             'icon'             => $icon,
+            'new_tickets'      => Placement::board($data['new_tickets'] ?? null),
         ];
     }
 
     public function color(mixed $color): string
     {
         if (!is_string($color) || preg_match('/^#[a-fA-F0-9]{6}$/D', $color) !== 1) {
-            throw new Failure('Ungültige Farbe.');
+            throw new Failure(t('Ungültige Farbe.'));
         }
 
         return strtolower($color);

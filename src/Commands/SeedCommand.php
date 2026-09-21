@@ -11,6 +11,7 @@ use Naf\Board\Contracts\ProjectServiceInterface;
 use Naf\Board\Contracts\TicketServiceInterface;
 use Naf\Board\Contracts\TimerServiceInterface;
 use Naf\Board\Models\User;
+use Naf\Board\Rbac\Grants;
 use Naf\CLI\Core\AbstractCommand;
 use Naf\CLI\Core\Input;
 use Naf\CLI\Core\Output;
@@ -64,18 +65,32 @@ final class SeedCommand extends AbstractCommand
                 'created_at'    => gmdate('Y-m-d H:i:s'),
             ]);
             $entityManager->save($user);
+            Grants::ensureDefault((int) $user->getId());
             $users[] = $user;
         }
+        /*
+         * The demo installation gets its administrator, because an installation
+         * without one is one where half of it cannot be reached -- and the seed
+         * is what sets this installation up. It is the same appointment
+         * "nafinity:admin" makes, which is why that command finds the door shut
+         * afterwards.
+         */
+        Grants::makeAdmin((int) $users[0]->getId());
+
         $auth = $c->get(Auth::class);
         $auth->setIdentity($users[0]);
         $projects = $c->get(ProjectServiceInterface::class);
         $tickets  = $c->get(TicketServiceInterface::class);
         $purpose  = 'Ein klarer Ort für Ideen, Entscheidungen und die nächste gute Version.';
         $a        = $projects->create([
-            'name'             => 'Nafinity',
-            'description'      => $purpose,
-            'color'            => '#6366f1',
-            'icon'             => 'N',
+            'name'        => 'Nafinity',
+            'description' => $purpose,
+            'color'       => '#6366f1',
+            'icon'        => 'N',
+            // Said rather than derived. A demo should read as though somebody
+            // chose it, and a fixture whose keys move when an abbreviation rule
+            // changes takes every test that names a ticket with it.
+            'ticket_key'       => 'NAF',
             'estimation_scale' => 'points',
         ]);
         // One account per role, so a permission check has something to fail against.
@@ -234,6 +249,7 @@ final class SeedCommand extends AbstractCommand
             'description'      => 'Ein getrenntes Projekt für Bobs Team.',
             'color'            => '#14b8a6',
             'icon'             => 'S',
+            'ticket_key'       => 'STU',
             'estimation_scale' => 'tshirt',
         ]);
         foreach ([['Kundenwunsch', '#0ea5e9'], ['Intern', '#64748b']] as [$name, $color]) {
@@ -256,6 +272,7 @@ final class SeedCommand extends AbstractCommand
             'description' => 'Was noch nicht dran ist, aber nicht verloren gehen soll.',
             'color'       => '#f59e0b',
             'icon'        => 'A',
+            'ticket_key'  => 'ARC',
         ]);
         $this->cards($c, $d, $users[0]->getId(), [
             ['Offline lesen', 'Ein Board ohne Verbindung wenigstens ansehen können.', 0, 'low', null],
@@ -269,6 +286,7 @@ final class SeedCommand extends AbstractCommand
             'description' => 'Abgeschlossen und nur noch zum Nachlesen da.',
             'color'       => '#a855f7',
             'icon'        => 'M',
+            'ticket_key'  => 'MES',
         ]);
         $this->cards($c, $e, $users[0]->getId(), [
             ['Standaufbau koordinieren', 'Termine mit dem Messebauer abgestimmt.', 0, 'normal', null],

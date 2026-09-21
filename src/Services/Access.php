@@ -9,11 +9,16 @@ use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Domain\ProjectPermissions;
 use Naf\Board\Domain\ProjectScope;
+use Naf\Board\Rbac\Installation;
+use Naf\Board\Rbac\Project;
 use Naf\ORM\Core\EntityManager;
+use Naf\Rbac\Scope;
 use PDO;
 use Throwable;
 
 use function Naf\Board\extensions;
+use function Naf\I18n\t;
+use function Naf\Rbac\rbac;
 
 /** @internal */
 final class Access implements AccessInterface
@@ -48,11 +53,32 @@ final class Access implements AccessInterface
         $statement->execute([$id, $user]);
         $row = $statement->fetch();
         if (!$row) {
-            throw new Failure('Projekt nicht gefunden.', 404);
+            $row = $this->asAdministrator($id, $user, $locked);
         }
         $customRoleId = $row['custom_role_id'] === null ? null : (int) $row['custom_role_id'];
-        $permissions  = $this->permissions($id, $row['role'], $customRoleId);
-        $roleName     = ucfirst($row['role']);
+
+        /*
+         * What they may do comes from naf/rbac, scoped to this board. The row
+         * above still decides whether they are in the project at all -- that is
+         * membership, and half the schema points at it -- but it no longer says
+         * what being in it means.
+         *
+         * A grant held installation-wide reaches in here too, which is how an
+         * administrator's rights apply inside a board.
+         */
+        $permissions = rbac()->permissionsOf($user, Scope::of(Project::SCOPE, $id));
+
+        // A role somebody made for this board still lives in project_roles, so
+        // its grants are added here. The seam disappears when that half moves;
+        // until then both answers count, and neither can take the other away.
+        if ($customRoleId !== null) {
+            $permissions = array_values(array_unique(
+                [...$permissions, ...$this->permissions($id, $row['role'], $customRoleId)],
+            ));
+        }
+        // No membership means no membership role to name; what such a person is
+        // doing here is administering, so that is what the interface says.
+        $roleName = $row['role'] === '' ? Installation::ADMIN_ROLE_NAME : ucfirst($row['role']);
         if ($customRoleId !== null) {
             $statement = $this->pdo->prepare('SELECT name FROM project_roles WHERE project_id=? AND id=?');
             $statement->execute([$id, $customRoleId]);
@@ -60,10 +86,49 @@ final class Access implements AccessInterface
         }
         $scope = new ProjectScope($row, (string) $user, $row['role'], $permissions, $roleName);
         if (!$this->auth->allows($action, $scope)) {
-            throw new Failure('Du hast für diese Aktion keine Berechtigung.', 403);
+            throw new Failure(t('Du hast für diese Aktion keine Berechtigung.'), 403);
         }
 
         return $scope;
+    }
+
+    /**
+     * The project row for somebody who administers every board.
+     *
+     * Membership is how people reach a board, and nothing here changes that: a
+     * person who is not a member and does not administer every board gets the
+     * same 404 as before, which does not say whether the project exists.
+     *
+     * What it does is honour `projects.administer`, whose whole description is
+     * "auch ohne Mitgliedschaft" and which until now was declared and never
+     * asked. The row is synthesised rather than written: an administrator
+     * looking at a board does not become a member of it, and closing the tab
+     * leaves no trace in project_members.
+     *
+     * @return array<string, mixed>
+     */
+    private function asAdministrator(int $id, int $user, bool $locked): array
+    {
+        if (!rbac()->allows($user, Installation::ADMIN_PROJECTS)) {
+            throw new Failure(t('Projekt nicht gefunden.'), 404);
+        }
+
+        $statement = $this->pdo->prepare(
+            'SELECT * FROM projects WHERE id = ?' . ($locked ? ' FOR UPDATE' : ''),
+        );
+        $statement->execute([$id]);
+        $project = $statement->fetch();
+        if (!$project) {
+            throw new Failure(t('Projekt nicht gefunden.'), 404);
+        }
+
+        /*
+         * The role is empty on purpose. It is the membership role, and there is
+         * no membership -- ProjectPermissions::defaults('') answers nothing, so
+         * a missing rbac grant cannot fall back to a project role nobody gave.
+         * What this person may do comes from their installation-wide grants.
+         */
+        return [...$project, 'role' => '', 'custom_role_id' => null];
     }
 
     /**

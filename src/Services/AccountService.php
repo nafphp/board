@@ -9,10 +9,14 @@ use Naf\Auth\Credentials\PasswordCredentials;
 use Naf\Auth\Support\PasswordHasher;
 use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\AccountServiceInterface;
+use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Jobs\AccountSecurityNoticeJob;
 use Naf\Board\Models\User;
+use Naf\Board\Rbac\Grants;
+use Naf\Board\Rbac\Installation;
 use Naf\Board\Support\Input;
+use Naf\Board\Support\PasswordRule;
 use Naf\Mail\Core\Mailer;
 use Naf\Mail\Models\Mail;
 use Naf\ORM\Core\EntityManager;
@@ -24,6 +28,9 @@ use SensitiveParameter;
 use Throwable;
 
 use function Naf\config;
+use function Naf\event;
+use function Naf\I18n\t;
+use function Naf\Rbac\rbac;
 
 /** @internal */
 final class AccountService implements AccountServiceInterface
@@ -63,6 +70,75 @@ final class AccountService implements AccountServiceInterface
         }
     }
 
+    /**
+     * Open an account for somebody else.
+     *
+     * Until now this existed only on the command line, which meant that adding
+     * a colleague required a shell on the server. It is a right -- `users.manage`
+     * -- and not a role, so an installation can hand it out without handing out
+     * everything else that comes with administering one.
+     *
+     * The password is set here and the person changes it afterwards. An
+     * invitation they answer themselves would be better, and is what this should
+     * become; what it must not stay is a shell command.
+     *
+     * @param array<string, mixed> $input
+     */
+    public function create(#[SensitiveParameter] array $input): int
+    {
+        $actor = $this->access->actor();
+        if (!rbac()->allows($actor, Installation::MANAGE_USERS)) {
+            throw new Failure(t('Du hast für diese Aktion keine Berechtigung.'), 403);
+        }
+
+        $data = Input::validate($input, [
+            'name'     => 'required|string|max:120',
+            'email'    => 'required|string|email|max:190',
+            'password' => 'required|string|max:1024',
+        ]);
+
+        $name  = trim((string) $data['name']);
+        $email = strtolower(trim((string) $data['email']));
+        if ($name === '') {
+            throw new Failure(t('Ein Name wird benötigt.'));
+        }
+        if (null !== $complaint = PasswordRule::complaint((string) $data['password'])) {
+            throw new Failure($complaint);
+        }
+
+        $this->availableEmail($email);
+
+        // One transaction for the account, its default grant and the entry that
+        // says it was opened. An account recorded but not created, or created
+        // and not recorded, would each be a lie the log cannot be cured of.
+        $this->entityManager->begin();
+
+        try {
+            $user = new User([
+                'name'          => $name,
+                'email'         => $email,
+                'password_hash' => $this->hasher->hash((string) $data['password']),
+                'created_at'    => gmdate('Y-m-d H:i:s'),
+            ]);
+            $this->entityManager->save($user);
+            $id = (int) $user->getId();
+            Grants::ensureDefault($id);
+
+            // Not a personal event: who opened an account for whom is
+            // administration, and that concerns whoever may read the log.
+            event()->dispatch('nafinity.changed', Change::inInstallation($actor, 'account.created', [
+                'person' => $name,
+            ]));
+            $this->entityManager->commit();
+        } catch (Throwable $failure) {
+            $this->entityManager->rollback();
+
+            throw $failure;
+        }
+
+        return $id;
+    }
+
     public function profile(): array
     {
         $id        = $this->access->actor();
@@ -70,7 +146,7 @@ final class AccountService implements AccountServiceInterface
         $statement->execute([$id]);
         $user = $statement->fetch();
         if (!$user) {
-            throw new Failure('Dein Konto ist nicht verfügbar.', 401);
+            throw new Failure(t('Dein Konto ist nicht verfügbar.'), 401);
         }
 
         return [
@@ -92,23 +168,24 @@ final class AccountService implements AccountServiceInterface
             'password_confirmation' => 'required|string|max:1024',
         ]);
         $password = $data['password'];
-        if (mb_strlen($password) < 15 || strlen($password) > 72 || str_contains($password, "\0")) {
-            throw new Failure('Das neue Passwort braucht mindestens 15 Zeichen und darf höchstens 72 Bytes lang sein.');
+        if (null !== $complaint = PasswordRule::complaint($password)) {
+            throw new Failure($complaint);
         }
         if (!hash_equals($password, $data['password_confirmation'])) {
-            throw new Failure('Die neuen Passwörter stimmen nicht überein.');
+            throw new Failure(t('Die neuen Passwörter stimmen nicht überein.'));
         }
 
         $this->write($id, function (array $user) use ($id, $data, $password): void {
             $this->verifyPassword($user, $data['current_password']);
             if ($this->hasher->verify($password, $user['password_hash'])) {
-                throw new Failure('Bitte wähle ein anderes Passwort als dein bisheriges.');
+                throw new Failure(t('Bitte wähle ein anderes Passwort als dein bisheriges.'));
             }
             $hash      = $this->hasher->hash($password);
             $statement = $this->pdo->prepare('UPDATE users SET password_hash=?, security_version=security_version+1 WHERE id=?');
             $statement->execute([$hash, $id]);
             $this->deletePending($id);
             $this->notice($user['email'], 'password.changed');
+            $this->record($id, 'account.password_changed');
         });
     }
 
@@ -126,7 +203,7 @@ final class AccountService implements AccountServiceInterface
         return $this->write($id, function (array $user) use ($id, $data, $email): array {
             $this->verifyPassword($user, $data['current_password']);
             if ($email === strtolower($user['email'])) {
-                throw new Failure('Das ist bereits deine aktuelle E-Mail-Adresse.');
+                throw new Failure(t('Das ist bereits deine aktuelle E-Mail-Adresse.'));
             }
             $this->availableEmail($email);
             $requestId = bin2hex(random_bytes(16));
@@ -149,13 +226,14 @@ final class AccountService implements AccountServiceInterface
 
             try {
                 if (!$this->mailer->send($mail)) {
-                    throw new Failure('Versand fehlgeschlagen.', 503);
+                    throw new Failure(t('Versand fehlgeschlagen.'), 503);
                 }
             } catch (Throwable) {
                 // Roll back the pending request; never publish a successful dummy workflow.
-                throw new Failure('Der Bestätigungscode konnte nicht versendet werden. Bitte versuche es später erneut.', 503);
+                throw new Failure(t('Der Bestätigungscode konnte nicht versendet werden. Bitte versuche es später erneut.'), 503);
             }
             $this->notice($user['email'], 'email.requested');
+            $this->record($id, 'account.email_requested');
 
             return ['request_id' => $requestId, 'email' => $email, 'expires_at' => $expires];
         });
@@ -197,12 +275,13 @@ final class AccountService implements AccountServiceInterface
             $statement->execute([$pending['email'], gmdate('Y-m-d H:i:s'), $id]);
             $this->deletePending($id);
             $this->notice($user['email'], 'email.changed');
+            $this->record($id, 'account.email_changed');
 
             return true;
         });
         // Failed attempts/expiry must commit instead of being rolled back with the error.
         if (!$confirmed) {
-            throw new Failure('Der Code ist ungültig oder abgelaufen. Nach fünf Fehlversuchen brauchst du einen neuen Code.');
+            throw new Failure(t('Der Code ist ungültig oder abgelaufen. Nach fünf Fehlversuchen brauchst du einen neuen Code.'));
         }
     }
 
@@ -241,7 +320,7 @@ final class AccountService implements AccountServiceInterface
             }
             $identity = $this->auth->user();
             if (!$user || !$identity instanceof User || $identity->securityVersion() !== (int) $user['security_version']) {
-                throw new Failure('Dein Konto wurde inzwischen geändert. Bitte melde dich erneut an.', 401);
+                throw new Failure(t('Dein Konto wurde inzwischen geändert. Bitte melde dich erneut an.'), 401);
             }
             $result = $operation($user);
             $this->entityManager->commit();
@@ -250,7 +329,7 @@ final class AccountService implements AccountServiceInterface
         } catch (Throwable $exception) {
             $this->entityManager->rollback();
             if ($exception instanceof PDOException && in_array($exception->errorInfo[0] ?? '', ['23000', '23505'], true)) {
-                throw new Failure('Diese E-Mail-Adresse ist nicht verfügbar.', 409);
+                throw new Failure(t('Diese E-Mail-Adresse ist nicht verfügbar.'), 409);
             }
             throw $exception;
         }
@@ -259,7 +338,7 @@ final class AccountService implements AccountServiceInterface
     private function verifyPassword(array $user, #[SensitiveParameter] string $password): void
     {
         if (!$this->hasher->verify($password, $user['password_hash'])) {
-            throw new Failure('Das aktuelle Passwort stimmt nicht.', 403);
+            throw new Failure(t('Das aktuelle Passwort stimmt nicht.'), 403);
         }
     }
 
@@ -268,7 +347,7 @@ final class AccountService implements AccountServiceInterface
         $statement = $this->pdo->prepare('SELECT id FROM users WHERE email=?');
         $statement->execute([$email]);
         if ($statement->fetchColumn() !== false) {
-            throw new Failure('Diese E-Mail-Adresse ist nicht verfügbar.', 409);
+            throw new Failure(t('Diese E-Mail-Adresse ist nicht verfügbar.'), 409);
         }
     }
 
@@ -281,7 +360,7 @@ final class AccountService implements AccountServiceInterface
     {
         $limit = $this->limiter->consume('account:' . $action . ':' . $id, $maximum, $seconds);
         if (!$limit['allowed']) {
-            throw new Failure('Zu viele Versuche. Bitte versuche es später erneut.', 429);
+            throw new Failure(t('Zu viele Versuche. Bitte versuche es später erneut.'), 429);
         }
     }
 
@@ -289,5 +368,27 @@ final class AccountService implements AccountServiceInterface
     {
         // The native PDO queue shares this transaction. Passwords/codes never enter it.
         $this->queue->push(AccountSecurityNoticeJob::class, ['recipient' => $recipient, 'event' => $event]);
+    }
+
+    /**
+     * Put a change to somebody's own account in the installation's history.
+     *
+     * That it happened and to whom, never what it became. An address belongs to
+     * the account, where it is guarded and can be corrected; a password belongs
+     * nowhere at all. What a history is asked is when somebody's credentials
+     * last moved, and by whom -- and that is answered without copying either.
+     *
+     * Only readable by somebody holding the right for it: these are the entries
+     * about a person rather than about their work.
+     */
+    private function record(int $user, string $type): void
+    {
+        $name = $this->pdo->prepare('SELECT name FROM users WHERE id=?');
+        $name->execute([$user]);
+
+        event()->dispatch(
+            'nafinity.changed',
+            Change::inInstallation($user, $type, ['person' => (string) $name->fetchColumn()]),
+        );
     }
 }

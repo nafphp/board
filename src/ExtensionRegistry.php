@@ -14,9 +14,11 @@ use Naf\Board\Registry\AssetPackageRegistry;
 use Naf\Board\Registry\AssetRegistry;
 use Naf\Board\Registry\BoardFilterRegistry;
 use Naf\Board\Registry\EstimationScaleRegistry;
+use Naf\Board\Registry\ExporterRegistry;
 use Naf\Board\Registry\FieldTypeRegistry;
 use Naf\Board\Registry\NavigationRegistry;
 use Naf\Board\Registry\PermissionRegistry;
+use Naf\Board\Registry\PriorityRegistry;
 use Naf\Board\Registry\SettingRegistry;
 use Naf\Board\Registry\SettingSectionRegistry;
 use Naf\Board\Registry\TicketFieldRegistry;
@@ -48,6 +50,7 @@ final class ExtensionRegistry
     private bool $initializing = false;
 
     private ?PermissionRegistry $permissions         = null;
+    private ?PriorityRegistry $priorities            = null;
     private ?UiRegistry $ui                          = null;
     private ?NavigationRegistry $navigation          = null;
     private ?ViewRegistry $views                     = null;
@@ -61,6 +64,7 @@ final class ExtensionRegistry
     private ?EstimationScaleRegistry $estimation     = null;
     private ?ActivityTypeRegistry $activityTypes     = null;
     private ?AiToolRegistry $aiTools                 = null;
+    private ?ExporterRegistry $exporters             = null;
 
     /**
      * Remember a provider; it runs after Nafinity's own defaults
@@ -178,6 +182,11 @@ final class ExtensionRegistry
         return $this->permissions ??= new PermissionRegistry();
     }
 
+    public function priorities(): PriorityRegistry
+    {
+        return $this->priorities ??= new PriorityRegistry();
+    }
+
     public function ui(): UiRegistry
     {
         return $this->ui ??= new UiRegistry();
@@ -241,6 +250,11 @@ final class ExtensionRegistry
     public function aiTools(): AiToolRegistry
     {
         return $this->aiTools ??= new AiToolRegistry();
+    }
+
+    public function exporters(): ExporterRegistry
+    {
+        return $this->exporters ??= new ExporterRegistry();
     }
 
     /**

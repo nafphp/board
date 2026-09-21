@@ -1,32 +1,20 @@
 <?php
 use Naf\Board\Domain\ProjectPermissions;
-use Naf\Board\Support\Format;
 use Naf\Board\Support\Icon;
 use Naf\Board\Support\Resolver;
 
 use function Naf\app;
-use function Naf\Board\choice;
 use function Naf\Board\extensions;
 use function Naf\Board\partial;
 use function Naf\Board\template;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
-use function Naf\route;
 use function Naf\View\s;
 
 $this->setLayout(template('layout'));
 $this->block('content');
 $projectId      = $project['id'] ?? null;
 $token          = csrf()->token();
-$projectOptions = ['/preferences' => t('Nur persönliche Einstellungen')];
-$currentProject = '/preferences';
-foreach ($projects as $settingsTarget) {
-    $target                  = '/projects/' . (int) $settingsTarget['id'] . '/settings';
-    $projectOptions[$target] = $settingsTarget['name'];
-    if ((string) $projectId === (string) $settingsTarget['id']) {
-        $currentProject = $target;
-    }
-}
 $availableRoles = ($scope ?? null)?->role === 'owner'
     ? ['owner' => 'Owner', 'manager' => 'Manager', 'member' => 'Member', 'viewer' => 'Viewer']
     : ['member' => 'Member', 'viewer' => 'Viewer'];
@@ -41,9 +29,14 @@ foreach ($customRoles ?? [] as $role) {
 $availableRoles['remove'] = 'Zugriff entziehen';
 
 // Cards come from the registry, so an extension adds one without this page
-// learning its name. Each card says for itself what it currently holds.
+// learning its name. Each card says for itself what it currently holds -- out of
+// this, so whatever a card may need has to be in here. A key missing from this
+// list is not an empty card, it is a card that quietly shows nothing.
 $viewData = [
     'projectId'      => $projectId,
+    'columns'        => $columns ?? [],
+    'swimlanes'      => $swimlanes ?? [],
+    'labels'         => $labels ?? [],
     'offScale'       => $offScale ?? 0,
     'token'          => $token,
     'scope'          => $scope ?? null,
@@ -55,11 +48,13 @@ $viewData = [
     'user'           => $user,
     'projects'       => $projects,
 ];
+// A project shows what belongs to the project; the account shows what belongs
+// to the account. They used to be one list, so every project repeated the two
+// account cards and the gear in the sidebar meant one thing here and another
+// there.
 $cards = [];
-foreach (['user', 'project', 'project_user'] as $cardScope) {
-    if ($cardScope !== 'user' && $projectId === null) {
-        continue;
-    }
+$scopes ??= $projectId === null ? ['user'] : ['project', 'project_user'];
+foreach ($scopes as $cardScope) {
     foreach (extensions()->settingSections()->forScope($cardScope) as $id => $section) {
         if (!$uiContext->allows($section->permission)) {
             continue;
@@ -82,38 +77,23 @@ foreach (['user', 'project', 'project_user'] as $cardScope) {
     }
 }
 ?>
-<section class="page-heading settings-heading">
-    <div>
-        <span class="eyebrow"><?= s(t($projectId ? 'KONTO & PROJEKT' : 'DEIN KONTO')) ?></span>
-        <h1>Einstellungen</h1>
-    </div>
-    <?php if ($projectId): ?>
-        <a class="button subtle" href="<?= s(route('board', ['project' => $projectId])) ?>"><?= Icon::mark('arrow_back', 'sm') ?> Zum Board</a>
-    <?php endif ?>
-</section>
-<div class="settings-context">
-    <div>
-        <strong><?= s($project['name'] ?? 'Dein Workspace') ?></strong>
-        <span>
-            <?= $projectId
-                ? s(Format::count(count($members), 'Mitglied', 'Mitglieder'))
-                    . ' · ' . s(Format::count(4 + count($customRoles ?? []), 'Rolle', 'Rollen'))
-                : s(Format::count(count($projects), 'Projekt', 'Projekte')) ?>
-        </span>
-    </div>
-    <label>
-        Projekt wechseln
-        <?= choice([
-            'name'        => 'settings_project',
-            'label'       => 'Projekt für Einstellungen',
-            'value'       => $currentProject,
-            'options'     => $projectOptions,
-            'id'          => 'settings-project',
-            'nativeData'  => ['settings-project' => true],
-            'searchLabel' => 'Projekte suchen',
-        ]) ?>
-    </label>
-</div>
+<?php if ($projectId): ?>
+    <?= partial('project/header', [
+        'project' => $project,
+        'scope'   => $scope,
+        'members' => $members,
+        'total'   => $total,
+        'view'    => 'settings',
+    ]) ?>
+<?php else: ?>
+    <section class="page-heading settings-heading">
+        <div>
+            <span class="eyebrow"><?= s(t($eyebrow ?? 'DEIN KONTO')) ?></span>
+            <h1><?= s(t($heading ?? 'Einstellungen')) ?></h1>
+            <p><?= s(t($lede ?? 'Gelten für dich, in jedem Projekt.')) ?></p>
+        </div>
+    </section>
+<?php endif ?>
 <div class="settings-tiles">
     <?php foreach ($cards as [$id, $label, $description, $icon, $template, $extra]): ?>
         <button
@@ -140,9 +120,14 @@ foreach (['user', 'project', 'project_user'] as $cardScope) {
         </section>
     <?php endforeach ?>
 </div>
-<p class="settings-footnote">
-    <?= s(t('Änderungen am Projekt gelten für alle Mitglieder, persönliche Einstellungen nur für dich.')) ?>
-</p>
+<?php if ($projectId): ?>
+    <p class="settings-footnote">
+        <?= s(t(
+            'Änderungen hier gelten für alle Mitglieder dieses Projekts. Was nur für dich gilt, '
+            . 'steht unter „Für mich in diesem Projekt“ und in deinen Kontoeinstellungen.',
+        )) ?>
+    </p>
+<?php endif ?>
 <dialog
     id="settings-detail"
     class="settings-detail"

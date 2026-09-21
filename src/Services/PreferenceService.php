@@ -8,8 +8,11 @@ use DateTimeZone;
 use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\PreferenceServiceInterface;
 use Naf\Board\Domain\Failure;
+use Naf\Board\Domain\Placement;
 use Naf\Board\Support\Locales;
 use Naf\Board\Support\Settings\PreferenceStore;
+
+use function Naf\I18n\t;
 
 /** @internal */
 final class PreferenceService implements PreferenceServiceInterface
@@ -30,7 +33,7 @@ final class PreferenceService implements PreferenceServiceInterface
             || !is_string($zone)
             || !in_array($zone, DateTimeZone::listIdentifiers(), true)
         ) {
-            throw new Failure('Ungültige Einstellungen.');
+            throw new Failure(t('Ungültige Einstellungen.'));
         }
         $this->store->writeUser($user, [
             'theme'         => $theme,
@@ -38,6 +41,9 @@ final class PreferenceService implements PreferenceServiceInterface
             'timezone'      => $zone,
             'notify_in_app' => isset($data['notify_in_app']) ? 1 : 0,
             'notify_mail'   => isset($data['notify_mail']) ? 1 : 0,
+            'live_updates'  => isset($data['live_updates']) ? 1 : 0,
+            'presence'      => isset($data['presence']) ? 1 : 0,
+            'new_tickets'   => Placement::person($data['new_tickets'] ?? null),
         ]);
     }
 
@@ -49,7 +55,7 @@ final class PreferenceService implements PreferenceServiceInterface
     public function language(mixed $locale): void
     {
         if (!Locales::supports($locale)) {
-            throw new Failure('Diese Sprache steht nicht zur Verfügung.');
+            throw new Failure(t('Diese Sprache steht nicht zur Verfügung.'));
         }
         $this->store->writeUser($this->access->actor(), ['locale' => $locale]);
     }

@@ -1,17 +1,51 @@
 <?php
 
+/*
+ * The installation's own settings.
+ *
+ * "Einstellungen" in the sidebar means what holds for everyone -- which is why
+ * there is no second entry beside it: a person's own settings live behind their
+ * avatar, where the rest of their account already is.
+ *
+ * Hidden rather than refused, because a sidebar is a list of what you can do.
+ * The page itself still answers 403 to anyone arriving with the link, so the
+ * hiding is convenience and not the protection.
+ */
+
+use Naf\Board\Rbac\Installation;
 use Naf\Board\Support\Icon;
 
+use function Naf\Auth\auth;
 use function Naf\I18n\t;
+use function Naf\Rbac\rbac;
 use function Naf\route;
 use function Naf\View\s;
 
-$project = $uiContext->projectId();
-$url     = $project === null
-    ? route('preferences')
-    : route('project.settings', ['project' => $project]);
+$actor = (int) (auth()->user()?->getIdentifier() ?? 0);
+
+if ($actor === 0) {
+    return;
+}
 ?>
-<a class="side-link <?= route()->active(['preferences', 'project.settings']) ?>" href="<?= s($url) ?>" title="<?= s(t('Einstellungen')) ?>">
-    <span class="nav-icon"><?= Icon::mark('settings', 'lg') ?></span>
-    <span class="link-label"><?= s(t('Einstellungen')) ?></span>
-</a>
+<?php if (rbac()->allows($actor, Installation::MANAGE_SETTINGS)): ?>
+    <a
+        class="side-link <?= route()->active(['installation.settings']) ?>"
+        href="<?= s(route('installation.settings')) ?>"
+        title="<?= s(t('Einstellungen der Installation')) ?>"
+    >
+        <span class="nav-icon"><?= Icon::mark('settings', 'lg') ?></span>
+        <span class="link-label"><?= s(t('Einstellungen')) ?></span>
+    </a>
+<?php endif ?>
+<?php /* Its own right, so its own condition: reading what happened here is not
+         the same as being allowed to change it. */ ?>
+<?php if (rbac()->allows($actor, Installation::VIEW_AUDIT)): ?>
+    <a
+        class="side-link <?= route()->active(['audit']) ?>"
+        href="<?= s(route('audit')) ?>"
+        title="<?= s(t('Protokoll dieser Installation')) ?>"
+    >
+        <span class="nav-icon"><?= Icon::mark('history', 'lg') ?></span>
+        <span class="link-label"><?= s(t('Protokoll')) ?></span>
+    </a>
+<?php endif ?>

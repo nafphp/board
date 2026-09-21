@@ -17,14 +17,20 @@ use Naf\Board\Contracts\ExtensionProviderInterface;
 use Naf\Board\Definition\AiToolProviderDefinition;
 use Naf\Board\Definition\AssetPackage;
 use Naf\Board\Definition\BoardFilterDefinition;
+use Example\ExtensionA\Export\ExternalSystemExporter;
+use Example\ExtensionA\Export\StatusForExternalSystem;
 use Naf\Board\Definition\EstimationScale;
+use Naf\Board\Definition\ExporterDefinition;
 use Naf\Board\Definition\NavigationItem;
 use Naf\Board\Definition\PermissionDefinition;
+use Naf\Board\Definition\PriorityDefinition;
 use Naf\Board\Definition\SettingDefinition;
 use Naf\Board\Definition\SettingSection;
 use Naf\Board\Definition\TicketFieldDefinition;
 use Naf\Board\Definition\UiContribution;
+use Naf\Board\Export\ExportLine;
 use Naf\Board\ExtensionContext;
+use Naf\Board\Services\ExportService;
 use Naf\Board\Support\BoardFilterContext;
 use Naf\Board\Support\Resolver;
 use Naf\Board\Support\SqlCondition;
@@ -171,6 +177,19 @@ final class ExtensionAProvider implements ExtensionProviderInterface
             nullable: false,
         ));
 
+        /*
+         * A fifth priority, brought by a package that has never heard of the
+         * board's own four. Nothing here names the Priority enum: that enum is
+         * the board's own vocabulary, and this registry is the open set both it
+         * and this line write into.
+         */
+        $context->priorities()->add(new PriorityDefinition(
+            'example.blocker',
+            'Blockiert',
+            'block',
+            500,
+        ));
+
         // Index 150 puts this between the links widget (100) and attachments (200).
         $context->ui()->add(new UiContribution(
             'example.reports.widget',
@@ -242,6 +261,31 @@ final class ExtensionAProvider implements ExtensionProviderInterface
             'nafinity.changed',
             static fn(Change $change) => Resolver::service($container, ReviewListener::class)
                 ->record($change),
+        );
+
+        /*
+         * A format of this package's own, and the one thing it changes on the
+         * way out. Both together are the whole of what an export extension is
+         * here: a registry entry saying the format exists, and a listener on a
+         * documented event saying what this package wants said differently.
+         *
+         * The listener is registered once and asks each line which format it
+         * belongs to, rather than the export asking which listeners belong to a
+         * format. That keeps the event single and the decision with the package
+         * that has an opinion.
+         */
+        $context->exporters()->add(new ExporterDefinition(
+            id: StatusForExternalSystem::FORMAT,
+            label: 'Fremdsystem',
+            extension: 'txt',
+            mimeType: 'text/plain; charset=utf-8',
+            writer: ExternalSystemExporter::class,
+            index: 900,
+        ));
+
+        event()->listen(
+            ExportService::LINE,
+            static fn(ExportLine $line) => (new StatusForExternalSystem())($line),
         );
 
         $context->estimationScales()->add(new EstimationScale(

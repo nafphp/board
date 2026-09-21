@@ -10,6 +10,8 @@ use Naf\Board\Domain\Failure;
 use Naf\Board\Support\SettingsContext;
 use PDO;
 
+use function Naf\I18n\t;
+
 /**
  * Where contributed settings values live.
  *
@@ -111,7 +113,7 @@ final class DatabaseSettingsStore implements SettingsStoreInterface
     private function target(SettingsContext $context): array
     {
         if (!isset(self::TABLES[$context->scope])) {
-            throw new Failure('Für diesen Bereich gibt es keinen Wertespeicher.', 400);
+            throw new Failure(t('Für diesen Bereich gibt es keinen Wertespeicher.'), 400);
         }
 
         [$table, $columns] = self::TABLES[$context->scope];
@@ -130,13 +132,16 @@ final class DatabaseSettingsStore implements SettingsStoreInterface
             $json = json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
         } catch (JsonException $exception) {
             throw new Failure(
-                'Der Wert von "' . $key . '" lässt sich nicht speichern: ' . $exception->getMessage(),
+                t('Der Wert von ":key" lässt sich nicht speichern: :reason', [
+                    'key'    => $key,
+                    'reason' => $exception->getMessage(),
+                ]),
                 422,
             );
         }
 
         if (strlen($json) > self::MAX_BYTES) {
-            throw new Failure('Der Wert von "' . $key . '" ist zu groß.', 422);
+            throw new Failure(t('Der Wert von ":key" ist zu groß.', ['key' => $key]), 422);
         }
 
         return $json;
@@ -148,7 +153,10 @@ final class DatabaseSettingsStore implements SettingsStoreInterface
             return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $exception) {
             throw new Failure(
-                'Der gespeicherte Wert von "' . $key . '" ist beschädigt: ' . $exception->getMessage(),
+                t('Der gespeicherte Wert von ":key" ist beschädigt: :reason', [
+                    'key'    => $key,
+                    'reason' => $exception->getMessage(),
+                ]),
                 500,
             );
         }

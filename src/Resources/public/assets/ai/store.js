@@ -26,10 +26,31 @@ export const write = (key, value) => {
     );
   }
 };
+/*
+ * The session store, for the one thing that is true of this browser now rather
+ * than of this person always: whether Ollama answered. It belongs beside the
+ * other keys because this is the file that knows where things are kept, and in
+ * the session rather than local store because "now" ends when the tab does.
+ */
+export const readSession = (key, fallback) => {
+  try {
+    return JSON.parse(sessionStorage.getItem(key)) ?? fallback;
+  } catch {
+    return fallback;
+  }
+};
+export const writeSession = (key, value) => {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // A blocked or full session store costs one question per page and nothing else.
+  }
+};
 export function storageFor(root) {
   const prefix = `nafinity:ai:${root.dataset.user}`;
   const project = `${prefix}:project:${root.dataset.project || '0'}`;
   return {
+    reach: `${prefix}:reachable`,
     config: `${prefix}:config`,
     memory: `${project}:memory`,
     messages: `${project}:messages`,

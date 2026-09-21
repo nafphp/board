@@ -1,11 +1,29 @@
 <?php
 
+/**
+ * The language of the top bar.
+ *
+ * The control is the application's own select, so the list opens in the page
+ * instead of in the platform's menu and looks like every other select here. The
+ * native control it covers stays underneath and carries the form value. The open
+ * list fits its entries: a top bar has no room for a form field's width.
+ *
+ * @var array  $preferences
+ * @var string $token
+ */
+
 use Naf\Board\Support\Locales;
 
+use function Naf\Board\choice;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
 
+$languages = Locales::available();
+$flags     = [];
+foreach ($languages as $code => $name) {
+    $flags[$code] = ['mark' => Locales::flag($code)];
+}
 ?>
 <form
     class="language-picker"
@@ -14,13 +32,15 @@ use function Naf\View\s;
     data-language-picker
 >
     <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-    <label class="sr-only" for="locale-picker"><?= s(t('Sprache wählen')) ?></label>
-    <span class="language-flag" aria-hidden="true"><?= Locales::flag($preferences['locale']) ?></span>
-    <select id="locale-picker" name="locale">
-        <?php foreach (Locales::available() as $code => $name): ?>
-            <option value="<?= s($code) ?>" <?= $preferences['locale'] === $code ? 'selected' : '' ?>><?= Locales::flag($code) ?> <?= s($name) ?></option>
-        <?php endforeach ?>
-    </select>
-    <span class="language-name" aria-hidden="true"><?= s(Locales::name($preferences['locale'])) ?></span>
+    <?= choice([
+        'name'        => 'locale',
+        'label'       => 'Sprache wählen',
+        'value'       => $preferences['locale'],
+        'options'     => $languages,
+        'optionData'  => $flags,
+        'id'          => 'locale-picker',
+        'searchLabel' => 'Sprachen suchen',
+        'width'       => 'fit',
+    ]) ?>
     <noscript><button class="button subtle"><?= s(t('Wechseln')) ?></button></noscript>
 </form>

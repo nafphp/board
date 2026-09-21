@@ -1,0 +1,44 @@
+{
+  "plugins": {
+    "naf/auth": {
+      "booted": true,
+      "path": "/var/labs/minimal/vendor/composer/../naf/auth/bootstrap.php"
+    },
+    "naf/cli": {
+      "booted": true,
+      "path": "/var/labs/minimal/vendor/composer/../naf/cli/bootstrap.php"
+    },
+    "naf/database": {
+      "booted": true,
+      "path": "/var/labs/minimal/vendor/composer/../naf/database/bootstrap.php"
+    },
+    "naf/form": {
+      "booted": true,
+      "path": "/var/labs/minimal/vendor/composer/../naf/form/bootstrap.php"
+    },
+    "naf/orm": {
+      "booted": true,
+      "path": "/var/labs/minimal/vendor/composer/../naf/orm/bootstrap.php"
+    },
+    "naf/session": {
+      "booted": true,
+      "path": "/var/labs/minimal/vendor/composer/../naf/session/bootstrap.php"
+    },
+    "naf/view": {
+      "booted": true,
+      "path": "/var/labs/minimal/vendor/composer/../naf/view/bootstrap.php"
+    }
+  },
+  "commands": [
+    "command:list",
+    "route:debug",
+    "db:migrate",
+    "db:migration:create"
+  ],
+  "migrations": [
+    "/var/nafphp/session/src/Migrations"
+  ],
+  "pdo_bound": true,
+  "pdo_driver": "sqlite",
+  "routes": []
+}

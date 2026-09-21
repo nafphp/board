@@ -9,6 +9,7 @@ use Naf\Board\Support\Mentions;
 use Naf\Board\Support\RichText;
 use Naf\Board\Support\TicketSlotContext;
 
+use function Naf\Board\extensions;
 use function Naf\Board\partial;
 use function Naf\Board\slot;
 use function Naf\Board\template;
@@ -42,9 +43,19 @@ $token         = csrf()->token();
 $members       = Mentions::members($members);
 $memberNames   = array_column($members, 'name', 'id');
 $memberHandles = array_column($members, 'handle', 'id');
-$priorities    = ['low' => t('Niedrig'), 'normal' => t('Normal'), 'high' => t('Hoch'), 'urgent' => t('Dringend')];
-$empty         = '<span class="muted">' . s(t('Nicht festgelegt')) . '</span>';
-$field         = static function (string $name, string $label, string $type, mixed $value, string $display, array $options = [], array $extra = []) use ($ticket, $board, $token, $params, $editable, $isNew): string {
+$priorities    = extensions()->priorities()->options();
+/*
+ * A ticket keeps the priority it was given even after whoever declared it is
+ * uninstalled. Such a value joins the list under its own id: it has no label,
+ * because nothing here can interpret it, but leaving it out would drop it from
+ * the select -- and then the next save would quietly replace it with whatever
+ * the browser preselected.
+ */
+if (!isset($priorities[$ticket['priority']])) {
+    $priorities[$ticket['priority']] = $ticket['priority'];
+}
+$empty = '<span class="muted">' . s(t('Nicht festgelegt')) . '</span>';
+$field = static function (string $name, string $label, string $type, mixed $value, string $display, array $options = [], array $extra = []) use ($ticket, $board, $token, $params, $editable, $isNew): string {
     return partial('ticket/field', [
         'name'    => $name, 'label' => $label, 'type' => $type, 'value' => $value,
         'display' => $display, 'options' => $options, 'editable' => $editable,

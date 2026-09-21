@@ -4,6 +4,24 @@ import { csrf, toast } from './app.js';
 import { celebrate } from './fireworks.js';
 
 const board = document.querySelector('#board');
+/*
+ * Where this board was read from, kept because the address does not stay put:
+ * opening a ticket in the drawer rewrites it to the ticket's, and creating one
+ * rewrites it again. Refetching `location.href` after that fetches the ticket.
+ * The query string is part of it, so whatever is filtered stays filtered.
+ */
+const boardUrl = board ? location.href : null;
+/*
+ * The same board, answered as data: placement and counts as JSON, each card as
+ * the markup the page would have drawn.
+ *
+ * The path comes from the server, because a route is the server's to know -- and
+ * because this page is not always at the board's own address: a ticket opened
+ * from a link renders the board too, and deriving the path from the address
+ * would ask for the cards of a ticket. The query string is the browser's, since
+ * that is the filter the person is looking at.
+ */
+const cardsUrl = board?.dataset.cards ? board.dataset.cards + new URL(boardUrl).search : null;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const spring = 'cubic-bezier(.2,1.1,.3,1)';
 // Cards making room glide without overshoot: they are rearranged over and over during a drag,
@@ -169,6 +187,15 @@ function targetCell(x, y) {
 
 const flights = new WeakMap();
 
+/*
+ * How long cards take to glide to where they now belong.
+ *
+ * Named because the stylesheet waits exactly this long before letting a card
+ * that arrived from somebody else's change appear: the room is made first, and
+ * it arrives into the space rather than being there before anybody saw it come.
+ */
+const roomMade = 190;
+
 // First/Last/Invert/Play so neighbouring cards glide instead of jumping.
 function flip(nodes, mutate) {
   if (reducedMotion.matches) {
@@ -180,6 +207,10 @@ function flip(nodes, mutate) {
   const before = new Map(targets.map((node) => [node, node.getBoundingClientRect()]));
   mutate();
   for (const node of targets) {
+    // The mutation may have taken it out -- an empty-cell hint the last card
+    // just displaced, say. A rect of nothing is zeros, and animating to them
+    // would fling a node that is already gone.
+    if (!node.isConnected) continue;
     const first = before.get(node);
     // Read past any running glide: where the card belongs now, not where it currently shows.
     const last = layoutBox(node);
@@ -197,7 +228,7 @@ function flip(nodes, mutate) {
     flights.set(node, {
       animation: node.animate(
         [{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }],
-        { duration: 190, easing: glide },
+        { duration: roomMade, easing: glide },
       ),
       top: last.top,
       left: last.left,
@@ -417,7 +448,37 @@ function revert(card, cell, index) {
   syncCounts();
 }
 
+/*
+ * A move in progress, from the moment the card is let go until the server has
+ * answered.
+ *
+ * For those few hundred milliseconds the board is in two minds: the card is
+ * still where it was, a ghost of it is flying to where it is going, and the
+ * server -- which committed the move the instant it was asked -- has already
+ * told every listening page about it. An update landing in that window replaces
+ * the card in its new cell, and then the landing puts the old node back beside
+ * it. Two of the same card, which is exactly what it looked like.
+ *
+ * So an update that arrives mid-flight waits. Not skipped: remembered, and run
+ * once the card is down, because whatever else it carried is still news.
+ */
+let moving = 0;
+let awaited = false;
+
 async function commit(cell) {
+  moving += 1;
+  try {
+    await land(cell);
+  } finally {
+    moving -= 1;
+    if (!moving && awaited) {
+      awaited = false;
+      refreshBoard();
+    }
+  }
+}
+
+async function land(cell) {
   const card = drag.card;
   const slot = drag.slot;
   const ghost = drag.ghost;
@@ -575,19 +636,6 @@ if (board) {
     });
   });
 
-  if (!reducedMotion.matches) {
-    for (const cell of board.querySelectorAll('.board-cell')) {
-      const column = [...cell.parentElement.children].indexOf(cell);
-      cardsIn(cell).forEach((card, row) => {
-        card.style.setProperty('--enter-delay', Math.min(520, column * 45 + row * 55) + 'ms');
-        card.dataset.enter = '';
-      });
-    }
-    board.addEventListener('animationend', (event) => {
-      if (event.animationName === 'card-enter') delete event.target.dataset.enter;
-    });
-  }
-
   // A move through the dialog reloads the page, so the celebration is picked up afterwards.
   const pending = sessionStorage.getItem('nafinity.celebrate');
   if (pending) {
@@ -596,6 +644,231 @@ if (board) {
     if (card) setTimeout(() => celebrate(card), 480);
   }
 }
+
+/*
+ * One card's markup into a node, using the same parser the browser would.
+ *
+ * The server renders every card from one template, so what arrives here is the
+ * card the page would have drawn -- including the extension slots on it, which
+ * only exist in PHP.
+ */
+function asCard(markup) {
+  const shell = document.createElement('template');
+  shell.innerHTML = markup.trim();
+
+  return shell.content.querySelector('.ticket-card');
+}
+
+/**
+ * A card leaving: it fades where it stands, and only then do the cards below it
+ * close the gap. Taking it out first and fading nothing would be the same jump
+ * in the other direction.
+ */
+function dismiss(card) {
+  const cell = card.parentElement;
+  const close = () => {
+    flip(cell ? cardsIn(cell).filter((node) => node !== card) : [], () => {
+      card.remove();
+      if (cell) emptyHint(cell);
+    });
+  };
+
+  if (reducedMotion.matches) {
+    close();
+
+    return;
+  }
+  card
+    .animate([{ opacity: 1 }, { opacity: 0, transform: 'translateY(-6px) scale(.97)' }], {
+      duration: 200,
+      easing: glide,
+      fill: 'forwards',
+    })
+    .finished.then(close);
+}
+
+/*
+ * Bring the board up to date without redrawing it.
+ *
+ * Only what actually differs is touched: a card that has not changed is never
+ * re-rendered, never re-inserted and never re-animated. That is not thrift, it
+ * is the difference between a board that quietly gains a card and one that
+ * blanks out and fades back in around you -- and a node that stays put keeps its
+ * place, its focus and the drag the pointer may be in the middle of.
+ *
+ * A card that is new to this page is the only thing that moves, and it says so
+ * once. The numbers above the board are recounted from what is on screen
+ * afterwards, by the same function a drag uses, because two ways of counting the
+ * same cards is one way too many.
+ */
+function applyBoard(data) {
+  const present = new Map();
+  for (const node of board.querySelectorAll('.ticket-card')) present.set(node.dataset.ticket, node);
+
+  const arrived = [];
+  const cells = new Set();
+  let structural = false;
+
+  /*
+   * Everything on the board that has a position of its own, not only the cards.
+   *
+   * A card arriving makes its cell taller, which makes its lane taller, which
+   * moves the lane below -- headings, empty-cell hints and all. Gliding only the
+   * cards left the rest to snap to the new layout at once, so for the length of
+   * the glide a lane's first card sat ninety pixels above its own heading and
+   * then caught up. That is what the flicker was: not a card appearing, a lane
+   * coming apart and back together.
+   *
+   * Nothing here is inside anything else here, so no node carries another's
+   * transform. A block that does not move costs a measurement and animates
+   * nothing.
+   */
+  flip([...board.querySelectorAll('.ticket-card, .empty-cell, .lane-heading')], () => {
+    for (const [key, ids] of Object.entries(data.cells)) {
+      const [column, lane] = key.split(':');
+      const cell = board.querySelector(`.board-cell[data-column="${column}"][data-lane="${lane}"]`);
+      /*
+       * A column or swimlane that did not exist when this page was drawn. Nothing
+       * here can invent one, and quietly dropping the cards would leave a board
+       * that disagrees with its own counts -- so the page says so and offers the
+       * reload that fixes it.
+       */
+      if (!cell) {
+        structural = true;
+        continue;
+      }
+      cells.add(cell);
+
+      const wanted = [];
+      for (const id of ids) {
+        const markup = data.cards[id];
+        let node = present.get(id);
+        present.delete(id);
+
+        if (!node && markup) {
+          node = asCard(markup);
+          if (node) {
+            // Marked before it is put in, so it is invisible for as long as the
+            // room for it is being made. Nothing announces itself to somebody who
+            // asked for less motion.
+            if (!reducedMotion.matches) node.dataset.arrived = '';
+            arrived.push(node);
+          }
+        } else if (node && markup) {
+          // The version is the ticket's own, so this asks whether the card
+          // changed rather than whether its markup happens to differ.
+          const fresh = asCard(markup);
+          if (fresh && fresh.dataset.version !== node.dataset.version) {
+            node.replaceWith(fresh);
+            node = fresh;
+          }
+        }
+        if (node) wanted.push(node);
+      }
+
+      wanted.forEach((node, index) => {
+        const here = cardsIn(cell)[index];
+        if (here !== node) cell.insertBefore(node, here ?? null);
+      });
+    }
+
+    for (const cell of cells) emptyHint(cell);
+  });
+
+  // Whatever the board no longer names: moved out of sight by a filter, moved
+  // to a cell this page does not have, or gone. Each fades where it stands and
+  // the gap closes behind it.
+  for (const node of present.values()) dismiss(node);
+
+  syncCounts();
+  board.dataset.revision = String(data.revision ?? board.dataset.revision);
+  const total = document.querySelector('.board-meta strong');
+  if (total) total.textContent = String(data.total ?? total.textContent);
+
+  const banner = document.querySelector('#board-update');
+  if (banner) banner.hidden = !structural;
+
+  if (arrived.length || structural) {
+    document.dispatchEvent(
+      new CustomEvent('nafinity:fragment-updated', { detail: { node: board } }),
+    );
+  }
+}
+
+/*
+ * The board as data, with its cards already rendered.
+ *
+ * The address is the one this board was read from, query string and all, so
+ * whatever is filtered stays filtered -- a new ticket that does not match simply
+ * does not show up, which is the truthful answer.
+ */
+async function refreshBoard() {
+  if (!board || !cardsUrl) return;
+  // A card in flight is a card this page is in the middle of being right about.
+  if (moving || drag.started) {
+    awaited = true;
+
+    return;
+  }
+  const response = await fetch(cardsUrl, { headers: { Accept: 'application/json' } }).catch(
+    () => null,
+  );
+  if (!response?.ok || response.redirected) return;
+
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    return;
+  }
+  if (!data?.cells || !data?.cards) return;
+
+  applyBoard(data);
+}
+// Said once. Leaving the mark on would replay the arrival the next time anything
+// on this card is animated, and leave an outline on a card that is no longer new.
+board?.addEventListener('animationend', (event) => {
+  if (event.animationName === 'card-lit') delete event.target.dataset.arrived;
+});
+
+document.addEventListener('nafinity:board-changed', () => {
+  refreshBoard();
+});
+
+/*
+ * Somebody else changed something.
+ *
+ * The message carries a revision and nothing else, so the only question worth
+ * asking is whether it is newer than what is on screen. It usually is not: the
+ * message about your own change arrives right after you made it, and refetching
+ * for that would undo the card that just animated in.
+ */
+document.addEventListener('naf:websocket-message', (event) => {
+  const message = event.detail;
+  if (!board || message?.channel !== `project:${board.dataset.project}`) return;
+  if (Number(message.revision) <= Number(board.dataset.revision)) return;
+
+  refreshBoard();
+});
+
+/*
+ * Back after a gap.
+ *
+ * A message is only sent when something happens, so nothing will re-announce
+ * what changed while the connection was down -- the board would sit there, out
+ * of date and convinced it was current, until the next person touched it. So it
+ * asks once, on reconnect. Not on the first connection of a page that was just
+ * rendered, which is already as current as asking would make it.
+ */
+let dropped = false;
+document.addEventListener('naf:websocket-closed', () => {
+  dropped = true;
+});
+document.addEventListener('naf:websocket-open', () => {
+  if (!dropped) return;
+  dropped = false;
+  refreshBoard();
+});
 
 if (board && board.dataset.filtered === '0') {
   board.addEventListener('pointerdown', onDown);

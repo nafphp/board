@@ -1,0 +1,151 @@
+<?php
+
+/**
+ * The project's own head: who it is, and which of its views is showing.
+ *
+ * Every project view renders this, so what stays put when you switch views is
+ * the project itself. Leaving it out is what made the settings feel like a
+ * different place rather than another side of the same one.
+ *
+ * @var array       $project
+ * @var object      $scope
+ * @var array       $members
+ * @var int         $total   tickets on the board, shown beside the board tab
+ * @var string      $view    board, activity or settings
+ * @var string|null $actions markup for the right of the heading, rendered first
+ */
+
+use Naf\Board\Support\Icon;
+use Naf\Board\Support\LiveConnection;
+use Naf\Board\Support\Version;
+
+use function Naf\Board\extensions;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$projectId = (int) $project['id'];
+$actions ??= '';
+$canWrite = $scope->allows('write');
+$views    = [
+    'board'    => [t('Board'), 'view_kanban', route('board', ['project' => $projectId])],
+    'activity' => [t('Aktivität'), 'history', route('project.activity', ['project' => $projectId])],
+    'settings' => [t('Einstellungen'), 'settings', route('project.settings', ['project' => $projectId])],
+];
+?>
+<section class="page-heading">
+    <div>
+        <div class="heading-kicker">
+            <span class="project-symbol large" style="--project-color: <?= s($project['color']) ?>">
+                <?= s($project['icon']) ?>
+            </span>
+            <span><?= s(t('PROJEKTWORKSPACE')) ?></span>
+            <?php if ($project['archived_at']): ?>
+                <span class="pill"><?= s(t('Archiviert')) ?></span>
+            <?php endif ?>
+        </div>
+        <h1><?= s($project['name']) ?></h1>
+        <p><?= s($project['description']) ?></p>
+    </div>
+    <div class="heading-actions">
+        <?= $actions ?>
+        <div class="avatar-stack">
+            <?php foreach (array_slice($members, 0, 4) as $member): ?>
+                <span class="avatar avatar-small" title="<?= s($member['name']) ?>"><?= s(mb_substr($member['name'], 0, 1)) ?></span>
+            <?php endforeach ?>
+        </div>
+        <?php
+        /*
+         * One entry per registered format, which is why this loop exists rather
+         * than two links: a plugin that adds a format is offered here by adding
+         * it, and a format that is offered here has an endpoint, because both
+         * read the same registry.
+         *
+         * Hidden entirely for somebody without the permission -- a menu of
+         * downloads that all answer 403 is worse than no menu.
+         */
+        $exporters = $scope->allows('export') ? extensions()->exporters()->all() : [];
+?>
+        <?php if ($exporters !== []): ?>
+            <details class="export-menu">
+                <summary class="button subtle" title="<?= s(t('Tickets exportieren')) ?>">
+                    <?= Icon::mark('download', 'sm') ?>
+                    <span><?= s(t('Export')) ?></span>
+                </summary>
+                <div class="export-menu-list">
+                    <?php foreach ($exporters as $exporter): ?>
+                        <a
+                            href="<?= s(route('project.export', [
+                                'project' => $projectId,
+                                'format'  => $exporter->id,
+                            ])) ?>"
+                            download
+                        ><?= s(t($exporter->label)) ?><small><?= s('.' . $exporter->extension) ?></small></a>
+                    <?php endforeach ?>
+                </div>
+            </details>
+        <?php endif ?>
+        <?php if ($canWrite): ?>
+            <a
+                class="button primary"
+                data-ticket-link
+                data-ticket-create-link
+                href="<?= s(route('ticket.new', ['project' => $projectId])) ?>"
+            ><?= s(t('+ Neues Ticket')) ?></a>
+        <?php endif ?>
+    </div>
+</section>
+<nav class="tabs" aria-label="<?= s(t('Projektansichten')) ?>">
+    <?php // Every view is offered to everyone who may open the project: the
+          // settings page shows a viewer what their role means and hides the
+          // rest by permission, so the tab is not the place to decide that.?>
+    <?php foreach ($views as $key => [$label, $icon, $url]): ?>
+        <a
+            class="<?= $key === $view ? 'active' : '' ?>"
+            href="<?= s($url) ?>"
+            <?= $key === $view ? 'aria-current="page"' : '' ?>
+        >
+            <?= Icon::mark($icon) ?>
+            <?= s($label) ?>
+            <?php if ($key === 'board'): ?>
+                <span><?= (int) $total ?></span>
+            <?php endif ?>
+        </a>
+    <?php endforeach ?>
+    <div class="tabs-spacer"></div>
+    <?php
+    /*
+     * What this corner is worth saying. It used to repeat the role, which stands
+     * beside the person's own name in the sidebar anyway; what nothing else on
+     * the page says is which build this is and whether it is still hearing the
+     * server -- the two things you want before you believe what a board shows.
+     *
+     * The wording is passed in rather than written into the module: a status
+     * that changes in the browser still has its text translated on the server.
+     */
+    $version = Version::current();
+?>
+    <div class="status-strip">
+        <?php if ($version !== ''): ?>
+            <span class="pill" title="<?= s(t('Installierte Version von naf/board')) ?>">
+                <?= s('v' . $version) ?>
+            </span>
+        <?php endif ?>
+        <?php if (LiveConnection::wanted()): ?>
+            <span
+                class="pill live-status"
+                data-live-status="waiting"
+                data-live-on="<?= s(t('Live-Verbindung steht')) ?>"
+                data-live-off="<?= s(t('Keine Live-Verbindung -- Änderungen anderer kommen erst beim Neuladen an')) ?>"
+                data-live-gone="<?= s(t('Live-Verbindung beendet -- die Seite neu laden')) ?>"
+                data-live-waiting="<?= s(t('Live-Verbindung wird aufgebaut')) ?>"
+                title="<?= s(t('Live-Verbindung wird aufgebaut')) ?>"
+                role="status"
+            >
+                <span class="live-dot" aria-hidden="true"></span>
+                <span aria-hidden="true"><?= s(t('Live')) ?></span>
+                <span class="sr-only" data-live-text><?= s(t('Live-Verbindung wird aufgebaut')) ?></span>
+            </span>
+        <?php endif ?>
+    </div>
+</nav>

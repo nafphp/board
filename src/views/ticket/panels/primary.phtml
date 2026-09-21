@@ -39,6 +39,22 @@ use function Naf\View\s;
                     </button>
                     <div class="form-errors" role="alert"></div>
                 </form>
+                <?php if ($slot->scope->allows('delete')): ?>
+                    <form method="post" data-ticket-form data-leaves-page action="<?= s(route('ticket.delete', $slot->params)) ?>">
+                        <input type="hidden" name="_csrf" value="<?= s($slot->token) ?>" />
+                        <input type="hidden" name="version" value="<?= (int) $slot->ticket['version'] ?>" />
+                        <button
+                            class="danger"
+                            data-confirm="<?= s(t('Ticket endgültig löschen?')) ?>"
+                            data-confirm-detail="<?= s(t('Kommentare, Anhänge, Verknüpfungen und erfasste Zeit gehen mit. Das Protokoll behält den Vorgang.')) ?>"
+                            data-confirm-yes="<?= s(t('Löschen')) ?>"
+                        >
+                            <?= Icon::mark('delete', 'sm') ?>
+                            <?= s(t('Ticket löschen')) ?>
+                        </button>
+                        <div class="form-errors" role="alert"></div>
+                    </form>
+                <?php endif ?>
                 <?php if ($targets): ?>
                     <details class="menu-move">
                         <summary><?= Icon::mark('drive_file_move', 'sm') ?><?= s(t('In ein anderes Projekt verschieben')) ?></summary>
@@ -82,6 +98,26 @@ use function Naf\View\s;
     <?= $slot->field->render('column_id', 'Spalte', 'select', $slot->ticket['column_id'], '<span class="column-value">' . s(array_column($slot->columns, 'name', 'id')[$slot->ticket['column_id']]) . '' . Icon::mark('expand_more', 'sm') . '</span>', array_column($slot->columns, 'name', 'id'), ['action' => route('ticket.move', $slot->params), 'hidden' => ['swimlane_id' => $slot->ticket['swimlane_id']]]) ?>
     <div class="meta-caption"><?= s(t('Verantwortliche')) ?></div>
     <?= $slot->field->render('assignee_ids', 'Verantwortliche', 'multiple', $selected_assignees, $assigneeDisplay ?: '<span class="muted">' . s(t('Nicht zugewiesen')) . '</span>', $memberNames) ?>
+    <?php
+    /*
+     * The assignment people make most often, as one click.
+     *
+     * It ticks their own box in the field above and lets that field save itself
+     * -- there is no second route to the server here, so the shortcut cannot
+     * come to a different conclusion than the picker beside it.
+     *
+     * Only for somebody the board already knows: a person who is not a member
+     * cannot hold a ticket, and offering it would be a promise the endpoint
+     * breaks. It is gone once they hold it, because then it would do nothing.
+     */
+    $me = (int) $slot->scope->userId;
+$mine   = in_array($me, array_map('intval', $selected_assignees), true);
+?>
+    <?php if ($slot->editable && !$mine && isset($memberNames[$me])): ?>
+        <button type="button" class="text-button assign-self" data-assign-self="<?= $me ?>">
+            <?= Icon::mark('person_add', 'sm') ?> <?= s(t('Mir zuweisen')) ?>
+        </button>
+    <?php endif ?>
 <?php foreach ($slot->fieldsIn('primary') as $metaKey => $metaField): ?>
     <?= partial('ticket/metadata', [
         'definition' => $metaField,

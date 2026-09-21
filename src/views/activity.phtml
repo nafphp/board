@@ -1,9 +1,8 @@
 <?php
 
-use Naf\Board\Support\ActivityLabel;
 use Naf\Board\Support\Format;
-use Naf\Board\Support\Icon;
 
+use function Naf\Board\partial;
 use function Naf\Board\slot;
 use function Naf\Board\template;
 use function Naf\I18n\t;
@@ -13,36 +12,33 @@ use function Naf\View\s;
 $this->setLayout(template('layout'));
 $this->block('content');
 ?>
-<section class="page-heading">
-    <div>
-        <span class="eyebrow"><?= s(t('PROJEKTVERLAUF')) ?></span>
-        <h1><?= s(t('Aktivität')) ?></h1>
-        <p>
-            <?= count($activity) >= 100
-                ? s(t('Die letzten 100 Einträge'))
-                : s(Format::count(count($activity), 'Eintrag', 'Einträge')) ?>
-        </p>
-    </div>
-    <?= slot('activity.actions', $uiContext) ?>
-    <a class="button subtle" href="<?= s(route('board', ['project' => $project['id']])) ?>"><?= Icon::mark('arrow_back', 'sm') ?> Zum Board</a>
-</section>
+<?= partial('project/header', [
+    'project' => $project,
+    'scope'   => $scope,
+    'members' => $members,
+    'total'   => $total,
+    'view'    => 'activity',
+    'actions' => slot('activity.actions', $uiContext),
+]) ?>
+<p class="muted small">
+    <?= count($activity) >= 100
+        ? s(t('Die letzten 100 Einträge'))
+        : s(Format::count(count($activity), 'Eintrag', 'Einträge')) ?>
+</p>
 <section class="settings-card preferences-card">
-    <ol class="activity-list">
+    <ol
+        class="activity-list"
+        data-activity
+        data-project="<?= (int) $project['id'] ?>"
+        data-entries="<?= s(route('project.activity.entries', ['project' => $project['id']])) ?>"
+        data-latest="<?= (int) ($activity[0]['id'] ?? 0) ?>"
+    >
         <?php foreach ($activity as $item): ?>
-            <li>
-                <span class="activity-dot"></span>
-                <div>
-                    <strong><?= s($item['actor_name']) ?></strong>
-                    <p>
-                        <?= s(ActivityLabel::for($item['event_type'])) ?>
-                        <?php if ($item['ticket_id']): ?>
-                            ·
-                            <a href="<?= s(route('ticket', ['project' => $project['id'], 'ticket' => Format::ticket($project['ticket_key'], $item['ticket_number'])])) ?>"><?= s(Format::ticket($project['ticket_key'], $item['ticket_number'])) ?></a>
-                        <?php endif ?>
-                    </p>
-                    <time><?= s(Format::dateTime($item['created_at'], $preferences)) ?></time>
-                </div>
-            </li>
+            <?= partial('activity/entry', [
+                'item'        => $item,
+                'project'     => $project,
+                'preferences' => $preferences,
+            ]) ?>
         <?php endforeach ?>
     </ol>
 </section>

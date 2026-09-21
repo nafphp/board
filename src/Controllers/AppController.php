@@ -20,7 +20,13 @@ use Naf\Board\Contracts\RoleServiceInterface;
 use Naf\Board\Contracts\TicketServiceInterface;
 use Naf\Board\Contracts\TimerServiceInterface;
 use Naf\Board\Domain\Failure;
+use Naf\Board\Rbac\Installation;
+use Naf\Board\Services\AuditLog;
+use Naf\Board\Services\ExportService;
+use Naf\Board\Support\CardContext;
 use Naf\Board\Support\Input;
+use Naf\Board\Support\LiveConnection;
+use Naf\Board\Support\UiContext;
 use Naf\RateLimit\PdoLimiter;
 use Naf\Session\Core\Session;
 use Nyholm\Psr7\Stream;
@@ -29,12 +35,16 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UploadedFileInterface;
 
 use function Naf\Board\extensions;
+use function Naf\Board\partial;
 use function Naf\Board\template;
 use function Naf\config;
 use function Naf\Form\csrf;
+use function Naf\I18n\t;
 use function Naf\json;
+use function Naf\Rbac\rbac;
 use function Naf\redirect;
 use function Naf\request;
+use function Naf\route;
 use function Naf\View\render;
 
 /** @internal */
@@ -57,6 +67,8 @@ final class AppController
         private AccountServiceInterface $accounts,
         private Session $session,
         private PageRendererInterface $pages,
+        private AuditLog $audit,
+        private ExportService $exports,
     ) {
     }
 
@@ -194,6 +206,34 @@ final class AppController
         });
     }
 
+    /**
+     * What holds for the whole installation, for whoever may change it.
+     *
+     * Gated here rather than by hiding the cards: a page that refuses is a
+     * page somebody can be sent a link to and understand. The permission is
+     * asked of naf/rbac directly, because the board's own scope object answers
+     * for a project and this page belongs to none.
+     */
+    public function installation(): ResponseInterface
+    {
+        return $this->read(function () {
+            $actor = $this->access->actor();
+
+            if (!rbac()->allows($actor, Installation::MANAGE_SETTINGS)) {
+                throw new Failure(t('Diese Seite ist Administratoren vorbehalten.'), 403);
+            }
+
+            return $this->page('settings', [
+                'title'   => 'Installation',
+                'eyebrow' => 'DIESE INSTALLATION',
+                'heading' => 'Installation',
+                'lede'    => 'Gilt für alle Projekte und alle Mitglieder.',
+                'scopes'  => ['application'],
+                'return'  => '/settings',
+            ]);
+        });
+    }
+
     public function settings(string $project): ResponseInterface
     {
         return $this->read(function () use ($project) {
@@ -221,6 +261,182 @@ final class AppController
                 'activity' => $this->query->activity(Input::id($project)),
             ]),
         );
+    }
+
+    /**
+     * The board as data, with its cards already rendered.
+     *
+     * Placement is JSON because the client owns it: which cell a card sits in,
+     * what the counters say, which revision this is. The card itself is HTML
+     * because the server owns that -- the five extension slots on a card are
+     * PHP, and so are the registries behind a priority symbol or an estimate.
+     * Rendering a card in the browser would mean a second implementation of all
+     * of it, and a card that means something different depending on how it
+     * arrived.
+     *
+     * The query string comes along, so a board that is filtered answers
+     * filtered: a live update cannot smuggle in a card the filter excludes.
+     */
+    public function boardCards(string $project): ResponseInterface
+    {
+        return $this->read(function () use ($project) {
+            $id    = Input::id($project);
+            $board = $this->query->board($id, request()->getQueryParams());
+
+            $context = CardContext::build([
+                ...$board,
+                'uiContext' => new UiContext(
+                    (int) $this->auth->id(),
+                    $board['scope'],
+                    UiContext::MODE_PAGE,
+                    route()->current(),
+                ),
+                'token' => csrf()->token(),
+            ]);
+
+            $cells   = [];
+            $cards   = [];
+            $columns = [];
+            $lanes   = [];
+            foreach ($board['cards'] as $card) {
+                $cells[$card['column_id'] . ':' . $card['swimlane_id']][] = (string) $card['id'];
+                $cards[(string) $card['id']]                              = partial(
+                    'board/card',
+                    ['card' => $card, 'board' => $context],
+                );
+
+                $column                     = (string) $card['column_id'];
+                $columns[$column]['count']  = ($columns[$column]['count'] ?? 0) + 1;
+                $columns[$column]['points'] = ($columns[$column]['points'] ?? 0)
+                    + (int) $card['estimate_points'];
+                $lane         = (string) $card['swimlane_id'];
+                $lanes[$lane] = ($lanes[$lane] ?? 0) + 1;
+            }
+
+            return json([
+                'revision' => (string) $board['board']['revision'],
+                'total'    => (int) $board['total'],
+                'limited'  => (int) $board['total'] > CardContext::LIMIT,
+                'cells'    => $cells,
+                'cards'    => $cards,
+                'columns'  => $columns,
+                'lanes'    => $lanes,
+            ]);
+        });
+    }
+
+    /**
+     * Another token for this board, for a browser whose last one has expired.
+     *
+     * A token is short-lived on purpose -- it rides in a query string, and query
+     * strings end up in logs -- so a connection dropped for longer than that
+     * cannot come back with the one the page was rendered with. This is where it
+     * asks for the next one, and the answer goes through the same membership
+     * check as the board itself: somebody who has lost access quietly stops
+     * being given tokens, and the socket they hold carries nothing anyway.
+     *
+     * An installation with no server answers without a token. That is not an
+     * error either; it is how the client is told to stop asking.
+     */
+    /**
+     * What has happened here since the page was drawn, already rendered.
+     *
+     * The socket says a board changed and nothing more, so a page watching the
+     * history asks the same way the board does: through its own authorised path,
+     * naming the last entry it holds. Answering "everything newer than this"
+     * rather than "the newest fifty" means two people watching at once are not
+     * handed each other's duplicates.
+     */
+    /** Open an account for somebody else; the service decides whether you may. */
+    public function createAccount(): ResponseInterface
+    {
+        return $this->mutation(function ($data) {
+            $this->accounts->create($data);
+
+            return ['url' => route('installation.settings')];
+        });
+    }
+
+    /**
+     * The installation's own history.
+     *
+     * Its own page and its own right: what a board records is part of that
+     * board, but who changed a role, who was given an account and which switch
+     * was flipped belongs to nobody's board and has to be readable somewhere.
+     */
+    public function audit(): ResponseInterface
+    {
+        return $this->read(function () {
+            $actor = $this->access->actor();
+            if (!rbac()->allows($actor, Installation::VIEW_AUDIT)) {
+                throw new Failure(t('Für das Protokoll fehlt dir die Berechtigung.'), 403);
+            }
+
+            $query  = request()->getQueryParams();
+            $filter = [];
+            // An empty scope means the installation and is a real choice, so it
+            // is told apart from "no filter" by whether the parameter is there.
+            if (isset($query['scope']) && $query['scope'] !== 'alle') {
+                $filter['scope'] = (string) $query['scope'];
+            }
+            foreach (['actor', 'type', 'q'] as $key) {
+                if (!empty($query[$key])) {
+                    $filter[$key] = $query[$key];
+                }
+            }
+
+            $before = (int) ($query['before'] ?? 0);
+
+            // Reading the log and reading what happened to accounts are two
+            // questions, so they are asked separately.
+            $personal = rbac()->allows($actor, Installation::VIEW_PERSONAL_AUDIT);
+
+            return $this->page('audit', [
+                'title'   => 'Protokoll',
+                'entries' => $this->audit->entries($filter, $before, 100, $personal),
+                'scopes'  => $this->audit->scopes(),
+                'actors'  => $this->audit->actors(),
+                'types'   => $this->audit->types($personal),
+                'filter'  => $filter,
+                'chosen'  => [
+                    'scope' => $query['scope'] ?? 'alle',
+                    'actor' => (string) ($query['actor'] ?? ''),
+                    'type'  => (string) ($query['type'] ?? ''),
+                    'q'     => (string) ($query['q'] ?? ''),
+                ],
+            ]);
+        });
+    }
+
+    public function activityEntries(string $project): ResponseInterface
+    {
+        return $this->read(function () use ($project) {
+            $id          = Input::id($project);
+            $board       = $this->query->board($id);
+            $preferences = $this->query->preferences();
+            $after       = (int) (request()->getQueryParams()['after'] ?? 0);
+
+            $entries = [];
+            foreach ($this->query->activitySince($id, $after) as $item) {
+                $entries[(string) $item['id']] = partial('activity/entry', [
+                    'item'        => $item,
+                    'project'     => $board['project'],
+                    'preferences' => $preferences,
+                ]);
+            }
+
+            return json(['entries' => $entries]);
+        });
+    }
+
+    public function boardSocket(string $project): ResponseInterface
+    {
+        return $this->read(function () use ($project) {
+            $id = Input::id($project);
+            $this->access->project($id);
+
+            return json(LiveConnection::forProject($id) ?? ['live' => false]);
+        });
     }
 
     public function boardState(string $project): ResponseInterface
@@ -391,6 +607,22 @@ final class AppController
         });
     }
 
+    /**
+     * Remove a ticket for good.
+     *
+     * Answers with the board rather than the ticket, because the ticket is the
+     * one place the browser cannot be sent back to.
+     */
+    public function deleteTicket(string $project, string $ticket): ResponseInterface
+    {
+        return $this->mutation(function ($data) use ($project, $ticket) {
+            $projectId = Input::id($project);
+            $this->tickets->delete($projectId, $this->tickets->resolve($projectId, $ticket), $data);
+
+            return ['url' => route('board', ['project' => $projectId])];
+        });
+    }
+
     public function ticketState(string $project, string $ticket): ResponseInterface
     {
         return $this->mutation(function ($data) use ($project, $ticket) {
@@ -458,7 +690,7 @@ final class AppController
         return $this->mutation(function () use ($project, $ticket) {
             $file = request()->getUploadedFiles()['attachment'] ?? null;
             if (!($file instanceof UploadedFileInterface)) {
-                throw new Failure('Bitte wähle eine Datei.');
+                throw new Failure(t('Bitte wähle eine Datei.'));
             }
             $projectId = Input::id($project);
             $this->attachments->upload($projectId, $this->tickets->resolve($projectId, $ticket), $file);
@@ -481,6 +713,31 @@ final class AppController
             );
 
             return ['url' => \Naf\route('ticket', ['project' => $project, 'ticket' => $ticket])];
+        });
+    }
+
+    /**
+     * A board, in one of the registered formats.
+     *
+     * The format comes out of the URL and is looked up in the registry, so this
+     * method knows nothing about CSV or JSON and will keep knowing nothing about
+     * the third one. Everything it does here is turn a written stream into a
+     * download.
+     */
+    public function export(string $project, string $format): ResponseInterface
+    {
+        return $this->read(function () use ($project, $format) {
+            $file = $this->exports->write(Input::id($project), $format);
+
+            return \Naf\response()
+                ->withBody(Stream::create($file['stream']))
+                ->withHeader('Content-Type', $file['mime'])
+                ->withHeader(
+                    'Content-Disposition',
+                    'attachment; filename="' . $file['filename'] . '"',
+                )
+                ->withHeader('Cache-Control', 'private, no-store')
+                ->withHeader('X-Content-Type-Options', 'nosniff');
         });
     }
 

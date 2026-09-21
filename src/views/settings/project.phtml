@@ -1,5 +1,6 @@
 <?php
 use Naf\Board\Domain\Estimation;
+use Naf\Board\Domain\Placement;
 
 use function Naf\Board\extensions;
 use function Naf\Board\field;
@@ -55,27 +56,45 @@ if (!$knownScale) {
             'hint'    => 'Gilt für alle Tickets des Projekts. Nur eine Skala gleichzeitig; das Board summiert sie über jeder Spalte.',
             'choice'  => ['searchLabel' => 'Skalen suchen'],
         ]) ?>
+        <?= field([
+            'label'   => 'Neue Tickets',
+            'name'    => 'new_tickets',
+            'type'    => 'select',
+            'value'   => Placement::board($project['new_tickets'] ?? null),
+            'options' => array_map(t(...), Placement::forBoard()),
+            'hint'    => 'Wo ein neues Ticket in seiner Spalte landet. Gilt für alle, die nichts anderes für sich eingestellt haben.',
+        ]) ?>
         <?php if ($offScale): ?>
             <p class="settings-hint">
                 <?= s(t(':count Tickets tragen eine Schätzung, die diese Skala nicht anbietet. Sie bleiben erhalten und sind markiert.', ['count' => $offScale])) ?>
             </p>
         <?php endif ?>
         <div class="form-errors" role="alert"></div>
-        <button class="button primary">Projekt speichern</button>
-        <?php if ($offScale): ?>
-            <button class="button subtle" name="remap_estimates" value="1">
-                <?= s(t('Werte auf diese Skala abbilden')) ?>
-            </button>
-        <?php endif ?>
+        <div class="settings-actions">
+            <button class="button primary"><?= s(t('Projekt speichern')) ?></button>
+            <?php if ($offScale): ?>
+                <button class="button subtle" name="remap_estimates" value="1">
+                    <?= s(t('Werte auf diese Skala abbilden')) ?>
+                </button>
+            <?php endif ?>
+        </div>
     </fieldset>
 </form>
 <?php if ($scope->role === 'owner'): ?>
-    <hr />
-    <form method="post" data-enhanced action="<?= s(route('project.archive', ['project' => $projectId])) ?>">
-        <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-        <input type="hidden" name="action" value="<?= $project['archived_at'] ? 'restore' : 'archive' ?>" />
-        <p>Archivierte Projekte bleiben lesbar. Änderungen werden gesperrt.</p>
-        <div class="form-errors" role="alert"></div>
-        <button class="button subtle"><?= $project['archived_at'] ? t('Projekt wiederherstellen') : t('Projekt archivieren') ?></button>
-    </form>
+    <section class="settings-section">
+        <h3><?= s(t('Archiv')) ?></h3>
+        <form method="post" data-enhanced action="<?= s(route('project.archive', ['project' => $projectId])) ?>">
+            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+            <input type="hidden" name="action" value="<?= $project['archived_at'] ? 'restore' : 'archive' ?>" />
+            <p class="settings-hint">
+                <?= s(t('Archivierte Projekte bleiben lesbar. Änderungen werden gesperrt.')) ?>
+            </p>
+            <div class="form-errors" role="alert"></div>
+            <div class="settings-actions">
+                <button class="button subtle">
+                    <?= s($project['archived_at'] ? t('Projekt wiederherstellen') : t('Projekt archivieren')) ?>
+                </button>
+            </div>
+        </form>
+    </section>
 <?php endif ?>

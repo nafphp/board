@@ -17,10 +17,12 @@
  * @var string|null $placeholder search placeholder, defaults to $searchLabel
  * @var bool        $avatars     draw an initial in front of every entry
  * @var int         $searchFrom  option count from which the search field appears
- * @var array       $optionData  value => ['name' => 'value'] rendered as data-* on the option
+ * @var array       $optionData  value => ['name' => 'value'] rendered as data-* on the option;
+ *                               a `mark` is drawn as a symbol in front of the entry
  * @var array       $nativeData  ['name' => 'value'] rendered as data-* on the native control
  * @var string      $id          id of the native control
  * @var string      $class       extra classes on the wrapper
+ * @var string      $width       'fit' keeps the open list as narrow as its entries
  * @var bool        $required
  * @var bool        $disabled    leaves the native control in place, unenhanced
  */
@@ -47,6 +49,7 @@ foreach ($nativeData as $attribute => $content) {
 }
 $id ??= 'edit-' . $name;
 $class ??= '';
+$width ??= '';
 $required ??= false;
 $disabled ??= false;
 
@@ -60,6 +63,7 @@ $loop     = 0;
     data-choice-label="<?= s(t($label)) ?>"
     data-choice-empty="<?= s(t($empty)) ?>"
     data-choice-search="<?= (int) $searchFrom ?>"
+    <?= $width ? 'data-choice-width="' . s($width) . '"' : '' ?>
     <?= $avatars ? 'data-choice-avatars' : '' ?>
 >
     <div data-choice-native>
@@ -90,7 +94,7 @@ $loop     = 0;
     <?php endif ?>
     </div>
     <button type="button" class="choice-trigger" data-choice-trigger aria-label="<?= s(t($label)) ?>" aria-haspopup="listbox" aria-expanded="false" aria-controls="<?= s($listId) ?>" hidden>
-        <span data-choice-value></span><span class="choice-chevron" aria-hidden="true"><?= Icon::mark('expand_more', 'sm') ?></span>
+        <span data-choice-value></span><span class="choice-chevron" aria-hidden="true"><?= Icon::mark('expand_more', 'sm', 'mi-turn') ?></span>
     </button>
     <div class="choice-popup" data-choice-popup popover="manual" hidden>
         <div class="choice-search-wrap">

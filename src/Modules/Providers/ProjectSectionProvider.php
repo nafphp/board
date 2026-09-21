@@ -27,7 +27,9 @@ final class ProjectSectionProvider implements SettingSectionProviderInterface
             'visible'     => $context->allows('manage') || $context->allows('restore'),
             'description' => implode(' · ', [
                 ($project['archived_at'] ?? null) ? t('Archiviert') : t('Aktiv'),
-                ($project['ticket_key'] ?? '') . '-1',
+                // The key alone. With a number stuck on it, a card reads as a
+                // ticket that exists, and people went looking for it.
+                (string) ($project['ticket_key'] ?? ''),
                 t(Estimation::label($scale)),
             ]),
         ];
