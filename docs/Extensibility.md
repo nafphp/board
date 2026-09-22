@@ -42,7 +42,7 @@ through `InstalledVersions::getInstalledPackagesByType()`; there is no additiona
   "type": "naf-plugin",
   "require": {
     "php": ">=8.3",
-    "naf/framework": "^0.2.4"
+    "naf/board": "^0.1.3"
   },
   "autoload": {
     "psr-4": { "Example\\ExtensionA\\": "src/" }
@@ -50,9 +50,10 @@ through `InstalledVersions::getInstalledPackagesByType()`; there is no additiona
 }
 ```
 
-Nafinity is the host application. A package does not require `fkde/nafinity` as a Composer
-dependency — that would be a cycle — but states the requirement in its README and in
-`extra.nafinity.host`. Which NAF packages it really needs belongs in `require`.
+An extension requires `naf/board` because it uses the Board API. Board is an installed
+package, not the skeleton, and does not require its extensions, so this creates no dependency
+cycle. Other packages an extension uses directly also belong in `require`. Installation
+dependencies do not determine bootstrap order: extensions note providers before Board boots.
 
 Locally, a package is installed through a path repository:
 

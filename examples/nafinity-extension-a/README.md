@@ -4,7 +4,7 @@ An example extension for the Nafinity ticket application. It exists to show what
 a real extension can do, and every Nafinity acceptance test that claims a
 registry works uses it.
 
-**Host requirement:** this package extends the `fkde/nafinity` application. It
+**Host requirement:** this package extends the `naf/board` package in a NAF installation. It
 registers an extension provider during its Composer plugin bootstrap and does
 nothing on its own — there is no separate front controller to run.
 
