@@ -28,4 +28,3 @@ jobs:
           find src -name '*.phtml' -print0 | xargs -0 -n1 -P4 php -l > /dev/null
       - name: Run browser module tests
         run: composer run-script test:js
-
