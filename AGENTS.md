@@ -46,7 +46,7 @@ or a plugin metaframework.
 An installed Composer package of `type: naf-plugin` contributes routes, controllers,
 services, menu entries, permissions, settings, ticket fields, widgets, board filters,
 translations, AI tools, commands, migrations and jobs. It registers providers in its
-bootstrap through `Nafinity\extensions()->register(...)`; all providers run in one pass
+bootstrap through `Naf\Board\extensions()->register(...)`; all providers run in one pass
 after the application's own defaults, so a package can replace what the application
 registered.
 
@@ -57,6 +57,9 @@ registered.
 - Contributed ticket values live in `ticket_metadata`, one row per key, written inside the
   existing domain transaction, project lock and version check.
 - Settings have four scopes: `user`, `project`, `project_user`, `application`.
+- Export cards belong to board and installation settings. Both use the exporter registry;
+  combined downloads retain per-board export and metadata read permissions.
+  `ExportOptions` normalizes selection filters; the existing unfiltered export API stays valid.
 - A slot hands its contributions a typed context, not a loose array. Use that context and its
   `value()` and `field` instead of reaching for an own query or form.
 - Uninstalling a package takes its contributions away and leaves the stored data alone.

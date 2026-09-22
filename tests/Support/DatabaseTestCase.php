@@ -158,7 +158,9 @@ abstract class DatabaseTestCase extends TestCase
     protected static function restoreDeclaredRoles(): void
     {
         $rbac = rbac();
-        $rbac->roles->syncDeclared($rbac->declared->all(), $rbac->declared);
+        // Like the host test-up command, disposable fixtures use current declarations.
+        // The historical migration deliberately preserves its original role grants.
+        $rbac->roles->syncDeclared($rbac->declared->all(), $rbac->declared, true);
         $rbac->forget();
     }
 

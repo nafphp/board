@@ -20,6 +20,7 @@ use Naf\Board\Contracts\RoleServiceInterface;
 use Naf\Board\Contracts\TicketServiceInterface;
 use Naf\Board\Contracts\TimerServiceInterface;
 use Naf\Board\Domain\Failure;
+use Naf\Board\Export\ExportOptions;
 use Naf\Board\Rbac\Installation;
 use Naf\Board\Services\AuditLog;
 use Naf\Board\Services\ExportService;
@@ -742,16 +743,47 @@ final class AppController
         return $this->read(function () use ($project, $format) {
             $file = $this->exports->write(Input::id($project), $format);
 
-            return \Naf\response()
-                ->withBody(Stream::create($file['stream']))
-                ->withHeader('Content-Type', $file['mime'])
-                ->withHeader(
-                    'Content-Disposition',
-                    'attachment; filename="' . $file['filename'] . '"',
-                )
-                ->withHeader('Cache-Control', 'private, no-store')
-                ->withHeader('X-Content-Type-Options', 'nosniff');
+            return $this->exportResponse($file);
         });
+    }
+
+    public function exportSettings(string $project): ResponseInterface
+    {
+        return $this->read(function () use ($project) {
+            $input  = request()->getQueryParams();
+            $format = Input::validate($input, ['format' => 'required|string|max:80'])['format'];
+            $file   = $this->exports->writeSelected([Input::id($project)], $format, ExportOptions::fromInput($input));
+
+            return $this->exportResponse($file);
+        });
+    }
+
+    public function installationExport(): ResponseInterface
+    {
+        return $this->read(function () {
+            if (!rbac()->allows($this->access->actor(), Installation::MANAGE_SETTINGS)) {
+                throw new Failure(t('Diese Seite ist Administratoren vorbehalten.'), 403);
+            }
+            $input     = request()->getQueryParams();
+            $format    = Input::validate($input, ['format' => 'required|string|max:80'])['format'];
+            $selection = $input['project'] ?? '';
+            $projects  = $selection === 'all'
+                ? array_map(intval(...), array_column($this->exports->availableProjects($this->query->projects()), 'id'))
+                : [Input::id($selection, 'project')];
+            $file = $this->exports->writeSelected($projects, $format, ExportOptions::fromInput($input), true);
+
+            return $this->exportResponse($file);
+        });
+    }
+
+    private function exportResponse(array $file): ResponseInterface
+    {
+        return \Naf\response()
+            ->withBody(Stream::create($file['stream']))
+            ->withHeader('Content-Type', $file['mime'])
+            ->withHeader('Content-Disposition', 'attachment; filename="' . $file['filename'] . '"')
+            ->withHeader('Cache-Control', 'private, no-store')
+            ->withHeader('X-Content-Type-Options', 'nosniff');
     }
 
     public function download(string $project, string $ticket, string $attachment): ResponseInterface

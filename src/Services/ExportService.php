@@ -10,10 +10,12 @@ use Naf\Board\Domain\Failure;
 use Naf\Board\Domain\ProjectScope;
 use Naf\Board\Export\ExportFinished;
 use Naf\Board\Export\ExportLine;
+use Naf\Board\Export\ExportOptions;
 use Naf\Board\Export\ExportStarted;
 use Naf\Board\Support\Format;
 use Naf\Board\Support\Resolver;
 use PDO;
+use Throwable;
 
 use function Naf\app;
 use function Naf\Board\extensions;
@@ -56,75 +58,132 @@ final class ExportService
      */
     public function write(int $project, string $format): array
     {
-        $scope      = $this->access->project($project, 'export');
-        $definition = extensions()->exporters()->get($format);
+        return $this->render([$this->access->project($project, 'export')], $format, null, false);
+    }
 
+    /**
+     * @param list<int> $projects Explicit scope; all projects are authorized before writing
+     * @return array{stream: resource, filename: string, mime: string}
+     */
+    public function writeSelected(array $projects, string $format, ExportOptions $options, bool $identifyBoards = false): array
+    {
+        if ($projects === []) {
+            throw new Failure(t('Es gibt keine Boards, die du exportieren darfst.'));
+        }
+        $scopes = [];
+        foreach (array_unique($projects) as $project) {
+            $scopes[] = $this->access->project($project, 'export');
+        }
+
+        return $this->render($scopes, $format, $options, $identifyBoards || count($scopes) > 1);
+    }
+
+    /** Only active, exportable boards belong in the installation selector. */
+    public function availableProjects(array $projects): array
+    {
+        return array_values(array_filter($projects, function (array $project): bool {
+            try {
+                $this->access->project((int) $project['id'], 'export');
+
+                return true;
+            } catch (Failure $failure) {
+                if (!in_array($failure->status, [403, 404], true)) {
+                    throw $failure;
+                }
+
+                return false;
+            }
+        }));
+    }
+
+    /** @param list<ProjectScope> $scopes */
+    private function render(array $scopes, string $format, ?ExportOptions $options, bool $identifyBoards): array
+    {
+        $definition = extensions()->exporters()->get($format);
         if ($definition === null) {
             throw new Failure(t('Dieses Exportformat gibt es nicht: :format', ['format' => $format]), 404);
         }
 
-        // build() rather than service(): a writer holds the state of one export
-        // -- whether the JSON one has written a row yet decides whether the next
-        // gets a comma -- and a bound instance shared between two exports would
-        // start the second one mid-document. Constructor injection still works,
-        // so a plugin's writer may have dependencies; it just never gets to be
-        // a singleton.
-        $writer  = Resolver::build(app()->container(), $definition->writer);
-        $columns = $this->columns($scope);
-
+        // A fresh writer for each file: stateful plugin writers must not be singletons.
+        $writer = Resolver::build(app()->container(), $definition->writer);
         if (!$writer instanceof ExporterInterface) {
             throw new Failure(t('Das Exportformat :format kann nicht schreiben.', ['format' => $format]), 500);
         }
 
-        $out = fopen('php://temp/maxmemory:' . (4 * 1024 * 1024), 'w+b');
-        fwrite($out, $writer->open($columns));
-
-        // The frame around the records: everything a listener needs to open
-        // whatever it will close again below is settled by now, and nothing
-        // after this point can change which format or which columns.
-        event()->dispatch(new ExportStarted($definition->id, $project, $columns));
-        $written = 0;
-
-        foreach ($this->pages($project) as $rows) {
-            $ids   = array_map(intval(...), array_column($rows, 'id'));
-            $meta  = $this->metadata->readable($scope, $project, $ids);
-            $lists = $this->lists($project, $ids);
-
-            foreach ($rows as $row) {
-                $id   = (int) $row['id'];
-                $line = new ExportLine(
-                    $definition->id,
-                    $project,
-                    $row,
-                    $this->data(
-                        $row,
-                        $meta[$id] ?? [],
-                        $columns,
-                        $lists['labels'][$id] ?? [],
-                        $lists['assignees'][$id] ?? [],
-                    ),
-                );
-
-                // The one place a plugin gets between a ticket and what is said
-                // about it. After the row is built and before it is written, so
-                // a listener sees the finished values and the writer sees the
-                // listener's.
-                event()->dispatch($line);
-
-                fwrite($out, $writer->line($line, $columns));
-                $written++;
-            }
+        $columns    = $identifyBoards ? ['project_id' => t('Board-ID'), 'project' => t('Board')] : [];
+        $perProject = [];
+        foreach ($scopes as $scope) {
+            $project              = (int) $scope->project['id'];
+            $perProject[$project] = $this->selectedColumns($scope, $options);
+            $columns += $perProject[$project];
         }
 
-        fwrite($out, $writer->close());
-        event()->dispatch(new ExportFinished($definition->id, $project, $columns, $written));
-        rewind($out);
+        $out = fopen('php://temp/maxmemory:' . (4 * 1024 * 1024), 'w+b');
+
+        try {
+            fwrite($out, $writer->open($columns));
+            foreach ($scopes as $index => $scope) {
+                $project = (int) $scope->project['id'];
+                // Events keep their per-board meaning, even inside a combined file.
+                event()->dispatch(new ExportStarted($definition->id, $project, $columns));
+                $written = 0;
+                foreach ($this->pages($project, $options ?? ExportOptions::fromInput([])) as $rows) {
+                    $ids   = array_map(intval(...), array_column($rows, 'id'));
+                    $meta  = ($options?->metadata ?? true) ? $this->metadata->readable($scope, $project, $ids) : [];
+                    $lists = $this->lists($project, $ids);
+                    foreach ($rows as $row) {
+                        $id   = (int) $row['id'];
+                        $data = $this->data(
+                            $row,
+                            $meta[$id] ?? [],
+                            $perProject[$project],
+                            $lists['labels'][$id] ?? [],
+                            $lists['assignees'][$id] ?? [],
+                        );
+                        if ($identifyBoards) {
+                            $data = ['project_id' => $project, 'project' => (string) $scope->project['name']] + $data;
+                        }
+                        $line = new ExportLine($definition->id, $project, $row, $data);
+                        event()->dispatch($line);
+                        fwrite($out, $writer->line($line, $columns));
+                        $written++;
+                    }
+                }
+                if ($index === array_key_last($scopes)) {
+                    fwrite($out, $writer->close());
+                }
+                event()->dispatch(new ExportFinished($definition->id, $project, $columns, $written));
+            }
+            rewind($out);
+        } catch (Throwable $error) {
+            fclose($out);
+            throw $error;
+        }
 
         return [
             'stream'   => $out,
             'mime'     => $definition->mimeType,
-            'filename' => $this->filename($scope, $definition->extension),
+            'filename' => $identifyBoards
+                ? 'boards-' . date('Y-m-d') . '.' . $definition->extension
+                : $this->filename($scopes[0], $definition->extension),
         ];
+    }
+
+    private function selectedColumns(ProjectScope $scope, ?ExportOptions $options): array
+    {
+        $columns = $this->columns($scope);
+        if ($options === null) {
+            return $columns;
+        }
+        if (!$options->metadata) {
+            $columns = array_diff_key($columns, extensions()->ticketFields()->metadata());
+        }
+        if ($options->description) {
+            $columns['description'] = t('Beschreibung');
+        }
+        $columns['archived_at'] = t('Archiviert am');
+
+        return $columns;
     }
 
     /**
@@ -204,6 +263,13 @@ final class ExportService
             }
         }
 
+        if (isset($columns['description'])) {
+            $data['description'] = (string) $row['description'];
+        }
+        if (isset($columns['archived_at'])) {
+            $data['archived_at'] = $row['archived_at'];
+        }
+
         return $data;
     }
 
@@ -220,9 +286,28 @@ final class ExportService
      *
      * @return iterable<list<array>>
      */
-    private function pages(int $project): iterable
+    private function pages(int $project, ExportOptions $options): iterable
     {
-        $statement = $this->pdo->prepare(<<<'SQL'
+        $where      = [];
+        $parameters = [];
+        if ($options->status !== 'all') {
+            $where[]      = 't.status = ?';
+            $parameters[] = $options->status;
+        }
+        if ($options->archive !== 'all') {
+            $where[] = $options->archive === 'only' ? 't.archived_at IS NOT NULL' : 't.archived_at IS NULL';
+        }
+        if ($options->updatedFrom !== null) {
+            $where[]      = 't.updated_at >= ?';
+            $parameters[] = $options->updatedFrom;
+        }
+        if ($options->updatedBefore !== null) {
+            $where[]      = 't.updated_at < ?';
+            $parameters[] = $options->updatedBefore;
+        }
+        $filter = $where === [] ? '' : ' AND ' . implode(' AND ', $where);
+
+        $statement = $this->pdo->prepare(<<<SQL
         SELECT t.id, t.number, t.title, t.description, t.status, t.priority,
                t.due_date, t.created_at, t.updated_at, t.closed_at, t.archived_at,
                t.estimate_points,
@@ -235,13 +320,13 @@ final class ExportService
             ON c.project_id=t.project_id AND c.board_id=t.board_id AND c.id=t.column_id
           JOIN swimlanes s
             ON s.project_id=t.project_id AND s.board_id=t.board_id AND s.id=t.swimlane_id
-         WHERE t.project_id = ? AND t.number > ?
+         WHERE t.project_id = ? AND t.number > ? $filter
          ORDER BY t.number
         SQL . ' LIMIT ' . self::PAGE);
 
         $after = 0;
         while (true) {
-            $statement->execute([$project, $after]);
+            $statement->execute([$project, $after, ...$parameters]);
             $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
 
             if ($rows === []) {

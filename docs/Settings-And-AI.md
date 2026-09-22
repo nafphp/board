@@ -200,3 +200,21 @@ installed local model and executes no domain tools.
 The native migration `M202609150001ProjectRoles` adds custom roles, permissions and a
 project-bound optional membership assignment. Existing memberships are preserved. `make test-up`
 applies migrations before waiting for readiness in the isolated test database.
+
+## Ticket export
+
+The Export card now lives in the board's settings and exports only that board. Installation
+settings have a separate Export card with a searchable board selector, including **Alle** for
+all active boards the actor may export. Both cards offer the registered formats (CSV, JSON and
+formats from installed extensions), ticket status, archived ticket inclusion, an inclusive UTC
+updated-date range, descriptions as stored HTML, and readable extension fields. Selections are
+per download and do not change saved board settings. The default form excludes archived tickets
+and descriptions. Combined files identify each row's board.
+
+Installation settings require `settings.manage`; both paths additionally enforce each board's
+`export` permission. Archived boards remain read-only and outside the selection. Existing
+installation role grants are preserved; a role without `export` must be granted that permission
+in the role editor. There is no implicit escalation from managing installation settings.
+
+This is a ticket export, not a backup: attachments, comments and board structure are not included.
+The extension contract and request parameters are documented in [Extensibility](Extensibility.md#export).

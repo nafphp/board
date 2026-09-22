@@ -12,7 +12,7 @@ use Naf\Board\Export\ExportLine;
  *
  * It exists to show that the registry is the whole of what a format needs: this
  * class implements the same three calls the built-in two implement, is named in
- * one ExporterDefinition, and appears in the download menu with a working URL.
+ * one ExporterDefinition, and appears in the export settings with a working endpoint.
  * Nothing in naf/board mentions it.
  *
  * The format itself is deliberately dull -- one `key=value` line per ticket, as

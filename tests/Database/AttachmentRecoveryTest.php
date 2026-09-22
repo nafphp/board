@@ -81,6 +81,9 @@ final class AttachmentRecoveryTest extends BoardTestCase
      */
     private function uploadWithBrokenPromotion(string $body): int
     {
+        if (!is_dir($this->privateRoot)) {
+            mkdir($this->privateRoot, 0700, true);
+        }
         $ready  = $this->privateRoot . '/ready';
         $parked = $this->privateRoot . '/ready-test-parked';
         // The store creates its directories when it first needs them, so on a

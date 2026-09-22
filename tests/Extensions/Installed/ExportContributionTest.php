@@ -6,9 +6,12 @@ namespace Naf\Board\Tests\Extensions\Installed;
 
 use Example\ExtensionA\Export\StatusForExternalSystem;
 use Naf\Board\Export\ExportFinished;
+use Naf\Board\Export\ExportOptions;
 use Naf\Board\Export\ExportStarted;
+use Naf\Board\Modules\Providers\ExportSectionProvider;
 use Naf\Board\Services\ExportService;
 use Naf\Board\Support\Resolver;
+use Naf\Board\Support\UiContext;
 use Naf\Board\Tests\Support\ExtensionInstalledTestCase;
 
 use function Naf\app;
@@ -151,6 +154,22 @@ final class ExportContributionTest extends ExtensionInstalledTestCase
         $rows = substr_count(trim($this->exported('csv')), "\r\n");
 
         $this->assertSame($rows, $written, 'the count disagrees with the file it counted');
+    }
+
+    public function testTheSettingsAndFilteredExportKeepContributedFormats(): void
+    {
+        $provider = Resolver::build(app()->container(), ExportSectionProvider::class);
+        $section  = extensions()->settingSections()->get('project_export');
+        $data     = $provider->data($section, new UiContext((int) $this->access->actor(), $this->access->project($this->project)), []);
+        $this->assertArrayHasKey(StatusForExternalSystem::FORMAT, $data['exportFormats']);
+        $this->markReviewed();
+        $file = $this->exports->writeSelected([$this->project], StatusForExternalSystem::FORMAT, ExportOptions::fromInput([]), true);
+
+        try {
+            $this->assertStringContainsString('status=done', stream_get_contents($file['stream']));
+        } finally {
+            fclose($file['stream']);
+        }
     }
 
     private function markReviewed(): void

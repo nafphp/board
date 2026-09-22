@@ -102,10 +102,12 @@ final class ExportOverHttpTest extends AcceptanceTestCase
      */
     public function testTheBoardOffersExactlyTheFormatsThatAnswer(): void
     {
-        $board = $this->page($this->alice, '/projects/' . self::PROJECT);
+        $board = $this->page($this->alice, '/projects/' . self::PROJECT . '/settings');
+        $this->assertStringContainsString('data-settings-open="project_export"', $board);
+        $this->assertStringNotContainsString('export-menu', $this->page($this->alice, '/projects/' . self::PROJECT));
 
         foreach (['csv', 'json'] as $format) {
-            $link = '/projects/' . self::PROJECT . '/export/' . $format;
+            $link = 'value="' . $format . '"';
 
             $this->assertStringContainsString($link, $board, 'the board does not offer ' . $format);
             $this->assertSame(
@@ -120,10 +122,66 @@ final class ExportOverHttpTest extends AcceptanceTestCase
     public function testSomebodyWhoMayNotExportIsNotOfferedIt(): void
     {
         $this->assertStringNotContainsString(
-            '/export/',
-            $this->page($this->viewer, '/projects/' . self::PROJECT),
+            'data-settings-open="project_export"',
+            $this->page($this->viewer, '/projects/' . self::PROJECT . '/settings'),
             'a viewer was offered downloads that would all be refused',
         );
+    }
+
+    public function testInstallationExportsOneOrAllBoardsWithTheirIdentity(): void
+    {
+        $settings = $this->page($this->alice, '/settings');
+        $this->assertStringContainsString('data-settings-open="installation_export"', $settings);
+        $this->assertStringContainsString('value="all"', $settings);
+        $this->assertStringContainsString('action="/settings/export"', $settings);
+        $all = $this->alice->request('/settings/export?project=all&format=json&archive=exclude');
+        $this->assertSame(200, $all['status']);
+        $rows = json_decode($all['body'], true, flags: JSON_THROW_ON_ERROR);
+        $ids  = array_unique(array_column($rows, 'project_id'));
+        $this->assertContains(self::PROJECT, $ids);
+        $this->assertContains(self::OTHER_PROJECT, $ids);
+        $this->assertNotEmpty($rows[0]['project']);
+
+        $one = $this->alice->request('/settings/export?project=' . self::OTHER_PROJECT . '&format=json');
+        $this->assertSame(200, $one['status']);
+        $this->assertSame([self::OTHER_PROJECT], array_values(array_unique(array_column(json_decode($one['body'], true), 'project_id'))));
+        $csv = $this->alice->request('/settings/export?project=all&format=csv&description=0&archive=exclude');
+        $this->assertSame(200, $csv['status']);
+        $this->assertSame(count($rows), count(explode("\r\n", trim($csv['body']))) - 1);
+    }
+
+    public function testBoardSettingsCannotBeBroadenedByTheQueryString(): void
+    {
+        $answer = $this->alice->request('/projects/' . self::PROJECT . '/export?format=json&project=all&description=1');
+        $this->assertSame(200, $answer['status']);
+        $rows = json_decode($answer['body'], true, flags: JSON_THROW_ON_ERROR);
+        $this->assertNotEmpty($rows);
+        foreach ($rows as $row) {
+            $this->assertStringStartsWith('NAF-', $row['key']);
+            $this->assertArrayHasKey('description', $row);
+        }
+    }
+
+    public function testInstallationExportsRequireInstallationPermission(): void
+    {
+        foreach ([$this->bob, $this->viewer] as $client) {
+            $this->assertSame(403, $client->request('/settings/export?project=all&format=json')['status']);
+        }
+        $this->assertSame(403, $this->viewer->request('/projects/' . self::PROJECT . '/export?format=json')['status']);
+        $this->assertSame(404, $this->bob->request('/projects/' . self::PROJECT . '/export?format=json')['status']);
+    }
+
+    public function testMalformedOptionsDoNotDownloadFiles(): void
+    {
+        foreach (['format[]=csv', 'format=json&status=anything', 'format=json&archive[]=all',
+            'format=json&updated_from=2026-02-30', 'format=json&updated_from=2026-09-22&updated_until=2026-09-21',
+            'format=json&metadata=perhaps', 'format=json&description[]=1'] as $query) {
+            $answer = $this->alice->request('/projects/' . self::PROJECT . '/export?' . $query);
+            $this->assertSame(422, $answer['status'], $query);
+            $this->assertStringNotContainsString('attachment; filename=', $answer['headers']);
+        }
+        $this->assertSame(422, $this->alice->request('/settings/export?project[]=all&format=json')['status']);
+        $this->assertSame(404, $this->alice->request('/settings/export?project=all&format=missing')['status']);
     }
 
     /**

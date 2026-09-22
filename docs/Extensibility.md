@@ -882,15 +882,53 @@ each export and may keep the state of that one export, so a format that needs to
 has written a record yet simply remembers. Records arrive one at a time and are written as they
 arrive — an export costs one ticket in memory plus a file, not a copy of the board.
 
-Registering a format is all it takes to be offered. The download menu on the project page and the
-endpoint behind it read the same registry, so a format cannot be offered and missing, or reachable
-and invisible.
+Registering a format adds it to the format selector in both export settings cards. Board settings
+export only their own project; installation settings offer one board or all authorized active
+boards in a single file. Both download endpoints use the same exporter registry.
 
 **Columns come from the ticket fields.** Every field you registered as ticket metadata is a column
-in every format, with no further registration — and a field the reader may not see is not a column
+when extension fields are included, with no further registration — and a field the reader may not see is not a column
 for them, because the field's own `readPermission` still decides. The ticket's own attributes
 (`key`, `title`, `status`, `column`, `swimlane`, `priority`, `labels`, `assignees`, `estimate`,
 the dates) are always there.
+
+### Selection and combined files
+
+The `project_export` and `installation_export` settings sections use `settings/export` and
+`ExportSectionProvider`. An installation may override the template or replace either section.
+The existing `GET /projects/{project}/export/{format}` route and `ExportService::write()` keep
+their original unfiltered columns and include archived tickets.
+
+The forms use `GET /projects/{project}/export` and `GET /settings/export`. Both accept a registered
+`format` and these options, normalized by `ExportOptions::fromInput()`:
+
+| Option | Values | Default when omitted |
+|---|---|---|
+| `status` | `all`, `open`, `closed` | `all` |
+| `archive` | `exclude`, `all`, `only` | `all` (the form selects `exclude`) |
+| `updated_from`, `updated_until` | Empty or valid `YYYY-MM-DD`; inclusive UTC days | Unbounded |
+| `description` | `0`, `1` (stored HTML) | `0` |
+| `metadata` | `0`, `1` | `1` |
+
+The installation route additionally requires `project=<id>` or `project=all` and the installation's
+`settings.manage` permission. Every selected board must independently authorize `export`;
+`all` resolves only currently exportable active boards. A query parameter cannot broaden the
+board route's scope. Empty selections and invalid options return 422.
+
+`ExportService::writeSelected(list<int>, string, ExportOptions, bool $identifyBoards = false)`
+writes the selection through one fresh writer. Multiple boards always add `project_id` and
+`project`; the installation route requests these columns even for one board. Configured exports
+also include `archived_at`. CSV has one heading and JSON one array across the whole selection.
+The column set is the union of readable fields; an unreadable value on another board stays
+empty, never inheriting the first board's field permissions. Writers should honor the supplied
+columns. Plugin listeners receive only the selected readable metadata, so a mapping that relies
+on a metadata value does not run when the user excludes extension fields.
+
+`ExportStarted` and `ExportFinished` fire once per board, including empty boards; `written` is
+that board's row count. `ExportLine::project` identifies each row's board. Writer `open()` and
+`close()` still run once per file. Data is paged in groups of 500, and failed writes close the
+temporary stream. Exports read live data and are not a transactionally consistent backup.
+Attachments, comments and board structure are outside this ticket export.
 
 ### Changing what an export says
 

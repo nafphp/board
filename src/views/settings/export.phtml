@@ -1,0 +1,64 @@
+<?php
+use function Naf\Board\field;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$exportField = static fn(array $properties): string => field(['id' => 'export-' . $section->id . '-' . $properties['name'], ...$properties]);
+$action      = $installationExport
+    ? route('installation.export')
+    : route('project.export.settings', ['project' => $projectId]);
+$boardOptions = ['all' => t('Alle')];
+foreach ($exportProjects as $exportProject) {
+    $boardOptions[(string) $exportProject['id']] = $exportProject['name'] . ' · ' . $exportProject['ticket_key'];
+}
+$empty = $installationExport && $exportProjects === [];
+?>
+<form method="get" action="<?= s($action) ?>">
+    <?php if ($empty): ?>
+        <p class="settings-hint"><?= s(t('Es gibt keine Boards, die du exportieren darfst.')) ?></p>
+    <?php endif ?>
+    <fieldset <?= $empty ? 'disabled' : '' ?>>
+        <?php if ($installationExport): ?>
+            <?= $exportField([
+                'label'   => 'Board', 'name' => 'project', 'type' => 'select',
+                'options' => $boardOptions, 'value' => 'all',
+                'hint'    => 'Alle umfasst aktive Boards, für die du eine Exportberechtigung hast.',
+            ]) ?>
+        <?php else: ?>
+            <p class="settings-hint"><?= s(t('Exportiert ausschließlich Tickets aus „:board“.', ['board' => $project['name']])) ?></p>
+        <?php endif ?>
+        <?= $exportField(['label' => 'Format', 'name' => 'format', 'type' => 'select', 'options' => $exportFormats, 'value' => array_key_first($exportFormats)]) ?>
+        <div class="form-grid">
+            <?= $exportField([
+                'label'   => 'Ticketstatus', 'name' => 'status', 'type' => 'select', 'value' => 'all',
+                'options' => ['all' => t('Alle'), 'open' => t('Offen'), 'closed' => t('Geschlossen')],
+            ]) ?>
+            <?= $exportField([
+                'label'   => 'Archivierte Tickets', 'name' => 'archive', 'type' => 'select', 'value' => 'exclude',
+                'options' => ['exclude' => t('Ausschließen'), 'all' => t('Einschließen'), 'only' => t('Nur archivierte Tickets')],
+            ]) ?>
+        </div>
+        <div class="form-grid">
+            <?= $exportField(['label' => 'Geändert ab', 'name' => 'updated_from', 'type' => 'date']) ?>
+            <?= $exportField(['label' => 'Geändert bis', 'name' => 'updated_until', 'type' => 'date']) ?>
+        </div>
+        <p class="settings-hint"><?= s(t('Optional. Beide Tage zählen vollständig in UTC; leere Felder begrenzen den Zeitraum nicht.')) ?></p>
+        <div class="form-grid">
+            <?= $exportField([
+                'label'   => 'Beschreibung', 'name' => 'description', 'type' => 'select', 'value' => '0',
+                'options' => ['0' => t('Ausschließen'), '1' => t('Einschließen')],
+                'hint'    => 'Beschreibungen werden als gespeichertes HTML exportiert.',
+            ]) ?>
+            <?= $exportField([
+                'label'   => 'Erweiterungsfelder', 'name' => 'metadata', 'type' => 'select', 'value' => '1',
+                'options' => ['1' => t('Einschließen'), '0' => t('Ausschließen')],
+                'hint'    => 'Enthält nur Felder, die du im jeweiligen Board lesen darfst.',
+            ]) ?>
+        </div>
+        <p class="settings-hint"><?= s(t('Der Export enthält Tickets mit Labels und Verantwortlichen. Anhänge, Kommentare und die Boardstruktur sind nicht enthalten.')) ?></p>
+        <div class="settings-actions">
+            <button class="button primary" type="submit"><?= s(t('Export herunterladen')) ?></button>
+        </div>
+    </fieldset>
+</form>
