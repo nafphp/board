@@ -1,22 +1,10 @@
 name: NAF Board
 
-# What can be checked without a host.
-#
-# Most of this package's suites boot an installation: the database tests want
-# MariaDB and PostgreSQL, the HTTP tests want a server answering over HTTPS, and
-# the extension tests build throwaway hosts to install the examples into. That
-# environment lives in the skeleton repository with its Compose file and its
-# Makefile, and `make test` there is what runs all of it.
-#
-# What is left is still worth running on every push: the manifest, whether every
-# PHP file parses, and the browser modules, whose rules are the kind that are
-# easy to get subtly wrong and impossible to notice.
-
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
 
 permissions:
   contents: read
@@ -24,22 +12,20 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        php: ['8.3', '8.5']
     steps:
-    - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer
+      - name: Validate manifest and supported PHP syntax
+        run: |
+          composer validate --strict
+          find src tests examples -name '*.php' -print0 | xargs -0 -n1 -P4 php -l > /dev/null
+          find src -name '*.phtml' -print0 | xargs -0 -n1 -P4 php -l > /dev/null
+      - name: Run browser module tests
+        run: composer run-script test:js
 
-    - name: Validate composer.json
-      run: composer validate --strict
-
-    - name: Check every PHP file parses
-      run: |
-        find src tests examples -name '*.php' -print0 \
-          | xargs -0 -n1 -P4 php -l > /dev/null
-
-    - name: Check every template parses
-      run: |
-        find src -name '*.phtml' -print0 \
-          | xargs -0 -n1 -P4 php -l > /dev/null
-
-    - name: Run the browser tests
-      run: composer run-script test:js

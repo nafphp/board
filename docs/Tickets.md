@@ -108,8 +108,9 @@ responsible, and the old address answers with 404 afterwards.
 
 Column changes use `TicketService::move()` including completion status and positioning. Metadata
 uses `TicketService::update()` as a partial change inside the existing project transaction.
-Attributes and associations that are not submitted are preserved. `version` and `board_revision`
-are still required. Status changes use the existing state service. System values such as creator
+Attributes and associations that are not submitted are preserved. Updates require the ticket
+`version`; an unrelated ticket changing the board revision does not reject them. Creation and
+movement retain their board revision checks. Status changes use the existing state service. System values such as creator
 and change date are read-only.
 
 Time tracking is a manually editable **total in minutes**; it is not a stopwatch and not a
@@ -232,3 +233,12 @@ full width and shifted every ticket page 34 pixels sideways on a phone.
 
 The last full run and its numbers are recorded in
 [Implementation and acceptance](Implementation.md#verification).
+
+
+Inline field buttons expose the field label, current displayed value and edit action together.
+Rich descriptions remain readable document content with a separate edit button, so their links
+and headings are not flattened into one long button name.
+
+A real version conflict keeps the current editor open. “Entwurf sichern” downloads that form's
+current values as JSON pairs (including repeated field names), without CSRF tokens or lock
+versions. This is a manual recovery aid before reloading; it does not overwrite concurrent edits.

@@ -823,6 +823,11 @@ async function refreshBoard() {
   }
   if (!data?.cells || !data?.cards) return;
 
+  if (Number(data.revision) < Number(board.dataset.revision)) return;
+  if (moving || drag.started) {
+    awaited = true;
+    return;
+  }
   applyBoard(data);
 }
 // Said once. Leaving the mark on would replay the arrival the next time anything

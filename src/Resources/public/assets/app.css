@@ -910,57 +910,6 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 .live-status[data-live-status='gone'] .live-dot {
   background: var(--danger);
 }
-/* The download menu, one entry per registered format. A <details> rather than a
-   scripted dropdown: the browser already knows how to open and close one, and
-   this is a list of links. */
-.export-menu {
-  position: relative;
-}
-.export-menu summary {
-  list-style: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.export-menu summary::-webkit-details-marker {
-  display: none;
-}
-.export-menu-list {
-  position: absolute;
-  top: calc(100% + 7px);
-  right: 0;
-  z-index: 30;
-  min-width: 170px;
-  padding: 6px;
-  display: grid;
-  gap: 2px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: 0 12px 34px -16px #20243859;
-}
-.export-menu-list a {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 7px 9px;
-  border-radius: 7px;
-  font-size: 12px;
-  color: var(--text);
-  text-decoration: none;
-  white-space: nowrap;
-}
-.export-menu-list a:hover {
-  background: var(--hover);
-  color: var(--accent);
-}
-.export-menu-list small {
-  color: var(--muted);
-  font-size: 10px;
-}
-
 /* Who else is in this project, in the bar above every one of its pages.
    Hidden until the roster arrives, which is a moment after the page: the bar is
    not asked to reserve room for people who may not be there. */

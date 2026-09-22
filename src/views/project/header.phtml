@@ -19,7 +19,6 @@ use Naf\Board\Support\Icon;
 use Naf\Board\Support\LiveConnection;
 use Naf\Board\Support\Version;
 
-use function Naf\Board\extensions;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
@@ -54,37 +53,6 @@ $views    = [
                 <span class="avatar avatar-small" title="<?= s($member['name']) ?>"><?= s(mb_substr($member['name'], 0, 1)) ?></span>
             <?php endforeach ?>
         </div>
-        <?php
-        /*
-         * One entry per registered format, which is why this loop exists rather
-         * than two links: a plugin that adds a format is offered here by adding
-         * it, and a format that is offered here has an endpoint, because both
-         * read the same registry.
-         *
-         * Hidden entirely for somebody without the permission -- a menu of
-         * downloads that all answer 403 is worse than no menu.
-         */
-        $exporters = $scope->allows('export') ? extensions()->exporters()->all() : [];
-?>
-        <?php if ($exporters !== []): ?>
-            <details class="export-menu">
-                <summary class="button subtle" title="<?= s(t('Tickets exportieren')) ?>">
-                    <?= Icon::mark('download', 'sm') ?>
-                    <span><?= s(t('Export')) ?></span>
-                </summary>
-                <div class="export-menu-list">
-                    <?php foreach ($exporters as $exporter): ?>
-                        <a
-                            href="<?= s(route('project.export', [
-                                'project' => $projectId,
-                                'format'  => $exporter->id,
-                            ])) ?>"
-                            download
-                        ><?= s(t($exporter->label)) ?><small><?= s('.' . $exporter->extension) ?></small></a>
-                    <?php endforeach ?>
-                </div>
-            </details>
-        <?php endif ?>
         <?php if ($canWrite): ?>
             <a
                 class="button primary"

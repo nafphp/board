@@ -24,6 +24,7 @@ final class SettingsSurfaceTest extends AcceptanceTestCase
         'swimlane',
         'label',
         'project_personal',
+        'project_export',
     ];
 
     /** What an account is: what holds for one person, in every project. */

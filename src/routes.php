@@ -1,25 +1,13 @@
 <?php
 
 declare(strict_types=1);
-use Naf\Board\Contracts\AttachmentServiceInterface;
 use Naf\Board\Controllers\AiController;
 use Naf\Board\Controllers\AppController as C;
 use Naf\Board\Controllers\ProfileController;
 use Naf\Board\Controllers\SettingsApiController as S;
-use Naf\Board\Migrations\M202609140001Nafinity;
-use Naf\Board\Migrations\M202609140002Queue;
-use Naf\Board\Migrations\M202609140003RateLimits;
-use Naf\Board\Migrations\M202609150001ProjectRoles;
-use Naf\Board\Migrations\M202609150002AccountProfile;
-use Naf\Board\Migrations\M202609160001TicketDetails;
-use Naf\Board\Migrations\M202609160002RichTextStorage;
-use Naf\Board\Migrations\M202609160003ProjectTicketKey;
-use Naf\Board\Migrations\M202609170001EstimationScale;
-use Naf\Board\Migrations\M202609170002TicketTimers;
-use Naf\Board\Migrations\M202609180001TicketTransfer;
-use Naf\Board\Migrations\M202609180002PluginSettings;
-use Naf\Board\Migrations\M202609180003TicketMetadata;
-use Naf\Board\Migrations\M202609180004ScaleIdentifiers;
+use Naf\Board\Support\AttachmentStorage;
+use Naf\Database\Core\MigrationRunner;
+use Naf\Database\Support\MigrationRegistry;
 
 use function Naf\json;
 use function Naf\route;
@@ -30,32 +18,15 @@ route()->add(
     '/health/ready',
     static function () {
         try {
-            $pdo      = \Naf\app()->container()->get(PDO::class);
-            $required = [
-                M202609140001Nafinity::class,
-                M202609140002Queue::class,
-                M202609140003RateLimits::class,
-                M202609150001ProjectRoles::class,
-                M202609150002AccountProfile::class,
-                M202609160001TicketDetails::class,
-                M202609160002RichTextStorage::class,
-                M202609160003ProjectTicketKey::class,
-                M202609170001EstimationScale::class,
-                M202609170002TicketTimers::class,
-                M202609180001TicketTransfer::class,
-                M202609180002PluginSettings::class,
-                M202609180003TicketMetadata::class,
-                M202609180004ScaleIdentifiers::class,
-            ];
-            $applied = $pdo->query('SELECT name FROM migrations')->fetchAll(PDO::FETCH_COLUMN);
-            if (array_diff($required, $applied)) {
+            $pdo = \Naf\app()->container()->get(PDO::class);
+            if ((new MigrationRunner($pdo))->pending(MigrationRegistry::getPaths()) !== []) {
                 return json(['status' => 'not-ready'], 503);
             }
             $pdo->query('SELECT 1 FROM naf_queue_jobs LIMIT 1');
             $pdo->query('SELECT 1 FROM naf_rate_limits LIMIT 1');
-            \Naf\app()->container()->get(AttachmentServiceInterface::class);
+            \Naf\app()->container()->get(AttachmentStorage::class)->check();
 
-            return json(['status' => 'ready', 'schema' => '202609180004']);
+            return json(['status' => 'ready']);
         } catch (Throwable) {
             return json(['status' => 'not-ready'], 503);
         }
@@ -107,6 +78,7 @@ $routes = [
     ['GET', '/projects', 'projectList', 'projects'],
     ['POST', '/projects', 'createProject', 'projects.create'],
     ['GET', '/settings', 'installation', 'installation.settings'],
+    ['GET', '/settings/export', 'installationExport', 'installation.export'],
     ['POST', '/settings/users', 'createAccount', 'installation.users.create'],
     ['GET', '/audit', 'audit', 'audit'],
     ['GET', '/preferences', 'preferences', 'preferences'],
@@ -125,6 +97,7 @@ $routes = [
     ['GET', '/projects/{project}/socket', 'boardSocket', 'board.socket'],
     ['GET', '/projects/{project}/cards', 'boardCards', 'board.cards'],
     ['GET', '/projects/{project}/export/{format}', 'export', 'project.export'],
+    ['GET', '/projects/{project}/export', 'exportSettings', 'project.export.settings'],
     ['GET', '/projects/{project}/tickets/new', 'newTicket', 'ticket.new'],
     ['POST', '/projects/{project}/tickets', 'createTicket', 'ticket.create'],
     ['POST', '/projects/{project}/tickets/{ticket}/attachments', 'upload', 'attachment.upload'],

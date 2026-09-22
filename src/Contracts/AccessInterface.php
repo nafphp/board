@@ -22,7 +22,7 @@ interface AccessInterface
     public function project(int $id, string $action = 'read', bool $locked = false): ProjectScope;
 
     /**
-     * Resolve rights for both authenticated requests and background workers
+     * Read configured role grants; use ProjectAccessInterface for an explicit user’s effective rights
      *
      * @param int      $project      Project id
      * @param string   $role         Built-in role name

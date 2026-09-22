@@ -72,20 +72,20 @@ php vendor/bin/naf nafinity:assets:publish --package=example/nafinity-extension-
 
 ## When registration happens
 
-NAF boots Composer plugins **before** the application defaults. Registering directly there means
-being overwritten again immediately afterwards. A package therefore only notes a provider in its
-`bootstrap.php`:
+The host boots infrastructure plugins, then `naf/board`, then extension packages. The board
+registers defaults during its own bootstrap. Extensions only note providers in their
+`bootstrap.php`; their providers run after **all** plugin bootstraps have completed:
 
 ```php
 // examples/nafinity-extension-a/bootstrap.php
 use Example\ExtensionA\ExtensionAProvider;
 
-use function Nafinity\extensions;
+use function Naf\Board\extensions;
 
 extensions()->register('example.reports', ExtensionAProvider::class, 100);
 ```
 
-`Nafinity\extensions(): Nafinity\ExtensionRegistry` binds a pure metadata registry to the
+`Naf\Board\extensions(): Naf\Board\ExtensionRegistry` binds a pure metadata registry to the
 container on first call. It is reachable during the plugin boot and does not boot the
 application a second time.
 
@@ -101,7 +101,7 @@ public function register(
 The provider itself:
 
 ```php
-namespace Nafinity\Contracts;
+namespace Naf\Board\Contracts;
 
 interface ExtensionProviderInterface
 {
@@ -114,12 +114,16 @@ no authorization: definitions are code, user data is read in the request that ne
 
 The order in [`bootstrap.php`](../bootstrap.php) is fixed:
 
-1. Composer/NAF boot and the existing application routes (in the `app()` constructor),
-2. lazily bound application service defaults, policies and native infrastructure,
-3. Nafinity's built-in contribution definitions (`App\Modules\NafinityDefaults`),
-4. the noted providers, ascending by index and id,
-5. optionally [`src/extensions.php`](../src/extensions.php) as the last host override,
-6. `app()->run()`.
+1. NAF registers all Composer plugins, then boots them in the host's configured order.
+2. Board boot binds lazy services, policies, infrastructure and built-in definitions.
+3. Every extension bootstrap registers its providers.
+4. Framework dispatches `Event::PLUGINS_BOOTED` (requires `naf/framework` 0.2.7+).
+5. Board initializes providers by index/id and declares RBAC definitions.
+6. The host's optional `app/extensions.php` or `src/extensions.php` applies final overrides.
+7. NAF loads the host's routes, then serves requests or runs the CLI.
+
+The integration runner installs `naf/board` itself as a Composer dependency. It never copies
+board code into the host; that would exercise a different bootstrap lifecycle.
 
 Properties of that pass:
 
@@ -196,8 +200,8 @@ object without the route's action is reported as a `DispatcherException`. Both a
 
 ### Replaceable services
 
-Contracts under `Nafinity\Contracts` describe the actual replacement boundaries:
-`AccessInterface`, `AccountServiceInterface`, `ProjectServiceInterface`,
+Contracts under `Naf\Board\Contracts` describe the actual replacement boundaries:
+`AccessInterface`, `ProjectAccessInterface`, `AccountServiceInterface`, `ProjectServiceInterface`,
 `TicketServiceInterface`, `BoardQueryInterface`, `CommentServiceInterface`,
 `AttachmentServiceInterface`, `NotificationServiceInterface`, `PreferenceServiceInterface`,
 `RoleServiceInterface`, `TimerServiceInterface` and `AiServiceInterface`, plus
@@ -217,8 +221,15 @@ $context->container()->set(
 ```
 
 Every productive consumer asks for the contract: controllers, services among each other,
-`FinalizeAttachmentJob`, `MaintenanceJob`, `SeedCommand` and the readiness endpoint. A
+`FinalizeAttachmentJob`, `MaintenanceJob` and `SeedCommand`. A
 replacement therefore reaches the worker too.
+
+`ProjectAccessInterface::forUser($projectId, $userId)` resolves current account state,
+membership, administrative access and RBAC grants without using a session. Call
+`$scope->allows('upload')` (or the relevant action) before performing work. Both
+`AccessInterface::project()` and upload jobs use this resolver. Override this contract for
+rules that must apply to requests **and** jobs; a session-only Auth policy does not run in jobs.
+`AccessInterface::permissions()` reads configured role grants, not a user's effective rights.
 
 Auth, session, storage, client, mail and logging stay the NAF contracts; there is no second
 implementation for those. Overrides have to be registered **before** their first use: an
@@ -227,7 +238,7 @@ already constructed instance is not rewired afterwards.
 ### Page renderer
 
 ```php
-namespace Nafinity\Contracts;
+namespace Naf\Board\Contracts;
 
 interface PageRendererInterface
 {
@@ -255,7 +266,7 @@ $context->permissions()->add(new PermissionDefinition(
 ```
 
 - Registered permissions appear in the role editor, are stored, and are recognised as effective
-  by `Access::permissions()`.
+  by the shared project access resolver.
 - **A new permission is granted to nobody automatically** — owners and managers do not get it
   either. An owner can assign it to a custom role.
 - `read` stays the membership check and is not a definition name.
@@ -318,7 +329,7 @@ All of them implement `SlotContextInterface` and hand out the checked `UiContext
 
 ```php
 <?php
-/** @var \Nafinity\Support\TicketSlotContext $slot */
+/** @var \Naf\Board\Support\TicketSlotContext $slot */
 
 if ($slot->value('example.reviewed') !== true) {
     return;
@@ -403,7 +414,7 @@ possible but has to preserve those areas.
 ## Settings
 
 ```php
-use function Nafinity\settings;
+use function Naf\Board\settings;
 
 settings()->get('theme', 'system');                 // the signed-in user
 settings()->all();                                  // array<string, mixed>
@@ -566,8 +577,8 @@ resetting the same key is invalid.
 
 - **create:** validation, core ticket, metadata, pivots and change in the same transaction.
   Widgets receive the new id only afterwards.
-- **update:** inside the project lock, with the ticket version and board revision. Both rise
-  **once per accepted change**, metadata-only included. On 409, 422, 403 or a database error,
+- **update:** inside the project lock, checking the ticket version. The ticket version and
+  board revision both rise **once per accepted change**, metadata-only included. On 409, 422, 403 or a database error,
   ticket, metadata, pivots and activity stay unchanged.
 - A plugin field requires its declared write permission in addition to the core `write`.
   `readOnly` and archived tickets stay locked.
@@ -698,7 +709,7 @@ A whole labelled field — label, control and hint — is `field()`, which hands
 Its `type` covers `text`, `email`, `url`, `password`, `number`, `color`, `date`, `search`,
 `textarea`, `checkbox`, `select` and `multiselect`; `attributes` passes anything else through to
 the control, and `choice` passes further arguments to the select. Both helpers live in
-`Nafinity\`, so a package writes the same call the host does.
+`Naf\Board\`, so a package writes the same call the host does.
 
 A `multiselect` renders checkboxes preceded by an empty field of the same name. PHP folds
 `name` and `name[]` into one array when the bare name is parsed first, so a submission with
@@ -719,8 +730,8 @@ $context->views()->add(new ViewOverride('example-a/reports', 'example-b/reports'
 
 The id is the existing logical name (`ticket`, `ticket/field`, `layout`, …); `ticket.field` and
 `ticket/field` mean the same thing. The resolution applies to the page renderer, all application
-partials, the login, error and profile views, and the layout. Templates use `Nafinity\template()`
-and `Nafinity\partial()` for it.
+partials, the login, error and profile views, and the layout. Templates use `Naf\Board\template()`
+and `Naf\Board\partial()` for it.
 
 NAF's global view lookup is unchanged: the host's `app/views` still wins over plugin paths, and
 the mapping selects a different target. Cycles are detected and reported. The host can replace or
@@ -792,7 +803,10 @@ definition; there is no accidental last-wins effect. A write tool still requires
 token-based `/mcp` access stays separate from this.
 
 Events: `Naf\event()->listen(Change::class, …)` is unchanged and
-runs **inside the domain transaction**. A listener may enqueue a job through the NAF queue in the
+runs **inside the domain transaction**. Built-in live notifications enqueue
+`PublishBoardChangeJob` on the shared PDO queue: a rollback discards the notification, and a
+worker reads the committed board revision before publishing. Live delivery therefore requires
+a running queue worker; a disconnected websocket server remains a best-effort destination. A listener may enqueue a job through the NAF queue in the
 same PDO transaction; external work is done by the job. Mail or webhooks in the listener are
 wrong. Metadata changes extend the change payload with the affected key names — no values, no
 request data.
@@ -868,15 +882,53 @@ each export and may keep the state of that one export, so a format that needs to
 has written a record yet simply remembers. Records arrive one at a time and are written as they
 arrive — an export costs one ticket in memory plus a file, not a copy of the board.
 
-Registering a format is all it takes to be offered. The download menu on the project page and the
-endpoint behind it read the same registry, so a format cannot be offered and missing, or reachable
-and invisible.
+Registering a format adds it to the format selector in both export settings cards. Board settings
+export only their own project; installation settings offer one board or all authorized active
+boards in a single file. Both download endpoints use the same exporter registry.
 
 **Columns come from the ticket fields.** Every field you registered as ticket metadata is a column
-in every format, with no further registration — and a field the reader may not see is not a column
+when extension fields are included, with no further registration — and a field the reader may not see is not a column
 for them, because the field's own `readPermission` still decides. The ticket's own attributes
 (`key`, `title`, `status`, `column`, `swimlane`, `priority`, `labels`, `assignees`, `estimate`,
 the dates) are always there.
+
+### Selection and combined files
+
+The `project_export` and `installation_export` settings sections use `settings/export` and
+`ExportSectionProvider`. An installation may override the template or replace either section.
+The existing `GET /projects/{project}/export/{format}` route and `ExportService::write()` keep
+their original unfiltered columns and include archived tickets.
+
+The forms use `GET /projects/{project}/export` and `GET /settings/export`. Both accept a registered
+`format` and these options, normalized by `ExportOptions::fromInput()`:
+
+| Option | Values | Default when omitted |
+|---|---|---|
+| `status` | `all`, `open`, `closed` | `all` |
+| `archive` | `exclude`, `all`, `only` | `all` (the form selects `exclude`) |
+| `updated_from`, `updated_until` | Empty or valid `YYYY-MM-DD`; inclusive UTC days | Unbounded |
+| `description` | `0`, `1` (stored HTML) | `0` |
+| `metadata` | `0`, `1` | `1` |
+
+The installation route additionally requires `project=<id>` or `project=all` and the installation's
+`settings.manage` permission. Every selected board must independently authorize `export`;
+`all` resolves only currently exportable active boards. A query parameter cannot broaden the
+board route's scope. Empty selections and invalid options return 422.
+
+`ExportService::writeSelected(list<int>, string, ExportOptions, bool $identifyBoards = false)`
+writes the selection through one fresh writer. Multiple boards always add `project_id` and
+`project`; the installation route requests these columns even for one board. Configured exports
+also include `archived_at`. CSV has one heading and JSON one array across the whole selection.
+The column set is the union of readable fields; an unreadable value on another board stays
+empty, never inheriting the first board's field permissions. Writers should honor the supplied
+columns. Plugin listeners receive only the selected readable metadata, so a mapping that relies
+on a metadata value does not run when the user excludes extension fields.
+
+`ExportStarted` and `ExportFinished` fire once per board, including empty boards; `written` is
+that board's row count. `ExportLine::project` identifies each row's board. Writer `open()` and
+`close()` still run once per file. Data is paged in groups of 500, and failed writes close the
+temporary stream. Exports read live data and are not a transactionally consistent backup.
+Attachments, comments and board structure are outside this ticket export.
 
 ### Changing what an export says
 
@@ -1053,7 +1105,16 @@ run by index and id — and finally without the packages. Asset publishing is ch
 that.
 
 Two framework behaviours changed deliberately along the way, and nothing else did: the dispatcher
-now takes the bound target class, and `Nafinity\settings()` exists. In particular, Nafinity's own
+now takes the bound target class, and `Naf\Board\settings()` exists. In particular, Nafinity's own
 `home` route still replaces a plugin's early route — registration order decides, and the
 application registers its routes first. `make test-plugins` covers both, with really installed
 packages.
+
+
+The private Skeleton CI runs `make test` on every host pull request, including
+MariaDB, PostgreSQL, HTTP, worker recovery and installed/uninstalled extension hosts. Its
+workflow pins source revisions of the Board and unpublished dependencies; update those pins
+when changing the required integration environment. PHP syntax is checked on 8.3 and 8.5;
+the full container suite currently runs PHP 8.5. Use the Skeleton workflow’s `board_ref`
+input to test another Board revision. The public Board repository cannot read the private
+host with its repository-scoped token; no cross-repository secret is required.
