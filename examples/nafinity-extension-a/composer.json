@@ -20,5 +20,14 @@
   },
   "config": {
     "allow-plugins": false
+  },
+  "extra": {
+    "naf": {
+      "boot": {
+        "before": [
+          "naf/board"
+        ]
+      }
+    }
   }
 }

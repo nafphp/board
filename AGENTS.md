@@ -58,8 +58,9 @@ services, menu entries, permissions, settings, ticket fields, widgets, board fil
 translations, AI tools, commands, migrations and jobs. It registers providers in its
 bootstrap through `Naf\Board\extensions()->register(...)`; all providers run in one pass
 after the application's own defaults, so a package can replace what the application
-registered. The host boots infrastructure first, all installed extension plugins next and
-`naf/board` last. Board runs the provider pass in its own bootstrap, followed by the host's
+registered. Board declares its bootstrap prerequisites in `extra.naf.boot.after`; extensions
+declare `extra.naf.boot.before: ["naf/board"]`. Framework computes their order without a host
+`plugins.php`. Board runs the provider pass in its own bootstrap, followed by the host's
 optional `extensions.php`. NAF loads host routes afterwards. Service resolution and Board
 overrides belong in providers, not in an extension's early bootstrap or route file.
 
