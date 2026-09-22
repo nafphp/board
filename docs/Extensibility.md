@@ -73,7 +73,8 @@ php vendor/bin/naf nafinity:assets:publish --package=example/nafinity-extension-
 
 ## When registration happens
 
-The host boots infrastructure plugins, then every installed extension, then `naf/board` last.
+Framework orders plugins from their `extra.naf.boot.before` / `after` metadata. Board
+declares its prerequisites; each extension declares that it boots before `naf/board`.
 Extensions only note providers in their `bootstrap.php`. Board registers its defaults and
 then runs those providers during its own bootstrap:
 
@@ -115,17 +116,26 @@ no authorization: definitions are code, user data is read in the request that ne
 
 The order in [`bootstrap.php`](../bootstrap.php) is fixed:
 
-1. NAF registers all Composer plugins, then boots them in the host's configured order.
+1. NAF registers all Composer plugins, then boots them in the computed dependency order.
 2. Infrastructure plugins register their services. Every extension bootstrap notes its providers.
 3. Board boot binds lazy services, policies, infrastructure and built-in definitions.
 4. Still in Board boot, providers run by index/id, followed by RBAC declarations.
 5. The host's optional `app/extensions.php` or `src/extensions.php` applies final overrides.
 6. NAF loads the host's routes, then serves requests or runs the CLI.
 
-The skeleton's `app/src/plugins.php` reads Composer's installed `naf-plugin` packages and
-places all extensions between infrastructure and Board automatically. A custom host must
-preserve that order; simply listing Board before unnamed packages would boot them too late.
-No additional framework event is needed; this works with `naf/framework` 0.2.6.
+The skeleton needs no `plugins.php`. Board declares `extra.naf.boot.after` for its
+bootstrap prerequisites; extensions declare the following in their own manifest:
+
+```json
+{"extra": {"naf": {"boot": {"before": ["naf/board"]}}}}
+```
+
+Composer `require` still declares installed API dependencies, including `naf/board`, and
+is not treated as a boot dependency. Optional ordering targets are ignored when absent.
+An optional host `plugins.php` can prioritize independent plugins and constrain their relative
+order; contradictions fail before any plugin bootstrap executes. `naf plugins:debug` lists
+the resolved order, its reasons and ignored optional targets. This requires the automatic
+plugin-order implementation in the framework candidate (minimum 0.2.7).
 
 Resolve Board services and replace Board definitions or routes in a provider. An extension's
 early bootstrap and conventional route files run before Board's defaults exist. Host routes
@@ -1109,8 +1119,8 @@ make test-plugins
 ```
 
 The run boots with both packages, over real HTTP, with the **extension plugin listing reversed**
-(B before A, Board still last), with host overrides, and finally without the packages.
-Providers still run by index/id. The host override phase checks both CLI and HTTP boot: providers
+(a partial host preference puts B before A, while metadata still puts both before Board), with host overrides, and finally without the packages.
+The ordinary installed and uninstalled hosts contain no `plugins.php`. Providers still run by index/id. The host override phase checks both CLI and HTTP boot: providers
 finish before host definitions, and host routes override earlier named routes. Asset publishing
 is checked on top of that.
 

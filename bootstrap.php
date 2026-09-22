@@ -212,7 +212,7 @@ $extensions = extensions();
 $context    = new ExtensionContext($container, $extensions);
 Resolver::service($container, NafinityDefaults::class)->register($context);
 
-// The host boots Board last, after infrastructure and extension plugins.
+// Declared prerequisites and extension plugins have booted before Board.
 // Extensions noted during Composer plugin boot run now, ascending by index and
 // id. Nothing registered here is overwritten by an application default.
 $extensions->initialize($container);

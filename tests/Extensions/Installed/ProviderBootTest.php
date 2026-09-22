@@ -39,6 +39,8 @@ final class ProviderBootTest extends ExtensionInstalledTestCase
         $this->assertTrue(app()->hasPlugin('naf/board'), 'The host must install the board, not copy its bootstrap.');
         $this->assertTrue(app()->getPlugins()['naf/board']->isBooted());
         $this->assertSame('naf/board', array_key_last(app()->getPlugins()));
+        $this->assertFileDoesNotExist(BASE_PATH . '/src/plugins.php');
+        $this->assertFileDoesNotExist(BASE_PATH . '/app/plugins.php');
         $this->assertSame(['example.reports', 'example.review'], extensions()->executed());
     }
 
