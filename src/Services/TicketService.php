@@ -107,8 +107,8 @@ final class TicketService implements TicketServiceInterface
                 $merged['description_html'] = null;
             }
             $fields = $this->fields($merged);
+            // Other tickets may change without invalidating this ticket’s version.
             $this->version($row, $data);
-            $this->revision($this->board($project), $data);
             if ($row['archived_at'] !== null) {
                 throw new Failure(t('Ein archiviertes Ticket kann nicht bearbeitet werden.'));
             }

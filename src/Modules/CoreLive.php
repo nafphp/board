@@ -7,12 +7,12 @@ namespace Naf\Board\Modules;
 use Naf\Board\Contracts\ExtensionProviderInterface;
 use Naf\Board\Domain\Change;
 use Naf\Board\ExtensionContext;
-use PDO;
+use Naf\Board\Jobs\PublishBoardChangeJob;
+use Naf\Queue\Core\Queue;
 
 use function Naf\app;
 use function Naf\event;
 use function Naf\Websocket\live;
-use function Naf\Websocket\publisher;
 
 /**
  * Tell whoever is watching a board that it moved.
@@ -39,23 +39,11 @@ final class CoreLive implements ExtensionProviderInterface
         }
 
         event()->listen(Change::class, static function (Change $change): void {
-            $revision = app()->container()->get(PDO::class)
-                ->prepare('SELECT revision FROM boards WHERE project_id=?');
-            $revision->execute([$change->projectId]);
-            $now = $revision->fetchColumn();
-
-            if ($now === false) {
-                return;
-            }
-
-            /*
-             * Never throws and never waits: a ticket must save even when no
-             * socket server is running, and a person writing one should not
-             * notice that somebody restarted it.
-             */
-            publisher()->publish('project:' . $change->projectId, [
-                'revision' => (string) $now,
-                'type'     => $change->type,
+            // The board binds Queue to the same PDO connection as its writes.
+            // A rolled-back change therefore never reaches a worker or a socket.
+            app()->container()->get(Queue::class)->push(PublishBoardChangeJob::class, [
+                'projectId' => $change->projectId,
+                'type'      => $change->type,
             ]);
         });
     }

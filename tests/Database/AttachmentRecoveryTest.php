@@ -6,6 +6,7 @@ namespace Naf\Board\Tests\Database;
 
 use Naf\Board\Tests\Support\AttachmentFixture;
 use Naf\Board\Tests\Support\BoardTestCase;
+use Naf\Rbac\Scope;
 
 /**
  * An upload is two things that cannot be made atomic with one another: bytes on
@@ -97,5 +98,39 @@ final class AttachmentRecoveryTest extends BoardTestCase
                 rename($parked, $ready);
             }
         }
+    }
+
+    public function testFinalizationUsesTheUploaderWithoutALoggedInWorker(): void
+    {
+        $file = $this->uploadWithBrokenPromotion('Recovered without a session.');
+        $this->auth->logout();
+        $this->attachments->finalize($file);
+        $this->assertSame('ready', $this->scalar('SELECT state FROM attachments WHERE id=?', [$file]));
+    }
+
+    public function testRevokedRbacGrantsAreRecheckedAfterAStagedUpload(): void
+    {
+        $file = $this->uploadWithBrokenPromotion('Must not survive revocation.');
+        // Warm the request cache first; workers must still see a later revocation.
+        \Naf\Rbac\rbac()->permissionsOf((int) $this->alice->getId(), Scope::of('project', $this->projectA));
+        $this->pdo->prepare('DELETE FROM rbac_user_roles WHERE user_id=?')->execute([$this->alice->getId()]);
+        $this->attachments->finalize($file);
+        $this->assertSame(0, (int) $this->scalar('SELECT COUNT(*) FROM attachments WHERE id=?', [$file]));
+    }
+
+    public function testDisabledUploaderCannotCompleteAStagedUpload(): void
+    {
+        $file = $this->uploadWithBrokenPromotion('Disabled account.');
+        $this->pdo->prepare('UPDATE users SET active=0 WHERE id=?')->execute([$this->alice->getId()]);
+        $this->attachments->finalize($file);
+        $this->assertSame(0, (int) $this->scalar('SELECT COUNT(*) FROM attachments WHERE id=?', [$file]));
+    }
+
+    public function testArchivedProjectCannotCompleteAStagedUpload(): void
+    {
+        $file = $this->uploadWithBrokenPromotion('Archived project.');
+        $this->pdo->prepare('UPDATE projects SET archived_at=? WHERE id=?')->execute([gmdate('Y-m-d H:i:s'), $this->projectA]);
+        $this->attachments->finalize($file);
+        $this->assertSame(0, (int) $this->scalar('SELECT COUNT(*) FROM attachments WHERE id=?', [$file]));
     }
 }

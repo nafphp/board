@@ -36,6 +36,7 @@ use Naf\Board\Support\ContainerLogger;
 use Naf\Board\Support\Resolver;
 use Naf\Board\Support\ServiceDefaults;
 use Naf\CLI\Support\CommandRegistry;
+use Naf\Core\Event;
 use Naf\Database\Support\MigrationRegistry;
 use Naf\Queue\Core\Queue;
 use Naf\Queue\Drivers\PDODriver;
@@ -212,33 +213,37 @@ $extensions = extensions();
 $context    = new ExtensionContext($container, $extensions);
 Resolver::service($container, NafinityDefaults::class)->register($context);
 
-// Extensions noted during Composer plugin boot run now, ascending by index and
-// id. Nothing registered here is overwritten by an application default.
-$extensions->initialize($container);
+// Every Composer plugin must have a chance to register its providers first.
+// Framework dispatches this once, after plugin boot and before host routes.
+event()->listen(Event::PLUGINS_BOOTED, static function () use ($container, $extensions, $context): void {
+    // Extensions noted during Composer plugin boot run now, ascending by index and
+    // id. Nothing registered here is overwritten by an application default.
+    $extensions->initialize($container);
 
-// The provider pass is over, so every group a ticket field points at must now
-// have a panel. Saying which field and which group beats a later missing panel.
-$extensions->ticketFields()->assertGroups(CoreTicket::groups($context));
+    // The provider pass is over, so every group a ticket field points at must now
+    // have a panel. Saying which field and which group beats a later missing panel.
+    $extensions->ticketFields()->assertGroups(CoreTicket::groups($context));
 
-/*
- * What this installation can grant, and the one role that can grant it.
- *
- * Declared during plugin boot, which is when the registry is still being
- * filled. Nothing is written to the database here -- "naf rbac:sync" does
- * that, so installing a package never quietly widens anybody's access.
- */
-Installation::declare(permissions(), roles());
-Project::declare(permissions(), roles());
-roles()->scope(new Boards(static fn(): PDO => $container->get(PDO::class)));
+    /*
+     * What this installation can grant, and the one role that can grant it.
+     *
+     * Declared during plugin boot, which is when the registry is still being
+     * filled. Nothing is written to the database here -- "naf rbac:sync" does
+     * that, so installing a package never quietly widens anybody's access.
+     */
+    Installation::declare(permissions(), roles());
+    Project::declare(permissions(), roles());
+    roles()->scope(new Boards(static fn(): PDO => $container->get(PDO::class)));
 
-// The host has the last word: an optional file that may replace or remove any
-// definition, including one an extension just registered.
-// Both spellings, because NAF itself accepts either for plugins.php: a host
-// laid out as app/ and one laid out as src/ are equally ordinary.
-foreach (['/app/extensions.php', '/src/extensions.php'] as $hostOverrides) {
-    if (is_file(BASE_PATH . $hostOverrides)) {
-        require BASE_PATH . $hostOverrides;
+    // The host has the last word: an optional file that may replace or remove any
+    // definition, including one an extension just registered.
+    // Both spellings, because NAF itself accepts either for plugins.php: a host
+    // laid out as app/ and one laid out as src/ are equally ordinary.
+    foreach (['/app/extensions.php', '/src/extensions.php'] as $hostOverrides) {
+        if (is_file(BASE_PATH . $hostOverrides)) {
+            require BASE_PATH . $hostOverrides;
 
-        break;
+            break;
+        }
     }
-}
+});

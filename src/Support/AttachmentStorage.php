@@ -19,6 +19,22 @@ final class AttachmentStorage
     {
     }
 
+    /** Verify the configured disk can write, promote, read and remove a file. */
+    public function check(): void
+    {
+        $key = bin2hex(random_bytes(32));
+
+        try {
+            $this->disk->put('staging/' . $key, 'ready');
+            $this->promote($key);
+            if ($this->disk->get('ready/' . $key) !== 'ready') {
+                throw new RuntimeException('Attachment storage verification failed.');
+            }
+        } finally {
+            $this->delete($key);
+        }
+    }
+
     public function stage(UploadedFileInterface $upload, int $maxBytes = 10485760): array
     {
         if ($upload->getError() !== UPLOAD_ERR_OK) {

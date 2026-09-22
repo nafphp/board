@@ -13,6 +13,7 @@ use Naf\Board\Contracts\CommentServiceInterface;
 use Naf\Board\Contracts\NotificationServiceInterface;
 use Naf\Board\Contracts\PageRendererInterface;
 use Naf\Board\Contracts\PreferenceServiceInterface;
+use Naf\Board\Contracts\ProjectAccessInterface;
 use Naf\Board\Contracts\ProjectServiceInterface;
 use Naf\Board\Contracts\RoleServiceInterface;
 use Naf\Board\Contracts\SettingsServiceInterface;
@@ -30,6 +31,7 @@ use Naf\Board\Services\CommentService;
 use Naf\Board\Services\NotificationService;
 use Naf\Board\Services\PageRenderer;
 use Naf\Board\Services\PreferenceService;
+use Naf\Board\Services\ProjectAccess;
 use Naf\Board\Services\ProjectService;
 use Naf\Board\Services\RoleService;
 use Naf\Board\Services\SettingsService;
@@ -61,6 +63,7 @@ final class ServiceDefaults
     /** Contract to default implementation. */
     private const array SERVICES = [
         AccessInterface::class               => Access::class,
+        ProjectAccessInterface::class        => ProjectAccess::class,
         AccountServiceInterface::class       => AccountService::class,
         AiServiceInterface::class            => AiService::class,
         AttachmentServiceInterface::class    => AttachmentService::class,

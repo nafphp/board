@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Naf\Board\Tests\Http;
 
+use DOMDocument;
+use DOMXPath;
 use Naf\Board\Tests\Support\AcceptanceTestCase;
 
 /**
@@ -197,5 +199,23 @@ final class AutoSaveAndPickerTest extends AcceptanceTestCase
         }
 
         $this->fail('The page has no assignee picker.');
+    }
+
+    public function testInlineButtonsExposeTheirLabelAndCurrentValue(): void
+    {
+        $dom = new DOMDocument();
+        @$dom->loadHTML('<?xml encoding="UTF-8">' . $this->page($this->alice, $this->url . '?fragment=1'));
+        $xpath   = new DOMXPath($dom);
+        $buttons = $xpath->query('//*[@data-inline-field]/*[@role="button"]');
+        $this->assertGreaterThan(10, $buttons->length);
+        foreach ($buttons as $button) {
+            $this->assertFalse($button->hasAttribute('aria-label'), 'A label hides the visible current value from the accessible name.');
+            $this->assertStringContainsString('Bearbeiten', $button->textContent);
+            $this->assertNotSame('', trim($button->textContent));
+        }
+        $this->assertSame(1, $xpath->query('//*[@data-description-display and not(@role)]')->length);
+        $priority = $xpath->query('//*[@data-inline-field="priority"]/*[@role="button"]')->item(0);
+        $this->assertStringContainsString('Priorität:', $priority->textContent);
+        $this->assertStringContainsString('Normal', $priority->textContent);
     }
 }

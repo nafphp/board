@@ -7,9 +7,16 @@ $creating ??= false;
 ?>
 <div class="ticket-field <?= s($class ?? '') ?>" data-inline-field="<?= s($name) ?>">
     <?php if (!$creating): ?>
-    <div class="inline-display <?= $type === 'rich' ? 'ticket-prose' : '' ?>" <?= $editable ? 'role="button" tabindex="0" aria-expanded="false"' : '' ?> aria-label="<?= s(t($label)) ?><?= $editable ? ': ' . s(t('Bearbeiten')) : '' ?>">
+    <?php if ($type === 'rich'): ?>
+    <div class="ticket-prose" data-description-display><?= $display ?></div>
+    <div class="inline-display" <?= $editable ? 'role="button" tabindex="0" aria-expanded="false"' : 'hidden' ?>><?= s(t($label)) ?>: <?= s(t('Bearbeiten')) ?></div>
+    <?php else: ?>
+    <div class="inline-display" <?= $editable ? 'role="button" tabindex="0" aria-expanded="false"' : '' ?>>
+        <span class="sr-only"><?= s(t($label)) ?>: </span>
         <?= $display ?>
+        <?php if ($editable): ?><span class="sr-only"> — <?= s(t('Bearbeiten')) ?></span><?php endif ?>
     </div>
+    <?php endif ?>
     <?php endif ?>
     <?php if ($editable): ?>
         <?php if (!$creating): ?>

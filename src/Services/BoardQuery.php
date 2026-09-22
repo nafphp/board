@@ -76,40 +76,25 @@ final class BoardQuery implements BoardQueryInterface
         return $statement->fetchAll();
     }
 
-    /**
-     * The projects a ticket could be moved into: every other project the person is an active
-     * member of and may write in. Rights are read per project because a custom role can
-     * grant less than its name suggests.
-     */
+    /** Projects the current user can actually write to, including administrative access. */
     public function transferTargets(int $exclude): array
     {
-        $rows = $this->rows(
-            <<<'SQL'
-            SELECT p.id,
-                   p.name,
-                   p.ticket_key,
-                   m.role,
-                   m.custom_role_id
-            FROM projects p
-            JOIN project_members m ON m.project_id = p.id
-            WHERE m.user_id = ?
-                AND m.active = 1
-                AND p.archived_at IS NULL
-                AND p.id <> ?
-            ORDER BY p.name
-            SQL,
-            [$this->access->actor(), $exclude],
-        );
+        $rows = array_filter($this->projects(), static fn(array $row) => (int) $row['id'] !== $exclude && $row['archived_at'] === null);
+        usort($rows, static fn(array $a, array $b) => strcmp($a['name'], $b['name']));
 
-        return array_values(array_filter($rows, fn(array $row) => in_array(
-            'write',
-            $this->access->permissions(
-                (int) $row['id'],
-                $row['role'],
-                $row['custom_role_id'] === null ? null : (int) $row['custom_role_id'],
-            ),
-            true,
-        )));
+        return array_values(array_filter($rows, function (array $row): bool {
+            try {
+                $this->access->project((int) $row['id'], 'write');
+
+                return true;
+            } catch (Failure $failure) {
+                if (!in_array($failure->status, [403, 404], true)) {
+                    throw $failure;
+                }
+
+                return false;
+            }
+        }));
     }
 
     public function board(int $project, array $query = []): array

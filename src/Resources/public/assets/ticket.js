@@ -108,7 +108,23 @@ function error(form, message, conflict = false) {
     const reload = document.createElement('a');
     reload.href = location.href;
     reload.textContent = 'Aktuellen Stand laden';
-    box.append(document.createElement('br'), reload);
+    const draft = document.createElement('button');
+    draft.type = 'button';
+    draft.className = 'text-button';
+    draft.textContent = 'Entwurf sichern';
+    draft.addEventListener('click', () => {
+      const entries = [...new FormData(form)].filter(
+        ([name]) => !['_csrf', 'version', 'board_revision'].includes(name),
+      );
+      const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'ticket-entwurf.json';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+    box.append(document.createElement('br'), draft, document.createTextNode(' · '), reload);
   }
   if (form.hasAttribute('data-auto-save') && !conflict) {
     const retry = document.createElement('button');
@@ -316,6 +332,9 @@ export async function refresh(workspace, field, section) {
       const display = replacement.querySelector('.inline-display');
       display.setAttribute('aria-expanded', 'true');
       current.querySelector('.inline-display').replaceWith(display);
+      const description = replacement.querySelector('[data-description-display]');
+      if (description)
+        current.querySelector('[data-description-display]')?.replaceWith(description);
     } else if (replacement) current.replaceWith(replacement);
   });
   workspace.querySelectorAll('[data-ticket-readonly]').forEach((current) => {

@@ -1168,3 +1168,7 @@
   outline: none;
   min-height: 26px;
 }
+
+.ticket-field.is-editing > [data-description-display] {
+  display: none;
+}

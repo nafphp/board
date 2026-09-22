@@ -7,6 +7,7 @@ namespace Naf\Board\Services;
 use InvalidArgumentException;
 use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\AttachmentServiceInterface;
+use Naf\Board\Contracts\ProjectAccessInterface;
 use Naf\Board\Contracts\TicketServiceInterface;
 use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Failure;
@@ -28,6 +29,7 @@ final class AttachmentService implements AttachmentServiceInterface
     public function __construct(
         private PDO $pdo,
         private AccessInterface $access,
+        private ProjectAccessInterface $projects,
         private TicketServiceInterface $tickets,
         private AttachmentStorage $storage,
         private EntityManager $entityManager,
@@ -182,23 +184,16 @@ final class AttachmentService implements AttachmentServiceInterface
 
                 return;
             }
-            $statement = $this->pdo->prepare(
-                <<<'SQL'
-                SELECT m.role, m.custom_role_id
-                FROM project_members m
-                JOIN users u ON u.id = m.user_id
-                JOIN projects p ON p.id = m.project_id
-                WHERE m.project_id = ?
-                    AND m.user_id = ?
-                    AND m.active = 1
-                    AND u.active = 1
-                    AND p.archived_at IS NULL
-                SQL,
-            );
-            $statement->execute([$project, $row['uploaded_by']]);
-            $membership = $statement->fetch();
-            $rights     = $membership ? $this->access->permissions($project, $membership['role'], $membership['custom_role_id'] === null ? null : (int) $membership['custom_role_id']) : [];
-            if ($row['state'] === 'deleting' || !in_array('upload', $rights, true)) {
+
+            try {
+                $allowed = $this->projects->forUser((int) $project, (int) $row['uploaded_by'], true)->allows('upload');
+            } catch (Failure $failure) {
+                if (!in_array($failure->status, [403, 404], true)) {
+                    throw $failure;
+                }
+                $allowed = false;
+            }
+            if ($row['state'] === 'deleting' || !$allowed) {
                 $this->storage->delete($row['storage_key']);
                 $this->pdo->prepare('DELETE FROM attachments WHERE id=?')->execute([$id]);
             } else {
