@@ -72,9 +72,9 @@ php vendor/bin/naf nafinity:assets:publish --package=example/nafinity-extension-
 
 ## When registration happens
 
-The host boots infrastructure plugins, then `naf/board`, then extension packages. The board
-registers defaults during its own bootstrap. Extensions only note providers in their
-`bootstrap.php`; their providers run after **all** plugin bootstraps have completed:
+The host boots infrastructure plugins, then every installed extension, then `naf/board` last.
+Extensions only note providers in their `bootstrap.php`. Board registers its defaults and
+then runs those providers during its own bootstrap:
 
 ```php
 // examples/nafinity-extension-a/bootstrap.php
@@ -115,12 +115,20 @@ no authorization: definitions are code, user data is read in the request that ne
 The order in [`bootstrap.php`](../bootstrap.php) is fixed:
 
 1. NAF registers all Composer plugins, then boots them in the host's configured order.
-2. Board boot binds lazy services, policies, infrastructure and built-in definitions.
-3. Every extension bootstrap registers its providers.
-4. Framework dispatches `Event::PLUGINS_BOOTED` (requires `naf/framework` 0.2.7+).
-5. Board initializes providers by index/id and declares RBAC definitions.
-6. The host's optional `app/extensions.php` or `src/extensions.php` applies final overrides.
-7. NAF loads the host's routes, then serves requests or runs the CLI.
+2. Infrastructure plugins register their services. Every extension bootstrap notes its providers.
+3. Board boot binds lazy services, policies, infrastructure and built-in definitions.
+4. Still in Board boot, providers run by index/id, followed by RBAC declarations.
+5. The host's optional `app/extensions.php` or `src/extensions.php` applies final overrides.
+6. NAF loads the host's routes, then serves requests or runs the CLI.
+
+The skeleton's `app/src/plugins.php` reads Composer's installed `naf-plugin` packages and
+places all extensions between infrastructure and Board automatically. A custom host must
+preserve that order; simply listing Board before unnamed packages would boot them too late.
+No additional framework event is needed; this works with `naf/framework` 0.2.6.
+
+Resolve Board services and replace Board definitions or routes in a provider. An extension's
+early bootstrap and conventional route files run before Board's defaults exist. Host routes
+remain the final override location; use the existing route name to replace a route.
 
 The integration runner installs `naf/board` itself as a Composer dependency. It never copies
 board code into the host; that would exercise a different bootstrap lifecycle.
@@ -1099,17 +1107,16 @@ Run them with:
 make test-plugins
 ```
 
-The run boots the same installation four times: with both packages, the same installation over
-real HTTP, with the **plugin listing reversed** — NAF then boots B first, and the providers still
-run by index and id — and finally without the packages. Asset publishing is checked on top of
-that.
+The run boots with both packages, over real HTTP, with the **extension plugin listing reversed**
+(B before A, Board still last), with host overrides, and finally without the packages.
+Providers still run by index/id. The host override phase checks both CLI and HTTP boot: providers
+finish before host definitions, and host routes override earlier named routes. Asset publishing
+is checked on top of that.
 
-Two framework behaviours changed deliberately along the way, and nothing else did: the dispatcher
-now takes the bound target class, and `Naf\Board\settings()` exists. In particular, Nafinity's own
-`home` route still replaces a plugin's early route — registration order decides, and the
-application registers its routes first. `make test-plugins` covers both, with really installed
-packages.
-
+Nafinity's own `home` route replaces an extension's early route. Provider route overrides
+follow Board's routes, and host routes run last. The existing framework dispatcher uses the
+bound target class, so a provider's service replacement reaches the controller too.
+`make test-plugins` covers these cases with installed Composer packages.
 
 The private Skeleton CI runs `make test` on every host pull request, including
 MariaDB, PostgreSQL, HTTP, worker recovery and installed/uninstalled extension hosts. Its

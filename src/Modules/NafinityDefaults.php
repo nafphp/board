@@ -12,7 +12,7 @@ use Naf\Board\Support\Resolver;
 /**
  * Everything Nafinity itself contributes, registered exactly once.
  *
- * These run before any installed extension, so a plugin that replaces one of
+ * These run before any installed extension provider, so a plugin that replaces one of
  * them replaces something that already exists, and the last explicit
  * registration is the one that wins.
  *

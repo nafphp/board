@@ -248,8 +248,8 @@ final class ExtensionAProvider implements ExtensionProviderInterface
             __DIR__ . '/public',
         ));
 
-        // Services are only asked for here, after every plugin has booted, so this
-        // never depends on which package Composer happened to load first.
+        // Resolve services during Board boot, after infrastructure plugins have booted.
+        // The order Composer lists the extension packages in does not matter.
         $context->container()->get(JobRepository::class)->add(ReviewReminderJob::class, []);
         $context->container()->get(CommandRegistry::class)->add(ReportCommand::class);
 

@@ -26,6 +26,9 @@
         <testsuite name="ExtensionsOrder">
             <directory>Extensions/Order</directory>
         </testsuite>
+        <testsuite name="ExtensionsHost">
+            <directory>Extensions/Host</directory>
+        </testsuite>
         <testsuite name="ExtensionsAssets">
             <directory>Extensions/Assets</directory>
         </testsuite>

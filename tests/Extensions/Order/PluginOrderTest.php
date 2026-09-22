@@ -29,6 +29,7 @@ final class PluginOrderTest extends TestCase
 
         $this->assertNotFalse($a, 'extension A was not booted at all');
         $this->assertNotFalse($b, 'extension B was not booted at all');
+        $this->assertSame('naf/board', end($booted), 'Board must finalize after both plugins.');
         $this->assertLessThan($a, $b, 'the listing was not swapped: ' . implode(', ', $booted));
     }
 
