@@ -1073,8 +1073,10 @@ application registers its routes first. `make test-plugins` covers both, with re
 packages.
 
 
-The Board CI runs `make test` in a checked-out skeleton on every pull request, including
+The private Skeleton CI runs `make test` on every host pull request, including
 MariaDB, PostgreSQL, HTTP, worker recovery and installed/uninstalled extension hosts. Its
-workflow pins source revisions of the host and unpublished dependencies; update those pins
+workflow pins source revisions of the Board and unpublished dependencies; update those pins
 when changing the required integration environment. PHP syntax is checked on 8.3 and 8.5;
-the full container suite currently runs PHP 8.5.
+the full container suite currently runs PHP 8.5. Use the Skeleton workflow’s `board_ref`
+input to test another Board revision. The public Board repository cannot read the private
+host with its repository-scoped token; no cross-repository secret is required.
