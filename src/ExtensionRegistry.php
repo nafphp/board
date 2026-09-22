@@ -87,8 +87,8 @@ final class ExtensionRegistry
         if ($this->initialized) {
             throw new LogicException(sprintf(
                 'Extension "%s" was registered after the provider pass had finished. Providers '
-                . 'must be noted during Composer plugin boot; definitions may still be added to '
-                . 'the existing registries before the request is handled.',
+                . 'must be noted during Composer plugin boot before naf/board; definitions may still be '
+                . 'added to the existing registries before the request is handled.',
                 $id,
             ));
         }

@@ -38,6 +38,7 @@ final class ProviderBootTest extends ExtensionInstalledTestCase
     {
         $this->assertTrue(app()->hasPlugin('naf/board'), 'The host must install the board, not copy its bootstrap.');
         $this->assertTrue(app()->getPlugins()['naf/board']->isBooted());
+        $this->assertSame('naf/board', array_key_last(app()->getPlugins()));
         $this->assertSame(['example.reports', 'example.review'], extensions()->executed());
     }
 

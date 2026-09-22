@@ -5,6 +5,7 @@
   "license": "MIT",
   "require": {
     "php": ">=8.3",
+    "naf/board": "^0.1.3",
     "naf/framework": "^0.2.4",
     "example/nafinity-extension-a": "^1.0"
   },
@@ -15,11 +16,5 @@
   },
   "config": {
     "allow-plugins": false
-  },
-  "extra": {
-    "nafinity": {
-      "host": "fkde/nafinity",
-      "note": "Nafinity is the host application. This package additionally needs example/nafinity-extension-a, whose contributions it replaces."
-    }
   }
 }

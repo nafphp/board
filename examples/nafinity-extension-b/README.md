@@ -4,7 +4,7 @@ A second example extension for the Nafinity ticket application. Where extension
 A adds things, this one changes things that already exist — which is the harder
 half of being extensible.
 
-**Host requirement:** the `fkde/nafinity` application.
+**Host requirement:** the `naf/board` package in a NAF installation.
 **Depends on:** `example/nafinity-extension-a`, because it replaces that
 extension's contributions and adds a widget beside it.
 
