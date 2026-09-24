@@ -8,12 +8,13 @@ use function Naf\View\s;
 
 ?>
 <!doctype html>
-<html lang="<?= s(\Naf\I18n\lang()) ?>" data-theme="system">
+<html lang="<?= s(\Naf\I18n\lang()) ?>" data-theme="system" data-palette="classic" data-appearance-source="local">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <title>Anmelden · Nafinity</title>
-        <link rel="stylesheet" href="/assets/app.css?v=2" />
+        <script src="/assets/boot.js?v=2"></script>
+        <link rel="stylesheet" href="/assets/app.css?v=36" />
         <!-- This page builds its own head rather than using the layout, so it has to
              ask for the icon font itself: without it a ligature like arrow_forward
              is shown as that word. -->

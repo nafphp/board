@@ -26,7 +26,7 @@ final class PersonalSettingsTest extends ExtensionInstalledTestCase
     {
         // These write real values for real accounts, and the later phases read
         // some of them. Back to the defaults afterwards.
-        settings()->save(['locale' => 'de', 'timezone' => 'Europe/Berlin'], ['theme']);
+        settings()->save(['locale' => 'de', 'timezone' => 'Europe/Berlin'], ['theme', 'palette']);
         parent::tearDown();
     }
 
@@ -39,6 +39,15 @@ final class PersonalSettingsTest extends ExtensionInstalledTestCase
         $values = settings()->all();
         $this->assertSame('light', $values['theme']);
         $this->assertSame('UTC', $values['timezone'], 'the untouched field was reset');
+    }
+
+    public function testThePaletteIsASeparatePersonalSetting(): void
+    {
+        settings()->save(['palette' => 'anthracite', 'theme' => 'dark']);
+        settings()->save(['theme' => 'light']);
+
+        $this->assertSame('anthracite', settings()->get('palette'));
+        $this->assertSame('light', settings()->get('theme'));
     }
 
     public function testTheLanguagePickerWritesOnlyTheLanguage(): void

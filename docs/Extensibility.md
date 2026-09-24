@@ -435,7 +435,8 @@ possible but has to preserve those areas.
 ```php
 use function Naf\Board\settings;
 
-settings()->get('theme', 'system');                 // the signed-in user
+settings()->get('theme', 'system');                 // brightness: system | light | dark
+settings()->get('palette', 'classic');              // classic | anthracite
 settings()->all();                                  // array<string, mixed>
 settings()->has('theme');                           // registered and readable, even when null
 settings()->collection();                           // Naf\Support\Collection as a snapshot
@@ -487,7 +488,7 @@ $context->settings()->add(new SettingDefinition(
 
 ### Storage
 
-Existing values stay where they are: `theme`, `locale`, `timezone`, `notify_in_app`,
+Existing values stay where they are: `theme`, `palette`, `locale`, `timezone`, `notify_in_app`,
 `notify_mail` in `user_preferences`; `muted` in `project_preferences`; `name`, `description`,
 `color`, `icon`, `ticket_key`, `estimation_scale` in the project record through `ProjectService`.
 There is no second, contradicting store — `PreferenceService` and `SettingsService` share the

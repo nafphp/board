@@ -36,7 +36,7 @@
 }
 .ai-launcher:hover {
   border-color: var(--accent);
-  box-shadow: 0 5px 22px #6558e825;
+  box-shadow: 0 5px 22px color-mix(in srgb, var(--accent) 15%, transparent);
 }
 .ai-launcher:hover svg {
   transform: rotate(12deg) scale(1.06);
@@ -190,7 +190,7 @@
     var(--surface)
   );
   border: 1px solid color-mix(in srgb, var(--accent) 13%, var(--line));
-  box-shadow: 0 8px 24px #6558e808;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 3%, transparent);
 }
 .ai-welcome-mark svg {
   width: 33px;
@@ -419,7 +419,7 @@
   border: 0;
   border-radius: 10px;
   background: var(--accent);
-  color: var(--surface);
+  color: var(--on-accent);
   transition:
     background 0.18s,
     color 0.18s,

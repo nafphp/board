@@ -23,12 +23,14 @@ final class PreferenceService implements PreferenceServiceInterface
 
     public function save(array $data): void
     {
-        $user   = $this->access->actor();
-        $theme  = $data['theme'] ?? 'system';
-        $locale = $data['locale'] ?? 'de';
-        $zone   = $data['timezone'] ?? 'Europe/Berlin';
+        $user    = $this->access->actor();
+        $theme   = $data['theme'] ?? 'system';
+        $palette = $data['palette'] ?? 'classic';
+        $locale  = $data['locale'] ?? 'de';
+        $zone    = $data['timezone'] ?? 'Europe/Berlin';
         if (
             !in_array($theme, ['light', 'dark', 'system'], true)
+            || !in_array($palette, ['classic', 'anthracite'], true)
             || !Locales::supports($locale)
             || !is_string($zone)
             || !in_array($zone, DateTimeZone::listIdentifiers(), true)
@@ -37,6 +39,7 @@ final class PreferenceService implements PreferenceServiceInterface
         }
         $this->store->writeUser($user, [
             'theme'         => $theme,
+            'palette'       => $palette,
             'locale'        => $locale,
             'timezone'      => $zone,
             'notify_in_app' => isset($data['notify_in_app']) ? 1 : 0,
@@ -49,7 +52,7 @@ final class PreferenceService implements PreferenceServiceInterface
 
     /**
      * Only the language, because the picker in the bar sends nothing else. Running it
-     * through save() would reset theme, timezone and both notification switches to their
+     * through save() would reset palette, brightness, timezone and the notification switches to their
      * defaults, since that method writes every field it is given or not given.
      */
     public function language(mixed $locale): void

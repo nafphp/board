@@ -20,6 +20,7 @@ final class PreferenceStore
     /** The personal columns, with the values a missing row stands for. */
     public const array USER_DEFAULTS = [
         'theme'         => 'system',
+        'palette'       => 'classic',
         'locale'        => 'de',
         'timezone'      => 'Europe/Berlin',
         'notify_in_app' => 1,

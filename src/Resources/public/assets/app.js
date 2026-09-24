@@ -6,8 +6,6 @@ function syncSidebar() {
 }
 mobileViewport.addEventListener('change', syncSidebar);
 syncSidebar();
-const savedTheme = localStorage.getItem('nafinity.theme');
-if (['dark', 'light', 'system'].includes(savedTheme)) root.dataset.theme = savedTheme;
 export const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
 let toastTimer;
 export function toast(message) {
@@ -51,16 +49,50 @@ function showError(form, message, errors = {}, conflict = false) {
   box.classList.add('visible');
   box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
+function rememberAppearance() {
+  try {
+    localStorage.setItem('nafinity.theme', root.dataset.theme);
+    localStorage.setItem('nafinity.palette', root.dataset.palette);
+  } catch {
+    // The signed-in preference is still stored on the server.
+  }
+}
+// The server owns authenticated preferences. Mirror them only for the login page.
+if (csrf()) rememberAppearance();
+
+async function toggleTheme(button) {
+  if (button.disabled) return;
+  const previous = root.dataset.theme;
+  const dark =
+    previous === 'dark' ||
+    (previous === 'system' && matchMedia('(prefers-color-scheme:dark)').matches);
+  const next = dark ? 'light' : 'dark';
+  root.dataset.theme = next;
+  button.disabled = true;
+  try {
+    const response = await fetch('/api/settings/user', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrf(),
+      },
+      body: JSON.stringify({ values: { theme: next } }),
+    });
+    if (!response.ok) throw new Error('The appearance preference was not saved');
+    rememberAppearance();
+  } catch {
+    root.dataset.theme = previous;
+    toast(button.dataset.saveError || 'Die Helligkeit konnte nicht gespeichert werden.');
+  } finally {
+    button.disabled = false;
+  }
+}
+
 document.addEventListener('click', (event) => {
   const target = event.target.closest('button,a');
   if (!target) return;
-  if (target.matches('.theme-toggle')) {
-    const dark =
-      root.dataset.theme === 'dark' ||
-      (root.dataset.theme === 'system' && matchMedia('(prefers-color-scheme:dark)').matches);
-    root.dataset.theme = dark ? 'light' : 'dark';
-    localStorage.setItem('nafinity.theme', root.dataset.theme);
-  }
+  if (target.matches('.theme-toggle')) void toggleTheme(target);
   if (target.hasAttribute('data-sidebar-pin')) {
     root.dataset.sidebar = root.dataset.sidebar === 'pinned' ? 'rail' : 'pinned';
     localStorage.setItem('nafinity.sidebar', root.dataset.sidebar);
@@ -237,7 +269,9 @@ document.addEventListener('submit', async (event) => {
       }
     }
     if (endpoint(form).endsWith('/preferences')) {
-      localStorage.setItem('nafinity.theme', data.get('theme'));
+      root.dataset.theme = data.get('theme');
+      root.dataset.palette = data.get('palette');
+      rememberAppearance();
     }
     if (form.closest('#settings-detail')) {
       const destination = new URL(result.url || location.href, location.href);

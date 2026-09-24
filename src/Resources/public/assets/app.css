@@ -14,6 +14,7 @@
   --muted: #80869a;
   --line: #e6e9f1;
   --accent: #6558e8;
+  --on-accent: white;
   --accent-soft: #ebe9ff;
   --card-shadow: 0 2px 3px #20243803, 0 4px 12px #20243803;
   --panel-shadow: 18px 0 46px -22px #2024384d;
@@ -21,10 +22,47 @@
   --hover: #f3f3fc;
   --danger: #cf4261;
   --ok: #1f9d62;
+  --login-art-bg: #edebfc;
+  --login-art-text: #292443;
+  --login-brand: #26243d;
+  --login-symbol: #7161de;
+  --login-eyebrow: #9a91b3;
+  --login-copy: #89829f;
+  --login-credit: #9992af;
+  --login-orbit: #cfc8ef;
+  --login-orbit-large: #a398df;
+  --login-orbit-small: #beb5e8;
   --radius: 12px;
   --rail: 56px;
   --panel: 244px;
   font-size: 14px;
+}
+/* Color palette is independent of the device's light/dark preference. */
+html[data-palette='anthracite'] {
+  --bg: #ecefeb;
+  --surface: #f8faf7;
+  --sidebar: #e2e7e1;
+  --text: #29332c;
+  --muted: #526157;
+  --line: #cdd7ce;
+  --accent: #456f57;
+  --accent-soft: #dce9dd;
+  --card-shadow: 0 3px 10px #1f2b2410;
+  --panel-shadow: 18px 0 46px -16px #1f2b2440;
+  --input: #fff;
+  --hover: #e7ede6;
+  --danger: #ac4054;
+  --ok: #286d4d;
+  --login-art-bg: #dce5dd;
+  --login-art-text: #26342c;
+  --login-brand: #26342c;
+  --login-symbol: #456f57;
+  --login-eyebrow: #536457;
+  --login-copy: #4b6052;
+  --login-credit: #5b6c60;
+  --login-orbit: #bfd2c1;
+  --login-orbit-large: #8cad92;
+  --login-orbit-small: #a7c3ae;
 }
 html[data-theme='dark'] {
   color-scheme: dark;
@@ -43,6 +81,33 @@ html[data-theme='dark'] {
   --danger: #fb7b99;
   --ok: #58d6a0;
 }
+html[data-palette='anthracite'][data-theme='dark'] {
+  --bg: #1e2421;
+  --surface: #282f2a;
+  --sidebar: #222a25;
+  --text: #e6ece6;
+  --muted: #abbcaf;
+  --line: #425047;
+  --accent: #a4d3ae;
+  --on-accent: #1e2421;
+  --accent-soft: #34483a;
+  --card-shadow: 0 3px 15px #0005;
+  --panel-shadow: 18px 0 46px -16px #000b;
+  --input: #2b352e;
+  --hover: #344038;
+  --danger: #ff9aa8;
+  --ok: #8bd5a5;
+  --login-art-bg: #303a32;
+  --login-art-text: #e6ece6;
+  --login-brand: #e6ece6;
+  --login-symbol: #a4d3ae;
+  --login-eyebrow: #a2bea7;
+  --login-copy: #bed0c0;
+  --login-credit: #b2c8b6;
+  --login-orbit: #48614d;
+  --login-orbit-large: #759b7a;
+  --login-orbit-small: #5f8466;
+}
 @media (prefers-color-scheme: dark) {
   html[data-theme='system'] {
     color-scheme: dark;
@@ -60,6 +125,33 @@ html[data-theme='dark'] {
     --hover: #282a3d;
     --danger: #fb7b99;
     --ok: #58d6a0;
+  }
+  html[data-palette='anthracite'][data-theme='system'] {
+    --bg: #1e2421;
+    --surface: #282f2a;
+    --sidebar: #222a25;
+    --text: #e6ece6;
+    --muted: #abbcaf;
+    --line: #425047;
+    --accent: #a4d3ae;
+    --on-accent: #1e2421;
+    --accent-soft: #34483a;
+    --card-shadow: 0 3px 15px #0005;
+    --panel-shadow: 18px 0 46px -16px #000b;
+    --input: #2b352e;
+    --hover: #344038;
+    --danger: #ff9aa8;
+    --ok: #8bd5a5;
+    --login-art-bg: #303a32;
+    --login-art-text: #e6ece6;
+    --login-brand: #e6ece6;
+    --login-symbol: #a4d3ae;
+    --login-eyebrow: #a2bea7;
+    --login-copy: #bed0c0;
+    --login-credit: #b2c8b6;
+    --login-orbit: #48614d;
+    --login-orbit-large: #759b7a;
+    --login-orbit-small: #5f8466;
   }
 }
 * {
@@ -811,7 +903,7 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 }
 .button.primary {
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   border-color: transparent;
   box-shadow: 0 3px 8px color-mix(in srgb, var(--accent) 15%, transparent);
 }
@@ -1134,7 +1226,7 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 .filterbar .button[data-changed],
 .filterbar .button[data-changed]:hover {
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   box-shadow: 0 3px 8px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 .filterbar .button[data-changed]:hover {
@@ -2378,17 +2470,17 @@ fieldset:disabled select {
   position: relative;
   display: flex;
   flex-direction: column;
-  background: #edebfc;
+  background: var(--login-art-bg);
   padding: 42px 55px;
   overflow: hidden;
-  color: #292443;
+  color: var(--login-art-text);
 }
 .login-art .brand {
   margin: 0;
-  color: #26243d;
+  color: var(--login-brand);
 }
 .login-art .brand-symbol {
-  color: #7161de;
+  color: var(--login-symbol);
 }
 .login-message {
   margin: auto 0;
@@ -2397,7 +2489,7 @@ fieldset:disabled select {
   z-index: 1;
 }
 .login-message .eyebrow {
-  color: #9a91b3;
+  color: var(--login-eyebrow);
   font-size: 10px;
 }
 .login-message h1 {
@@ -2408,13 +2500,13 @@ fieldset:disabled select {
   margin: 20px 0;
 }
 .login-message p {
-  color: #89829f;
+  color: var(--login-copy);
   font-size: 14px;
   line-height: 1.9;
 }
 .login-credit {
   font-size: 10px;
-  color: #9992af;
+  color: var(--login-credit);
   position: relative;
   z-index: 1;
 }
@@ -2431,7 +2523,7 @@ fieldset:disabled select {
 .orbit-art span {
   font-size: 330px;
   line-height: 1;
-  color: #cfc8ef;
+  color: var(--login-orbit);
   font-weight: 500;
   letter-spacing: -30px;
 }
@@ -2439,7 +2531,7 @@ fieldset:disabled select {
 .orbit-art b {
   position: absolute;
   border-radius: 50%;
-  background: #a398df;
+  background: var(--login-orbit-large);
   width: 18px;
   height: 18px;
   top: 90px;
@@ -2450,7 +2542,7 @@ fieldset:disabled select {
   height: 11px;
   top: 230px;
   left: 330px;
-  background: #beb5e8;
+  background: var(--login-orbit-small);
 }
 .login-panel {
   display: grid;
