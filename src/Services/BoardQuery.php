@@ -408,6 +408,7 @@ final class BoardQuery implements BoardQueryInterface
             $this->access->actor(),
         ])[0] ?? [
             'theme'         => 'system',
+            'palette'       => 'classic',
             'locale'        => 'de',
             'timezone'      => 'Europe/Berlin',
             'notify_in_app' => 1,

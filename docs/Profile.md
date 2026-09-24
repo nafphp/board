@@ -8,8 +8,8 @@ roles with links to their boards, plus password change, email change and sign-ou
 
 The native HTML dialog holds keyboard focus. The X, Escape and a click on the backdrop close it
 and return focus to the trigger. Opening and closing animate over 260 and 150 ms;
-`prefers-reduced-motion` turns the movement off. Mobile widths, both themes and forced system
-colours are handled in CSS. Password and code are cleared from the fields on submit and on
+`prefers-reduced-motion` turns the movement off. Mobile widths, both brightness modes in
+both palettes and forced system colours are handled in CSS. Password and code are cleared from the fields on submit and on
 close; the application never puts them in LocalStorage or IndexedDB.
 
 ## Changing the password

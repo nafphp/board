@@ -135,10 +135,26 @@ final class CoreSettings implements ExtensionProviderInterface
         $zones    = array_combine(self::ZONES, self::ZONES);
 
         $settings->add(new SettingDefinition(
+            'palette',
+            'user',
+            'personal',
+            'Farbwelt',
+            'select',
+            'classic',
+            90,
+            [
+                'choices' => [
+                    'classic'    => 'Klassisch',
+                    'anthracite' => 'Anthrazit',
+                ],
+                'legacy' => ['store' => 'user_preferences', 'column' => 'palette'],
+            ],
+        ));
+        $settings->add(new SettingDefinition(
             'theme',
             'user',
             'personal',
-            'Darstellung',
+            'Helligkeit',
             'select',
             'system',
             100,

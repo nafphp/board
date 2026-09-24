@@ -66,22 +66,22 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
 ], JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP);
 ?>
 <!doctype html>
-<html lang="<?= s($preferences['locale']) ?>" data-theme="<?= s($preferences['theme'] ?? 'system') ?>">
+<html lang="<?= s($preferences['locale']) ?>" data-theme="<?= s($preferences['theme'] ?? 'system') ?>" data-palette="<?= s($preferences['palette'] ?? 'classic') ?>">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <meta name="csrf-token" content="<?= s($token) ?>" />
         <title><?= s(t($title ?? 'Board')) ?> · Nafinity</title>
-        <script src="/assets/boot.js"></script>
+        <script src="/assets/boot.js?v=2"></script>
         <link rel="stylesheet" href="/assets/icons.css?v=2" />
-        <link rel="stylesheet" href="/assets/app.css?v=35" />
+        <link rel="stylesheet" href="/assets/app.css?v=36" />
         <script type="module" src="/assets/app.js"></script>
         <script type="module" src="/assets/settings.js?v=5"></script>
         <script type="module" src="/assets/profile.js?v=1"></script>
-        <link rel="stylesheet" href="/assets/profile.css?v=11" />
+        <link rel="stylesheet" href="/assets/profile.css?v=12" />
         <script type="module" src="/assets/ai/chat.js?v=5"></script>
-        <link rel="stylesheet" href="/assets/settings.css?v=13" />
-        <link rel="stylesheet" href="/assets/ai.css?v=4" />
+        <link rel="stylesheet" href="/assets/settings.css?v=14" />
+        <link rel="stylesheet" href="/assets/ai.css?v=5" />
         <link rel="stylesheet" href="/assets/board.css?v=6" />
         <link rel="stylesheet" href="/assets/cursor.css?v=2" />
         <link rel="stylesheet" href="/assets/ticket.css?v=7" />
