@@ -12,6 +12,7 @@ use Naf\Board\Domain\Failure;
 use Naf\Board\Rbac\Installation;
 use Naf\Board\Rbac\Project;
 use Naf\Board\Support\BoardFilterContext;
+use Naf\Board\Support\CardContext;
 use Naf\Rbac\Scope;
 use PDO;
 
@@ -22,6 +23,19 @@ use function Naf\Rbac\rbac;
 /** @internal */
 final class BoardQuery implements BoardQueryInterface
 {
+    /**
+     * What a card needs, which is not all of a ticket.
+     *
+     * A card shows the start of the description and never its rich text, and a
+     * board reads up to CardContext::LIMIT of them on every load and every live
+     * refresh -- so the description arrives cut short and the HTML not at all.
+     * The ticket page reads the whole ticket through detail().
+     */
+    private const string CARD_COLUMNS = 't.id,t.project_id,t.board_id,t.column_id,t.swimlane_id,t.number,'
+        . 't.title,LEFT(t.description,200) AS description,t.priority,t.color,t.due_date,t.start_date,'
+        . 't.status,t.created_by,t.created_at,t.updated_at,t.closed_at,t.archived_at,t.position,t.version,'
+        . 't.estimate_minutes,t.spent_minutes,t.estimate_points';
+
     public function __construct(
         private PDO $pdo,
         private AccessInterface $access,
@@ -139,7 +153,8 @@ final class BoardQuery implements BoardQueryInterface
         $statement->execute($params);
         $total     = (int) $statement->fetchColumn();
         $statement = $this->pdo->prepare(
-            'SELECT t.* FROM tickets t WHERE ' . $clause . ' ORDER BY t.position,t.id LIMIT 300',
+            'SELECT ' . self::CARD_COLUMNS . ' FROM tickets t WHERE ' . $clause
+            . ' ORDER BY t.position,t.id LIMIT ' . CardContext::LIMIT,
         );
         $statement->execute($params);
         $cards   = $statement->fetchAll();
