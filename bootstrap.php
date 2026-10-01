@@ -6,6 +6,7 @@ use Naf\Auth\Auth;
 use Naf\Auth\Ldap\LdapProvider;
 use Naf\Auth\Ldap\NativeDirectory;
 use Naf\Auth\Provider\OrmProvider;
+use Naf\Auth\Session\SessionStateStore;
 use Naf\Auth\Session\StateStoreInterface;
 use Naf\Board\Commands\AdminCommand;
 use Naf\Board\Commands\CheckAssetsCommand;
@@ -42,6 +43,7 @@ use Naf\Queue\Drivers\PDODriver;
 use Naf\Schedule\Core\JobRepository;
 use Naf\Schedule\Core\Scheduler;
 use Naf\Schedule\Support\CronParser;
+use Naf\Session\Core\Session;
 use Psr\Log\LoggerInterface;
 
 use function Naf\app;
@@ -93,7 +95,14 @@ foreach (['host', 'database', 'username', 'password'] as $field) {
         throw new RuntimeException('Nafinity requires database configuration: ' . $field);
     }
 }
-$container->set(StateStoreInterface::class, static fn() => $container->make(AccountStateStore::class));
+$container->set(
+    StateStoreInterface::class,
+    static fn() => new AccountStateStore(
+        $container->get(SessionStateStore::class),
+        $container->get(Session::class),
+        static fn(): PDO => $container->get(PDO::class),
+    ),
+);
 $container->get(Auth::class)->policy(ProjectScope::class, new ProjectPolicy());
 $container->set(ActivityListener::class, static fn() => $container->make(ActivityListener::class));
 $container->set(

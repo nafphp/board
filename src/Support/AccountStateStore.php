@@ -4,13 +4,20 @@ declare(strict_types=1);
 
 namespace Naf\Board\Support;
 
+use Closure;
 use Naf\Auth\Session\SessionStateStore;
 use Naf\Auth\Session\StateStoreInterface;
 use Naf\Session\Core\Session;
 use PDO;
 use RuntimeException;
 
-/** Adds account-wide revocation to NAF's rotating session store. *
+/**
+ * Adds account-wide revocation to NAF's rotating session store.
+ *
+ * The connection is asked for when a session is read, not when the store is
+ * built: Auth builds it while the board boots, and booting -- for a command that
+ * publishes assets, say -- must not need a database.
+ *
  * @internal
  */
 final class AccountStateStore implements StateStoreInterface
@@ -20,7 +27,8 @@ final class AccountStateStore implements StateStoreInterface
     public function __construct(
         private SessionStateStore $store,
         private Session $session,
-        private PDO $pdo,
+        /** @var Closure(): PDO */
+        private Closure $connection,
     ) {
     }
 
@@ -61,7 +69,7 @@ final class AccountStateStore implements StateStoreInterface
 
     private function version(string $identifier): ?int
     {
-        $statement = $this->pdo->prepare('SELECT security_version FROM users WHERE id=? AND active=1');
+        $statement = ($this->connection)()->prepare('SELECT security_version FROM users WHERE id=? AND active=1');
         $statement->execute([$identifier]);
         $version = $statement->fetchColumn();
 

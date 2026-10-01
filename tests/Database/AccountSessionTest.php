@@ -8,6 +8,7 @@ use Naf\Auth\Session\SessionStateStore;
 use Naf\Board\Support\AccountStateStore;
 use Naf\Board\Tests\Support\AccountTestCase;
 use Naf\Session\Core\Session;
+use PDO;
 
 use function Naf\app;
 
@@ -80,7 +81,7 @@ final class AccountSessionTest extends AccountTestCase
         return new AccountStateStore(
             app()->container()->get(SessionStateStore::class),
             app()->container()->get(Session::class),
-            $this->pdo,
+            fn(): PDO => $this->pdo,
         );
     }
 }
