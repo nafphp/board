@@ -117,7 +117,9 @@ final class CrashRecoveryTest extends DatabaseTestCase
     private function startWorker()
     {
         $process = proc_open(
-            [PHP_BINARY, __DIR__ . '/../Support/worker.php'],
+            // EGPCS, as an installation's php.ini has it: NAF resolves ENV:
+            // references from $_ENV, which PHP leaves empty otherwise.
+            [PHP_BINARY, '-d', 'variables_order=EGPCS', __DIR__ . '/../Support/worker.php'],
             [
                 0 => ['file', '/dev/null', 'r'],
                 1 => ['file', '/dev/null', 'w'],

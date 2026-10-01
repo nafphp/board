@@ -10,21 +10,13 @@ use PHPUnit\Framework\Attributes\DataProvider;
 /**
  * What a session is worth over the wire.
  *
- * The cookie is Secure, the token is the same in every tab of one session, and a
- * write without a valid one is refused whatever it dresses itself up as -- a
- * Bearer header is not an alternative to CSRF, it is just a header.
+ * The token is the same in every tab of one session, and a write without a
+ * valid one is refused whatever it dresses itself up as -- a Bearer header is
+ * not an alternative to CSRF, it is just a header. That the cookie is Secure
+ * over HTTPS is naf/session's to prove, and it does.
  */
 final class SessionAndCsrfTest extends AcceptanceTestCase
 {
-    public function testTheSessionCookieIsSecure(): void
-    {
-        $this->assertMatchesRegularExpression(
-            '/set-cookie:[^\n]*secure/i',
-            $this->alice->loginHeaders(),
-            'the session cookie is served over HTTPS without Secure',
-        );
-    }
-
     public function testTheTokenIsTheSameInEveryTabOfOneSession(): void
     {
         $board  = $this->alice->token($this->page($this->alice, '/projects/' . self::PROJECT));

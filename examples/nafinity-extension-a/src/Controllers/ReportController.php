@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Example\ExtensionA\Controllers;
 
-use Naf\Board\Domain\Failure;
-use Naf\Board\Support\Input;
 use Example\ExtensionA\ExtensionAProvider;
 use Example\ExtensionA\Services\ReportService;
 use Naf\Auth\Exceptions\UnauthenticatedException;
 use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\PageRendererInterface;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Support\Input;
 use Psr\Http\Message\ResponseInterface;
 
-use function Naf\redirect;
-use function Naf\View\render;
 use function Naf\Board\settings;
 use function Naf\Board\template;
+use function Naf\redirect;
+use function Naf\View\render;
 
 /**
  * The reports page.

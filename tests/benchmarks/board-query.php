@@ -6,10 +6,20 @@ use Naf\Auth\Auth;
 use Naf\Board\Models\User;
 use Naf\Board\Services\BoardQuery;
 
-if (getenv('APP_ENV') !== 'test' || getenv('DB_DATABASE') !== 'nafinity_test') {
-    throw new RuntimeException('Benchmark requires the disposable nafinity_test database.');
+// The same defaults phpunit.xml gives the suite, so this reaches its database.
+foreach ([
+    'APP_ENV'     => 'test',
+    'APP_URL'     => 'http://127.0.0.1:38080',
+    'DB_HOST'     => '127.0.0.1',
+    'DB_PORT'     => '33306',
+    'DB_DATABASE' => 'nafinity_test',
+    'DB_USERNAME' => 'board',
+    'DB_PASSWORD' => 'board',
+] as $name => $default) {
+    $_ENV[$name] = getenv($name) ?: $default;
+    putenv($name . '=' . $_ENV[$name]);
 }
-require __DIR__ . '/bootstrap.php';
+require dirname(__DIR__) . '/bootstrap.php';
 $c    = \Naf\app()->container();
 $pdo  = $c->get(PDO::class);
 $user = new User($pdo->query('SELECT * FROM users WHERE id=1')->fetch());

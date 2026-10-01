@@ -20,7 +20,7 @@ final class RememberedSignInOverHttpTest extends AcceptanceTestCase
 {
     public function testSomebodyWhoAskedToBeRememberedComesBackAfterTheSessionIsGone(): void
     {
-        $client = new HttpClient(self::BASE, 'remembered', self::AUTHORITY);
+        $client = $this->guest('remembered');
         $client->login('alice@example.test', self::PASSWORD, remember: true);
 
         $this->assertStringContainsString(
@@ -43,7 +43,7 @@ final class RememberedSignInOverHttpTest extends AcceptanceTestCase
     /** Not asking means not remembered, which is what an unchecked box has to mean. */
     public function testSomebodyWhoDidNotAskIsNotRemembered(): void
     {
-        $client = new HttpClient(self::BASE, 'not-remembered', self::AUTHORITY);
+        $client = $this->guest('not-remembered');
         $client->login('alice@example.test', self::PASSWORD);
 
         $this->assertStringNotContainsString(RememberService::COOKIE, $client->loginHeaders());
@@ -59,7 +59,7 @@ final class RememberedSignInOverHttpTest extends AcceptanceTestCase
     /** Signing out ends it on this device, cookie and row together. */
     public function testSigningOutEndsTheRememberedSignIn(): void
     {
-        $client = new HttpClient(self::BASE, 'remember-logout', self::AUTHORITY);
+        $client = $this->guest('remember-logout');
         $token  = $client->login('alice@example.test', self::PASSWORD, remember: true);
         $client->request('/logout', ['_csrf' => $token]);
 

@@ -9,7 +9,7 @@ use Naf\Board\Jobs\AccountSecurityNoticeJob;
 use Naf\Board\Models\User;
 use Naf\Board\Tests\Support\AcceptanceTestCase;
 use Naf\Board\Tests\Support\HttpClient;
-use Naf\Board\Tests\Support\Mailpit;
+use Naf\Board\Tests\Support\Outbox;
 use Naf\CLI\Core\Input;
 use Naf\CLI\Core\Output;
 use Naf\ORM\Core\EntityManager;
@@ -38,21 +38,19 @@ final class AccountSecurityOverHttpTest extends AcceptanceTestCase
     private const ORIGINAL = 'Profile test original password!';
     private const CHANGED  = 'Profile test changed password!';
 
-    private Mailpit $mailpit;
     /** @var array<string,string> */
     private array $accounts;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->mailpit = new Mailpit();
-        $this->mailpit->forget();
+        Outbox::forget();
         $this->accounts = $this->createAccounts();
     }
 
     public function testTheProfileNeedsASessionAndIsNeverCached(): void
     {
-        $guest = new HttpClient(self::BASE, 'guest-profile', self::AUTHORITY);
+        $guest = $this->guest('guest-profile');
         $this->assertSame(401, $guest->request('/profile')['status']);
 
         $client   = $this->signIn($this->accounts['password']);
@@ -150,7 +148,7 @@ final class AccountSecurityOverHttpTest extends AcceptanceTestCase
         $this->assertSame(200, $requested['status']);
         $pending = json_decode($requested['body'], true)['pending'];
 
-        $code = $this->mailpit->codeFor($wanted);
+        $code = Outbox::codeFor($wanted);
         $this->assertSame(14, strlen($code), 'the delivered code is not a code');
         $this->assertSame(
             $this->accounts['email'],
@@ -174,7 +172,7 @@ final class AccountSecurityOverHttpTest extends AcceptanceTestCase
             'email'            => $wanted,
             'current_password' => self::ORIGINAL,
         ])['body'], true)['pending'];
-        $code = $this->mailpit->codeFor($wanted);
+        $code = Outbox::codeFor($wanted);
 
         $this->assertSame(422, $this->send($other, '/profile/email/confirm', [
             'request_id' => $pending['request_id'],
@@ -204,7 +202,7 @@ final class AccountSecurityOverHttpTest extends AcceptanceTestCase
             'email'            => $wanted,
             'current_password' => self::ORIGINAL,
         ])['body'], true)['pending'];
-        $code    = $this->mailpit->codeFor($wanted);
+        $code    = Outbox::codeFor($wanted);
         $confirm = ['request_id' => $pending['request_id'], 'code' => $code];
 
         $answers = HttpClient::together([
@@ -242,7 +240,7 @@ final class AccountSecurityOverHttpTest extends AcceptanceTestCase
 
         $this->assertNotSame(
             [],
-            $this->mailpit->messagesTo($email),
+            Outbox::messagesTo($email),
             'nothing was sent to the address whose password changed',
         );
     }
@@ -326,10 +324,8 @@ final class AccountSecurityOverHttpTest extends AcceptanceTestCase
 
     private function trySignIn(string $email, string $password, string $name = ''): ?HttpClient
     {
-        $client = new HttpClient(
-            self::BASE,
+        $client = $this->guest(
             $name !== '' ? $name : 'profile-' . substr(md5($email . $password), 0, 8),
-            self::AUTHORITY,
         );
 
         try {

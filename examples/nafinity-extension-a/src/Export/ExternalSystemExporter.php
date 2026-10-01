@@ -29,7 +29,7 @@ final class ExternalSystemExporter implements ExporterInterface
     {
         $pairs = [];
         foreach (['key', 'status', 'title'] as $field) {
-            $value = $line->data[$field] ?? '';
+            $value   = $line->data[$field] ?? '';
             $pairs[] = $field . '=' . (is_array($value) ? implode('|', $value) : (string) $value);
         }
 

@@ -127,7 +127,3 @@ $routes = [
 foreach ($routes as [$method, $path, $action, $name]) {
     route()->add($method, $path, [C::class, $action], $name);
 }
-
-if (getenv('APP_ENV') === 'test') {
-    require dirname(__DIR__) . '/tests/http_routes.php';
-}

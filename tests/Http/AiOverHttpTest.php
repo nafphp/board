@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Naf\Board\Tests\Http;
 
 use Naf\Board\Tests\Support\AcceptanceTestCase;
-use Naf\Board\Tests\Support\HttpClient;
 
 /**
  * The assistant's endpoints are ordinary endpoints.
@@ -61,7 +60,7 @@ final class AiOverHttpTest extends AcceptanceTestCase
 
     public function testTheToolsNeedASession(): void
     {
-        $anonymous = new HttpClient(self::BASE, 'anonymous', self::AUTHORITY);
+        $anonymous = $this->guest('anonymous');
 
         $this->assertSame(401, $anonymous->request(self::TOOLS)['status']);
     }

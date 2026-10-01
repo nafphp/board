@@ -9,11 +9,10 @@ use PhpCsFixer\Finder;
 // the root is never walked. This is the package: its code, its tests and the
 // assets it publishes into a host.
 $finder = Finder::create()
-    ->in([__DIR__ . '/src', __DIR__ . '/tests'])
+    ->in([__DIR__ . '/src', __DIR__ . '/tests', __DIR__ . '/examples'])
     ->name('*.php')
     ->name('*.phtml')
     ->exclude(['vendor', 'storage', 'logs'])
-    ->notName('identity.local.php')
     ->append([__FILE__, __DIR__ . '/bootstrap.php']);
 
 return (new Config())

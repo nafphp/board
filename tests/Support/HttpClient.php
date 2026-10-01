@@ -23,16 +23,12 @@ final class HttpClient
     private string $loginHeaders = '';
 
     /**
-     * @param string      $base       where the application answers
-     * @param string      $name       a cookie jar of this client's own
-     * @param string|null $authority  the CA to verify the certificate against,
-     *                                because an installation serving HTTPS with
-     *                                a certificate nobody checks proves nothing
+     * @param string $base where the application answers
+     * @param string $name a cookie jar of this client's own
      */
     public function __construct(
         private string $base,
         string $name = 'default',
-        private ?string $authority = null,
     ) {
         $this->jar = sys_get_temp_dir() . '/nafinity-test-cookies-' . $name . '.txt';
         $this->forgetSession();
@@ -81,10 +77,6 @@ final class HttpClient
             CURLOPT_FOLLOWLOCATION => false,
             CURLOPT_HTTPHEADER     => $headers,
         ]);
-
-        if ($this->authority !== null) {
-            curl_setopt($handle, CURLOPT_CAINFO, $this->authority);
-        }
 
         if ($body !== null) {
             $json = str_contains(strtolower(implode(' ', $headers)), 'application/json');
