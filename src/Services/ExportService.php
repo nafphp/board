@@ -342,11 +342,9 @@ final class ExportService
     /**
      * Labels and assignees of one page, by ticket
      *
-     * Two queries per page rather than two correlated subqueries per row, and
-     * the reason is portability before speed: the obvious spelling of this is
-     * GROUP_CONCAT, which PostgreSQL does not have and calls string_agg. The
-     * board's own query already reads them this way, so this is also the
-     * spelling that stays true when those tables change.
+     * Two queries per page rather than two correlated subqueries per row: the
+     * board's own query reads them this way, so this is also the spelling that
+     * stays true when those tables change.
      *
      * @param list<int> $ids Ticket ids of the page
      *

@@ -36,12 +36,9 @@ final class ReviewNoticeJob implements QueueJobInterface
             return;
         }
 
-        $mysql     = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql';
         $statement = $this->pdo->prepare(
             'INSERT INTO example_report_runs(project_id,ran_at,open_reviews) VALUES(?,?,0)'
-            . ($mysql
-                ? ' ON DUPLICATE KEY UPDATE ran_at=VALUES(ran_at)'
-                : ' ON CONFLICT(project_id) DO UPDATE SET ran_at=excluded.ran_at'),
+            . ' ON DUPLICATE KEY UPDATE ran_at=VALUES(ran_at)',
         );
         $statement->execute([$this->projectId, gmdate('Y-m-d H:i:s')]);
 

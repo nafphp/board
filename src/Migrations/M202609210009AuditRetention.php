@@ -28,10 +28,6 @@ final class M202609210009AuditRetention extends AbstractMigration
 
     public function down(PDO $connection): void
     {
-        $connection->exec(
-            $connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql'
-                ? 'DROP INDEX activities_created_at'
-                : 'DROP INDEX activities_created_at ON activities',
-        );
+        $connection->exec('DROP INDEX activities_created_at ON activities');
     }
 }

@@ -89,10 +89,9 @@ final class RoleService implements RoleServiceInterface
                 throw new Failure(t('Eine Rolle mit diesem Namen existiert bereits.'));
             }
             if ($id === null) {
-                $postgres  = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql';
-                $statement = $this->pdo->prepare('INSERT INTO project_roles(project_id,name,description) VALUES(?,?,?)' . ($postgres ? ' RETURNING id' : ''));
+                $statement = $this->pdo->prepare('INSERT INTO project_roles(project_id,name,description) VALUES(?,?,?)');
                 $statement->execute([$project, $name, $fields['description']]);
-                $id = (int) ($postgres ? $statement->fetchColumn() : $this->pdo->lastInsertId());
+                $id = (int) $this->pdo->lastInsertId();
             } else {
                 $this->pdo->prepare('UPDATE project_roles SET name=?,description=?,version=version+1 WHERE project_id=? AND id=?')->execute([$name, $fields['description'], $project, $id]);
             }

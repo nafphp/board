@@ -32,12 +32,8 @@ final class M202609210008RememberedSignIns extends AbstractMigration
 {
     public function up(PDO $connection): void
     {
-        $id = $connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql'
-            ? 'BIGSERIAL PRIMARY KEY'
-            : 'BIGINT AUTO_INCREMENT PRIMARY KEY';
-
         $connection->exec("CREATE TABLE remembered_sign_ins (
-            id $id,
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
             user_id BIGINT NOT NULL,
             selector VARCHAR(32) NOT NULL UNIQUE,
             validator_hash VARCHAR(64) NOT NULL,

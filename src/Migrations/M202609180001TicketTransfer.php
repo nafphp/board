@@ -109,42 +109,23 @@ final class M202609180001TicketTransfer extends AbstractMigration
     }
 
     /**
-     * The constraints being replaced were declared inline and so were named by the driver,
-     * differently on each. Looking the name up is what lets one migration run on both.
+     * The constraints being replaced were declared inline and so were named by
+     * the server; looking the name up is what keeps this from guessing it.
      */
     private function constraint(PDO $connection, string $table, string $column, string $target): string
     {
         $statement = $connection->prepare(
-            $connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql'
-                ? <<<'SQL'
-                SELECT CONSTRAINT_NAME
-                FROM information_schema.KEY_COLUMN_USAGE
-                WHERE TABLE_SCHEMA = DATABASE()
-                    AND TABLE_NAME = ?
-                    AND COLUMN_NAME = ?
-                    AND REFERENCED_TABLE_NAME = ?
-                LIMIT 1
-                SQL
-                : <<<'SQL'
-                SELECT c.conname
-                FROM pg_constraint c
-                WHERE c.contype = 'f'
-                    AND c.conrelid = to_regclass(?)
-                    AND c.confrelid = to_regclass(?)
-                    AND EXISTS (SELECT 1
-                                FROM pg_attribute a
-                                WHERE a.attrelid = c.conrelid
-                                    AND a.attnum = ANY (c.conkey)
-                                    AND a.attname = ?)
-                LIMIT 1
-                SQL,
+            <<<'SQL'
+            SELECT CONSTRAINT_NAME
+            FROM information_schema.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_NAME = ?
+                AND COLUMN_NAME = ?
+                AND REFERENCED_TABLE_NAME = ?
+            LIMIT 1
+            SQL,
         );
-        // The drivers read the same three facts in a different order.
-        $statement->execute(
-            $connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql'
-                ? [$table, $column, $target]
-                : [$table, $target, $column],
-        );
+        $statement->execute([$table, $column, $target]);
         $name = $statement->fetchColumn();
         if ($name === false) {
             throw new RuntimeException("No foreign key on $table.$column towards $target.");
@@ -161,11 +142,8 @@ final class M202609180001TicketTransfer extends AbstractMigration
      */
     private function drop(PDO $connection, string $table, string $constraint): void
     {
-        $mysql = $connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql';
-        $connection->exec(
-            "ALTER TABLE $table DROP " . ($mysql ? 'FOREIGN KEY' : 'CONSTRAINT') . " $constraint",
-        );
-        if (!$mysql || !str_starts_with($constraint, 'fk_')) {
+        $connection->exec("ALTER TABLE $table DROP FOREIGN KEY $constraint");
+        if (!str_starts_with($constraint, 'fk_')) {
             return;
         }
         $statement = $connection->prepare(

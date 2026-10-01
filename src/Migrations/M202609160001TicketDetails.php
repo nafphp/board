@@ -32,11 +32,10 @@ final class M202609160001TicketDetails extends AbstractMigration
 
     public function down(PDO $connection): void
     {
-        $mysql = $connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql';
         $connection->exec('DROP TABLE ticket_links');
-        $connection->exec('ALTER TABLE comments DROP ' . ($mysql ? 'FOREIGN KEY' : 'CONSTRAINT') . ' fk_comment_parent');
+        $connection->exec('ALTER TABLE comments DROP FOREIGN KEY fk_comment_parent');
         $connection->exec('ALTER TABLE comments DROP COLUMN parent_id');
-        $connection->exec('ALTER TABLE comments DROP ' . ($mysql ? 'INDEX' : 'CONSTRAINT') . ' uq_comment_ticket');
+        $connection->exec('ALTER TABLE comments DROP INDEX uq_comment_ticket');
         foreach (['description_html', 'start_date', 'estimate_minutes', 'spent_minutes'] as $field) {
             $connection->exec('ALTER TABLE tickets DROP COLUMN ' . $field);
         }

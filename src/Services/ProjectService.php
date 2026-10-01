@@ -460,14 +460,9 @@ final class ProjectService implements ProjectServiceInterface
         $columns      = implode(',', array_keys($data));
         $placeholders = implode(',', array_fill(0, count($data), '?'));
         $sql          = "INSERT INTO $table($columns) VALUES($placeholders)";
-        if ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql') {
-            $sql .= ' RETURNING id';
-        }
-        $statement = $this->pdo->prepare($sql);
+        $statement    = $this->pdo->prepare($sql);
         $statement->execute(array_values($data));
 
-        return (int) ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql'
-            ? $statement->fetchColumn()
-            : $this->pdo->lastInsertId());
+        return (int) $this->pdo->lastInsertId();
     }
 }

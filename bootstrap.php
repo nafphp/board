@@ -84,7 +84,10 @@ $container->set(LoggerInterface::class, new ContainerLogger());
 // nothing here resolves one: an extension that rebinds a contract further down
 // still reaches every consumer, including the worker.
 ServiceDefaults::register($container);
-// Nafinity requires a database; naf/database itself remains optional/nullable.
+// Nafinity requires MariaDB or MySQL; naf/database itself remains optional/nullable.
+if (config('database:driver') !== 'mysql') {
+    throw new RuntimeException('Nafinity requires database:driver "mysql" (MariaDB or MySQL).');
+}
 foreach (['host', 'database', 'username', 'password'] as $field) {
     if (!is_string(config('database:' . $field)) || config('database:' . $field) === '') {
         throw new RuntimeException('Nafinity requires database configuration: ' . $field);

@@ -66,51 +66,37 @@ final class M202609210003OpenPriorities extends AbstractMigration
         $connection->exec($this->width($connection, self::NARROW));
     }
 
-    /** Resizing the column, which the two engines spell differently. */
+    /** Resizing the column. */
     private function width(PDO $connection, int $characters): string
     {
-        return $connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql'
-            ? "ALTER TABLE tickets MODIFY priority VARCHAR($characters) NOT NULL DEFAULT 'normal'"
-            : "ALTER TABLE tickets ALTER COLUMN priority TYPE VARCHAR($characters)";
+        return "ALTER TABLE tickets MODIFY priority VARCHAR($characters) NOT NULL DEFAULT 'normal'";
     }
 
     /**
      * The generated name of the CHECK on `priority`.
      *
-     * The constraint was declared inline and never named, so every engine made
-     * up its own -- `CONSTRAINT_2` on MariaDB, `tickets_chk_1` on MySQL,
-     * `tickets_priority_check` on Postgres. Guessing one of those would drop the
-     * wrong constraint on the other two, so the name is read back instead.
+     * The constraint was declared inline and never named, so the server made
+     * one up -- `CONSTRAINT_2` on MariaDB, `tickets_chk_1` on MySQL. Guessing
+     * would drop the wrong constraint, so the name is read back instead.
      */
     private function constraintName(PDO $connection): ?string
     {
-        $postgres = $connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql';
-        $sql      = $postgres
-            ? "SELECT conname FROM pg_constraint
-                 WHERE conrelid='tickets'::regclass AND contype='c'
-                   AND pg_get_constraintdef(oid) LIKE '%priority%'"
-            : "SELECT c.CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS t
-                 JOIN information_schema.CHECK_CONSTRAINTS c
-                   ON c.CONSTRAINT_SCHEMA=t.CONSTRAINT_SCHEMA
-                  AND c.CONSTRAINT_NAME=t.CONSTRAINT_NAME
-                WHERE t.TABLE_SCHEMA=DATABASE() AND t.TABLE_NAME='tickets'
-                  AND t.CONSTRAINT_TYPE='CHECK' AND c.CHECK_CLAUSE LIKE '%priority%'";
-
-        $name = $connection->query($sql)?->fetchColumn();
+        $name = $connection->query(
+            "SELECT c.CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS t
+               JOIN information_schema.CHECK_CONSTRAINTS c
+                 ON c.CONSTRAINT_SCHEMA=t.CONSTRAINT_SCHEMA
+                AND c.CONSTRAINT_NAME=t.CONSTRAINT_NAME
+              WHERE t.TABLE_SCHEMA=DATABASE() AND t.TABLE_NAME='tickets'
+                AND t.CONSTRAINT_TYPE='CHECK' AND c.CHECK_CLAUSE LIKE '%priority%'",
+        )?->fetchColumn();
 
         if (!is_string($name)) {
             return null;
         }
 
-        /*
-         * Identifiers cannot be bound, so the name goes into the ALTER as text.
-         * It comes from the catalogue rather than from input. Quoting keeps a
-         * generated name that needs it working -- and the two engines disagree
-         * about the quote: MariaDB reads "x" as a string unless ANSI_QUOTES is
-         * on, which is not something a migration should assume about a host.
-         */
-        $quote = $postgres ? '"' : '`';
-
-        return $quote . str_replace($quote, $quote . $quote, $name) . $quote;
+        // Identifiers cannot be bound, so the name goes into the ALTER as text.
+        // It comes from the catalogue rather than from input, and is quoted so a
+        // generated name that needs it keeps working.
+        return '`' . str_replace('`', '``', $name) . '`';
     }
 }

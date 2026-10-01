@@ -14,15 +14,11 @@ final class M202609160002RichTextStorage extends AbstractMigration
 {
     public function up(PDO $connection): void
     {
-        if ($connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql') {
-            $connection->exec('ALTER TABLE tickets MODIFY description MEDIUMTEXT NOT NULL, MODIFY description_html MEDIUMTEXT NULL');
-        }
+        $connection->exec('ALTER TABLE tickets MODIFY description MEDIUMTEXT NOT NULL, MODIFY description_html MEDIUMTEXT NULL');
     }
 
     public function down(PDO $connection): void
     {
-        if ($connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql') {
-            $connection->exec('ALTER TABLE tickets MODIFY description TEXT NOT NULL, MODIFY description_html TEXT NULL');
-        }
+        $connection->exec('ALTER TABLE tickets MODIFY description TEXT NOT NULL, MODIFY description_html TEXT NULL');
     }
 }

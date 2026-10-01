@@ -74,22 +74,13 @@ final class AuditLog
 
         $before = gmdate('Y-m-d H:i:s', time() - $days * 86400);
 
-        /*
-         * Capped per statement, and the two engines spell that differently:
-         * PostgreSQL has no LIMIT on DELETE and names the rows through a
-         * subquery instead, which needs the cutoff twice. The cap is a constant
-         * of this class and never a request, so it is written in rather than
-         * bound -- neither engine accepts a placeholder in LIMIT.
-         */
-        $postgres = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql';
-        $sql      = $postgres
-            ? 'DELETE FROM activities WHERE id IN ('
-                . 'SELECT id FROM activities WHERE created_at < ? ORDER BY id LIMIT '
-                . self::BATCH . ')'
-            : 'DELETE FROM activities WHERE created_at < ? ORDER BY id LIMIT ' . self::BATCH;
-
-        $statement = $this->pdo->prepare($sql);
-        $dropped   = 0;
+        // Capped per statement. The cap is a constant of this class and never a
+        // request, so it is written in rather than bound: MariaDB does not take
+        // a placeholder in LIMIT.
+        $statement = $this->pdo->prepare(
+            'DELETE FROM activities WHERE created_at < ? ORDER BY id LIMIT ' . self::BATCH,
+        );
+        $dropped = 0;
 
         do {
             $statement->execute([$before]);
@@ -250,9 +241,9 @@ final class AuditLog
      *
      * Without this, searching for "100%" matches every entry there is, and an
      * underscore matches any character -- a search box that quietly means
-     * something else than it says. `!` as the escape because the two engines
-     * disagree about backslashes in string literals and a log should not be the
-     * place that discovers it.
+     * something else than it says. `!` as the escape because what a backslash
+     * means in a string literal depends on the server's SQL mode, and a log
+     * should not be the place that discovers it.
      */
     private static function literal(string $term): string
     {
