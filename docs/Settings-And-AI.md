@@ -75,7 +75,7 @@ Verified with a catalogue of seven real and 493 synthetic tool descriptions: the
 `embeddinggemma:latest` took about seven seconds, and the following selection with an existing
 index 66 ms. The column question returned the board tool only. That is a local selection
 measurement, not a statement about 500 implemented actions or about the duration of the chat
-answer that follows. `make test-ai` re-runs the selection checks behind it.
+answer that follows. `npm test` re-runs the selection checks behind it.
 
 API and prefix contracts: [Ollama Embed](https://docs.ollama.com/api/embed),
 [EmbeddingGemma retrieval](https://ai.google.dev/gemma/docs/embeddinggemma/inference-embeddinggemma-with-sentence-transformers),
@@ -190,16 +190,15 @@ system prompt.
 
 ## Development and tests
 
-`make test` includes the database, HTTP, worker and AI transport tests. `make test-ai` checks
-streaming, Unicode across packet boundaries, tool answers, errors, aborts, allowed local URLs and
+`composer test` runs the database, HTTP and worker tests; `npm test` runs the AI transport and
+router tests in `tests/js`. They check streaming, Unicode across packet boundaries, tool answers, errors, aborts, allowed local URLs and
 separated storage areas, plus selection from 500 tools, cache invalidation, permission
 revocation, dependencies and the fallback and schema limits. The optional live benchmark runs
 with `node tests/benchmarks/ai-routing-live.mjs PATH_TO_AUTHORIZED_TOOL_ARRAY.json`; it uses an already
 installed local model and executes no domain tools.
 
 The native migration `M202609150001ProjectRoles` adds custom roles, permissions and a
-project-bound optional membership assignment. Existing memberships are preserved. `make test-up`
-applies migrations before waiting for readiness in the isolated test database.
+project-bound optional membership assignment. Existing memberships are preserved.
 
 ## Ticket export
 

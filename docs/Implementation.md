@@ -17,7 +17,7 @@ next to it instead of copying the number from here.
 | P2 | Memberships and roles, columns, swimlanes and labels, multiple assignees, comments, archive, filters and full-text search, settings |
 | P3 | Private files with quotas, staging and recovery, the PDO queue, worker and ticker, in-app notifications, a verified mail delivery path |
 | P4 | Limiter, health and schema checks, backup and restore, the runtime snapshot; external sign-in prepared and switched off on request |
-| — | Extensibility through installed Composer packages; state and open points in [`Extensibility-Status.md`](Extensibility-Status.md) |
+| — | Extensibility through installed Composer packages; described in [`Extensibility.md`](Extensibility.md) |
 
 ## What NAF carries
 
@@ -29,10 +29,13 @@ are no modified vendor copies.
 
 The limiter and LDAP packages stay local by explicit request. Storage provides the private
 volume through `Naf\Storage\storage('attachments')`: stream I/O, moving and deleting belong to
-the plugin, `App\Support\AttachmentStorage` holds the upload rules, safe keys and the cleanup
+the plugin, `Naf\Board\Support\AttachmentStorage` holds the upload rules, safe keys and the cleanup
 strategy, and `AttachmentService` owns the SQL and file states.
 
 ## Verification
+
+A record of one run. The commands were the skeleton's at the time; today the whole suite runs
+with `composer test` in this repository, on MariaDB only.
 
 Full run on **18 September 2026** on `feat/plugin-extensibility`, everything green:
 
@@ -112,10 +115,8 @@ docker compose run --rm --no-deps -T --volume "$PWD/app:/dist:ro" --workdir /tmp
   sh -c 'cp /dist/composer.json . && composer update --dry-run --no-install'
 ```
 
-`make candidate-build` still builds a frozen local snapshot for inspection, and the production
-target still requires a real `composer.lock`, a link-free vendor directory and the marker
-`vendor/.nafinity-distribution` after a verified dist install. What changed is that a clean
-install no longer depends on local package sources.
+A clean install no longer depends on local package sources; the skeleton's production image
+installs its dependencies from Packagist while it is built.
 
 The extensibility work is on `main`, merged from
 [nafphp/nafinity#1](https://github.com/nafphp/nafinity/pull/1).

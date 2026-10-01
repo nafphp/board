@@ -4,9 +4,10 @@ Nafinity can be extended by installed Composer packages. A package brings its ow
 routes, services, menu entries, settings, ticket fields, widgets, filters, translations, AI
 tools, commands, migrations and jobs, and can explicitly replace existing definitions.
 
-Two complete examples live in the repository and are really installed and executed by the
-acceptance run: [`examples/nafinity-extension-a`](../examples/nafinity-extension-a) and
-[`examples/nafinity-extension-b`](../examples/nafinity-extension-b).
+Two complete examples live in the repository:
+[`examples/nafinity-extension-a`](../examples/nafinity-extension-a) and
+[`examples/nafinity-extension-b`](../examples/nafinity-extension-b). They are documentation --
+install one into a host through a path repository, as below, to watch it work.
 
 ## Contents
 
@@ -134,8 +135,8 @@ Composer `require` still declares installed API dependencies, including `naf/boa
 is not treated as a boot dependency. Optional ordering targets are ignored when absent.
 An optional host `plugins.php` can prioritize independent plugins and constrain their relative
 order; contradictions fail before any plugin bootstrap executes. `naf plugins:debug` lists
-the resolved order, its reasons and ignored optional targets. This requires the automatic
-plugin-order implementation in the framework candidate (minimum 0.2.7).
+the resolved order, its reasons and ignored optional targets. This needs naf/framework 0.2.7
+or newer.
 
 Resolve Board services and replace Board definitions or routes in a provider. An extension's
 early bootstrap and conventional route files run before Board's defaults exist. Host routes
@@ -291,7 +292,7 @@ $context->permissions()->add(new PermissionDefinition(
 - `read` stays the membership check and is not a definition name.
 - `ownerOnly: true` stays unavailable to custom roles; `moderate` still requires `comment`;
   archived projects keep their barriers.
-- `App\Domain\ProjectPermissions` remains as compatible access to the built-in defaults.
+- `Naf\Board\Domain\ProjectPermissions` remains as compatible access to the built-in defaults.
 - A stored grant of a missing plugin is **not deleted** and authorizes nothing. It survives
   saving a role, the form reports it as an unavailable definition, and reinstalling makes it
   effective again.
@@ -642,7 +643,7 @@ Title and description come before it, comments after. Index 150 lands between li
 attachments; an equal index sorts by id.
 
 Uploads are a shipped module
-([`App\Modules\Attachments\AttachmentsModule`](../src/Modules/Attachments/AttachmentsModule.php))
+([`Naf\Board\Modules\Attachments\AttachmentsModule`](../src/Modules/Attachments/AttachmentsModule.php))
 using the same registry as a third-party plugin. The permission filter does **not** hide the
 widget from read-only viewers: the file list stays visible, while upload and delete still require
 `upload`. If the widget is removed, the interface and its asset disappear — no file, no route and
@@ -665,13 +666,15 @@ export function mount(root, context, api) {
   and `save`, where `save` uses the existing ticket write queue. There is no second auto-save,
   fetch or version manager.
 - Mount exactly once per node, dispose before removing or replacing. First page, opened ticket,
-  create → detail, fragment refresh and closing the drawer all run the same lifecycle.
+  create → detail, fragment refresh and closing the drawer all run the same lifecycle. Disposal
+  on closing the drawer is the one step not yet watched in a browser: the preview browser used
+  so far never fired the `<dialog>`'s `close` event.
 - An import error is reported on the contribution and does not block the fixed ticket areas.
 - Stable form fields stay the source of `FormData`; complex types synchronise their hidden fields
   before submitting and are validated server-side in the field type.
 
 `ticket.js` and `upload.js` share one fragment path
-([`fragment.js`](../public/assets/fragment.js)). Widgets are reconciled **by their ids**, so
+([`fragment.js`](../src/Resources/public/assets/fragment.js)). Widgets are reconciled **by their ids**, so
 new ones appear and removed ones disappear; a node with an open draft stays mounted.
 
 ## Form components
@@ -1006,16 +1009,8 @@ php vendor/bin/naf nafinity:assets:remove  [--package=vendor/name]
   without the plugin installed.
 - Assets are public data. Uploads are not assets and never take this path.
 
-The candidate build publishes registered plugin assets before the image is finished:
-
-```sh
-node bin/build-candidate --source work/extension-host --tag nafinity:candidate-extensions
-```
-
-The result contains no source mounts, no symlinks and no Composer; the packages and their
-published files are in it as ordinary files, and `source-snapshot.json` names the mode, the
-source, the packages and the published assets. A local snapshot is **not** a published
-distribution: the NAF packages inside are RC branches whose release remains a separate step.
+An image built for production publishes them while it is built, so they are in it as
+ordinary files; the Nafinity skeleton's Dockerfile does that in its `production` stage.
 
 ## Translations
 
@@ -1034,7 +1029,7 @@ host wins**. Registering or removing one raises the registry's revision, and an 
 translator reloads as a result. Broken files name their concrete path, and nothing inside
 packages is modified.
 
-`App\Support\Locales::available()` takes the registered directories into account. A package with
+`Naf\Board\Support\Locales::available()` takes the registered directories into account. A package with
 a French translation makes French selectable without any application allowlist being changed.
 Locale selection, `PreferenceService` and `PageRenderer` all use the same list.
 
@@ -1057,7 +1052,8 @@ $context->container()->get(CommandRegistry::class)->add(ReportCommand::class);
 
 A plugin job has no session. It works on what it was handed and writes only into its own tables.
 
-After a code or plugin change, running background processes have to restart:
+After a code or plugin change, running background processes have to restart; in the Nafinity
+skeleton that is:
 
 ```sh
 make restart-background
@@ -1090,17 +1086,13 @@ it is still there.
 
 ## Negative cases
 
-Every extension point has an executed negative test under
-[`tests/Extensions/`](../tests/Extensions), in the phase it belongs to:
-`Installed/` boots the host with both packages, `Http/` asks it over real HTTP,
-`Order/` lists them the other way round, `Assets/` publishes their files and
-`Without/` boots the same installation with the packages gone.
+Every extension point refuses what it has to refuse:
 
 | Point | Negative case |
 |---|---|
 | Provider | Registering after the pass, a provider that throws, double initialisation |
 | Routes | `remove()` of an unknown route returns `false` |
-| Services | — the replacement is checked through a productive consumer |
+| Services | A replacement is bound before anything resolves it, so every consumer gets it |
 | Permissions | 403 without the grant, 404 for a foreign project, a grant of a missing plugin survives |
 | Menu | An entry without the permission does not appear |
 | Settings | Unknown key 422, invalid value 422, set+reset 422, missing permission 403, unknown key over HTTP 404, write without CSRF 400 |
@@ -1112,27 +1104,14 @@ Every extension point has an executed negative test under
 | Assets | A host-modified file survives, an unknown package gives 404, only allowed extensions |
 | Uninstalling | Definitions gone, values present, nothing authorized |
 
-Run them with:
-
-```sh
-make test-plugins
-```
-
-The run boots with both packages, over real HTTP, with the **extension plugin listing reversed**
-(a partial host preference puts B before A, while metadata still puts both before Board), with host overrides, and finally without the packages.
-The ordinary installed and uninstalled hosts contain no `plugins.php`. Providers still run by index/id. The host override phase checks both CLI and HTTP boot: providers
-finish before host definitions, and host routes override earlier named routes. Asset publishing
-is checked on top of that.
+The registry rules an extension stands on -- order by index and id, one provider pass,
+explicit replacement, a provider registered too late or failing, the fixed ticket areas -- are
+unit tests in [`tests/Unit/ExtensionRegistryTest.php`](../tests/Unit/ExtensionRegistryTest.php)
+and [`tests/Unit/DefinitionRegistryTest.php`](../tests/Unit/DefinitionRegistryTest.php). The
+board's own contributions go through the same registries, so the rest of the suite exercises
+the same paths. There is no second installation for the examples: an extension shows that it
+works by being used.
 
 Nafinity's own `home` route replaces an extension's early route. Provider route overrides
-follow Board's routes, and host routes run last. The existing framework dispatcher uses the
-bound target class, so a provider's service replacement reaches the controller too.
-`make test-plugins` covers these cases with installed Composer packages.
-
-The private Skeleton CI runs `make test` on every host pull request, including
-MariaDB, PostgreSQL, HTTP, worker recovery and installed/uninstalled extension hosts. Its
-workflow pins source revisions of the Board and unpublished dependencies; update those pins
-when changing the required integration environment. PHP syntax is checked on 8.3 and 8.5;
-the full container suite currently runs PHP 8.5. Use the Skeleton workflow’s `board_ref`
-input to test another Board revision. The public Board repository cannot read the private
-host with its repository-scoped token; no cross-repository secret is required.
+follow Board's routes, and host routes run last. The framework dispatcher uses the bound target
+class, so a provider's service replacement reaches the controller too.

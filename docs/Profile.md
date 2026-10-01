@@ -100,14 +100,14 @@ Request-only identities in isolated tests remain their own native auth mode.
 
 ## Local test mailbox
 
-`make run` starts Mailpit along with everything else; `make mailpit` starts it on its own. The
+In the Nafinity skeleton, `make run` starts Mailpit along with everything else; `make mailpit` starts it on its own. The
 interface is on **http://localhost:8025** (`NAFINITY_MAILPIT_PORT` in `.env`), bound to loopback
 only. SMTP port 1025 stays inside the Compose network. Mailpit forwards nothing to the internet.
 Messages live in the local container and can be lost when it is recreated. The test mailbox is
 reachable by every user of this local machine.
 
 The delivery path is NAF `MailTransport` → PHP `mail()` → msmtp → Mailpit.
-`docker/rootfs/etc/msmtprc` holds the local SMTP configuration and
+In the skeleton, `docker/rootfs/etc/msmtprc` holds the local SMTP configuration and
 `docker/rootfs/etc/php85/conf.d/99-nafinity.ini` the sendmail call. The sender comes from
 `ENV:NAFINITY_MAIL_FROM` with a default in Compose. Real SMTP requires a private msmtp
 configuration with authentication and TLS; credentials belong neither in the repository nor in
@@ -122,16 +122,15 @@ are held in queue payloads.
 
 ## Verification and limits
 
-`make test-profile` creates its own HTTP test accounts exclusively in `nafinity_test`. It checks
-password change, CSRF, real SMTP delivery, address confirmation, concurrent confirmation,
-single use, session id rotation and the revocation of two cookie jars. The native worker then
-delivers the security notices to the original test addresses. Additional service cases run on
-MariaDB and PostgreSQL through `make test`. Demo passwords and demo addresses are not modified by
-these tests.
+`tests/Http/AccountSecurityOverHttpTest.php` creates its own accounts in `nafinity_test` and
+checks password change, CSRF, delivery of the code, address confirmation, concurrent
+confirmation, single use, session id rotation and the revocation of two cookie jars. Mail goes
+to a file outbox there instead of SMTP. A worker then delivers the security notices to the
+original test addresses. Further service cases are in `tests/Database`. Demo passwords and demo
+addresses are not modified by these tests; `composer test` runs all of them.
 
 `M202609150002AccountProfile` adds two user fields and `account_email_changes`. Schema
-identifier: `202609150002`. The local backup `work/backups/20260915T214401Z` was taken before
-applying it. `make test-profile` re-checks the whole flow.
+identifier: `202609150002`.
 
 Not included: forgotten-password recovery, MFA and synchronisation of external LDAP or OIDC
 credentials. Those are their own account-recovery and identity flows.
