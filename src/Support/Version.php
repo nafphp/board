@@ -36,4 +36,16 @@ final class Version
             return '';
         }
     }
+
+    /**
+     * The version as the page shows it: one "v" before a release number, and a
+     * branch such as "dev-main" as it is.
+     *
+     * Composer keeps a tag's own spelling, so a release installed from
+     * Packagist already reads "v0.1.3" while a path repository says "0.1.3-dev".
+     */
+    public static function label(string $version): string
+    {
+        return preg_match('/^v?(\d.*)$/', $version, $release) === 1 ? 'v' . $release[1] : $version;
+    }
 }
