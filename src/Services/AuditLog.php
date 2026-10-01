@@ -25,6 +25,9 @@ use function Naf\Board\extensions;
  */
 final class AuditLog
 {
+    /** Rows per statement while shortening a log for the first time. */
+    private const int BATCH = 1000;
+
     /**
      * The entries about a person rather than about their work.
      *
@@ -34,9 +37,6 @@ final class AuditLog
      * read the log at all -- which is the safe direction for work and the wrong
      * one for this, so the list is short and deliberate.
      */
-    /** Rows per statement while shortening a log for the first time. */
-    private const int BATCH = 1000;
-
     public const array PERSONAL = [
         'account.password_changed',
         'account.email_requested',
