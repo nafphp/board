@@ -122,9 +122,9 @@ npm test               # the browser modules, with node's own runner
 npm run style:check    # Prettier for the JavaScript and CSS
 ```
 
-`tests/bootstrap.php` starts the MariaDB in `tests/compose.yaml` when nothing answers on
-`DB_HOST:DB_PORT` (127.0.0.1:33306 by default; see `phpunit.xml`), and the first database
-test migrates it down and up. The suite refuses to start unless `APP_ENV=test` and
+The unit tests need nothing else. The first test that needs the database starts the
+MariaDB in `tests/compose.yaml` when nothing answers on `DB_HOST:DB_PORT` (127.0.0.1:33306
+by default; see `phpunit.xml`) and migrates it down and up. The suite refuses to start unless `APP_ENV=test` and
 `DB_DATABASE=nafinity_test`. HTTP tests talk to PHP's built-in server in front of
 `tests/Fixtures/public`; mail lands in `tests/Fixtures/storage/mail`.
 

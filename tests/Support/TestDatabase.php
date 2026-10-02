@@ -26,7 +26,7 @@ final class TestDatabase
     private static bool $migrated = false;
 
     /** Make sure the server answers, starting it if it does not. */
-    public static function ensureRunning(): void
+    private static function ensureRunning(): void
     {
         if (getenv('APP_ENV') !== 'test' || getenv('DB_DATABASE') !== 'nafinity_test') {
             throw new RuntimeException('The suite needs APP_ENV=test and DB_DATABASE=nafinity_test.');
@@ -36,13 +36,17 @@ final class TestDatabase
             return;
         }
 
+        // Captured, not echoed: output before a test starts a session would
+        // count as headers already sent.
+        fwrite(STDERR, "Starting the test database from tests/compose.yaml ...\n");
         $compose = dirname(__DIR__) . '/compose.yaml';
-        passthru('docker compose -f ' . escapeshellarg($compose) . ' up -d --wait 2>&1', $status);
+        exec('docker compose -f ' . escapeshellarg($compose) . ' up -d --wait 2>&1', $output, $status);
 
         if ($status !== 0 || !self::answers()) {
             throw new RuntimeException(
                 'No test database on ' . getenv('DB_HOST') . ':' . getenv('DB_PORT')
-                . ', and `docker compose -f tests/compose.yaml up` could not start one.',
+                . ', and `docker compose -f tests/compose.yaml up` could not start one: '
+                . implode("\n", $output),
             );
         }
     }
@@ -60,6 +64,7 @@ final class TestDatabase
             return;
         }
 
+        self::ensureRunning();
         $runner = new MigrationRunner(app()->container()->get(PDO::class));
         $runner->run(MigrationRegistry::getPaths(), 'down');
         $runner->run(MigrationRegistry::getPaths(), 'up');

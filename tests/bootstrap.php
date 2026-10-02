@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Naf\Board\Tests\Support\TestDatabase;
 use Naf\Core\App;
 
 /**
@@ -13,8 +12,8 @@ use Naf\Core\App;
  * its routes, views and bootstrap.php itself. tests/Fixtures is the host: its
  * app/config.php is what an installation decides, its storage/ is scratch space.
  *
- * The database is a server of its own, started from tests/compose.yaml when it
- * is not already there.
+ * Booting needs no database, so unit tests run without one. The first test that
+ * does need it starts its own server from tests/compose.yaml; see TestDatabase.
  */
 
 require dirname(__DIR__) . '/vendor/autoload.php';
@@ -28,8 +27,6 @@ foreach (['sessions', 'logs', 'attachments', 'queue', 'schedule', 'oauth', 'mail
         mkdir(BASE_PATH . '/storage/' . $directory, 0777, true);
     }
 }
-
-TestDatabase::ensureRunning();
 
 /*
  * Booting for the command line leaves out the guards a request would install,
