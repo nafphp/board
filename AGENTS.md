@@ -128,7 +128,8 @@ by default; see `phpunit.xml`) and migrates it down and up. The suite refuses to
 `DB_DATABASE=nafinity_test`. HTTP tests talk to PHP's built-in server in front of
 `tests/Fixtures/public`; mail lands in `tests/Fixtures/storage/mail`.
 
-MariaDB and MySQL are the supported databases. CI runs exactly the commands above.
+MariaDB and MySQL are the supported databases. CI runs the commands above on both
+MariaDB 11.4 and MySQL 8.4, with PHP 8.3 and 8.5.
 
 Extensions are not tested by installing them into a second host. The rules they rely on --
 provider order, explicit replacement, fixed ticket areas -- are unit tests; the rest shows

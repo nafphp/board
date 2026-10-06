@@ -70,6 +70,56 @@ final class TicketMoveTest extends BoardTestCase
         );
     }
 
+    public function testDenseNegativePositionsRebalanceWithoutCollidingWithTheMovingCard(): void
+    {
+        $ticket = $this->tickets->create($this->projectA, $this->ticketData());
+        $first  = $this->tickets->create($this->projectA, $this->ticketData());
+        $second = $this->tickets->create($this->projectA, $this->ticketData());
+        $set    = $this->pdo->prepare('UPDATE tickets SET position=? WHERE id=?');
+        $set->execute([-1024, $ticket]);
+        $set->execute([-4096, $first]);
+        $set->execute([-4095, $second]);
+
+        $this->tickets->move($this->projectA, $ticket, [
+            'version'     => 1,
+            'column_id'   => $this->columnA,
+            'swimlane_id' => $this->laneA,
+            'placement'   => 'between',
+            'left_id'     => $first,
+            'right_id'    => $second,
+        ] + $this->revision());
+
+        $query = $this->pdo->prepare('SELECT id FROM tickets WHERE project_id=? ORDER BY position');
+        $query->execute([$this->projectA]);
+        $this->assertSame([$first, $ticket, $second], array_map('intval', $query->fetchAll(PDO::FETCH_COLUMN)));
+    }
+
+    public function testDensePositionsAtTheSignedIntegerBoundaryRebalanceWithoutOverflow(): void
+    {
+        $ticket = $this->tickets->create($this->projectA, $this->ticketData());
+        $first  = $this->tickets->create($this->projectA, $this->ticketData());
+        $second = $this->tickets->create($this->projectA, $this->ticketData());
+        $set    = $this->pdo->prepare('UPDATE tickets SET position=? WHERE id=?');
+        $set->execute([PHP_INT_MIN, $first]);
+        $set->execute([PHP_INT_MIN + 1, $second]);
+
+        $this->tickets->move($this->projectA, $ticket, [
+            'version'     => 1,
+            'column_id'   => $this->columnA,
+            'swimlane_id' => $this->laneA,
+            'placement'   => 'between',
+            'left_id'     => $first,
+            'right_id'    => $second,
+        ] + $this->revision());
+
+        $query = $this->pdo->prepare('SELECT id,position FROM tickets WHERE project_id=? ORDER BY position');
+        $query->execute([$this->projectA]);
+        $rows = $query->fetchAll();
+        $this->assertSame([$first, $ticket, $second], array_map(static fn($row) => (int) $row['id'], $rows));
+        $this->assertGreaterThan(0, (int) $rows[0]['position']);
+        $this->assertCount(3, array_unique(array_column($rows, 'position')));
+    }
+
     public function testNeighboursGivenInTheWrongOrderAreRefused(): void
     {
         $ticket = $this->tickets->create($this->projectA, $this->ticketData());

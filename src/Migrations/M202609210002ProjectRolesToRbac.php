@@ -92,7 +92,7 @@ final class M202609210002ProjectRolesToRbac extends AbstractMigration
 
         $connection
             ->prepare(
-                'INSERT INTO rbac_roles(name, scope_type, label, description, system, position)'
+                'INSERT INTO rbac_roles(name, scope_type, label, description, `system`, position)'
                 . " VALUES(?, 'project', ?, '', 1, 100)",
             )
             ->execute([$name, $label]);
@@ -142,7 +142,7 @@ final class M202609210002ProjectRolesToRbac extends AbstractMigration
             );
 
             // Not a role the host declares, so it stays deletable.
-            $connection->prepare('UPDATE rbac_roles SET system = 0 WHERE name = ?')->execute([$name]);
+            $connection->prepare('UPDATE rbac_roles SET `system` = 0 WHERE name = ?')->execute([$name]);
             $id = $this->idOf($connection, $name);
         }
 

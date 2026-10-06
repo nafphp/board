@@ -12,7 +12,8 @@ use PDO;
  * Positions are integers with room between them, so a card dropped between two
  * others takes the midpoint and nothing else moves. Only when two neighbours
  * sit on adjacent numbers, or a cell runs out at either end, is it spread out
- * again: one statement per card, rare enough to be worth the simplicity.
+ * again in bounded batches, through free temporary positions first so the
+ * unique cell-position constraint holds during both passes.
  *
  * @internal
  */
@@ -58,19 +59,55 @@ final class CellPositions
     public function rebalance(int $project, int $column, int $lane): void
     {
         $statement = $this->pdo->prepare(
-            'SELECT id FROM tickets WHERE project_id=? AND column_id=? AND swimlane_id=? ORDER BY position,id',
+            'SELECT id,position FROM tickets WHERE project_id=? AND column_id=? AND swimlane_id=? ORDER BY position,id',
         );
         $statement->execute([$project, $column, $lane]);
-        $ids    = $statement->fetchAll(PDO::FETCH_COLUMN);
-        $update = $this->pdo->prepare('UPDATE tickets SET position=? WHERE project_id=? AND id=?');
-
-        // Through negative numbers first: no two cards of a cell may share a
-        // position even for a moment, and the new positions may be old ones.
-        foreach ($ids as $i => $id) {
-            $update->execute([-self::GAP * ($i + 1), $project, $id]);
+        $rows     = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $occupied = [];
+        $final    = [];
+        foreach ($rows as $index => $row) {
+            $occupied[(int) $row['position']] = true;
+            $position                         = self::GAP * ($index + 1);
+            $final[(int) $row['id']]          = $position;
+            $occupied[$position]              = true;
         }
-        foreach ($ids as $i => $id) {
-            $update->execute([self::GAP * ($i + 1), $project, $id]);
+
+        // A top insertion can already have made positions negative. Temporary
+        // positions must be absent from both the old and final sets, including
+        // when a card sits at the signed integer boundary.
+        $temporary = [];
+        $position  = PHP_INT_MIN;
+        foreach ($rows as $row) {
+            while (isset($occupied[$position])) {
+                $position++;
+            }
+            $temporary[(int) $row['id']] = $position;
+            $occupied[$position]         = true;
+            $position++;
+        }
+
+        $this->writePositions($project, $temporary);
+        $this->writePositions($project, $final);
+    }
+
+    /** @param array<int,int> $positions Ticket IDs and their distinct new positions. */
+    private function writePositions(int $project, array $positions): void
+    {
+        // Bound statement/parameter size while avoiding two round trips per card.
+        // Both passes keep the unique cell-position constraint valid throughout.
+        foreach (array_chunk($positions, 250, true) as $batch) {
+            $cases      = implode(' ', array_fill(0, count($batch), 'WHEN ? THEN ?'));
+            $holders    = implode(',', array_fill(0, count($batch), '?'));
+            $parameters = [];
+            foreach ($batch as $id => $position) {
+                $parameters[] = $id;
+                $parameters[] = $position;
+            }
+            $parameters[] = $project;
+            array_push($parameters, ...array_keys($batch));
+            $this->pdo->prepare(
+                'UPDATE tickets SET position=CASE id ' . $cases . ' END WHERE project_id=? AND id IN (' . $holders . ')',
+            )->execute($parameters);
         }
     }
 
