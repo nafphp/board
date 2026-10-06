@@ -73,6 +73,7 @@ html[data-theme='dark'] {
   --muted: #969bb2;
   --line: #2d3042;
   --accent: #9b8cff;
+  --on-accent: #211d35;
   --accent-soft: #302a51;
   --card-shadow: 0 3px 15px #0002;
   --panel-shadow: 18px 0 46px -16px #000000b3;
@@ -118,6 +119,7 @@ html[data-palette='anthracite'][data-theme='dark'] {
     --muted: #969bb2;
     --line: #2d3042;
     --accent: #9b8cff;
+    --on-accent: #211d35;
     --accent-soft: #302a51;
     --card-shadow: 0 3px 15px #0002;
     --panel-shadow: 18px 0 46px -16px #000000b3;

@@ -194,3 +194,7 @@ minimum and quotes its historical project-role import too. The complete Board
 suite passed 540 tests with 1,771 assertions on MySQL 8.4.11. CI now runs both
 MariaDB 11.4 and MySQL 8.4 on PHP 8.3 and 8.5. Existing stored roles and grants
 are unchanged; there is no new schema migration.
+
+The rendered Classic dark primary action used white on `#9b8cff` (2.77:1).
+Its on-accent foreground is now `#211d35` (5.87:1), both for explicit dark
+brightness and system dark mode. Anthracite retains its own foreground colours.
