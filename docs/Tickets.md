@@ -188,23 +188,22 @@ An open reply can be released through the × in the reply reference.
 
 ## Installation and data model
 
-In source mode, from the project directory:
+In a Nafinity installation, from the skeleton's directory:
 
 ```sh
-bin/dev-composer install --no-interaction
 make backup
 make migrate
 make restart-background
 ```
 
-Quill including its licence lives in `public/assets/vendor/quill/`; browsers load no editor
+Quill including its licence lives in `src/Resources/public/assets/vendor/quill/`; browsers load no editor
 files from a CDN. `symfony/html-sanitizer:^7.4` and `ext-dom` are explicit Composer requirements
 and support the application's PHP 8.3 floor.
 
 The NAF migration `M202609160001TicketDetails` adds `description_html`, `start_date`,
 `estimate_minutes`, `spent_minutes`, `comments.parent_id` and `ticket_links` with project-bound
-foreign keys. `M202609160002RichTextStorage` widens the description fields to MEDIUMTEXT on
-MariaDB so the character limits also cover Unicode and HTML; PostgreSQL's TEXT needs no widening.
+foreign keys. `M202609160002RichTextStorage` widens the description fields to MEDIUMTEXT so the
+character limits also cover Unicode and HTML.
 Readiness checks both migrations. A down of the second migration assumes the old, smaller limit
 and can be refused when large descriptions were created afterwards — do not use it as an
 operational rollback.
@@ -215,10 +214,9 @@ Covered by the standard suite; run the command rather than trusting a number wri
 
 | What | Command |
 |---|---|
-| Services, migrations and metadata on both databases | `make test-mariadb`, `make test-postgres` |
-| Ticket endpoints, permissions, conflicts and private files over real HTTPS | `make test-http` |
-| Contributed fields, widgets and the fixed areas | `make test-plugins` |
-| Style, JavaScript syntax and whitespace | `bin/style check`, `git diff --check` |
+| Services, migrations, metadata, ticket endpoints, permissions, conflicts and private files | `composer test` |
+| The fixed areas and the registry rules for contributed fields and widgets | `composer test` (`tests/Unit`) |
+| Style, JavaScript and whitespace | `composer style:check`, `npm run style:check`, `git diff --check` |
 
 Additionally verified interactively in the browser, with the real templates and assets on
 desktop, in the drawer, in light and dark, and at 390 × 844 and 320 × 568 pixels: formatting,

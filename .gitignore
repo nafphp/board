@@ -7,3 +7,10 @@
 __pycache__/
 *.pyc
 /.php-cs-fixer.cache
+/composer.lock
+/tests/Fixtures/storage/
+/node_modules/
+
+# Assets published for an isolated browser acceptance.
+/tests/Fixtures/public/assets/
+/tests/Fixtures/public/plugins/

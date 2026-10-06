@@ -12,10 +12,8 @@ final class M202609150001ProjectRoles extends AbstractMigration
 {
     public function up(PDO $connection): void
     {
-        $mysql = $connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql';
-        $id    = $mysql ? 'BIGINT AUTO_INCREMENT PRIMARY KEY' : 'BIGSERIAL PRIMARY KEY';
         $connection->exec("CREATE TABLE project_roles (
-            id $id,
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
             project_id BIGINT NOT NULL REFERENCES projects(id),
             name VARCHAR(60) NOT NULL,
             description VARCHAR(255) NOT NULL DEFAULT '',
@@ -39,8 +37,7 @@ final class M202609150001ProjectRoles extends AbstractMigration
 
     public function down(PDO $connection): void
     {
-        $mysql = $connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql';
-        $connection->exec('ALTER TABLE project_members DROP ' . ($mysql ? 'FOREIGN KEY' : 'CONSTRAINT') . ' fk_member_custom_role');
+        $connection->exec('ALTER TABLE project_members DROP FOREIGN KEY fk_member_custom_role');
         $connection->exec('ALTER TABLE project_members DROP CONSTRAINT ck_member_custom_role');
         $connection->exec('ALTER TABLE project_members DROP COLUMN custom_role_id');
         $connection->exec('DROP TABLE project_role_permissions');

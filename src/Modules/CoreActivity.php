@@ -18,8 +18,9 @@ use Naf\Board\ExtensionContext;
  */
 final class CoreActivity implements ExtensionProviderInterface
 {
-    /** Event type to sentence and icon. */
-    /*
+    /**
+     * Event type to sentence and icon.
+     *
      * Every symbol here is one the bundled Material Symbols subset actually
      * carries. A name outside it is drawn as its own ligature text, so a log of
      * created tickets reads "TASK" down the left edge -- which is what happened

@@ -32,13 +32,9 @@ final class ReviewReminderJob implements ScheduledJobInterface
             ->query('SELECT id FROM projects WHERE archived_at IS NULL ORDER BY id')
             ->fetchAll(PDO::FETCH_COLUMN);
 
-        $mysql     = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql';
         $statement = $this->pdo->prepare(
             'INSERT INTO example_report_runs(project_id,ran_at,open_reviews) VALUES(?,?,?)'
-            . ($mysql
-                ? ' ON DUPLICATE KEY UPDATE ran_at=VALUES(ran_at),open_reviews=VALUES(open_reviews)'
-                : ' ON CONFLICT(project_id) DO UPDATE SET ran_at=excluded.ran_at,'
-                    . 'open_reviews=excluded.open_reviews'),
+            . ' ON DUPLICATE KEY UPDATE ran_at=VALUES(ran_at),open_reviews=VALUES(open_reviews)',
         );
 
         foreach ($projects as $project) {

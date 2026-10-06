@@ -187,17 +187,17 @@ if (isset($people[$me])) {
 <div class="board-meta">
     <span>
         <strong><?= $total ?></strong>
-        Tickets · <?= count($swimlanes) ?> Swimlanes
+        <?= s(t('Tickets · :count Swimlanes', ['count' => count($swimlanes)])) ?>
     </span>
     <span><?= s($boardHint) ?></span>
 </div>
 <div id="board-update" class="update-banner" hidden>
-    Es gibt Änderungen im Projekt.
-    <button type="button" data-reload>Board aktualisieren <?= Icon::mark('refresh', 'sm') ?></button>
+    <?= s(t('Es gibt Änderungen im Projekt.')) ?>
+    <button type="button" data-reload><?= s(t('Board aktualisieren')) ?> <?= Icon::mark('refresh', 'sm') ?></button>
 </div>
 <?php if ($isLimited): ?>
     <div class="update-banner">
-        Die ersten 300 Treffer sind sichtbar. Verfeinere die Filter, um weitere Tickets zu finden.
+        <?= s(t('Die ersten 300 Treffer sind sichtbar. Verfeinere die Filter, um weitere Tickets zu finden.')) ?>
     </div>
 <?php endif ?>
 <div
@@ -274,7 +274,7 @@ if (isset($people[$me])) {
         <form method="post" data-enhanced>
             <div class="dialog-heading">
                 <h2><?= s(t('Ticket verschieben')) ?></h2>
-                <button type="button" class="icon-button" data-close-dialog aria-label="Schließen">
+                <button type="button" class="icon-button" data-close-dialog aria-label="<?= s(t('Schließen')) ?>">
                     ×
                 </button>
             </div>
@@ -311,9 +311,9 @@ if (isset($people[$me])) {
                     'searchLabel' => 'Swimlanes suchen',
                 ]) ?>
             </label>
-            <p class="muted small">Das Ticket wird am Ende des gewählten Bereichs eingeordnet.</p>
+            <p class="muted small"><?= s(t('Das Ticket wird am Ende des gewählten Bereichs eingeordnet.')) ?></p>
             <div class="form-errors" role="alert"></div>
-            <button class="button primary">Verschieben →</button>
+            <button class="button primary"><?= s(t('Verschieben →')) ?></button>
         </form>
         <?php if ($scope->allows('delete')): ?>
             <?php /* A second form in the same dialog: the "..." on a card is where

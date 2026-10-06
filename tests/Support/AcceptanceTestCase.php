@@ -4,31 +4,29 @@ declare(strict_types=1);
 
 namespace Naf\Board\Tests\Support;
 
-use PDO;
+use Naf\Board\Commands\SeedCommand;
+use Naf\CLI\Core\Input;
+use Naf\CLI\Core\Output;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 use function Naf\app;
 
 /**
- * The application as it is actually served: over HTTPS, through nginx, with a
- * certificate that is verified against the authority that issued it.
+ * The application as it is actually served: through the front controller of a
+ * running server, with cookies, the session, CSRF and the router in the way.
  *
  * Everything else in the suite reaches the code directly. This reaches the
  * installation, which is a different question -- headers, cookies, the session,
- * CSRF and the router only exist here. It runs inside the container for the same
- * reason: that is where the application is, and asking the host to have PHP to
- * test a containerised application would defeat the container.
+ * CSRF and the router only exist here.
  *
  * It works on the seeded demo data rather than fixtures of its own, because that
- * data is what `make seed` gives a new installation -- so this is also a check
- * that the seed produces something the application can serve.
+ * data is what `nafinity:seed` gives a new installation -- so this is also a
+ * check that the seed produces something the application can serve.
  */
 abstract class AcceptanceTestCase extends TestCase
 {
-    protected const BASE      = 'https://localhost:8443';
-    protected const AUTHORITY = '/etc/nginx/ssl/ca.pem';
-    protected const PASSWORD  = 'Nafinity-Demo-2026!';
+    protected const PASSWORD = 'Nafinity-Demo-2026!';
 
     /** The seeded projects: Alice owns the first, Bob the second. */
     protected const PROJECT       = 1;
@@ -41,15 +39,41 @@ abstract class AcceptanceTestCase extends TestCase
     /** @var array<string,HttpClient> */
     private static array $sessions = [];
 
-    private static bool $limiterCleared = false;
+    private static bool $seeded = false;
+
+    /**
+     * The demo installation, once per process.
+     *
+     * The database tests empty tables between them, so the seed has to come
+     * after them; it runs on an empty schema here so the projects have the ids
+     * the tests name.
+     */
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+        if (self::$seeded) {
+            return;
+        }
+
+        TestDatabase::migrate();
+        TestDatabase::clearAllRows();
+        $seed = app()->container()->make(SeedCommand::class);
+        $seed->run(new Input([], $seed->getDefinition()), new Output());
+        self::$seeded = true;
+    }
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->clearLoginLimiter();
         $this->alice  = $this->clientFor('alice@example.test');
         $this->bob    = $this->clientFor('bob@example.test');
         $this->viewer = $this->clientFor('viewer@example.test');
+    }
+
+    /** A browser of its own that has not signed in. */
+    protected function guest(string $name): HttpClient
+    {
+        return new HttpClient(TestServer::url(), $name);
     }
 
     /**
@@ -70,31 +94,12 @@ abstract class AcceptanceTestCase extends TestCase
     /** A session of its own, for the few tests that are about signing in. */
     protected function freshClientFor(string $email, string $name = ''): HttpClient
     {
-        $client = new HttpClient(
-            self::BASE,
+        $client = $this->guest(
             $name !== '' ? $name : str_replace(['@', '.'], '-', $email),
-            self::AUTHORITY,
         );
         $client->login($email, self::PASSWORD);
 
         return $client;
-    }
-
-    /**
-     * Forget what earlier runs counted against these accounts.
-     *
-     * Signing in is rate limited per account, which is the point of it -- and a
-     * suite that signs a handful of people in is indistinguishable from someone
-     * guessing, unless the counter starts where a real day would. Cleared once
-     * per run, never per test: the tests below still have to live inside it.
-     */
-    private function clearLoginLimiter(): void
-    {
-        if (self::$limiterCleared) {
-            return;
-        }
-        app()->container()->get(PDO::class)->exec('DELETE FROM naf_rate_limits');
-        self::$limiterCleared = true;
     }
 
     /** A page that must answer, returned as text. */

@@ -6,6 +6,16 @@ and slides back on the X or Escape. Input is preserved on close, and after a suc
 same card is reopened. The animation honours the operating system's reduced-motion option. On
 small screens the dialog takes up nearly the whole area.
 
+## Appearance
+
+Personal settings keep the color palette and brightness independent. **Classic** is the
+unchanged default palette; **Anthracite** uses calmer gray and sage surfaces in both light and
+dark. Brightness can follow the device or be fixed to light or dark. The sidebar shortcut toggles
+only brightness and saves the choice for the signed-in account. The login uses the last choice
+on that device until a user signs in; authenticated pages use the account's saved values.
+Existing preference rows gain a `palette` column defaulting to `classic`, so upgrades keep their
+current appearance.
+
 ## Cards and permissions
 
 - Personal: appearance, language, time zone, notifications and configured external accounts.
@@ -75,7 +85,7 @@ Verified with a catalogue of seven real and 493 synthetic tool descriptions: the
 `embeddinggemma:latest` took about seven seconds, and the following selection with an existing
 index 66 ms. The column question returned the board tool only. That is a local selection
 measurement, not a statement about 500 implemented actions or about the duration of the chat
-answer that follows. `make test-ai` re-runs the selection checks behind it.
+answer that follows. `npm test` re-runs the selection checks behind it.
 
 API and prefix contracts: [Ollama Embed](https://docs.ollama.com/api/embed),
 [EmbeddingGemma retrieval](https://ai.google.dev/gemma/docs/embeddinggemma/inference-embeddinggemma-with-sentence-transformers),
@@ -190,16 +200,15 @@ system prompt.
 
 ## Development and tests
 
-`make test` includes the database, HTTP, worker and AI transport tests. `make test-ai` checks
-streaming, Unicode across packet boundaries, tool answers, errors, aborts, allowed local URLs and
+`composer test` runs the database, HTTP and worker tests; `npm test` runs the AI transport and
+router tests in `tests/js`. They check streaming, Unicode across packet boundaries, tool answers, errors, aborts, allowed local URLs and
 separated storage areas, plus selection from 500 tools, cache invalidation, permission
 revocation, dependencies and the fallback and schema limits. The optional live benchmark runs
 with `node tests/benchmarks/ai-routing-live.mjs PATH_TO_AUTHORIZED_TOOL_ARRAY.json`; it uses an already
 installed local model and executes no domain tools.
 
 The native migration `M202609150001ProjectRoles` adds custom roles, permissions and a
-project-bound optional membership assignment. Existing memberships are preserved. `make test-up`
-applies migrations before waiting for readiness in the isolated test database.
+project-bound optional membership assignment. Existing memberships are preserved.
 
 ## Ticket export
 
@@ -218,3 +227,10 @@ in the role editor. There is no implicit escalation from managing installation s
 
 This is a ticket export, not a backup: attachments, comments and board structure are not included.
 The extension contract and request parameters are documented in [Extensibility](Extensibility.md#export).
+
+## Interface language
+
+The account language applies to HTML pages, ticket fragments, JSON validation messages,
+activity labels and AI tool titles. Browser status messages use the same translation
+catalog through an inert JSON block rendered in the page. Project names, columns, labels,
+ticket text and extension-owned content retain their own wording.

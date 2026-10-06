@@ -11,7 +11,6 @@ use Naf\Storage\Adapters\LocalAdapter;
 use Naf\Storage\Storage;
 use Nyholm\Psr7\Stream;
 use Nyholm\Psr7\UploadedFile;
-use PDO;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
@@ -19,10 +18,6 @@ use function Naf\app;
 
 /**
  * Attachments on disk, in a directory of this suite's own.
- *
- * Named after the driver, because the MariaDB and PostgreSQL runs are two passes
- * over the same tests and would otherwise share one directory and clean up after
- * each other.
  */
 trait AttachmentFixture
 {
@@ -32,8 +27,7 @@ trait AttachmentFixture
 
     protected function setUpAttachments(): void
     {
-        $this->privateRoot = BASE_PATH . '/storage/test-attachments-'
-            . $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        $this->privateRoot = BASE_PATH . '/storage/test-attachments';
         // Emptied first. Tests that stage a file deliberately leave it there --
         // that is what the orphan sweep is for -- and a directory shared with the
         // previous test would hand it that test's leftovers to count.

@@ -20,6 +20,7 @@ final class PreferenceStore
     /** The personal columns, with the values a missing row stands for. */
     public const array USER_DEFAULTS = [
         'theme'         => 'system',
+        'palette'       => 'classic',
         'locale'        => 'de',
         'timezone'      => 'Europe/Berlin',
         'notify_in_app' => 1,
@@ -67,7 +68,7 @@ final class PreferenceStore
         $columns   = array_keys(self::USER_DEFAULTS);
         $statement = 'INSERT INTO user_preferences(' . implode(',', $columns) . ',user_id) VALUES('
             . implode(',', array_fill(0, count($columns) + 1, '?')) . ')'
-            . $this->onConflict('user_id', array_keys($values));
+            . $this->onConflict(array_keys($values));
 
         $this->pdo->prepare($statement)->execute([
             ...array_map(static fn(string $column) => $row[$column], $columns),
@@ -112,7 +113,7 @@ final class PreferenceStore
         $columns   = array_keys(self::PROJECT_USER_DEFAULTS);
         $statement = 'INSERT INTO project_preferences(project_id,user_id,' . implode(',', $columns)
             . ') VALUES(' . implode(',', array_fill(0, count($columns) + 2, '?')) . ')'
-            . $this->onConflict('project_id,user_id', array_keys($values));
+            . $this->onConflict(array_keys($values));
 
         $this->pdo->prepare($statement)->execute([
             $projectId,
@@ -122,27 +123,17 @@ final class PreferenceStore
     }
 
     /**
-     * The upsert tail both databases understand, updating only the named columns
+     * The upsert tail, updating only the named columns
      *
-     * @param string       $key     Conflicting key columns
      * @param list<string> $columns Columns this write actually changes
      */
-    private function onConflict(string $key, array $columns): string
+    private function onConflict(array $columns): string
     {
-        if ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql') {
-            $assignments = array_map(
-                static fn(string $column) => $column . '=VALUES(' . $column . ')',
-                $columns,
-            );
-
-            return ' ON DUPLICATE KEY UPDATE ' . implode(',', $assignments);
-        }
-
         $assignments = array_map(
-            static fn(string $column) => $column . '=excluded.' . $column,
+            static fn(string $column) => $column . '=VALUES(' . $column . ')',
             $columns,
         );
 
-        return ' ON CONFLICT(' . $key . ') DO UPDATE SET ' . implode(',', $assignments);
+        return ' ON DUPLICATE KEY UPDATE ' . implode(',', $assignments);
     }
 }

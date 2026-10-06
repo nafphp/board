@@ -18,6 +18,7 @@ use Naf\Board\Support\Format;
 use Naf\Board\Support\Input;
 use Naf\Board\Support\RichText;
 use Naf\Board\Support\Settings\PreferenceStore;
+use Naf\Board\Support\Ticket\CellPositions;
 use Naf\ORM\Core\EntityManager;
 use PDO;
 use Throwable;
@@ -37,6 +38,7 @@ final class TicketService implements TicketServiceInterface
         private TimerServiceInterface $timers,
         private TicketMetadataWriter $metadata,
         private PreferenceStore $preferences,
+        private CellPositions $positions,
     ) {
     }
 
@@ -76,8 +78,8 @@ final class TicketService implements TicketServiceInterface
                 'closed_at'   => $closed ? $now : null,
                 'archived_at' => null,
                 'position'    => $this->placement($project) === Placement::TOP
-                    ? $this->leadPosition($project, (int) $column['id'], (int) $lane['id'])
-                    : $this->appendPosition($project, (int) $column['id'], (int) $lane['id']),
+                    ? $this->positions->top($project, (int) $column['id'], (int) $lane['id'])
+                    : $this->positions->bottom($project, (int) $column['id'], (int) $lane['id']),
                 'version' => 1,
             ]);
             $this->entityManager->save($ticket);
@@ -189,13 +191,13 @@ final class TicketService implements TicketServiceInterface
                     409,
                 );
             }
-            $position = $this->between($rows, $leftIndex, $rightIndex);
+            $position = $this->gap($rows, $leftIndex, $rightIndex);
             if ($position === null) {
                 // Include the moving card while rebalancing to avoid colliding with its old position.
-                $this->rebalance($project, (int) $column['id'], (int) $lane['id']);
+                $this->positions->rebalance($project, (int) $column['id'], (int) $lane['id']);
                 $statement->execute([$project, $column['id'], $lane['id'], $id]);
                 $rows     = $statement->fetchAll();
-                $position = $this->between($rows, $leftIndex, $rightIndex);
+                $position = $this->gap($rows, $leftIndex, $rightIndex);
             }
             if ($position === null) {
                 throw new Failure(t('Keine freie Kartenposition verfügbar.'), 409);
@@ -295,7 +297,7 @@ final class TicketService implements TicketServiceInterface
                 $column['id'],
                 $lane['id'],
                 $number,
-                $this->appendPosition($target, (int) $column['id'], (int) $lane['id']),
+                $this->positions->bottom($target, (int) $column['id'], (int) $lane['id']),
                 $closes ? 'closed' : 'open',
                 $closes ? $row['closed_at'] ?? $now : null,
                 $now,
@@ -561,7 +563,7 @@ final class TicketService implements TicketServiceInterface
         foreach (['start_date' => $start, 'due_date' => $due] as $field => $date) {
             if ($date !== null && (!is_string($date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/D', $date)
                 || !checkdate((int) substr($date, 5, 2), (int) substr($date, 8, 2), (int) substr($date, 0, 4)))) {
-                throw new Failure(t('Bitte wähle ein gültiges Datum.'), 422, [$field => ['Ungültiges Datum.']]);
+                throw new Failure(t('Bitte wähle ein gültiges Datum.'), 422, [$field => [t('Ungültiges Datum.')]]);
             }
         }
         if ($start !== null && $due !== null && $start > $due) {
@@ -581,7 +583,7 @@ final class TicketService implements TicketServiceInterface
             || filter_var($points, FILTER_VALIDATE_INT) === false
             || (int) $points < 0 || (int) $points > Estimation::MAX)) {
             throw new Failure(t('Bitte gib eine Schätzung zwischen 0 und :max ein.', ['max' => Estimation::MAX]), 422, [
-                'estimate_points' => ['Ungültige Schätzung.'],
+                'estimate_points' => [t('Ungültige Schätzung.')],
             ]);
         }
         $validated['estimate_points'] = $points === null ? null : (int) $points;
@@ -620,7 +622,7 @@ final class TicketService implements TicketServiceInterface
                 $statement->execute([$project, $id]);
                 if ((int) $statement->fetchColumn() !== 1) {
                     throw new Failure(t('Die Auswahl gehört nicht zu diesem Projekt.'), 422, [
-                        $field => ['Ungültige Zuordnung.'],
+                        $field => [t('Ungültige Zuordnung.')],
                     ]);
                 }
             }
@@ -782,64 +784,18 @@ final class TicketService implements TicketServiceInterface
         return (string) $statement->fetchColumn();
     }
 
-    /** Above everything in the cell, the mirror of appending below it. */
-    private function leadPosition(int $project, int $column, int $lane): int
+    /**
+     * The free position between two rows of a cell, by their index; -1 and the
+     * row count stand for the open ends.
+     *
+     * @param list<array{id:int|string,position:int|string}> $rows
+     */
+    private function gap(array $rows, int $above, int $below): ?int
     {
-        $statement = $this->pdo->prepare(
-            'SELECT COALESCE(MIN(position),0) FROM tickets WHERE project_id=? AND column_id=? AND swimlane_id=?',
+        return CellPositions::between(
+            $above < 0 ? null : (int) $rows[$above]['position'],
+            $below === count($rows) ? null : (int) $rows[$below]['position'],
         );
-        $statement->execute([$project, $column, $lane]);
-        $position = (int) $statement->fetchColumn();
-        if ($position < PHP_INT_MIN + 1024) {
-            $this->rebalance($project, $column, $lane);
-            $statement->execute([$project, $column, $lane]);
-            $position = (int) $statement->fetchColumn();
-        }
-
-        return $position - 1024;
-    }
-
-    private function appendPosition(int $project, int $column, int $lane): int
-    {
-        $statement = $this->pdo->prepare(
-            'SELECT COALESCE(MAX(position),0) FROM tickets WHERE project_id=? AND column_id=? AND swimlane_id=?',
-        );
-        $statement->execute([$project, $column, $lane]);
-        $position = (int) $statement->fetchColumn();
-        if ($position > PHP_INT_MAX - 1024) {
-            $this->rebalance($project, $column, $lane);
-            $statement->execute([$project, $column, $lane]);
-            $position = (int) $statement->fetchColumn();
-        }
-
-        return $position + 1024;
-    }
-
-    private function between(array $rows, int $left, int $right): ?int
-    {
-        $lo = $left < 0 ? 0 : (int) $rows[$left]['position'];
-        if ($right === count($rows)) {
-            return $lo > PHP_INT_MAX - 1024 ? null : $lo + 1024;
-        }
-        $hi = (int) $rows[$right]['position'];
-
-        return $hi - $lo > 1 ? $lo + intdiv($hi - $lo, 2) : null;
-    }
-
-    private function rebalance(int $project, int $column, int $lane): void
-    {
-        $statement = $this->pdo->prepare(
-            'SELECT id FROM tickets WHERE project_id=? AND column_id=? AND swimlane_id=? ORDER BY position,id',
-        );
-        $statement->execute([$project, $column, $lane]);
-        $ids    = $statement->fetchAll(PDO::FETCH_COLUMN);
-        $update = $this->pdo->prepare('UPDATE tickets SET position=? WHERE project_id=? AND id=?');
-        foreach ($ids as $i => $id) {
-            $update->execute([-1024 * ($i + 1), $project, $id]);
-        }
-        foreach ($ids as $i => $id) {
-            $update->execute([1024 * ($i + 1), $project, $id]);
-        }
     }
 
     private function changed(int $project, int $ticket, string $type, array $data = []): void

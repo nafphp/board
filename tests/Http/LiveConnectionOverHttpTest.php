@@ -71,7 +71,7 @@ final class LiveConnectionOverHttpTest extends AcceptanceTestCase
      */
     public function testSomebodySignedOutIsSentToTheSignInPage(): void
     {
-        $anonymous = new HttpClient(self::BASE, 'socket-anonymous', self::AUTHORITY);
+        $anonymous = $this->guest('socket-anonymous');
 
         $this->assertArrayNotHasKey(
             'token',

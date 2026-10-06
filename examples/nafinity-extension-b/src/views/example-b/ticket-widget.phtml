@@ -1,6 +1,8 @@
 <?php
 
+use Naf\Board\Definition\UiContribution;
 use Naf\Board\Support\Icon;
+use Naf\Board\Support\TicketSlotContext;
 
 use function Naf\I18n\t;
 use function Naf\View\s;
@@ -11,8 +13,8 @@ use function Naf\View\s;
  * It answers in the same slot at the same index, so what changes is what the
  * widget says, not where it sits.
  *
- * @var \Naf\Board\Support\TicketSlotContext $slot
- * @var \Naf\Board\Definition\UiContribution $contribution
+ * @var TicketSlotContext $slot
+ * @var UiContribution $contribution
  */
 ?>
 <section

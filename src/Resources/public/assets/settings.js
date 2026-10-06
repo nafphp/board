@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 const dialog = document.querySelector('#settings-detail');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 let activeCard;
@@ -162,7 +164,7 @@ if (assistant) {
     let summary = 'Ausgeschaltet';
     if (config.enabled && config.model) summary = host ? `${config.model} · ${host}` : config.model;
     else if (config.enabled)
-      summary = host ? `Kein Modell gewählt · ${host}` : 'Kein Modell gewählt';
+      summary = host ? t('Kein Modell gewählt') + ' · ' + host : t('Kein Modell gewählt');
     document.querySelector('[data-settings-summary="ai"]').textContent = summary;
     document
       .querySelector('[data-settings-content="ai"]')

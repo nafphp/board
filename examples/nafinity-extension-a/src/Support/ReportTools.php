@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Example\ExtensionA\Support;
 
-use Naf\Board\Ai\ProjectTool;
 use Example\ExtensionA\ExtensionAProvider;
 use Example\ExtensionA\Services\ReportService;
+use Naf\Board\Ai\ProjectTool;
 use Naf\Board\Contracts\AiToolProviderInterface;
 use Naf\Board\Support\AiToolContext;
 

@@ -30,7 +30,14 @@ $logins = (array) config('auth:logins', []);
 <form method="post" data-enhanced action="<?= s(route('preferences.save')) ?>">
     <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
     <?= field([
-        'label'   => 'Darstellung',
+        'label'   => 'Farbwelt',
+        'name'    => 'palette',
+        'type'    => 'select',
+        'value'   => $preferences['palette'] ?? 'classic',
+        'options' => ['classic' => t('Klassisch'), 'anthracite' => t('Anthrazit')],
+    ]) ?>
+    <?= field([
+        'label'   => 'Helligkeit',
         'name'    => 'theme',
         'type'    => 'select',
         'value'   => $preferences['theme'],

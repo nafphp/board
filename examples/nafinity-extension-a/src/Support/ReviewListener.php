@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Example\ExtensionA\Support;
 
-use Naf\Board\Domain\Change;
 use Example\ExtensionA\Jobs\ReviewNoticeJob;
+use Naf\Board\Domain\Change;
 use Naf\Queue\Core\Queue;
 
 /**

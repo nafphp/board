@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Naf\Board\Tests\Http;
 
 use Naf\Board\Support\LiveConnection;
+use Naf\Board\Support\Version;
 use Naf\Board\Tests\Support\AcceptanceTestCase;
 
 /**
@@ -20,7 +21,7 @@ final class StatusStripOverHttpTest extends AcceptanceTestCase
     public function testTheBoardNamesTheVersionItIsRunning(): void
     {
         $this->assertMatchesRegularExpression(
-            '/class="pill"[^>]*>\s*v\d+\.\d+/',
+            '/class="pill"[^>]*>\s*' . preg_quote(Version::label(Version::current()), '/') . '\s*</',
             $this->board(),
             'the page carries no version',
         );

@@ -12,9 +12,7 @@ use Naf\Board\ExtensionContext;
 use Naf\Board\Support\BoardFilterContext;
 use Naf\Board\Support\Input;
 use Naf\Board\Support\SqlCondition;
-use PDO;
 
-use function Naf\app;
 use function Naf\Board\extensions;
 use function Naf\I18n\t;
 
@@ -120,19 +118,11 @@ final class CoreBoard implements ExtensionProviderInterface
             'q',
             'Suche',
             static fn(mixed $value) => trim(Input::validate(['q' => $value], ['q' => 'string|max:200'])['q']),
-            static function (mixed $value, BoardFilterContext $filterContext): SqlCondition {
-                $alias   = $filterContext->alias;
-                $isMysql = app()->container()->get(PDO::class)
-                    ->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql';
-
-                return new SqlCondition(
-                    $isMysql
-                        ? "MATCH($alias.title,$alias.description) AGAINST(? IN NATURAL LANGUAGE MODE)"
-                        : "to_tsvector('simple',$alias.title || ' ' || $alias.description)"
-                            . " @@ plainto_tsquery('simple',?)",
-                    [$value],
-                );
-            },
+            static fn(mixed $value, BoardFilterContext $filterContext) => new SqlCondition(
+                "MATCH({$filterContext->alias}.title,{$filterContext->alias}.description)"
+                    . ' AGAINST(? IN NATURAL LANGUAGE MODE)',
+                [$value],
+            ),
             $index,
         ));
     }

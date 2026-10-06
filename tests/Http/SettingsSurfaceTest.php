@@ -179,6 +179,38 @@ final class SettingsSurfaceTest extends AcceptanceTestCase
         );
     }
 
+    public function testAppearanceCanChangeWithoutReplacingTheOtherChoice(): void
+    {
+        $page = $this->page($this->alice, '/preferences');
+        $this->assertStringContainsString('name="palette"', $page);
+        $this->assertStringContainsString('name="theme"', $page);
+        $token = $this->alice->token($page);
+
+        try {
+            $saved = $this->post($this->alice, '/api/settings/user', [
+                'values' => ['palette' => 'anthracite', 'theme' => 'dark'],
+            ], $token);
+            $this->assertSame(200, $saved['status'], $saved['body']);
+            $this->assertStringContainsString(
+                'data-theme="dark" data-palette="anthracite"',
+                $this->page($this->alice, '/preferences'),
+            );
+
+            $saved = $this->post($this->alice, '/api/settings/user', [
+                'values' => ['theme' => 'light'],
+            ], $token);
+            $this->assertSame(200, $saved['status'], $saved['body']);
+            $this->assertStringContainsString(
+                'data-theme="light" data-palette="anthracite"',
+                $this->page($this->alice, '/preferences'),
+            );
+        } finally {
+            $this->post($this->alice, '/api/settings/user', [
+                'values' => ['palette' => 'classic', 'theme' => 'system'],
+            ], $token);
+        }
+    }
+
     public function testThePersonalSettingsIncludeTheLocalAssistant(): void
     {
         $this->assertStringContainsString('Lokale AI', $this->page($this->alice, '/preferences'));

@@ -114,7 +114,7 @@
   border-radius: 22px;
   font-size: 28px;
   border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
-  box-shadow: 0 6px 20px #6558e818;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 9%, transparent);
 }
 .profile-body {
   flex: 1;

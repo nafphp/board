@@ -96,7 +96,7 @@ $views    = [
     <div class="status-strip">
         <?php if ($version !== ''): ?>
             <span class="pill" title="<?= s(t('Installierte Version von naf/board')) ?>">
-                <?= s('v' . $version) ?>
+                <?= s(Version::label($version)) ?>
             </span>
         <?php endif ?>
         <?php if (LiveConnection::wanted()): ?>

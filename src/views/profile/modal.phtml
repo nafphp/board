@@ -18,7 +18,7 @@ use function Naf\View\s;
             type="button"
             class="icon-button profile-close"
             data-profile-close
-            aria-label="Profil schließen"
+            aria-label="<?= s(t('Profil schließen')) ?>"
             autofocus
         >
             <?= Icon::mark('close') ?>
@@ -117,12 +117,12 @@ use function Naf\View\s;
                 </div>
             </details>
         <p class="profile-notice" data-profile-status role="status" aria-live="polite">
-            Kontoeinstellungen werden geladen …
+            <?= s(t('Kontoeinstellungen werden geladen …')) ?>
         </p>
-        <button type="button" class="button subtle" data-profile-retry hidden>Erneut laden</button>
+        <button type="button" class="button subtle" data-profile-retry hidden><?= s(t('Erneut laden')) ?></button>
         <div data-profile-content hidden>
             <p class="profile-external" data-profile-external hidden>
-                Deine Zugangsdaten werden extern verwaltet. Bitte ändere sie bei deinem Anmeldeanbieter.
+                <?= s(t('Deine Zugangsdaten werden extern verwaltet. Bitte ändere sie bei deinem Anmeldeanbieter.')) ?>
             </p>
             <div data-profile-local>
                 <details class="profile-section" name="profile-section">
@@ -148,16 +148,16 @@ use function Naf\View\s;
                         <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
                         <input type="hidden" name="username" value="<?= s($profile->email) ?>" autocomplete="username" />
                         <label>
-                            Aktuelles Passwort
+                            <?= s(t('Aktuelles Passwort')) ?>
                             <input type="password" name="current_password" autocomplete="current-password" required maxlength="1024" />
                         </label>
                         <div class="form-grid">
                             <label>
-                                Neues Passwort
+                                <?= s(t('Neues Passwort')) ?>
                                 <input type="password" name="password" autocomplete="new-password" required minlength="15" maxlength="72" aria-describedby="profile-password-help" />
                             </label>
                             <label>
-                                Passwort wiederholen
+                                <?= s(t('Passwort wiederholen')) ?>
                                 <input type="password" name="password_confirmation" autocomplete="new-password" required minlength="15" maxlength="72" />
                             </label>
                         </div>
@@ -166,7 +166,7 @@ use function Naf\View\s;
                         </p>
                         <p class="profile-error" data-profile-error role="alert" tabindex="-1" hidden></p>
                         <button class="button primary" type="submit">
-                            Neues Passwort speichern <span aria-hidden="true"><?= Icon::mark('arrow_forward', 'sm') ?></span>
+                            <?= s(t('Neues Passwort speichern')) ?> <span aria-hidden="true"><?= Icon::mark('arrow_forward', 'sm') ?></span>
                         </button>
                     </form>
                 </details>
@@ -193,30 +193,29 @@ use function Naf\View\s;
                         >
                             <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
                             <label>
-                                Neue E-Mail-Adresse
+                                <?= s(t('Neue E-Mail-Adresse')) ?>
                                 <input type="email" name="email" autocomplete="email" required maxlength="190" placeholder="du@beispiel.de" />
                             </label>
                             <label>
-                                Aktuelles Passwort
+                                <?= s(t('Aktuelles Passwort')) ?>
                                 <input type="password" name="current_password" autocomplete="current-password" required maxlength="1024" />
                             </label>
                             <p class="profile-help">
-                                Wir senden einen Code an deine neue Adresse. Deine bisherige Adresse
-                                bleibt bis zur Bestätigung gültig und erhält einen Sicherheitshinweis.
+                                <?= s(t('Wir senden einen Code an deine neue Adresse. Deine bisherige Adresse bleibt bis zur Bestätigung gültig und erhält einen Sicherheitshinweis.')) ?>
                             </p>
                             <p class="profile-error" data-profile-error role="alert" tabindex="-1" hidden></p>
                             <button class="button primary" type="submit">
-                                Bestätigungscode senden <span aria-hidden="true"><?= Icon::mark('arrow_forward', 'sm') ?></span>
+                                <?= s(t('Bestätigungscode senden')) ?> <span aria-hidden="true"><?= Icon::mark('arrow_forward', 'sm') ?></span>
                             </button>
                         </form>
                     </div>
                     <div data-profile-email-pending hidden>
                         <div class="profile-verification">
                             <span class="profile-step"><?= s(t('E-MAIL BESTÄTIGEN')) ?></span>
-                            <p>Dein Code ist unterwegs an <strong data-profile-pending-email></strong>.</p>
+                            <p><?= s(t('Dein Code ist unterwegs an')) ?> <strong data-profile-pending-email></strong>.</p>
                             <small>
-                                Gültig bis <time data-profile-expiry></time>.
-                                Die neue Adresse wird erst nach der Bestätigung übernommen.
+                                <?= s(t('Gültig bis')) ?> <time data-profile-expiry></time>.
+                                <?= s(t('Die neue Adresse wird erst nach der Bestätigung übernommen.')) ?>
                             </small>
                         </div>
                         <form
@@ -228,16 +227,15 @@ use function Naf\View\s;
                             <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
                             <input type="hidden" name="request_id" />
                             <label>
-                                Bestätigungscode
+                                <?= s(t('Bestätigungscode')) ?>
                                 <input class="profile-code" name="code" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" required minlength="12" maxlength="32" placeholder="ABCD-EFGH-JKLM" />
                             </label>
                             <p class="profile-help">
-                                Nach der Bestätigung meldest du dich mit deiner neuen Adresse an.
-                                Dein Passwort bleibt gleich.
+                                <?= s(t('Nach der Bestätigung meldest du dich mit deiner neuen Adresse an. Dein Passwort bleibt gleich.')) ?>
                             </p>
                             <p class="profile-error" data-profile-error role="alert" tabindex="-1" hidden></p>
                             <button class="button primary" type="submit">
-                                Adresse bestätigen <span aria-hidden="true">✓</span>
+                                <?= s(t('Adresse bestätigen')) ?> <span aria-hidden="true">✓</span>
                             </button>
                         </form>
                         <form
@@ -249,7 +247,7 @@ use function Naf\View\s;
                             <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
                             <p class="profile-error" data-profile-error role="alert" tabindex="-1" hidden></p>
                             <button class="profile-text-button" type="submit">
-                                Änderung abbrechen / neuen Code anfordern
+                                <?= s(t('Änderung abbrechen / neuen Code anfordern')) ?>
                             </button>
                         </form>
                     </div>

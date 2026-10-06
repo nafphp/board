@@ -85,7 +85,7 @@ final class Duration
     private static function refuse(string $field): Failure
     {
         return new Failure(t('Bitte gib eine Dauer wie 2h 40m, 90m oder 1:30 an.'), 422, [
-            $field => ['Ungültige Dauer.'],
+            $field => [t('Ungültige Dauer.')],
         ]);
     }
 }

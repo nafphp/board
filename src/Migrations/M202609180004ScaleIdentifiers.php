@@ -21,11 +21,7 @@ final class M202609180004ScaleIdentifiers extends AbstractMigration
 {
     public function up(PDO $connection): void
     {
-        $connection->exec(
-            $connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql'
-                ? "ALTER TABLE projects MODIFY estimation_scale VARCHAR(190) NOT NULL DEFAULT 'none'"
-                : 'ALTER TABLE projects ALTER COLUMN estimation_scale TYPE VARCHAR(190)',
-        );
+        $connection->exec("ALTER TABLE projects MODIFY estimation_scale VARCHAR(190) NOT NULL DEFAULT 'none'");
     }
 
     public function down(PDO $connection): void
@@ -37,10 +33,6 @@ final class M202609180004ScaleIdentifiers extends AbstractMigration
         $connection->exec(
             "UPDATE projects SET estimation_scale='none' WHERE LENGTH(estimation_scale) > 12",
         );
-        $connection->exec(
-            $connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql'
-                ? "ALTER TABLE projects MODIFY estimation_scale VARCHAR(12) NOT NULL DEFAULT 'none'"
-                : 'ALTER TABLE projects ALTER COLUMN estimation_scale TYPE VARCHAR(12)',
-        );
+        $connection->exec("ALTER TABLE projects MODIFY estimation_scale VARCHAR(12) NOT NULL DEFAULT 'none'");
     }
 }

@@ -156,6 +156,7 @@ function buildItems(state) {
     option.tabIndex = -1;
     option.id = `${state.list.id}-${index}`;
     option.setAttribute('role', 'option');
+    option.setAttribute('aria-label', item.label);
     // Capped, so a long list does not take longer to appear than a short one.
     option.style.setProperty('--choice-index', String(Math.min(index, 6)));
     if (state.avatars && item.value) {

@@ -4,6 +4,11 @@
   "type": "module",
   "description": "Project-isolated Kanban boards for NAF, with an extension platform.",
   "scripts": {
-    "test": "node --test tests/js/*.test.js"
+    "test": "node --test tests/js/*.test.js",
+    "style:check": "prettier --check 'src/Resources/public/assets/**/*.{js,css}' 'tests/js/*.test.js' 'tests/benchmarks/*.mjs'",
+    "style:fix": "prettier --write 'src/Resources/public/assets/**/*.{js,css}' 'tests/js/*.test.js' 'tests/benchmarks/*.mjs'"
+  },
+  "devDependencies": {
+    "prettier": "3.9.6"
   }
 }

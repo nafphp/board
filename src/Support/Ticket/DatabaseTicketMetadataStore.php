@@ -86,14 +86,10 @@ final class DatabaseTicketMetadataStore implements TicketMetadataStoreInterface
 
         $this->guardTotals($projectId, $ticketId, $encoded);
 
-        $tail = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql'
-            ? ' ON DUPLICATE KEY UPDATE value_json=VALUES(value_json),updated_at=VALUES(updated_at)'
-            : ' ON CONFLICT(project_id,ticket_id,meta_key)'
-                . ' DO UPDATE SET value_json=excluded.value_json,updated_at=excluded.updated_at';
-
         $statement = $this->pdo->prepare(
             'INSERT INTO ticket_metadata(project_id,ticket_id,meta_key,value_json,updated_at)'
-            . ' VALUES(?,?,?,?,?)' . $tail,
+            . ' VALUES(?,?,?,?,?)'
+            . ' ON DUPLICATE KEY UPDATE value_json=VALUES(value_json),updated_at=VALUES(updated_at)',
         );
         $now = gmdate('Y-m-d H:i:s');
 

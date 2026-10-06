@@ -83,15 +83,11 @@ final class DatabaseSettingsStore implements SettingsStoreInterface
             return;
         }
 
-        $columns = [...array_keys($owner), 'setting_key', 'value_json', 'updated_at'];
-        $marks   = implode(',', array_fill(0, count($columns), '?'));
-        $tail    = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql'
-            ? ' ON DUPLICATE KEY UPDATE value_json=VALUES(value_json),updated_at=VALUES(updated_at)'
-            : ' ON CONFLICT(' . implode(',', [...array_keys($owner), 'setting_key'])
-                . ') DO UPDATE SET value_json=excluded.value_json,updated_at=excluded.updated_at';
-
+        $columns   = [...array_keys($owner), 'setting_key', 'value_json', 'updated_at'];
+        $marks     = implode(',', array_fill(0, count($columns), '?'));
         $statement = $this->pdo->prepare(
-            "INSERT INTO $table(" . implode(',', $columns) . ") VALUES($marks)" . $tail,
+            "INSERT INTO $table(" . implode(',', $columns) . ") VALUES($marks)"
+            . ' ON DUPLICATE KEY UPDATE value_json=VALUES(value_json),updated_at=VALUES(updated_at)',
         );
         $now = date('Y-m-d H:i:s');
 

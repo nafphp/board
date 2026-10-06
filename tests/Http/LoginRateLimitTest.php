@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Naf\Board\Tests\Http;
 
 use Naf\Board\Tests\Support\AcceptanceTestCase;
-use Naf\Board\Tests\Support\HttpClient;
 
 /**
  * Guessing a password is limited per account, not per browser.
@@ -35,7 +34,7 @@ final class LoginRateLimitTest extends AcceptanceTestCase
         // One browser, emptied between attempts -- no cookies carried over,
         // which is what somebody guessing would do, and quick enough that the
         // window does not expire underneath the test.
-        $guesser  = new HttpClient(self::BASE, 'guess', self::AUTHORITY);
+        $guesser  = $this->guest('guess');
         $refused  = null;
         $attempts = 0;
 

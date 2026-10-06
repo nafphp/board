@@ -6,6 +6,7 @@ use Naf\Auth\Auth;
 use Naf\Auth\Ldap\LdapProvider;
 use Naf\Auth\Ldap\NativeDirectory;
 use Naf\Auth\Provider\OrmProvider;
+use Naf\Auth\Session\SessionStateStore;
 use Naf\Auth\Session\StateStoreInterface;
 use Naf\Board\Commands\AdminCommand;
 use Naf\Board\Commands\CheckAssetsCommand;
@@ -42,6 +43,7 @@ use Naf\Queue\Drivers\PDODriver;
 use Naf\Schedule\Core\JobRepository;
 use Naf\Schedule\Core\Scheduler;
 use Naf\Schedule\Support\CronParser;
+use Naf\Session\Core\Session;
 use Psr\Log\LoggerInterface;
 
 use function Naf\app;
@@ -84,31 +86,29 @@ $container->set(LoggerInterface::class, new ContainerLogger());
 // nothing here resolves one: an extension that rebinds a contract further down
 // still reaches every consumer, including the worker.
 ServiceDefaults::register($container);
-// Nafinity requires a database; naf/database itself remains optional/nullable.
+// Nafinity requires MariaDB or MySQL; naf/database itself remains optional/nullable.
+if (config('database:driver') !== 'mysql') {
+    throw new RuntimeException('Nafinity requires database:driver "mysql" (MariaDB or MySQL).');
+}
 foreach (['host', 'database', 'username', 'password'] as $field) {
     if (!is_string(config('database:' . $field)) || config('database:' . $field) === '') {
         throw new RuntimeException('Nafinity requires database configuration: ' . $field);
     }
 }
-$container->set(StateStoreInterface::class, static fn() => $container->make(AccountStateStore::class));
+$container->set(
+    StateStoreInterface::class,
+    static fn() => new AccountStateStore(
+        $container->get(SessionStateStore::class),
+        $container->get(Session::class),
+        static fn(): PDO => $container->get(PDO::class),
+    ),
+);
 $container->get(Auth::class)->policy(ProjectScope::class, new ProjectPolicy());
 $container->set(ActivityListener::class, static fn() => $container->make(ActivityListener::class));
 $container->set(
     RememberStoreInterface::class,
     static fn() => $container->make(RememberStore::class),
 );
-/*
- * The language of the whole answer, not only of a rendered page.
- *
- * It used to be set while a page was being drawn, so a JSON endpoint answered in
- * whatever language the process happened to start in -- the same message came
- * back German to somebody reading the application in English. It is a property
- * of the request and belongs where the request begins.
- *
- * Quietly ignored when it cannot be answered: a request without a session, a
- * command line with no person behind it, an installation whose database is not
- * up yet. None of those is a reason to refuse a request.
- */
 /*
  * Somebody who asked to be remembered, coming back after their session is gone.
  *
@@ -117,31 +117,51 @@ $container->set(
  * true of, and it is true of every route at once, which is what keeps this from
  * being a thing each controller could forget.
  *
- * Quiet on every failure. A cookie that has expired, been revoked, or been
- * copied is not a reason to refuse a request; it is a reason to arrive as a
- * guest, which is what the sign-in page is for.
+ * A cookie that has expired, been revoked, or been copied is not an error:
+ * resume() answers false and the person arrives as a guest. What does throw --
+ * a database that is not up, a table one migration behind -- is logged and
+ * still not worth a broken request.
  */
 event()->listen('request.start', static function () use ($container): void {
     try {
         if (!$container->get(Auth::class)->check()) {
             // make(), not get(): the service is not bound, and get() answers
-            // only for what is -- a distinction this silent catch would hide.
+            // only for what is.
             $container->make(RememberService::class)->resume();
         }
-    } catch (Throwable) {
-        // An installation whose database is not up yet, or a table that is one
-        // migration behind. Neither is worth a broken request.
+    } catch (Throwable $failure) {
+        $container->get(LoggerInterface::class)->warning(
+            'Remembered sign-in skipped: {message}',
+            ['message' => $failure->getMessage()],
+        );
     }
 });
 
+/*
+ * The language of the whole answer, not only of a rendered page.
+ *
+ * It used to be set while a page was being drawn, so a JSON endpoint answered in
+ * whatever language the process happened to start in -- the same message came
+ * back German to somebody reading the application in English. It is a property
+ * of the request and belongs where the request begins.
+ *
+ * Without a person behind the request there is nothing to read and the
+ * installation's default stays. A failure is logged and changes nothing else.
+ */
 event()->listen('request.start', static function () use ($container): void {
     try {
+        if (!$container->get(Auth::class)->check()) {
+            return;
+        }
         $language = $container->get(BoardQueryInterface::class)->preferences()['locale'] ?? null;
         if (is_string($language) && $language !== '') {
             \Naf\I18n\translator()->setLanguage($language);
         }
-    } catch (Throwable) {
-        // Whatever this installation's default is, it stays.
+    } catch (Throwable $failure) {
+        $container->get(LoggerInterface::class)->warning(
+            'Preferred language not applied: {message}',
+            ['message' => $failure->getMessage()],
+        );
     }
 });
 
@@ -160,17 +180,19 @@ $commands->add(RenameMigrationNamespaceCommand::class);
 $commands->add(PublishAssetsCommand::class);
 $commands->add(CheckAssetsCommand::class);
 $commands->add(RemoveAssetsCommand::class);
+// The disk does the reading and writing; the orphan sweep walks the same
+// directory locally, so it takes the root from the disk's own configuration.
 $container->set(
     AttachmentStorage::class,
     static fn() => new AttachmentStorage(
         \Naf\Storage\storage('attachments'),
-        BASE_PATH . '/storage/attachments',
+        (string) config('storage:disks:attachments:root', BASE_PATH . '/storage/attachments'),
     ),
 );
 $container->set(
     Queue::class,
     static fn() => new Queue(
-        new PDODriver($container->get(PDO::class), 300),
+        new PDODriver($container->get(PDO::class)),
     ),
 );
 $container->set(

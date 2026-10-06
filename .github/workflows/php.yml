@@ -20,11 +20,23 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+          extensions: curl, dom, fileinfo, intl, ldap, mbstring, pdo_mysql, sodium
           tools: composer
-      - name: Validate manifest and supported PHP syntax
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Validate the manifest
+        run: composer validate --strict
+      - name: Install
         run: |
-          composer validate --strict
-          find src tests examples -name '*.php' -print0 | xargs -0 -n1 -P4 php -l > /dev/null
-          find src -name '*.phtml' -print0 | xargs -0 -n1 -P4 php -l > /dev/null
-      - name: Run browser module tests
-        run: composer run-script test:js
+          composer install --no-interaction --no-progress
+          npm ci --ignore-scripts
+      - name: Check the style
+        run: |
+          composer style:check
+          npm run style:check
+      # The suite starts its own MariaDB from tests/compose.yaml.
+      - name: Run the suite
+        run: composer test
+      - name: Run the browser module tests
+        run: npm test

@@ -12,8 +12,7 @@ final class M202609140001Nafinity extends AbstractMigration
 {
     public function up(PDO $connection): void
     {
-        $mysql  = $connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql';
-        $id     = $mysql ? 'BIGINT AUTO_INCREMENT PRIMARY KEY' : 'BIGSERIAL PRIMARY KEY';
+        $id     = 'BIGINT AUTO_INCREMENT PRIMARY KEY';
         $tables = [
             'users'    => "id $id, name VARCHAR(120) NOT NULL,email VARCHAR(190) NOT NULL UNIQUE,password_hash VARCHAR(255) NULL,active SMALLINT NOT NULL DEFAULT 1,global_role VARCHAR(20) NOT NULL DEFAULT 'user',created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP",
             'projects' => "id $id,name VARCHAR(120) NOT NULL,description TEXT NOT NULL,color VARCHAR(7) NOT NULL,icon VARCHAR(8) NOT NULL DEFAULT 'N',created_by BIGINT NOT NULL REFERENCES users(id),created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,archived_at TIMESTAMP NULL",
@@ -44,9 +43,7 @@ final class M202609140001Nafinity extends AbstractMigration
         foreach ($tables as $table => $definition) {
             $connection->exec(
                 "CREATE TABLE IF NOT EXISTS $table ($definition)"
-                    . ($mysql
-                        ? ' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
-                        : ''),
+                    . ' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
             );
         }
         $indexes = [
@@ -62,31 +59,21 @@ final class M202609140001Nafinity extends AbstractMigration
                 => 'CREATE INDEX idx_members_user ON project_members(user_id,active,project_id)',
         ];
         foreach ($indexes as $name => $sql) {
-            $this->index($connection, $name, $sql, $mysql);
+            $this->index($connection, $name, $sql);
         }
         $this->index(
             $connection,
             'idx_tickets_search',
-            $mysql
-                ? 'CREATE FULLTEXT INDEX idx_tickets_search ON tickets(title,description)'
-                : "CREATE INDEX idx_tickets_search ON tickets USING GIN (to_tsvector('simple', title || ' ' || description))",
-            $mysql,
+            'CREATE FULLTEXT INDEX idx_tickets_search ON tickets(title,description)',
         );
     }
 
-    private function index(PDO $pdo, string $name, string $sql, bool $mysql): void
+    private function index(PDO $pdo, string $name, string $sql): void
     {
-        if ($mysql) {
-            $statement = $pdo->prepare(
-                'SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema=DATABASE() AND index_name=?',
-            );
-            $statement->execute([$name]);
-        } else {
-            $statement = $pdo->prepare(
-                'SELECT COUNT(*) FROM pg_indexes WHERE schemaname=current_schema() AND indexname=?',
-            );
-            $statement->execute([$name]);
-        }
+        $statement = $pdo->prepare(
+            'SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema=DATABASE() AND index_name=?',
+        );
+        $statement->execute([$name]);
         if (!(int) $statement->fetchColumn()) {
             $pdo->exec($sql);
         }

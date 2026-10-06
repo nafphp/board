@@ -1,3 +1,5 @@
+import { t } from '../i18n.js';
+
 // Adapted from naf/cms (MIT); see /assets/ai/LICENSE.
 export const trimValue = (value) => String(value ?? '').trim();
 
@@ -22,7 +24,7 @@ const parseJsonLine = (line) => {
   try {
     return JSON.parse(line);
   } catch (error) {
-    if (line !== '') throw new Error('Ollama hat ungültige Streaming-Daten geliefert.');
+    if (line !== '') throw new Error(t('Ollama hat ungültige Streaming-Daten geliefert.'));
     return null;
   }
 };

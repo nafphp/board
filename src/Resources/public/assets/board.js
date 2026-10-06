@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 // Pointer driven board dragging: a lifted ghost card, a live placeholder slot and
 // FLIP motion for every card that has to make room.
 import { csrf, toast } from './app.js';
@@ -514,7 +516,7 @@ async function land(cell) {
   try {
     const [response, result] = await request;
     if (!response.ok) {
-      toast(result.message || 'Verschieben fehlgeschlagen.');
+      toast(result.message || t('Verschieben fehlgeschlagen.'));
       document.querySelector('#board-update').hidden = false;
       revert(card, origin, index);
       return;
@@ -524,7 +526,7 @@ async function land(cell) {
     board.dataset.revision = result.revision ?? board.dataset.revision;
     if (!closed && card.dataset.status === 'closed') celebrate(card);
   } catch {
-    toast('Die Verbindung ist unterbrochen. Bitte lade das Board neu.');
+    toast(t('Die Verbindung ist unterbrochen. Bitte lade das Board neu.'));
     revert(card, origin, index);
   } finally {
     delete card.dataset.busy;

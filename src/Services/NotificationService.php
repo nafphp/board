@@ -58,10 +58,7 @@ final class NotificationService implements NotificationServiceInterface
             if (!(int) $recipient['in_app'] && !(int) $recipient['mail']) {
                 continue;
             }
-            $sql = 'INSERT INTO notifications(project_id,ticket_id,user_id,activity_id,title,created_at) VALUES(?,?,?,?,?,?)';
-            if ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql') {
-                $sql .= ' RETURNING id';
-            }
+            $sql    = 'INSERT INTO notifications(project_id,ticket_id,user_id,activity_id,title,created_at) VALUES(?,?,?,?,?,?)';
             $insert = $this->pdo->prepare($sql);
             $insert->execute([
                 $change->projectId,
@@ -71,9 +68,7 @@ final class NotificationService implements NotificationServiceInterface
                 $change->type,
                 gmdate('Y-m-d H:i:s'),
             ]);
-            $id = (int) ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql'
-                    ? $insert->fetchColumn()
-                    : $this->pdo->lastInsertId());
+            $id = (int) $this->pdo->lastInsertId();
             if ((int) $recipient['mail'] && config('nafinity:mail_enabled', false)) {
                 $this->pdo
                     ->prepare(

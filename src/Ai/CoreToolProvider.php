@@ -55,7 +55,7 @@ final class CoreToolProvider implements AiToolProviderInterface
                     $this->query->projects(),
                 ),
                 'Meine Projekte',
-                keywords: ['Projekte', 'Übersicht', 'Arbeitsbereiche'],
+                keywords: ['Projekte', 'Übersicht', 'Arbeitsbereiche', 'projects', 'overview', 'workspaces'],
             );
 
             return;
@@ -82,7 +82,7 @@ final class CoreToolProvider implements AiToolProviderInterface
                 ];
             },
             'Board ansehen',
-            keywords: ['Spalten', 'Swimlanes', 'Labels', 'Aufgaben', 'Übersicht', 'Tickets'],
+            keywords: ['Spalten', 'Swimlanes', 'Labels', 'Aufgaben', 'Übersicht', 'Tickets', 'columns', 'tasks', 'overview'],
         );
         yield new ProjectTool(
             'nafinity_ticket',
@@ -91,7 +91,7 @@ final class CoreToolProvider implements AiToolProviderInterface
             ['properties' => ['ticket_id' => $identifier], 'required' => ['ticket_id']],
             fn($args) => $this->query->detail($project, Input::id($args['ticket_id'])),
             'Ticket lesen',
-            keywords: ['Aufgabe', 'Beschreibung', 'Kommentare', 'Anhänge', 'Details'],
+            keywords: ['Aufgabe', 'Beschreibung', 'Kommentare', 'Anhänge', 'Details', 'task', 'description', 'comments', 'attachments'],
         );
         yield new ProjectTool(
             'nafinity_activity',
@@ -99,7 +99,7 @@ final class CoreToolProvider implements AiToolProviderInterface
             ['properties' => []],
             fn() => $this->query->activity($project),
             'Aktivität lesen',
-            keywords: ['Änderungen', 'Verlauf', 'Aktivitäten'],
+            keywords: ['Änderungen', 'Verlauf', 'Aktivitäten', 'changes', 'history', 'activity'],
         );
         $ticketFields = [
             'title'          => $text,
@@ -125,6 +125,7 @@ final class CoreToolProvider implements AiToolProviderInterface
             },
             'Ticket erstellen',
             'write',
+            keywords: ['Erstelle', 'Erstellen', 'Anlegen', 'Neue', 'Create', 'Add', 'New'],
             requires: ['nafinity_board'],
         );
         $editFields = [
@@ -150,6 +151,7 @@ final class CoreToolProvider implements AiToolProviderInterface
             },
             'Ticket bearbeiten',
             'write',
+            keywords: ['Ändere', 'Ändern', 'Bearbeite', 'Bearbeiten', 'Titel', 'Priorität', 'Update', 'Edit', 'Change'],
             requires: ['nafinity_board', 'nafinity_ticket'],
         );
         $moveFields = [
@@ -171,6 +173,7 @@ final class CoreToolProvider implements AiToolProviderInterface
             },
             'Ticket verschieben',
             'write',
+            keywords: ['Verschiebe', 'Verschieben', 'Move'],
             requires: ['nafinity_board', 'nafinity_ticket'],
         );
         yield new ProjectTool(
@@ -184,6 +187,7 @@ final class CoreToolProvider implements AiToolProviderInterface
             },
             'Kommentar schreiben',
             'comment',
+            keywords: ['Kommentiere', 'Kommentieren', 'Kommentar', 'Schreibe', 'Comment'],
             requires: ['nafinity_board', 'nafinity_ticket'],
         );
 

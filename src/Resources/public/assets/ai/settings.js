@@ -1,3 +1,5 @@
+import { t } from '../i18n.js';
+
 import { requestOllama } from './ollama-client.js';
 import { refreshChoices } from '../choice.js';
 import { configFor, storageFor, write, read, defaults, localUrl } from './store.js';
@@ -42,7 +44,7 @@ export function initSettings(form) {
     for (const item of items) {
       const detail = document.createElement('details');
       const summary = document.createElement('summary');
-      summary.textContent = item.question.slice(0, 90) || 'Antwort prüfen';
+      summary.textContent = item.question.slice(0, 90) || t('Antwort prüfen');
       const answer = document.createElement('p');
       answer.textContent = item.answer;
       detail.append(summary, answer);
@@ -56,10 +58,10 @@ export function initSettings(form) {
     try {
       const { memory, ...config } = values();
       if (config.enabled && !config.model)
-        throw new Error('Bitte lade und wähle zuerst ein Chat-Modell.');
+        throw new Error(t('Bitte lade und wähle zuerst ein Chat-Modell.'));
       write(keys.config, config);
       write(keys.memory, memory || '');
-      output.textContent = 'AI-Einstellungen gespeichert.';
+      output.textContent = t('AI-Einstellungen gespeichert.');
       window.dispatchEvent(new CustomEvent('nafinity:ai-settings'));
     } catch (problem) {
       error(problem);
@@ -73,7 +75,7 @@ export function initSettings(form) {
     button.disabled = true;
     try {
       const current = values();
-      status.textContent = 'Modelle werden geprüft …';
+      status.textContent = t('Modelle werden geprüft …');
       const tags = await requestOllama(current.url, '/api/tags', null, null, modelRequest.signal);
       const inspected = await Promise.all(
         (tags.models || []).map(async ({ name }) => {
@@ -99,7 +101,7 @@ export function initSettings(form) {
       const embed = form.elements.embedding_model;
       chat.replaceChildren();
       embed.replaceChildren();
-      option(embed, '', 'Nur begrenzte Stichwortsuche');
+      option(embed, '', t('Nur begrenzte Stichwortsuche'));
       inspected
         .filter((model) => model.capabilities?.includes('tools'))
         .forEach((model) => option(chat, model.name));
@@ -110,11 +112,12 @@ export function initSettings(form) {
         chat.value = current.model;
       if ([...embed.options].some((item) => item.value === current.embedding_model))
         embed.value = current.embedding_model;
-      if (!chat.options.length) option(chat, '', 'Kein Modell mit Werkzeugunterstützung gefunden');
+      if (!chat.options.length)
+        option(chat, '', t('Kein Modell mit Werkzeugunterstützung gefunden'));
       // Both lists were just replaced, so the pickers drawn over them rebuild.
       refreshChoices(form);
       status.textContent = `Verbunden · ${inspected.length} Modelle`;
-      output.textContent = 'Wähle ein Modell und speichere deine Einstellungen.';
+      output.textContent = t('Wähle ein Modell und speichere deine Einstellungen.');
     } catch (problem) {
       status.textContent = 'Nicht verbunden';
       error(problem);
@@ -130,7 +133,7 @@ export function initSettings(form) {
     const timeout = setTimeout(() => controller.abort(), 120000);
     try {
       const current = values();
-      if (!current.model) throw new Error('Bitte wähle zuerst ein Chat-Modell.');
+      if (!current.model) throw new Error(t('Bitte wähle zuerst ein Chat-Modell.'));
       await requestOllama(
         current.url,
         '/api/chat',
@@ -161,7 +164,7 @@ export function initSettings(form) {
   form.querySelector('[data-ai-review]').addEventListener('click', () => {
     const items = read(keys.feedback, []);
     if (!items.length) {
-      output.textContent = 'Es ist noch kein Feedback vorhanden.';
+      output.textContent = t('Es ist noch kein Feedback vorhanden.');
       return;
     }
     test(
@@ -177,8 +180,9 @@ export function initSettings(form) {
       .filter(Boolean)
       .join('\n\n')
       .slice(0, 12000);
-    output.textContent =
-      'Vorschlag übernommen. Speichere die AI-Einstellungen, um das Gedächtnis zu aktualisieren.';
+    output.textContent = t(
+      'Vorschlag übernommen. Speichere die AI-Einstellungen, um das Gedächtnis zu aktualisieren.',
+    );
   });
   form.querySelector('[data-ai-clear-feedback]').addEventListener('click', () => {
     try {

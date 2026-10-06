@@ -79,9 +79,6 @@ final class AttachmentService implements AttachmentServiceInterface
                 INSERT INTO attachments(project_id, ticket_id, uploaded_by, storage_key, original_name, mime_type, byte_size, sha256, state, created_at)
                 VALUES(?,?,?,?,?,?,?,?,'staged',?)
                 SQL;
-                if ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql') {
-                    $sql .= ' RETURNING id';
-                }
                 $statement = $this->pdo->prepare($sql);
                 $statement->execute([
                     $project,
@@ -94,9 +91,7 @@ final class AttachmentService implements AttachmentServiceInterface
                     $file['sha256'],
                     gmdate('Y-m-d H:i:s'),
                 ]);
-                $id = (int) ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql'
-                        ? $statement->fetchColumn()
-                        : $this->pdo->lastInsertId());
+                $id = (int) $this->pdo->lastInsertId();
                 queue()->push(FinalizeAttachmentJob::class, [
                     'attachmentId' => $id,
                     '_job_id'      => 'attachment:' . $id,

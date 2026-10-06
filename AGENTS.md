@@ -5,8 +5,8 @@ application services; routing, auth, policies, views, form/CSRF, PDO/migrations,
 events, queue, scheduler, mail and translation come from NAF packages.
 
 This package declares `type: naf-plugin` and is discovered after installation in a NAF host.
-The repository is not the application's web root -- `naf/nafinity` is the skeleton that
-installs it, and that is where the container, the Makefile and the suites are run from.
+`naf/nafinity` is the skeleton that installs it for people. The tests need no skeleton: this
+repository boots the board itself, with `tests/Fixtures` as its host.
 
 Before changing code, read the [shared contribution workflow](https://github.com/nafphp/docs/blob/main/AGENT_WORKFLOW.md)
 and [release procedure](https://github.com/nafphp/docs/blob/main/RELEASING.md).
@@ -16,16 +16,16 @@ Review and update user documentation with every behavior change.
 
 ## Layout
 
-This is a package. It has no environment, no container and no installation of its own: a
-host installs it, and the [Nafinity skeleton](https://github.com/nafphp/nafinity) is that
-host during development, with this working copy symlinked into its vendor.
+This is a package. A host installs it; the [Nafinity skeleton](https://github.com/nafphp/nafinity)
+is the one people use, and in the development workspace it has this working copy symlinked
+into its vendor.
 
 - `src/` — the source, namespace `Naf\Board\`. `Contracts`, `Definition`, `Registry`,
   `Domain` and the context classes in `Support` are the API; everything marked `@internal`
-  is not.
-- `public/` — assets the host publishes into its own document root.
-- `tests/` — the suite. It boots the host, not this package.
-- `examples/` — two extension packages the acceptance run really installs.
+  is not. `src/Resources/public/` holds the assets a host publishes into its document root.
+- `tests/` — the suite. `tests/Fixtures` is the host it boots; `tests/compose.yaml` is its
+  database.
+- `examples/` — two extension packages, written as documentation of the extension API.
 - `docs/` — how the pieces fit together, for people working on them.
 
 Generic defects belong in the owning NAF repository, following its own `AGENTS.md`, not in
@@ -107,37 +107,32 @@ Three things about them that are decisions rather than accidents:
 Two spellings of `rbac.granted` are **not** events: the stored change type in the audit log and
 the activity vocabulary. Those are strings in rows that already exist.
 
-`docs/Extensibility.md` is the reference: every extension point has an executed
-example and a negative case.
+`docs/Extensibility.md` is the reference: every extension point has an example and a
+negative case.
 
 ## Running and checking
 
-Everything runs from the host, because the container is the host's. This package sits with
-the other NAF packages; the skeleton is checked out beside that directory, and everything
-below runs from there:
+The suite runs from this repository, with PHP 8.3 or newer and Docker for the database:
 
 ```sh
-cd ../../nafinity
-make first-install      # .env, certificates, image, dependencies, migrations, seed, start
-make test               # MariaDB, PostgreSQL, HTTP, profile, worker, AI and extensions
-make test-plugins       # installs both example packages, then boots the same database without them
-bin/style check         # this package and the host, each with its own rules
-make restart-background # after changes to worker or scheduler code
+composer install && npm ci
+composer test          # Unit, Database, Worker and Http, against tests/compose.yaml
+composer style:check   # php-cs-fixer; style:fix applies it
+npm test               # the browser modules, with node's own runner
+npm run style:check    # Prettier for the JavaScript and CSS
 ```
 
-The suite lives here and runs there: the Makefile points at this working copy through
-`BOARD`, and the tests take the installation to boot from `NAF_HOST`.
+The unit tests need nothing else. The first test that needs the database starts the
+MariaDB in `tests/compose.yaml` when nothing answers on `DB_HOST:DB_PORT` (127.0.0.1:33306
+by default; see `phpunit.xml`) and migrates it down and up. The suite refuses to start unless `APP_ENV=test` and
+`DB_DATABASE=nafinity_test`. HTTP tests talk to PHP's built-in server in front of
+`tests/Fixtures/public`; mail lands in `tests/Fixtures/storage/mail`.
 
-Both MariaDB and PostgreSQL have to pass; a change that works on only one is not finished.
-The runners refuse to start unless `APP_ENV=test` and `DB_DATABASE=nafinity_test`. The
-development database `nafinity` is never a test target and is never reset.
+MariaDB and MySQL are the supported databases. CI runs exactly the commands above.
 
-### What runs here and what runs on a push
-
-CI checks what can be checked without a host: the manifest, that every PHP file and every
-template parses, and the browser modules. Everything above needs the skeleton — two database
-engines, a server answering over HTTPS, throwaway hosts for the examples — so a green run on
-GitHub is not a green suite. Before a release, run `make test` and say so.
+Extensions are not tested by installing them into a second host. The rules they rely on --
+provider order, explicit replacement, fixed ticket areas -- are unit tests; the rest shows
+when the board is used.
 
 ## Style
 
@@ -157,8 +152,9 @@ with `getenv()` in application configuration.
 
 ## Never committed or baked into an image
 
-`vendor/`, and anything a host leaves behind while this package is developed inside it.
-Secrets, environments, certificates and storage belong to the host and never appear here.
+`vendor/`, `node_modules/`, `composer.lock` and `tests/Fixtures/storage/`. Secrets,
+environments, certificates and storage of a real installation belong to its host and never
+appear here.
 
 ## Release gating
 
@@ -177,7 +173,6 @@ releasing is the maintainer's decision, not the agent's.
 | `docs/Settings-And-AI.md` | Settings cards, custom roles, local Ollama |
 | `docs/Profile.md` | Account changes, verification codes, security boundaries |
 | `docs/Implementation.md` | What is delivered, what the last full run proved, what is missing |
-| `docs/Extensibility-Status.md` | Acceptance record of the extensibility work, honest about what is open |
 
 Anything dated in `docs/` is a record of a past run, not a description of the current state.
 Check the code or run the suite before repeating a number from it.

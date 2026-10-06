@@ -1,0 +1,21 @@
+# The database the suite runs against, and nothing else.
+#
+# tests/bootstrap.php starts it when nothing answers on the configured port, so
+# `composer test` works on a machine with Docker and no other preparation. It
+# lives in memory: every start is an empty server, and the suite migrates it.
+name: naf-board-test
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: nafinity_test
+      MARIADB_USER: board
+      MARIADB_PASSWORD: board
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+    ports: ["127.0.0.1:${DB_PORT:-33306}:3306"]
+    tmpfs: [/var/lib/mysql]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 1s
+      timeout: 3s
+      retries: 60

@@ -118,12 +118,7 @@ final class TicketDeletionTest extends BoardTestCase
      */
     private function tablesPointingAtTickets(): array
     {
-        $postgres = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql';
-        $sql      = $postgres
-            ? "SELECT DISTINCT c.relname FROM pg_constraint k
-                 JOIN pg_class c ON c.oid = k.conrelid
-                WHERE k.contype='f' AND k.confrelid='tickets'::regclass"
-            : "SELECT DISTINCT TABLE_NAME FROM information_schema.KEY_COLUMN_USAGE
+        $sql = "SELECT DISTINCT TABLE_NAME FROM information_schema.KEY_COLUMN_USAGE
                 WHERE TABLE_SCHEMA=DATABASE() AND REFERENCED_TABLE_NAME='tickets'";
 
         return array_map(strval(...), $this->pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN));

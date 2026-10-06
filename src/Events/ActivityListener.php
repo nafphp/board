@@ -46,9 +46,6 @@ final class ActivityListener
 
         $sql = 'INSERT INTO activities(scope,project_id,ticket_id,actor_id,event_type,payload,created_at)'
             . ' VALUES(?,?,?,?,?,?,?)';
-        if ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql') {
-            $sql .= ' RETURNING id';
-        }
         $statement = $this->pdo->prepare($sql);
         $statement->execute([
             $change->scope,
@@ -59,9 +56,7 @@ final class ActivityListener
             json_encode($change->data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
             gmdate('Y-m-d H:i:s'),
         ]);
-        $id = (int) ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql'
-                ? $statement->fetchColumn()
-                : $this->pdo->lastInsertId());
+        $id = (int) $this->pdo->lastInsertId();
         $this->notifications->record($change, $id);
     }
 

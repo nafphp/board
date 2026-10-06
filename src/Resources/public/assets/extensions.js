@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 // The browser side of a contribution.
 //
 // A contributed node that names a module gets that module mounted once, with
@@ -49,26 +51,41 @@ async function mount(root) {
   if (mounted.has(root)) return;
   const source = root.dataset.extensionModule;
   if (!source) return;
-  mounted.set(root, null);
+  const record = { disposed: false, teardown: null };
+  mounted.set(root, record);
   try {
     const module = await import(source);
+    if (record.disposed) return;
     if (typeof module.mount !== 'function') {
-      throw new Error('Das Modul stellt kein mount(root, context, api) bereit.');
+      throw new Error(t('Das Modul stellt kein mount(root, context, api) bereit.'));
     }
     const dispose = await module.mount(root, context(root), api(root));
-    mounted.set(root, typeof dispose === 'function' ? dispose : null);
+    record.teardown = typeof dispose === 'function' ? dispose : null;
+    if (record.disposed) teardown(record);
   } catch (failure) {
-    mounted.delete(root);
-    report(root, `Dieser Beitrag konnte nicht geladen werden: ${failure.message}`);
+    if (mounted.get(root) === record) mounted.delete(root);
+    if (!record.disposed)
+      report(
+        root,
+        t('Dieser Beitrag konnte nicht geladen werden: :reason', { reason: failure.message }),
+      );
   }
 }
 
 function dispose(root) {
-  const teardown = mounted.get(root);
+  const record = mounted.get(root);
+  if (!record) return;
   mounted.delete(root);
-  if (typeof teardown === 'function') {
+  record.disposed = true;
+  teardown(record);
+}
+
+function teardown(record) {
+  const stop = record.teardown;
+  record.teardown = null;
+  if (typeof stop === 'function') {
     try {
-      teardown();
+      stop();
     } catch {
       // A module that fails while going away must not keep the page from updating.
     }

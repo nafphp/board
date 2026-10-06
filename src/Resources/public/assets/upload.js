@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 import { fetchWorkspace, syncWidgets } from './fragment.js';
 
 // Attaching a file, with the progress the browser's own control never shows. The form below
@@ -77,7 +79,7 @@ function upload(form) {
   if (errors) errors.textContent = '';
   // Refused here as well as on the server, so a long upload is not spent to be rejected.
   if (file.size > LIMIT) {
-    fail(form, `Die Datei ist ${size(file.size)} groß. Erlaubt sind 10 MiB.`);
+    fail(form, t('Die Datei ist :size groß. Erlaubt sind 10 MiB.', { size: size(file.size) }));
 
     return;
   }
@@ -101,7 +103,7 @@ function upload(form) {
       payload = {};
     }
     if (request.status < 200 || request.status >= 300) {
-      fail(form, payload.message || 'Die Datei konnte nicht angehängt werden.');
+      fail(form, payload.message || t('Die Datei konnte nicht angehängt werden.'));
 
       return;
     }
@@ -110,7 +112,7 @@ function upload(form) {
     setTimeout(() => relist(form), 220);
   });
   request.addEventListener('error', () =>
-    fail(form, 'Die Verbindung wurde unterbrochen. Bitte versuche es erneut.'),
+    fail(form, t('Die Verbindung wurde unterbrochen. Bitte versuche es erneut.')),
   );
   request.addEventListener('abort', () => {
     form.querySelector('[data-upload-progress]').hidden = true;

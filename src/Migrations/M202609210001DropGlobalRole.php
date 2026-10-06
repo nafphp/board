@@ -45,13 +45,10 @@ final class M202609210001DropGlobalRole extends AbstractMigration
     /** Asked rather than assumed: a fresh install never had the column to begin with. */
     private function hasColumn(PDO $connection, string $column): bool
     {
-        $sql = $connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql'
-            ? 'SELECT COUNT(*) FROM information_schema.columns'
-                . ' WHERE table_name = ? AND column_name = ?'
-            : 'SELECT COUNT(*) FROM information_schema.columns'
-                . ' WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?';
-
-        $statement = $connection->prepare($sql);
+        $statement = $connection->prepare(
+            'SELECT COUNT(*) FROM information_schema.columns'
+            . ' WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?',
+        );
         $statement->execute(['users', $column]);
 
         return (int) $statement->fetchColumn() > 0;
