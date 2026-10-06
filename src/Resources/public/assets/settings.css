@@ -54,7 +54,7 @@
 .settings-tile:hover {
   transform: translateY(-3px);
   border-color: var(--accent);
-  box-shadow: 0 12px 28px #6558e810;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--accent) 6%, transparent);
 }
 .settings-tile:focus-visible {
   outline: 3px solid var(--accent);
@@ -501,4 +501,8 @@ label > small {
   --rbac-danger: var(--danger, #e05260);
   --rbac-surface: var(--input);
   --rbac-radius: 10px;
+}
+.rbac-roles .rbac-button.is-primary,
+.rbac-grants .rbac-button.is-primary {
+  color: var(--on-accent);
 }

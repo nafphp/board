@@ -12,9 +12,8 @@ use function Naf\app;
 /**
  * The language picker in the top bar sends one field, not a whole settings form.
  *
- * So it needs a save of its own: the full one would reset the theme, the time
- * zone and both notification switches to their defaults, and someone switching
- * language would silently lose all four.
+ * So it needs a save of its own: the full one would reset the palette, brightness,
+ * time zone and notification switches to their defaults.
  */
 final class PreferenceTest extends BoardTestCase
 {
@@ -26,6 +25,7 @@ final class PreferenceTest extends BoardTestCase
         $this->preferences = app()->container()->make(PreferenceService::class);
         $this->preferences->save([
             'theme'         => 'dark',
+            'palette'       => 'anthracite',
             'locale'        => 'de',
             'timezone'      => 'Europe/Lisbon',
             'notify_in_app' => '1',
@@ -46,9 +46,31 @@ final class PreferenceTest extends BoardTestCase
 
         $after = $this->query->preferences();
         $this->assertSame('dark', $after['theme'], 'the theme was reset by the language switch');
+        $this->assertSame('anthracite', $after['palette'], 'the palette was reset by the language switch');
         $this->assertSame('Europe/Lisbon', $after['timezone'], 'the time zone was reset');
         $this->assertSame(1, (int) $after['notify_mail'], 'mail notifications were reset');
         $this->assertSame(1, (int) $after['notify_in_app'], 'in-app notifications were reset');
+    }
+
+    public function testThePaletteAndBrightnessAreStoredSeparately(): void
+    {
+        $this->preferences->save(['palette' => 'classic', 'theme' => 'light']);
+
+        $after = $this->query->preferences();
+        $this->assertSame('classic', $after['palette']);
+        $this->assertSame('light', $after['theme']);
+    }
+
+    public function testAnUnknownPaletteIsRefusedWithoutChangingAppearance(): void
+    {
+        $this->assertDenied(422, fn() => $this->preferences->save([
+            'palette' => 'unknown',
+            'theme'   => 'light',
+        ]));
+
+        $after = $this->query->preferences();
+        $this->assertSame('anthracite', $after['palette']);
+        $this->assertSame('dark', $after['theme']);
     }
 
     public function testALanguageNobodyOffersIsRefused(): void

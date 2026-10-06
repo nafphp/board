@@ -6,6 +6,16 @@ and slides back on the X or Escape. Input is preserved on close, and after a suc
 same card is reopened. The animation honours the operating system's reduced-motion option. On
 small screens the dialog takes up nearly the whole area.
 
+## Appearance
+
+Personal settings keep the color palette and brightness independent. **Classic** is the
+unchanged default palette; **Anthracite** uses calmer gray and sage surfaces in both light and
+dark. Brightness can follow the device or be fixed to light or dark. The sidebar shortcut toggles
+only brightness and saves the choice for the signed-in account. The login uses the last choice
+on that device until a user signs in; authenticated pages use the account's saved values.
+Existing preference rows gain a `palette` column defaulting to `classic`, so upgrades keep their
+current appearance.
+
 ## Cards and permissions
 
 - Personal: appearance, language, time zone, notifications and configured external accounts.
