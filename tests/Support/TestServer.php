@@ -40,9 +40,7 @@ final class TestServer
         $environment = [...getenv(), 'PHP_CLI_SERVER_WORKERS' => '4'];
 
         self::$process = proc_open(
-            // EGPCS, as an installation's php.ini has it: NAF resolves ENV:
-            // references from $_ENV, which PHP leaves empty otherwise.
-            [PHP_BINARY, '-d', 'variables_order=EGPCS', '-S', $host . ':' . $port, '-t', $public, $public . '/index.php'],
+            [PHP_BINARY, '-S', $host . ':' . $port, '-t', $public, $public . '/index.php'],
             [0 => ['file', '/dev/null', 'r'], 1 => ['file', $log, 'a'], 2 => ['file', $log, 'a']],
             $pipes,
             null,

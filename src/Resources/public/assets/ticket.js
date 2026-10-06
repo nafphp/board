@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 import { toast } from './app.js';
 import { enhanceChoices, openChoice, closeChoices } from './choice.js';
 import { attribute, fetchWorkspace, syncWidgets } from './fragment.js';
@@ -39,15 +41,15 @@ function scheduleSave(form, delay = 700) {
   const state = inlineState(form);
   clearTimeout(state.timer);
   if (!changed(form)) {
-    inlineStatus(form, 'Keine ungespeicherten Änderungen');
+    inlineStatus(form, t('Keine ungespeicherten Änderungen'));
     return;
   }
   if (state.composing) return;
   if (form.dataset.conflict) {
-    inlineStatus(form, 'Nicht gespeichert · Bitte aktuellen Stand laden');
+    inlineStatus(form, t('Nicht gespeichert · Bitte aktuellen Stand laden'));
     return;
   }
-  inlineStatus(form, 'Änderungen werden gespeichert …');
+  inlineStatus(form, t('Änderungen werden gespeichert …'));
   state.timer = setTimeout(() => flushInline(form), delay);
 }
 async function flushInline(form) {
@@ -62,8 +64,8 @@ async function flushInline(form) {
   if (!changed(form)) return true;
   if (form.dataset.conflict) return false;
   if (!form.checkValidity()) {
-    inlineStatus(form, 'Bitte prüfe den eingegebenen Wert.');
-    error(form, 'Bitte prüfe den eingegebenen Wert.');
+    inlineStatus(form, t('Bitte prüfe den eingegebenen Wert.'));
+    error(form, t('Bitte prüfe den eingegebenen Wert.'));
     return false;
   }
   const saved = await saveTicket(form);
@@ -93,7 +95,7 @@ function loadQuill() {
       script.onerror = () => {
         quillReady = null;
         script.remove();
-        reject(new Error('Der Texteditor konnte nicht geladen werden. Bitte erneut versuchen.'));
+        reject(new Error(t('Der Texteditor konnte nicht geladen werden. Bitte erneut versuchen.')));
       };
       document.head.append(script);
     });
@@ -107,7 +109,7 @@ function error(form, message, conflict = false) {
   if (conflict) {
     const reload = document.createElement('a');
     reload.href = location.href;
-    reload.textContent = 'Aktuellen Stand laden';
+    reload.textContent = t('Aktuellen Stand laden');
     const draft = document.createElement('button');
     draft.type = 'button';
     draft.className = 'text-button';
@@ -154,8 +156,8 @@ async function beginEdit(field) {
   form.hidden = false;
   inlineStatus(form, form.dataset.autoSave);
   if (form.dataset.conflict) {
-    error(form, 'Das Ticket wurde inzwischen geändert. Bitte lade den aktuellen Stand.', true);
-    inlineStatus(form, 'Nicht gespeichert · Bitte aktuellen Stand laden');
+    error(form, t('Das Ticket wurde inzwischen geändert. Bitte lade den aktuellen Stand.'), true);
+    inlineStatus(form, t('Nicht gespeichert · Bitte aktuellen Stand laden'));
   }
   if (form.querySelector('[data-choice]')) {
     inlineState(form);
@@ -207,7 +209,7 @@ async function initializeEditor(form) {
         ['blockquote', 'code-block', 'link', 'clean'],
       ],
     },
-    placeholder: 'Beschreibe das Ziel und die nächsten Schritte …',
+    placeholder: t('Beschreibe das Ziel und die nächsten Schritte …'),
   });
   const source = form.querySelector(
     'textarea[name="description_html"], textarea[name="description"]',
@@ -217,18 +219,18 @@ async function initializeEditor(form) {
   source.name = 'description_html';
   source.hidden = true;
   editor.history.clear();
-  editor.root.setAttribute('aria-label', 'Beschreibung bearbeiten');
+  editor.root.setAttribute('aria-label', t('Beschreibung bearbeiten'));
   editor.root.setAttribute('role', 'textbox');
   editor.root.setAttribute('aria-multiline', 'true');
   const labels = {
-    bold: 'Fett',
-    italic: 'Kursiv',
-    underline: 'Unterstrichen',
-    strike: 'Durchgestrichen',
-    blockquote: 'Zitat',
-    'code-block': 'Codeblock',
+    bold: t('Fett'),
+    italic: t('Kursiv'),
+    underline: t('Unterstrichen'),
+    strike: t('Durchgestrichen'),
+    blockquote: t('Zitat'),
+    'code-block': t('Codeblock'),
     link: 'Link',
-    clean: 'Formatierung entfernen',
+    clean: t('Formatierung entfernen'),
   };
   form.querySelectorAll('.ql-toolbar button').forEach((button) => {
     const format = [...button.classList].find((name) => name.startsWith('ql-'))?.slice(3);
@@ -236,13 +238,15 @@ async function initializeEditor(form) {
       'aria-label',
       format === 'list'
         ? button.value === 'ordered'
-          ? 'Nummerierte Liste'
-          : 'Aufzählung'
+          ? t('Nummerierte Liste')
+          : t('Aufzählung')
         : labels[format] || format,
     );
     button.title = button.getAttribute('aria-label');
   });
-  form.querySelector('.ql-picker-label')?.setAttribute('aria-label', 'Überschrift oder Fließtext');
+  form
+    .querySelector('.ql-picker-label')
+    ?.setAttribute('aria-label', t('Überschrift oder Fließtext'));
   editor.on('text-change', (_delta, _old, source) => {
     if (source === 'user') {
       form.dataset.dirty = 'true';
@@ -297,8 +301,8 @@ function cancelEdit(field, focus = true) {
   inlineStatus(
     form,
     form.dataset.conflict || field.closest('.ticket-workspace').dataset.needsReload
-      ? 'Bitte aktuellen Stand laden'
-      : 'Keine ungespeicherten Änderungen',
+      ? t('Bitte aktuellen Stand laden')
+      : t('Keine ungespeicherten Änderungen'),
   );
   closeChoices(form);
   enhanceChoices(form);
@@ -313,7 +317,7 @@ export async function refresh(workspace, field, section) {
   const fresh = await fetchWorkspace(workspace);
   if (!fresh)
     throw new Error(
-      'Gespeichert. Der aktuelle Stand konnte nicht geladen werden. Bitte lade die Seite neu.',
+      t('Gespeichert. Der aktuelle Stand konnte nicht geladen werden. Bitte lade die Seite neu.'),
     );
   workspace.dataset.version = fresh.dataset.version;
   workspace.dataset.revision = fresh.dataset.revision;
@@ -327,7 +331,7 @@ export async function refresh(workspace, field, section) {
       const form = current.querySelector('form');
       const savedForm = replacement.querySelector('form');
       if (!savedForm)
-        throw new Error('Der Bearbeitungszustand hat sich geändert. Bitte lade das Ticket neu.');
+        throw new Error(t('Der Bearbeitungszustand hat sich geändert. Bitte lade das Ticket neu.'));
       inlineState(form).savedForm = savedForm;
       const display = replacement.querySelector('.inline-display');
       display.setAttribute('aria-expanded', 'true');
@@ -557,7 +561,7 @@ async function performSave(form, submitter) {
   const editor = editors.get(form);
   if (editor) form.elements.description_html.value = editor.getSemanticHTML();
   else if (form.querySelector('[data-rich-editor]') && !form.hasAttribute('data-ticket-create'))
-    return error(form, 'Der Texteditor ist noch nicht bereit.');
+    return error(form, t('Der Texteditor ist noch nicht bereit.'));
   const data = new FormData(form);
   if (submitter?.name) data.append(submitter.name, submitter.value);
   const controls = (
@@ -567,9 +571,9 @@ async function performSave(form, submitter) {
     control.disabled = true;
   });
   if (!automatic) editor?.enable(false);
-  inlineStatus(form, 'Wird gespeichert …');
+  inlineStatus(form, t('Wird gespeichert …'));
   const state = workspace.querySelector('.ticket-save-state');
-  state.textContent = 'Wird gespeichert …';
+  state.textContent = t('Wird gespeichert …');
   form.querySelector('.form-errors')?.classList.remove('visible');
   let accepted = false;
   const field = form.closest('[data-inline-field]');
@@ -582,18 +586,18 @@ async function performSave(form, submitter) {
     });
     const result = await response
       .json()
-      .catch(() => ({ message: 'Bitte melde dich erneut an oder lade die Seite neu.' }));
+      .catch(() => ({ message: t('Bitte melde dich erneut an oder lade die Seite neu.') }));
     if (!response.ok || response.redirected || typeof result.url !== 'string') {
       error(
         form,
         [
-          result.message || 'Speichern fehlgeschlagen.',
+          result.message || t('Speichern fehlgeschlagen.'),
           ...Object.values(result.errors || {}).flat(),
         ].join(' '),
         response.status === 409,
       );
-      state.textContent = 'Nicht gespeichert';
-      inlineStatus(form, 'Nicht gespeichert');
+      state.textContent = t('Nicht gespeichert');
+      inlineStatus(form, t('Nicht gespeichert'));
       if (automatic && response.status === 409) form.dataset.conflict = 'true';
       return false;
     }
@@ -607,10 +611,10 @@ async function performSave(form, submitter) {
         headers: { Accept: 'text/html' },
       });
       if (!response.ok || response.redirected)
-        throw new Error('Ticket erstellt. Bitte öffne den gespeicherten Stand.');
+        throw new Error(t('Ticket erstellt. Bitte öffne den gespeicherten Stand.'));
       const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
       const fresh = parsed.querySelector('.ticket-workspace:not(.ticket-creating)');
-      if (!fresh) throw new Error('Ticket erstellt. Bitte öffne den gespeicherten Stand.');
+      if (!fresh) throw new Error(t('Ticket erstellt. Bitte öffne den gespeicherten Stand.'));
       if (!workspace.classList.contains('in-drawer')) {
         // A direct visit keeps the normal page layout and progressive-enhancement fallback.
         location.assign(result.url);
@@ -619,10 +623,10 @@ async function performSave(form, submitter) {
       closeChoices(workspace);
       workspace.replaceWith(fresh);
       enhanceChoices(fresh);
-      document.querySelector('#ticket-drawer')?.setAttribute('aria-label', 'Ticketdetails');
-      fresh.querySelector('.ticket-save-state').textContent = 'Ticket erstellt';
+      document.querySelector('#ticket-drawer')?.setAttribute('aria-label', t('Ticketdetails'));
+      fresh.querySelector('.ticket-save-state').textContent = t('Ticket erstellt');
       fresh.querySelector('.ticket-title .inline-display')?.focus();
-      toast('Ticket erstellt');
+      toast(t('Ticket erstellt'));
       // The board behind the drawer does not know about this ticket yet. It is
       // told rather than asked to reload, so whoever is listening decides what
       // that costs -- on a page without a board, nobody is.
@@ -643,7 +647,7 @@ async function performSave(form, submitter) {
       changed(form);
       inlineStatus(
         form,
-        form.dataset.dirty === 'true' ? 'Weitere Änderungen ausstehend …' : 'Gespeichert',
+        form.dataset.dirty === 'true' ? t('Weitere Änderungen ausstehend …') : t('Gespeichert'),
       );
     } else delete form.dataset.dirty;
     if (form.hasAttribute('data-comment-composer')) {
@@ -658,8 +662,8 @@ async function performSave(form, submitter) {
       workspace.querySelector(`[data-inline-field="${fieldName}"] .inline-display`)?.focus();
     state.textContent =
       automatic && form.dataset.dirty === 'true'
-        ? 'Weitere Änderungen ausstehend …'
-        : 'Gespeichert';
+        ? t('Weitere Änderungen ausstehend …')
+        : t('Gespeichert');
     return true;
   } catch (exception) {
     if (accepted) {
@@ -669,13 +673,13 @@ async function performSave(form, submitter) {
         inlineState(form).baseline = submittedValues;
         changed(form);
       } else delete form.dataset.dirty;
-      inlineStatus(form, 'Gespeichert · Bitte neu laden');
-      state.textContent = 'Gespeichert · Bitte neu laden';
+      inlineStatus(form, t('Gespeichert · Bitte neu laden'));
+      state.textContent = t('Gespeichert · Bitte neu laden');
       error(form, exception.message, true);
     } else {
-      state.textContent = 'Nicht gespeichert';
-      inlineStatus(form, 'Nicht gespeichert');
-      error(form, 'Die Verbindung ist unterbrochen. Deine Eingaben bleiben erhalten.');
+      state.textContent = t('Nicht gespeichert');
+      inlineStatus(form, t('Nicht gespeichert'));
+      error(form, t('Die Verbindung ist unterbrochen. Deine Eingaben bleiben erhalten.'));
     }
     return false;
   } finally {
@@ -789,7 +793,7 @@ function confirmClose(drawer) {
     return false;
   }
   if (workspace && saving.has(workspace)) {
-    toast('Bitte warte, bis das Speichern abgeschlossen ist.');
+    toast(t('Bitte warte, bis das Speichern abgeschlossen ist.'));
     return false;
   }
   if (!dirty(drawer)) return true;

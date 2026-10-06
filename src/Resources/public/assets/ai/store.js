@@ -1,3 +1,5 @@
+import { t } from '../i18n.js';
+
 import { normalizeOllamaBaseUrl } from './ollama-client.js';
 export const defaults = {
   enabled: false,
@@ -22,7 +24,7 @@ export const write = (key, value) => {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
     throw new Error(
-      'Der Browserspeicher ist voll oder gesperrt. Bitte exportiere oder lösche ältere Chats.',
+      t('Der Browserspeicher ist voll oder gesperrt. Bitte exportiere oder lösche ältere Chats.'),
     );
   }
 };
@@ -73,7 +75,7 @@ export function localUrl(value) {
     url.hash ||
     url.pathname !== '/'
   ) {
-    throw new Error('Bitte verwende eine lokale Ollama-Adresse ohne Zugangsdaten oder Pfad.');
+    throw new Error(t('Bitte verwende eine lokale Ollama-Adresse ohne Zugangsdaten oder Pfad.'));
   }
   return url.origin;
 }

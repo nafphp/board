@@ -563,7 +563,7 @@ final class TicketService implements TicketServiceInterface
         foreach (['start_date' => $start, 'due_date' => $due] as $field => $date) {
             if ($date !== null && (!is_string($date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/D', $date)
                 || !checkdate((int) substr($date, 5, 2), (int) substr($date, 8, 2), (int) substr($date, 0, 4)))) {
-                throw new Failure(t('Bitte wähle ein gültiges Datum.'), 422, [$field => ['Ungültiges Datum.']]);
+                throw new Failure(t('Bitte wähle ein gültiges Datum.'), 422, [$field => [t('Ungültiges Datum.')]]);
             }
         }
         if ($start !== null && $due !== null && $start > $due) {
@@ -583,7 +583,7 @@ final class TicketService implements TicketServiceInterface
             || filter_var($points, FILTER_VALIDATE_INT) === false
             || (int) $points < 0 || (int) $points > Estimation::MAX)) {
             throw new Failure(t('Bitte gib eine Schätzung zwischen 0 und :max ein.', ['max' => Estimation::MAX]), 422, [
-                'estimate_points' => ['Ungültige Schätzung.'],
+                'estimate_points' => [t('Ungültige Schätzung.')],
             ]);
         }
         $validated['estimate_points'] = $points === null ? null : (int) $points;
@@ -622,7 +622,7 @@ final class TicketService implements TicketServiceInterface
                 $statement->execute([$project, $id]);
                 if ((int) $statement->fetchColumn() !== 1) {
                     throw new Failure(t('Die Auswahl gehört nicht zu diesem Projekt.'), 422, [
-                        $field => ['Ungültige Zuordnung.'],
+                        $field => [t('Ungültige Zuordnung.')],
                     ]);
                 }
             }

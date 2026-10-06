@@ -25,11 +25,11 @@ $suggestions = $projectId ? [
         type="button"
         class="ai-launcher"
         data-ai-toggle
-        aria-label="Nafinity AI öffnen"
+        aria-label="<?= s(t('Nafinity AI öffnen')) ?>"
         aria-controls="ai-panel"
         aria-haspopup="dialog"
         aria-expanded="false"
-        title="Nafinity AI öffnen"
+        title="<?= s(t('Nafinity AI öffnen')) ?>"
     >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="m12 3 2.7 6.3L21 12l-6.3 2.7L12 21l-2.7-6.3L3 12l6.3-2.7L12 3Z" />
@@ -56,19 +56,19 @@ $suggestions = $projectId ? [
                     <strong id="ai-title">Nafinity <span>AI</span></strong>
                     <small><?= s(t($projectId ? 'Fragen und Aufgaben zum Board' : 'Fragen zu deinen Projekten')) ?></small>
                 </div>
-                <nav class="ai-toolbar" aria-label="Chat-Aktionen">
-                    <button type="button" class="ai-icon-button" data-ai-new aria-label="Neuen Chat beginnen" title="Neuer Chat">
+                <nav class="ai-toolbar" aria-label="<?= s(t('Chat-Aktionen')) ?>">
+                    <button type="button" class="ai-icon-button" data-ai-new aria-label="<?= s(t('Neuen Chat beginnen')) ?>" title="<?= s(t('Neuer Chat')) ?>">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M12 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-6M16 3l5 5-9 9H7v-5L16 3Z" />
                         </svg>
                     </button>
-                    <a class="ai-icon-button" href="<?= $projectId ? '/projects/' . (int) $projectId . '/settings' : '/preferences' ?>#ai" aria-label="AI-Einstellungen" title="AI-Einstellungen">
+                    <a class="ai-icon-button" href="<?= $projectId ? '/projects/' . (int) $projectId . '/settings' : '/preferences' ?>#ai" aria-label="<?= s(t('AI-Einstellungen')) ?>" title="<?= s(t('AI-Einstellungen')) ?>">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M4 7h7m4 0h5M4 17h3m4 0h9" />
                             <circle cx="13" cy="7" r="2" /><circle cx="9" cy="17" r="2" />
                         </svg>
                     </a>
-                    <button type="button" class="ai-icon-button" data-ai-close aria-label="Chat schließen" title="Chat schließen · Escape">
+                    <button type="button" class="ai-icon-button" data-ai-close aria-label="<?= s(t('Chat schließen')) ?>" title="<?= s(t('Chat schließen · Escape')) ?>">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
                     </button>
                 </nav>
@@ -81,27 +81,27 @@ $suggestions = $projectId ? [
                 class="ai-messages"
                 data-ai-messages
                 role="log"
-                aria-label="Chatverlauf"
+                aria-label="<?= s(t('Chatverlauf')) ?>"
                 aria-live="off"
             ></div>
             <div class="ai-status" data-ai-status role="status" aria-live="polite" hidden></div>
             <div data-ai-confirmation class="ai-confirmation" hidden></div>
             <form class="ai-composer" data-ai-form>
                 <div class="ai-input-wrap">
-                    <label for="ai-input" class="sr-only">Nachricht an Nafinity AI</label>
-                    <textarea id="ai-input" rows="1" maxlength="12000" placeholder="Frag einfach …" required></textarea>
-                    <button type="submit" class="ai-send" data-ai-send aria-label="Nachricht senden" title="Senden · Enter" disabled>
+                    <label for="ai-input" class="sr-only"><?= s(t('Nachricht an Nafinity AI')) ?></label>
+                    <textarea id="ai-input" rows="1" maxlength="12000" placeholder="<?= s(t('Frag einfach …')) ?>" required></textarea>
+                    <button type="submit" class="ai-send" data-ai-send aria-label="<?= s(t('Nachricht senden')) ?>" title="<?= s(t('Senden · Enter')) ?>" disabled>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6" /></svg>
                     </button>
-                    <button type="button" class="ai-send ai-stop" data-ai-stop aria-label="Antwort stoppen" title="Antwort stoppen" hidden>
+                    <button type="button" class="ai-send ai-stop" data-ai-stop aria-label="<?= s(t('Antwort stoppen')) ?>" title="<?= s(t('Antwort stoppen')) ?>" hidden>
                         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2" /></svg>
                     </button>
                 </div>
             </form>
             <footer class="ai-footer">
-                <span class="ai-privacy"><span aria-hidden="true"></span>Lokal. Änderungen nur mit deinem Okay.</span>
-                <label class="ai-stream-toggle" title="Antwort während der Generierung anzeigen">
-                    <input type="checkbox" data-ai-stream checked aria-label="Live-Antworten" />
+                <span class="ai-privacy"><span aria-hidden="true"></span><?= s(t('Lokal. Änderungen nur mit deinem Okay.')) ?></span>
+                <label class="ai-stream-toggle" title="<?= s(t('Antwort während der Generierung anzeigen')) ?>">
+                    <input type="checkbox" data-ai-stream checked aria-label="<?= s(t('Live-Antworten')) ?>" />
                     Live
                 </label>
             </footer>
@@ -118,7 +118,7 @@ $suggestions = $projectId ? [
             <span class="ai-welcome-eyebrow"><?= s(t('LOKALER ASSISTENT')) ?></span>
             <h2><?= s(t($projectId ? 'Fragen zu deinem Board' : 'Fragen zu deinen Projekten')) ?></h2>
             <p><?= s(t($projectId ? 'Frage nach offenen Tickets, prüfe Zuständigkeiten oder bereite eine neue Aufgabe vor.' : 'Lass dir deine Projekte anzeigen oder beschreibe eine Aufgabe, bei der du Unterstützung brauchst.')) ?></p>
-            <div class="ai-suggestions" aria-label="Ideen für deine Nachricht">
+            <div class="ai-suggestions" aria-label="<?= s(t('Ideen für deine Nachricht')) ?>">
                 <?php foreach ($suggestions as [$label, $prompt, $icon]): ?>
                     <button type="button" class="ai-suggestion" data-ai-prompt="<?= s($prompt) ?>">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="<?= s($icon) ?>" /></svg>

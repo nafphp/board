@@ -3,7 +3,7 @@
 What is delivered, what was verified last, and what is deliberately missing.
 
 The rules for working on the project are in [`AGENTS.md`](../AGENTS.md), operation and daily
-use in the [`README.md`](../README.md), the extension API in
+use in the [Nafinity guide](https://nafphp.github.io/docs/built-with/nafinity/), the extension API in
 [`Extensibility.md`](Extensibility.md). This document is the acceptance record.
 **Every number in it carries the date of its run** — if you need one today, run the command
 next to it instead of copying the number from here.
@@ -27,15 +27,42 @@ queue, scheduler, i18n, the MCP tool contracts and the mail transport contract. 
 live in application services. Generic defects were fixed in the packages that own them; there
 are no modified vendor copies.
 
-The limiter and LDAP packages stay local by explicit request. Storage provides the private
+The limiter and LDAP packages have been published since 19 September 2026. Their activation
+is an installation decision. Storage provides the private
 volume through `Naf\Storage\storage('attachments')`: stream I/O, moving and deleting belong to
 the plugin, `Naf\Board\Support\AttachmentStorage` holds the upload rules, safe keys and the cleanup
 strategy, and `AttachmentService` owns the SQL and file states.
 
 ## Verification
 
-A record of one run. The commands were the skeleton's at the time; today the whole suite runs
-with `composer test` in this repository, on MariaDB only.
+Current package checks are `composer test`, `composer style:check`, `npm test` and
+`npm run style:check`. The suite starts its isolated MariaDB and refuses another schema.
+MariaDB and MySQL are supported; the PostgreSQL rows below are historical prototype evidence.
+
+On **6 October 2026**, PHP 8.5.10 passed 538 tests with 1,767 assertions, Node passed
+38 browser-module tests, and both formatting checks passed. The framework minimum is
+`^0.2.8`; HTTP and worker subprocesses no longer change `variables_order` to expose
+process environment values.
+
+Browser acceptance on that date used the isolated package host:
+
+- X and Escape return focus to the ticket card. Continuing keeps an unsaved comment;
+  discarding clears it when the drawer is reopened.
+- An instrumented extension recorded three mounts and three disposals across close,
+  reopen and fragment refresh. No owned timers, listeners or root references remained.
+  The module tests additionally cover a mount resolving after its root was disposed.
+- Keyboard moves across columns and swimlanes persist after reload. The move dialog
+  works at a 390 × 844 viewport. Pointer dragging has a touch hold path, but no physical
+  touch-device acceptance is claimed.
+- Classic remains the migration default. Anthracite and brightness persist separately
+  through reload, sign-out and sign-in; switching brightness retains the palette.
+- English covers navigation, ticket fragments, validation, tool titles and browser
+  messages. The narrow language picker exposes visible, named options.
+- Native Chrome and Firefox mouse gestures remain an acceptance blocker: the desktop
+  input tool cannot associate the visible browser window with a drag target
+  (`noWindowsAvailable` / `windowNotFoundAtPosition`). No native drag success is claimed.
+
+The following is a historical run using the skeleton's former commands.
 
 Full run on **18 September 2026** on `feat/plugin-extensibility`, everything green:
 
@@ -50,8 +77,8 @@ Full run on **18 September 2026** on `feat/plugin-extensibility`, everything gre
 | Extensions with and without both example packages | `make test-plugins` | 65 checks: 42 in-process, 6 over HTTP, 4 with the listing reversed, 7 assets, 6 without the packages |
 | Style and whitespace | `bin/style check`, `git diff --check` | green |
 
-`make test` runs those targets together. Both databases have to be green, and the runners
-refuse to start without `APP_ENV=test` and `DB_DATABASE=nafinity_test`.
+At that time `make test` ran those targets together. These targets are no longer the
+package test entry points; use the commands above.
 
 On the same day in the changed NAF packages, each with `composer test` on its RC branch:
 naf/framework 137 tests with 280 assertions, naf/i18n 39 tests with 108 assertions — both green.
@@ -77,15 +104,15 @@ available.
 
 ## Remaining limits
 
-- Every required NAF package is released, and a fresh install without local package sources
-  works. What remains is to build and commit a distribution lock from it.
+- The skeleton resolves released packages from Packagist at installation/build time.
+  Committing a distribution lock is not the chosen installation policy.
 - No external LDAP server, OIDC issuer or SMTP service was contacted. Enabling those still needs
   deployment configuration and end-to-end acceptance. Local SMTP through Mailpit is verified for
   account verification and security notices.
 - Project mail is switched off. The ledger and queue combination bounds ordinary duplicates, but
   an external SMTP result cannot be confirmed atomically with a PDO transaction.
-- German is the complete base language. English covers the central interface texts; some
-  messages and dynamic texts stay German in the prototype.
+- German is the base language. English covers the core UI, validation, activity vocabulary
+  and browser messages. Project-owned content and extension-provided text keep their wording.
 - The file allowlist and MIME check are not a virus scanner. At most 10 MiB per file, 30 MiB per
   ticket and 200 MiB per project; storage stays private.
 - One board per project, no WIP enforcement, no saved filters, no public full API and no inbound
@@ -120,3 +147,29 @@ installs its dependencies from Packagist while it is built.
 
 The extensibility work is on `main`, merged from
 [nafphp/nafinity#1](https://github.com/nafphp/nafinity/pull/1).
+
+## Measurement on 6 October 2026
+
+PHP 8.5.10 on the local host, MariaDB 11.4 in the isolated test container, no CLI
+OPcache: 5,000 additional tickets plus the suite's current demo data, one warm-up
+and ten measurements. The benchmark removes only IDs it inserted.
+
+| Query | p50 | p95 | Cards returned |
+|---|---:|---:|---:|
+| Unfiltered | 5.25 ms | 5.74 ms | 300 |
+| Full text “sunflower” | 12.31 ms | 12.95 ms | 300 |
+
+Peak PHP memory was 8 MiB. These are query timings, not HTTP or browser throughput.
+
+The real authorized AI catalog contains seven owner tools and three viewer read tools.
+Ten German/English tasks, repeated three times, retained all required tools with both
+installed embedding models. Warm selection p50/p95 was 33.82/38.08 ms for embeddinggemma
+and 32.07/37.94 ms for nomic-embed-text. The keyword fallback improved from 9/10 to
+10/10 complete cases after adding bilingual action keywords. Viewer selections never
+included unavailable writes. An additional 500-entry run explicitly uses synthetic
+measurement distractors; it does not establish recall for 500 implemented tools.
+
+Exact model digests, cold/warm rows and the before/after result are in
+[`tests/benchmarks/results/2026-10-06.json`](../tests/benchmarks/results/2026-10-06.json).
+Reproduce with the commands and environment options in
+[`tests/benchmarks/README.md`](../tests/benchmarks/README.md). No tool writes were executed.

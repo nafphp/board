@@ -668,8 +668,8 @@ export function mount(root, context, api) {
   fetch or version manager.
 - Mount exactly once per node, dispose before removing or replacing. First page, opened ticket,
   create → detail, fragment refresh and closing the drawer all run the same lifecycle. Disposal
-  on closing the drawer is the one step not yet watched in a browser: the preview browser used
-  so far never fired the `<dialog>`'s `close` event.
+  also handles asynchronous mounts: if the node disappears while mounting, its eventual
+  disposer runs immediately. A late import failure is not reported into a removed node.
 - An import error is reported on the contribution and does not block the fixed ticket areas.
 - Stable form fields stay the source of `FormData`; complex types synchronise their hidden fields
   before submitting and are validated server-side in the field type.

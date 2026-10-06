@@ -36,7 +36,7 @@ final class AiService implements AiServiceInterface
         foreach ($definitions as &$definition) {
             $tool               = $registry->getTool($definition['name']);
             $definition['meta'] = [
-                'title'    => $tool->title(),
+                'title'    => t($tool->title()),
                 'risk'     => $tool->permission() === 'read' ? 'read' : 'write',
                 'autoRun'  => $tool->permission() === 'read',
                 'requires' => $tool->requires(),

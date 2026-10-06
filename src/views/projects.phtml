@@ -46,7 +46,7 @@ $this->setVariable('title', $heading);
         <?php endif ?>
     </div>
     <?= slot('projects.actions', $uiContext) ?>
-    <button class="button primary" data-dialog="new-project">+ Neues Projekt</button>
+    <button class="button primary" data-dialog="new-project"><?= s(t('+ Neues Projekt')) ?></button>
 </section>
 <div class="project-cards">
     <?php foreach ($projects as $projectItem): ?>
@@ -56,7 +56,7 @@ $this->setVariable('title', $heading);
             </span>
             <h2><?= s($projectItem['name']) ?></h2>
             <p><?= s($projectItem['description']) ?></p>
-            <span><?= (int) $projectItem['open_count'] ?> offene Tickets · <?= s($projectItem['role']) ?><?= $projectItem['archived_at'] ? ' · Archiviert' : '' ?></span>
+            <span><?= s(Format::count((int) $projectItem['open_count'], 'offenes Ticket', 'offene Tickets')) ?> · <?= s($projectItem['role']) ?><?= $projectItem['archived_at'] ? ' · ' . s(t('Archiviert')) : '' ?></span>
             <?= slot('projects.card.badges', new ProjectSlotContext($uiContext, $projectItem)) ?>
         </a>
     <?php endforeach ?>

@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 const dialog = document.querySelector('#profile-dialog');
 
 if (dialog) {
@@ -24,13 +26,13 @@ if (dialog) {
     const line = dialog.querySelector('[data-profile-email-state]');
     if (!line) return;
     if (profile.pending) {
-      line.textContent = `Bestätigung offen für ${profile.pending.email}`;
+      line.textContent = t('Bestätigung offen für :email', { email: profile.pending.email });
       line.dataset.state = 'pending';
       return;
     }
     line.textContent = profile.email_verified
-      ? `${profile.email} · bestätigt`
-      : `${profile.email} · nicht bestätigt`;
+      ? t(':email · bestätigt', { email: profile.email })
+      : t(':email · nicht bestätigt', { email: profile.email });
     line.dataset.state = profile.email_verified ? 'verified' : 'unverified';
   }
 
@@ -169,7 +171,7 @@ if (dialog) {
         });
         const result = await response.json();
         if (!response.ok)
-          throw new Error(result.message || 'Die Änderung konnte nicht gespeichert werden.');
+          throw new Error(result.message || t('Die Änderung konnte nicht gespeichert werden.'));
         if (result.url === '/login') {
           window.location.assign('/login');
           return;
@@ -185,7 +187,7 @@ if (dialog) {
       } catch (error) {
         errorBox.textContent =
           error.message ||
-          'Verbindung unterbrochen. Bitte prüfe den aktuellen Stand vor einem erneuten Versuch.';
+          t('Verbindung unterbrochen. Bitte prüfe den aktuellen Stand vor einem erneuten Versuch.');
         errorBox.hidden = false;
         errorBox.focus();
       } finally {

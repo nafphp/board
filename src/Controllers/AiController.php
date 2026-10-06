@@ -10,6 +10,7 @@ use Naf\Board\Domain\Failure;
 use Naf\Board\Support\Input;
 use Psr\Http\Message\ResponseInterface;
 
+use function Naf\I18n\t;
 use function Naf\json;
 use function Naf\request;
 
@@ -44,7 +45,7 @@ final class AiController
         try {
             return json($operation())->withHeader('Cache-Control', 'private, no-store');
         } catch (UnauthenticatedException) {
-            return json(['message' => 'Bitte melde dich erneut an.'], 401);
+            return json(['message' => t('Bitte melde dich erneut an.')], 401);
         } catch (Failure $exception) {
             return json(['message' => $exception->getMessage()], $exception->status);
         }

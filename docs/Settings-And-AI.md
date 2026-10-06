@@ -227,3 +227,10 @@ in the role editor. There is no implicit escalation from managing installation s
 
 This is a ticket export, not a backup: attachments, comments and board structure are not included.
 The extension contract and request parameters are documented in [Extensibility](Extensibility.md#export).
+
+## Interface language
+
+The account language applies to HTML pages, ticket fragments, JSON validation messages,
+activity labels and AI tool titles. Browser status messages use the same translation
+catalog through an inert JSON block rendered in the page. Project names, columns, labels,
+ticket text and extension-owned content retain their own wording.

@@ -32,7 +32,7 @@ final class BootWithoutDatabaseTest extends TestCase
             'DB_DATABASE' => 'unused',
         ];
         $process = proc_open(
-            [PHP_BINARY, '-d', 'variables_order=EGPCS', '-r', $script, $root],
+            [PHP_BINARY, '-r', $script, $root],
             [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
             $pipes,
             null,

@@ -24,7 +24,7 @@ use function Naf\View\s;
             <?php if ($file['state'] === 'ready'): ?>
                 <a href="<?= s(route('attachment.download', ['project' => $slot->projectId(), 'ticket' => $slot->params['ticket'], 'attachment' => $file['id']])) ?>"><?= Icon::mark('download', 'sm') ?> <?= s($file['original_name']) ?></a>
             <?php else: ?>
-                <span><?= s($file['original_name']) ?> · Wird verarbeitet …</span>
+                <span><?= s($file['original_name']) ?> · <?= s(t('Wird verarbeitet …')) ?></span>
             <?php endif ?>
             <span class="muted small"><?= number_format((int) $file['byte_size'] / 1024, 1, ',', '.') ?> KiB</span>
             <?php if ($slot->scope->allows('upload')): ?>
@@ -32,7 +32,7 @@ use function Naf\View\s;
                     <input type="hidden" name="_csrf" value="<?= s($slot->token) ?>" />
                     <button
                         class="text-button muted"
-                        aria-label="Anhang <?= s($file['original_name']) ?> löschen"
+                        aria-label="<?= s(t('Anhang :name löschen', ['name' => $file['original_name']])) ?>"
                     ><?= Icon::mark('close', 'sm') ?></button>
                     <div class="form-errors" role="alert"></div>
                 </form>

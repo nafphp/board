@@ -1,3 +1,5 @@
+import { t } from '../i18n.js';
+
 import { requestOllama } from './ollama-client.js';
 import { toast } from '../app.js';
 import { renderMessageContent } from './markdown.js';
@@ -80,7 +82,7 @@ function initChat(root) {
         ),
       );
       button.disabled = true;
-      button.textContent = 'Feedback gespeichert';
+      button.textContent = t('Feedback gespeichert');
       window.dispatchEvent(new CustomEvent('nafinity:ai-feedback'));
     } catch (error) {
       setStatus(error.message);
@@ -102,9 +104,9 @@ function initChat(root) {
       copy.addEventListener('click', async () => {
         try {
           await navigator.clipboard.writeText(content);
-          setStatus('Antwort kopiert.');
+          setStatus(t('Antwort kopiert.'));
         } catch {
-          setStatus('Kopieren ist in diesem Browser nicht verfügbar.');
+          setStatus(t('Kopieren ist in diesem Browser nicht verfügbar.'));
         }
       });
       const review = document.createElement('button');
@@ -299,7 +301,7 @@ function initChat(root) {
     if (!expanded && stale()) {
       await ask(configFor(root));
       if (reachable !== true) {
-        toast('Nafinity AI ist nicht erreichbar. Läuft Ollama noch?');
+        toast(t('Nafinity AI ist nicht erreichbar. Läuft Ollama noch?'));
 
         return;
       }
@@ -372,7 +374,7 @@ function initChat(root) {
       confirmation.replaceChildren();
       confirmation.hidden = false;
       const heading = document.createElement('strong');
-      heading.textContent = `${definition.meta.title} – ausführen?`;
+      heading.textContent = t(':tool – ausführen?', { tool: definition.meta.title });
       const args = document.createElement('pre');
       args.textContent = JSON.stringify(call.arguments, null, 2);
       const controls = document.createElement('div');
@@ -380,11 +382,11 @@ function initChat(root) {
       const accept = document.createElement('button');
       accept.type = 'button';
       accept.className = 'button primary';
-      accept.textContent = 'Änderung bestätigen';
+      accept.textContent = t('Änderung bestätigen');
       const reject = document.createElement('button');
       reject.type = 'button';
       reject.className = 'button subtle';
-      reject.textContent = 'Ablehnen';
+      reject.textContent = t('Ablehnen');
       const abort = () => finish(false);
       function finish(value) {
         signal.removeEventListener('abort', abort);
@@ -398,7 +400,7 @@ function initChat(root) {
       controls.append(accept, reject);
       confirmation.append(heading, args, controls);
       reject.focus();
-      setStatus('Bitte prüfe die vorgeschlagene Änderung.');
+      setStatus(t('Bitte prüfe die vorgeschlagene Änderung.'));
     });
   }
 
@@ -410,7 +412,7 @@ function initChat(root) {
     if (!config.enabled) return;
     try {
       config.url = localUrl(config.url);
-      if (!config.model) throw new Error('Wähle zuerst ein Modell in den AI-Einstellungen.');
+      if (!config.model) throw new Error(t('Wähle zuerst ein Modell in den AI-Einstellungen.'));
     } catch (error) {
       setStatus(error.message);
       return;
@@ -429,7 +431,7 @@ function initChat(root) {
     try {
       save();
       write(keys.draft, '');
-      setStatus('Verbinde mit dem lokalen Modell …');
+      setStatus(t('Verbinde mit dem lokalen Modell …'));
       const capabilities = await requestOllama(
         config.url,
         '/api/show',
@@ -439,7 +441,7 @@ function initChat(root) {
       );
       if (!capabilities.capabilities?.includes('tools'))
         throw new Error(
-          'Dieses Modell unterstützt keine Werkzeuge. Bitte wähle ein anderes Modell.',
+          t('Dieses Modell unterstützt keine Werkzeuge. Bitte wähle ein anderes Modell.'),
         );
       const allTools = (
         await api('/ai/tools' + (project ? `?project=${project}` : ''), null, signal)
@@ -466,14 +468,23 @@ function initChat(root) {
       const tools = selection.tools;
       const routing = root.querySelector('[data-ai-routing]');
       routing.hidden = false;
-      routing.querySelector('[data-ai-routing-summary]').textContent =
-        `${selection.mode === 'semantic' ? 'Semantische Auswahl' : 'Stichwortauswahl'} · ${tools.length} von ${selection.total} Werkzeugen`;
+      routing.querySelector('[data-ai-routing-summary]').textContent = t(
+        ':mode · :count von :total Werkzeugen',
+        {
+          mode: selection.mode === 'semantic' ? t('Semantische Auswahl') : t('Stichwortauswahl'),
+          count: tools.length,
+          total: selection.total,
+        },
+      );
       routing.querySelector('[data-ai-routing-detail]').textContent = [
         selection.warning,
         tools.map((tool) => tool.meta?.title || tool.name).join(', ') ||
-          'Kein passendes Werkzeug gefunden.',
+          t('Kein passendes Werkzeug gefunden.'),
         selection.mode === 'semantic' &&
-          `Index: ${selection.cacheHits} wiederverwendet, ${selection.embedded} neu berechnet.`,
+          t('Index: :cached wiederverwendet, :new neu berechnet.', {
+            cached: selection.cacheHits,
+            new: selection.embedded,
+          }),
       ]
         .filter(Boolean)
         .join(' ');
@@ -489,7 +500,7 @@ function initChat(root) {
       const messages = [{ role: 'system', content: systemPrompt(config) }, ...recent];
       for (let round = 0; round < 8; round += 1) {
         signal.throwIfAborted();
-        setStatus('Denkt nach …');
+        setStatus(t('Denkt nach …'));
         pending = message('assistant', '');
         let content = '';
         const timeout = setTimeout(() => controller.abort(), 180000);
@@ -527,7 +538,7 @@ function initChat(root) {
         if (turn !== epoch) return;
         if (!calls.length) {
           if (!content.trim())
-            throw new Error('Das Modell hat eine leere Antwort geliefert. Versuche es erneut.');
+            throw new Error(t('Das Modell hat eine leere Antwort geliefert. Versuche es erneut.'));
           history.push({ role: 'assistant', content: content.slice(0, 12000) });
           save();
           render();
@@ -540,18 +551,18 @@ function initChat(root) {
           signal.throwIfAborted();
           const definition = tools.find((tool) => tool.name === call.name);
           if (!definition)
-            throw new Error('Das Modell hat ein nicht verfügbares Werkzeug angefragt.');
+            throw new Error(t('Das Modell hat ein nicht verfügbares Werkzeug angefragt.'));
           const writes = definition.meta.risk !== 'read';
           if (writes && !(await approve(call, definition, signal))) {
             signal.throwIfAborted();
             history.push({
               role: 'assistant',
-              content: 'Die vorgeschlagene Änderung wurde nicht ausgeführt.',
+              content: t('Die vorgeschlagene Änderung wurde nicht ausgeführt.'),
             });
             save();
             render();
             completed = true;
-            setStatus('Änderung abgelehnt.');
+            setStatus(t('Änderung abgelehnt.'));
             break;
           }
           signal.throwIfAborted();
@@ -571,9 +582,12 @@ function initChat(root) {
                 : result,
           });
           if (writes) {
-            history.push({ role: 'assistant', content: definition.meta.title + ': ausgeführt.' });
+            history.push({
+              role: 'assistant',
+              content: definition.meta.title + t(': ausgeführt.'),
+            });
             save();
-            message('status', definition.meta.title + ': ausgeführt.');
+            message('status', definition.meta.title + t(': ausgeführt.'));
             document.dispatchEvent(new CustomEvent('nafinity:ai-changed'));
           }
         }
@@ -581,14 +595,14 @@ function initChat(root) {
       }
       if (!completed)
         setStatus(
-          'Die maximale Anzahl an Werkzeugschritten ist erreicht. Stelle eine gezieltere Frage.',
+          t('Die maximale Anzahl an Werkzeugschritten ist erreicht. Stelle eine gezieltere Frage.'),
         );
     } catch (error) {
       pending?.item.remove();
       if (turn === epoch)
         setStatus(
           signal.aborted
-            ? 'Antwort gestoppt. Bereits bestätigte Änderungen bleiben erhalten.'
+            ? t('Antwort gestoppt. Bereits bestätigte Änderungen bleiben erhalten.')
             : error.message,
         );
     } finally {

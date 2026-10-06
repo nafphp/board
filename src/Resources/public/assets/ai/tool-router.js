@@ -1,3 +1,5 @@
+import { t } from '../i18n.js';
+
 import { requestOllama } from './ollama-client.js';
 import { localUrl } from './store.js';
 import { BrowserVectorCache } from './tool-index.js';
@@ -58,11 +60,11 @@ function normalized(vector, dimensions = null) {
     vector.length > 4096 ||
     (dimensions !== null && dimensions !== vector.length)
   )
-    throw new Error('Ungültige Embedding-Dimensionen.');
+    throw new Error(t('Ungültige Embedding-Dimensionen.'));
   if ([...vector].some((value) => typeof value !== 'number' || !Number.isFinite(value)))
-    throw new Error('Ungültige Embedding-Werte.');
+    throw new Error(t('Ungültige Embedding-Werte.'));
   const norm = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
-  if (!Number.isFinite(norm) || norm === 0) throw new Error('Leerer Embedding-Vektor.');
+  if (!Number.isFinite(norm) || norm === 0) throw new Error(t('Leerer Embedding-Vektor.'));
   return Float32Array.from(vector, (value) => value / norm);
 }
 
@@ -151,7 +153,7 @@ export async function selectTools({
       const tags = await request(url, '/api/tags', null, null, tagSignal);
       const canonical = (name) => (name.includes(':') ? name : `${name}:latest`);
       const installed = tags.models?.find((item) => canonical(item.name) === canonical(model));
-      if (!installed?.digest) throw new Error('Embedding-Modell nicht installiert.');
+      if (!installed?.digest) throw new Error(t('Embedding-Modell nicht installiert.'));
       const namespace = await fingerprint(['tool-index-v1', scope, url, model, installed.digest]);
       const ids = await Promise.all(
         tools.map(async (tool) => `${namespace}:${await fingerprint(tool)}`),
@@ -170,7 +172,7 @@ export async function selectTools({
           requestSignal,
         );
         if (!Array.isArray(result.embeddings) || result.embeddings.length !== input.length)
-          throw new Error('Unvollständige Embedding-Antwort.');
+          throw new Error(t('Unvollständige Embedding-Antwort.'));
         return result.embeddings;
       };
       const [queryResult] = await embed([embeddingInput(model, query, true)]);
@@ -186,7 +188,12 @@ export async function selectTools({
       }
       for (let offset = 0; offset < missing.length; offset += EMBEDDING_BATCH_SIZE) {
         signal?.throwIfAborted();
-        onProgress(`Werkzeugindex: ${cacheHits + embedded} von ${tools.length} bereit …`);
+        onProgress(
+          t('Werkzeugindex: :count von :total bereit …', {
+            count: cacheHits + embedded,
+            total: tools.length,
+          }),
+        );
         const batch = missing.slice(offset, offset + EMBEDDING_BATCH_SIZE);
         const result = await embed(
           batch.map((index) => embeddingInput(model, description(tools[index]), false)),
@@ -210,7 +217,7 @@ export async function selectTools({
       mode = 'semantic';
     } catch (error) {
       if (signal?.aborted) throw error;
-      warning = 'Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv.';
+      warning = t('Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv.');
     }
   }
   signal?.throwIfAborted();

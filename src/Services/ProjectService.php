@@ -431,7 +431,7 @@ final class ProjectService implements ProjectServiceInterface
         }
         if (!preg_match('/^[A-Z0-9]{1,6}$/', $key)) {
             throw new Failure(t('Das Ticketkürzel darf nur ein bis sechs Buchstaben oder Ziffern haben.'), 422, [
-                'ticket_key' => ['Ein bis sechs Buchstaben oder Ziffern.'],
+                'ticket_key' => [t('Ein bis sechs Buchstaben oder Ziffern.')],
             ]);
         }
 

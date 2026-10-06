@@ -1,5 +1,6 @@
 <?php
 
+use Naf\Board\Support\BrowserWords;
 use Naf\Board\Support\Format;
 use Naf\Board\Support\Icon;
 use Naf\Board\Support\LiveConnection;
@@ -71,6 +72,7 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <meta name="csrf-token" content="<?= s($token) ?>" />
+        <script type="application/json" id="nafinity-browser-words"><?= json_encode(BrowserWords::all(), JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
         <title><?= s(t($title ?? 'Board')) ?> · Nafinity</title>
         <script src="/assets/boot.js?v=2"></script>
         <link rel="stylesheet" href="/assets/icons.css?v=2" />
@@ -112,7 +114,7 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
                 </div>
                 <?php /* Three rows fit; beyond that the list scrolls and gets a fade at its
                          foot. The stylesheet cannot count, so the count is said here. */ ?>
-                <nav class="project-nav" aria-label="Projekte" <?= count($projects) > 3 ? 'data-scrolls' : '' ?>>
+                <nav class="project-nav" aria-label="<?= s(t('Projekte')) ?>" <?= count($projects) > 3 ? 'data-scrolls' : '' ?>>
                     <?php foreach ($projects as $item): ?>
                         <a class="side-link <?= (string) $current === (string) $item['id'] ? 'active' : '' ?>"
                             href="<?= s(route('board', ['project' => $item['id']])) ?>"
@@ -121,7 +123,7 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
                             <span class="project-symbol" style="--project-color: <?= s($item['color']) ?>">
                                 <?= s($item['icon']) ?>
                             </span>
-                            <span class="link-label"><?= s($item['name']) ?><?= $item['archived_at'] ? ' · Archiv' : '' ?></span>
+                            <span class="link-label"><?= s($item['name']) ?><?= $item['archived_at'] ? ' · ' . s(t('Archiviert')) : '' ?></span>
                             <span class="side-count link-label"><?= (int) $item['open_count'] ?></span>
                         </a>
                     <?php endforeach ?>
@@ -140,7 +142,7 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
                 <header class="topbar">
                     <button
                         class="icon-button mobile-menu"
-                        aria-label="Menü öffnen"
+                        aria-label="<?= s(t('Menü öffnen')) ?>"
                         aria-controls="sidebar"
                     >
 <?= Icon::mark('menu', 'lg') ?></button>
@@ -209,13 +211,13 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
                 <div class="dialog-heading">
                     <div>
                         <span class="eyebrow"><?= s(t('PROJEKT ANLEGEN')) ?></span>
-                        <h2>Neues Projekt</h2>
+                        <h2><?= s(t('Neues Projekt')) ?></h2>
                     </div>
                     <button
                         type="button"
                         class="icon-button"
                         data-close-dialog
-                        aria-label="Schließen"
+                        aria-label="<?= s(t('Schließen')) ?>"
                     >
                         ×
                     </button>

@@ -79,10 +79,10 @@ use function Naf\View\s;
                     </label>
                     <?php if (\Naf\config('ldap:enabled', false)): ?>
                         <label>
-                            Kontoquelle
+                            <?= s(t('Kontoquelle')) ?>
                             <select name="provider">
-                                <option value="users">Lokales Konto</option>
-                                <option value="ldap">Verknüpftes Firmenkonto</option>
+                                <option value="users"><?= s(t('Lokales Konto')) ?></option>
+                                <option value="ldap"><?= s(t('Verknüpftes Firmenkonto')) ?></option>
                             </select>
                         </label>
                     <?php endif ?>
@@ -106,9 +106,9 @@ use function Naf\View\s;
                 <?php endforeach ?>
                 <?php if (getenv('APP_ENV') === 'dev'): ?>
                     <div class="demo-note">
-                        <strong>Lokalen Showcase entdecken</strong>
+                        <strong><?= s(t('Lokalen Showcase entdecken')) ?></strong>
                         <p>
-                            Alice arbeitet in Nafinity, Bob in Studio Nord. Robin kann Nafinity lesen.
+                            <?= s(t('Alice arbeitet in Nafinity, Bob in Studio Nord. Robin kann Nafinity lesen.')) ?>
                         </p>
                         <div class="demo-buttons">
                             <button data-demo="alice@example.test">Alice</button>

@@ -2718,7 +2718,7 @@ fieldset:disabled select {
   }
   /* Narrow screens keep the picker but drop the written name; the flag is enough to
      reach it, and the list itself still names every language in full. */
-  .topbar-right .language-picker .choice-text {
+  .topbar-right .language-picker [data-choice-trigger] .choice-text {
     display: none;
   }
   .topbar-right .language-picker .choice-trigger {

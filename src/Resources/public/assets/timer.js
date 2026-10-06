@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 // The server owns the elapsed time. This only renders it and asks for a change, so a
 // reload, a sleeping laptop or a second tab can never invent or lose a minute.
 
@@ -168,7 +170,7 @@ async function send(panel, action) {
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
       if (errors)
-        errors.textContent = payload.message || 'Die Zeiterfassung ließ sich nicht ändern.';
+        errors.textContent = payload.message || t('Die Zeiterfassung ließ sich nicht ändern.');
 
       return;
     }

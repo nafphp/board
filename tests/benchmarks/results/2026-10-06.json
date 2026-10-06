@@ -1,0 +1,5786 @@
+{
+  "real_before": {
+    "recorded_at": "2026-10-06T18:06:31.062Z",
+    "node": "v26.9.0",
+    "url": "http://localhost:11434",
+    "models": [
+      {
+        "name": "embeddinggemma:latest",
+        "digest": "85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1"
+      },
+      {
+        "name": "nomic-embed-text:latest",
+        "digest": "0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f"
+      }
+    ],
+    "native_tools": 7,
+    "viewer_tools": 3,
+    "synthetic_tools": 0,
+    "catalog_size": 7,
+    "repetitions": 3,
+    "summaries": [
+      {
+        "key": "embeddinggemma:latest:semantic:owner",
+        "cases": 30,
+        "complete": 30,
+        "expected_hits": 66,
+        "expected_total": 66,
+        "warm_p50_ms": 34.14,
+        "warm_p95_ms": 38.08
+      },
+      {
+        "key": "embeddinggemma:latest:semantic:viewer",
+        "cases": 1,
+        "complete": 1,
+        "expected_hits": 2,
+        "expected_total": 2,
+        "warm_p50_ms": null,
+        "warm_p95_ms": null
+      },
+      {
+        "key": "nomic-embed-text:latest:semantic:owner",
+        "cases": 30,
+        "complete": 30,
+        "expected_hits": 66,
+        "expected_total": 66,
+        "warm_p50_ms": 33.47,
+        "warm_p95_ms": 35.43
+      },
+      {
+        "key": "nomic-embed-text:latest:semantic:viewer",
+        "cases": 1,
+        "complete": 1,
+        "expected_hits": 2,
+        "expected_total": 2,
+        "warm_p50_ms": null,
+        "warm_p95_ms": null
+      },
+      {
+        "key": "embeddinggemma:latest:keyword:owner",
+        "cases": 10,
+        "complete": 9,
+        "expected_hits": 20,
+        "expected_total": 22,
+        "warm_p50_ms": 0.06,
+        "warm_p95_ms": 13.7
+      }
+    ],
+    "results": [
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 1802.33,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 7,
+        "embedding_inputs": 8,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 37.93,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 32.92,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 33.94,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_comment",
+          "nafinity_ticket"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1603,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 32.96,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1922,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 32.57,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 33.62,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 36.48,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 38.18,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 34.64,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 34.67,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 35.73,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 35.02,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 34.14,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_comment",
+          "nafinity_ticket"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1603,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 33.53,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1922,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 32.04,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 31.99,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 35.21,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 33.14,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 33.07,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 33.21,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 33.28,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 33.18,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 32.92,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_comment",
+          "nafinity_ticket"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1603,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 34.78,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1922,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 38.08,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 37.63,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 35.27,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 35.6,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 36.78,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "viewer",
+        "case": "rights-removed",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 75.53,
+        "expected": [
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 3,
+        "embedding_inputs": 4,
+        "schema_chars": 658,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 4642.7,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 7,
+        "embedding_inputs": 8,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 32.2,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_activity",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2763,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 30.32,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_activity",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 30.09,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 30.23,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create",
+          "nafinity_activity",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 33.44,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2561,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 32.87,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_activity"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 33.65,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_move",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 32.04,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket",
+          "nafinity_ticket_update"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2178,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 34.23,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 34.08,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 32.93,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_activity",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2763,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 32.18,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_activity",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 32.99,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 32.11,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create",
+          "nafinity_activity",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 34.87,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2561,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 33.08,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_activity"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 33.48,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_move",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 34.61,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket",
+          "nafinity_ticket_update"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2178,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 34.22,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 33.47,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 33.56,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_activity",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2763,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 34.58,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_activity",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 35.43,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 37.02,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create",
+          "nafinity_activity",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 33.93,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2561,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 34.75,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_activity"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 32.25,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_move",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 31.72,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket",
+          "nafinity_ticket_update"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2178,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 33.63,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "viewer",
+        "case": "rights-removed",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 70.03,
+        "expected": [
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket",
+          "nafinity_board"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 3,
+        "embedding_inputs": 4,
+        "schema_chars": 658,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-board",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 13.7,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_ticket",
+          "nafinity_ticket_update"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2561,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-board",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.24,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2763,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-create",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.1,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2867,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-create",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.08,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_comment",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2867,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-edit",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.05,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": false,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 295,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-edit",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.06,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_activity"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 3069,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-multistep",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.06,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2867,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-multistep",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.05,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2867,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-activity",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.05,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 202,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-activity",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.05,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_ticket",
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2763,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      }
+    ],
+    "note": "Measures authorized tool selection and prerequisites, not model-generated arguments or executed writes. Synthetic distractors are not implemented actions. No writes are executed."
+  },
+  "real_after": {
+    "recorded_at": "2026-10-06T18:11:51.549Z",
+    "node": "v26.9.0",
+    "url": "http://localhost:11434",
+    "models": [
+      {
+        "name": "embeddinggemma:latest",
+        "digest": "85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1"
+      },
+      {
+        "name": "nomic-embed-text:latest",
+        "digest": "0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f"
+      }
+    ],
+    "native_tools": 7,
+    "viewer_tools": 3,
+    "synthetic_tools": 0,
+    "catalog_size": 7,
+    "repetitions": 3,
+    "summaries": [
+      {
+        "key": "embeddinggemma:latest:semantic:owner",
+        "cases": 30,
+        "complete": 30,
+        "expected_hits": 66,
+        "expected_total": 66,
+        "warm_p50_ms": 33.82,
+        "warm_p95_ms": 38.08
+      },
+      {
+        "key": "embeddinggemma:latest:semantic:viewer",
+        "cases": 1,
+        "complete": 1,
+        "expected_hits": 2,
+        "expected_total": 2,
+        "warm_p50_ms": null,
+        "warm_p95_ms": null
+      },
+      {
+        "key": "nomic-embed-text:latest:semantic:owner",
+        "cases": 30,
+        "complete": 30,
+        "expected_hits": 66,
+        "expected_total": 66,
+        "warm_p50_ms": 32.07,
+        "warm_p95_ms": 37.94
+      },
+      {
+        "key": "nomic-embed-text:latest:semantic:viewer",
+        "cases": 1,
+        "complete": 1,
+        "expected_hits": 2,
+        "expected_total": 2,
+        "warm_p50_ms": null,
+        "warm_p95_ms": null
+      },
+      {
+        "key": "embeddinggemma:latest:keyword:owner",
+        "cases": 10,
+        "complete": 10,
+        "expected_hits": 22,
+        "expected_total": 22,
+        "warm_p50_ms": 0.08,
+        "warm_p95_ms": 9.45
+      }
+    ],
+    "results": [
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 274.61,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 7,
+        "embedding_inputs": 8,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 33.53,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 31.7,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 35.15,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 934,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 33.28,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 33.82,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 32.9,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 33.54,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 31.99,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 31.62,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 31.17,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 31.19,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 32.04,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 32.28,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 934,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 34.09,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 33.23,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 33.18,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 32.21,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 34.45,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 35.04,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 34.05,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 35.63,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 37.57,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 38.96,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 934,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 36.64,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 34.25,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 34.67,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 36.49,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 38.08,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 35.09,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "viewer",
+        "case": "rights-removed",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 72.66,
+        "expected": [
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket",
+          "nafinity_board"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 3,
+        "embedding_inputs": 4,
+        "schema_chars": 658,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 148.8,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 7,
+        "embedding_inputs": 8,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 31.43,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_activity",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2763,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 31.32,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 29.32,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 30.47,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 30.92,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2561,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 35.83,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 37.94,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_move",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 33.36,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 37.63,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 860,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 36.75,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 31.89,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_activity",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2763,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 32.77,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 31.15,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 30.59,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 30.25,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2561,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 36.68,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 32.89,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_move",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 32.07,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 32.9,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 860,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 33.51,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 37.98,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_activity",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2763,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 35.29,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 33.01,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 31.76,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 31.17,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2561,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 32.84,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 30.29,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_move",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 31.95,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 31.39,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 7,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 860,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "viewer",
+        "case": "rights-removed",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 70.5,
+        "expected": [
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket",
+          "nafinity_board"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 3,
+        "embedding_inputs": 4,
+        "schema_chars": 658,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-board",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 9.45,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_ticket",
+          "nafinity_ticket_update"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2561,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-board",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.26,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2763,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-create",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.13,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2867,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-create",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.1,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_comment",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2867,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-edit",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.08,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 1337,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-edit",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.08,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_activity"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 3069,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-multistep",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.07,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2867,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-multistep",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.07,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2867,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-activity",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.06,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 202,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-activity",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.07,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_ticket",
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2763,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      }
+    ],
+    "note": "Measures authorized tool selection and prerequisites, not model-generated arguments or executed writes. Synthetic distractors are not implemented actions. No writes are executed."
+  },
+  "synthetic_500": {
+    "recorded_at": "2026-10-06T18:12:03.369Z",
+    "node": "v26.9.0",
+    "url": "http://localhost:11434",
+    "models": [
+      {
+        "name": "embeddinggemma:latest",
+        "digest": "85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1"
+      },
+      {
+        "name": "nomic-embed-text:latest",
+        "digest": "0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f"
+      }
+    ],
+    "native_tools": 7,
+    "viewer_tools": 3,
+    "synthetic_tools": 493,
+    "catalog_size": 500,
+    "repetitions": 3,
+    "summaries": [
+      {
+        "key": "embeddinggemma:latest:semantic:owner",
+        "cases": 30,
+        "complete": 30,
+        "expected_hits": 66,
+        "expected_total": 66,
+        "warm_p50_ms": 67.8,
+        "warm_p95_ms": 76.22
+      },
+      {
+        "key": "embeddinggemma:latest:semantic:viewer",
+        "cases": 1,
+        "complete": 1,
+        "expected_hits": 2,
+        "expected_total": 2,
+        "warm_p50_ms": null,
+        "warm_p95_ms": null
+      },
+      {
+        "key": "nomic-embed-text:latest:semantic:owner",
+        "cases": 30,
+        "complete": 30,
+        "expected_hits": 66,
+        "expected_total": 66,
+        "warm_p50_ms": 66.8,
+        "warm_p95_ms": 73.59
+      },
+      {
+        "key": "nomic-embed-text:latest:semantic:viewer",
+        "cases": 1,
+        "complete": 1,
+        "expected_hits": 2,
+        "expected_total": 2,
+        "warm_p50_ms": null,
+        "warm_p95_ms": null
+      },
+      {
+        "key": "embeddinggemma:latest:keyword:owner",
+        "cases": 10,
+        "complete": 10,
+        "expected_hits": 22,
+        "expected_total": 22,
+        "warm_p50_ms": 1.01,
+        "warm_p95_ms": 9.42
+      }
+    ],
+    "results": [
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 4650.77,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 500,
+        "embedding_inputs": 501,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 76.22,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 68.42,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 66.82,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 934,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 66.31,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 67.8,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 64.75,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 62.36,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 64.87,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 68.06,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 75.57,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 72.75,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 70,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 67.75,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 934,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 72.83,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 70.21,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 68.33,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 64.6,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 64.13,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 63.99,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 68.85,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 70.89,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 295,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 68.59,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 66.04,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 934,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 64.71,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 64.11,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 1337,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 64.98,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 69.68,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 76.44,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 66.32,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 202,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "viewer",
+        "case": "rights-removed",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 72.38,
+        "expected": [
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket",
+          "nafinity_board"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 3,
+        "embedding_inputs": 4,
+        "schema_chars": 658,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 2912.96,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 500,
+        "embedding_inputs": 501,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 73.54,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_activity",
+          "fixture_measurement_138",
+          "fixture_measurement_264",
+          "fixture_measurement_210"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2940,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 65.84,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 71.32,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 73.59,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_activity",
+          "fixture_measurement_56"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3326,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 64.21,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2561,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 70.92,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 69.24,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_move",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 74.7,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "fixture_measurement_234",
+          "fixture_measurement_54"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2990,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 66.13,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 860,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 70.78,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 71.61,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_activity",
+          "fixture_measurement_138",
+          "fixture_measurement_264",
+          "fixture_measurement_210"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2940,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 68.29,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 65.05,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 61.93,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_activity",
+          "fixture_measurement_56"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3326,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 61.95,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2561,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 68.67,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 65.55,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_move",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 66.8,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "fixture_measurement_234",
+          "fixture_measurement_54"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2990,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 1,
+        "mode": "semantic",
+        "milliseconds": 70.7,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 860,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-board",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 63.23,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-board",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 68.38,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_activity",
+          "fixture_measurement_138",
+          "fixture_measurement_264",
+          "fixture_measurement_210"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2940,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-create",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 66.79,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-create",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 64.75,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_comment"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-edit",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 64.13,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_activity",
+          "fixture_measurement_56"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3326,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-edit",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 66.47,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2561,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-multistep",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 72.87,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_activity"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 3069,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-multistep",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 63.01,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_move",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_update",
+          "nafinity_ticket_create"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2867,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "de-activity",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 64.45,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket_update",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_comment",
+          "fixture_measurement_234",
+          "fixture_measurement_54"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 2990,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "owner",
+        "case": "en-activity",
+        "run": 2,
+        "mode": "semantic",
+        "milliseconds": 71.02,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 500,
+        "newly_indexed": 0,
+        "embedding_inputs": 1,
+        "schema_chars": 860,
+        "warning": ""
+      },
+      {
+        "model": "nomic-embed-text:latest",
+        "actor": "viewer",
+        "case": "rights-removed",
+        "run": 0,
+        "mode": "semantic",
+        "milliseconds": 74.58,
+        "expected": [
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket",
+          "nafinity_board"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 3,
+        "embedding_inputs": 4,
+        "schema_chars": 658,
+        "warning": ""
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-board",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 9.42,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_ticket",
+          "nafinity_ticket_update"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2561,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-board",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 1.72,
+        "expected": [
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_board",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_ticket",
+          "nafinity_ticket_update",
+          "fixture_measurement_0",
+          "fixture_measurement_1",
+          "fixture_measurement_10"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 3323,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-create",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 1.03,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_comment",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2867,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-create",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 1,
+        "expected": [
+          "nafinity_ticket_create",
+          "nafinity_board"
+        ],
+        "selected": [
+          "nafinity_ticket_create",
+          "nafinity_board",
+          "nafinity_comment",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_update"
+        ],
+        "hits": 2,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2867,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-edit",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 1.01,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 1337,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-edit",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 1,
+        "expected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_ticket_update",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_create",
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_activity"
+        ],
+        "hits": 3,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 3069,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-multistep",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.97,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2867,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-multistep",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 0.94,
+        "expected": [
+          "nafinity_ticket_move",
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket"
+        ],
+        "selected": [
+          "nafinity_comment",
+          "nafinity_board",
+          "nafinity_ticket",
+          "nafinity_ticket_move",
+          "nafinity_ticket_create",
+          "nafinity_ticket_update"
+        ],
+        "hits": 4,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2867,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-de-activity",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 1.03,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 202,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      },
+      {
+        "model": "embeddinggemma:latest",
+        "actor": "owner",
+        "case": "fallback-en-activity",
+        "run": 0,
+        "mode": "keyword",
+        "milliseconds": 1.37,
+        "expected": [
+          "nafinity_activity"
+        ],
+        "selected": [
+          "nafinity_activity",
+          "nafinity_ticket",
+          "fixture_measurement_0",
+          "fixture_measurement_1",
+          "fixture_measurement_10",
+          "fixture_measurement_100",
+          "fixture_measurement_101",
+          "fixture_measurement_102"
+        ],
+        "hits": 1,
+        "complete": true,
+        "cache_hits": 0,
+        "newly_indexed": 0,
+        "embedding_inputs": 0,
+        "schema_chars": 2105,
+        "warning": "Embedding-Auswahl nicht verfügbar; begrenzte Stichwortsuche aktiv."
+      }
+    ],
+    "note": "Measures authorized tool selection and prerequisites, not model-generated arguments or executed writes. Synthetic distractors are not implemented actions. No writes are executed."
+  },
+  "board_query": {
+    "driver": "mysql",
+    "inserted_tickets": 5000,
+    "measurement": "BoardQuery including bounded cards, count, metadata and pivots; excludes HTTP/template/browser",
+    "unfiltered": {
+      "median_ms": 5.25,
+      "p95_ms": 5.74,
+      "max_ms": 5.74,
+      "returned": 300,
+      "total": 5046
+    },
+    "fulltext": {
+      "median_ms": 12.31,
+      "p95_ms": 12.95,
+      "max_ms": 12.95,
+      "returned": 300,
+      "total": 5034
+    },
+    "peak_memory_bytes": 8388608,
+    "recorded_at": "2026-10-06T18:13:46+00:00",
+    "php": "8.5.10"
+  }
+}

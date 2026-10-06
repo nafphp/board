@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 const root = document.documentElement;
 const mobileViewport = matchMedia('(max-width:760px)');
 function syncSidebar() {
@@ -43,7 +45,7 @@ function showError(form, message, errors = {}, conflict = false) {
   if (conflict) {
     const reload = document.createElement('a');
     reload.href = location.href;
-    reload.textContent = 'Aktuellen Stand laden';
+    reload.textContent = t('Aktuellen Stand laden');
     box.append(reload);
   }
   box.classList.add('visible');
@@ -83,7 +85,7 @@ async function toggleTheme(button) {
     rememberAppearance();
   } catch {
     root.dataset.theme = previous;
-    toast(button.dataset.saveError || 'Die Helligkeit konnte nicht gespeichert werden.');
+    toast(button.dataset.saveError || t('Die Helligkeit konnte nicht gespeichert werden.'));
   } finally {
     button.disabled = false;
   }
@@ -165,7 +167,8 @@ document.addEventListener('click', (event) => {
   event.preventDefault();
   dialog.querySelector('[data-confirm-title]').textContent = button.dataset.confirm;
   dialog.querySelector('[data-confirm-detail]').textContent = button.dataset.confirmDetail || '';
-  dialog.querySelector('[data-confirm-yes]').textContent = button.dataset.confirmYes || 'Löschen';
+  dialog.querySelector('[data-confirm-yes]').textContent =
+    button.dataset.confirmYes || t('Löschen');
   awaitingConfirmation = button;
   dialog.showModal();
 });
@@ -249,13 +252,13 @@ document.addEventListener('submit', async (event) => {
     const result = await response.json().catch(() => ({
       message:
         response.status === 401
-          ? 'Bitte melde dich erneut an.'
-          : 'Die Anfrage konnte nicht verarbeitet werden. Bitte lade die Seite neu.',
+          ? t('Bitte melde dich erneut an.')
+          : t('Die Anfrage konnte nicht verarbeitet werden. Bitte lade die Seite neu.'),
     }));
     if (!response.ok) {
       showError(
         form,
-        result.message || 'Die Änderung konnte nicht gespeichert werden.',
+        result.message || t('Die Änderung konnte nicht gespeichert werden.'),
         result.errors || {},
         response.status === 409,
       );
@@ -286,7 +289,7 @@ document.addEventListener('submit', async (event) => {
     if (result.url) location.assign(result.url);
     else location.reload();
   } catch {
-    showError(form, 'Die Verbindung ist unterbrochen. Deine Eingaben bleiben erhalten.');
+    showError(form, t('Die Verbindung ist unterbrochen. Deine Eingaben bleiben erhalten.'));
   } finally {
     if (button) button.disabled = false;
   }
@@ -355,8 +358,8 @@ document.addEventListener('click', async (event) => {
   drawerAbort = new AbortController();
   const creating = link.hasAttribute('data-ticket-create-link');
   drawer.classList.toggle('ticket-create-modal', creating);
-  drawer.setAttribute('aria-label', creating ? 'Neues Ticket' : 'Ticketdetails');
-  drawer.querySelector('.drawer-content').textContent = 'Ticket wird geladen …';
+  drawer.setAttribute('aria-label', creating ? t('Neues Ticket') : t('Ticketdetails'));
+  drawer.querySelector('.drawer-content').textContent = t('Ticket wird geladen …');
   drawer.showModal();
   try {
     const url = new URL(link.href);
@@ -379,7 +382,7 @@ document.addEventListener('click', async (event) => {
   } catch (error) {
     if (error.name !== 'AbortError') {
       drawer.close();
-      toast('Ticket konnte nicht geladen werden.');
+      toast(t('Ticket konnte nicht geladen werden.'));
     }
   }
 });

@@ -13,6 +13,7 @@ use Naf\Session\Core\Session;
 use Psr\Http\Message\ResponseInterface;
 
 use function Naf\Form\csrf;
+use function Naf\I18n\t;
 use function Naf\json;
 
 /** @internal */
@@ -63,7 +64,7 @@ final class ProfileController
     {
         $this->auth->logout();
         csrf()->generate();
-        $this->session->flash('account.notice', $message);
+        $this->session->flash('account.notice', t($message));
 
         return ['url' => '/login'];
     }
@@ -74,7 +75,7 @@ final class ProfileController
             $this->auth->requireLogin();
             $response = json($operation());
         } catch (UnauthenticatedException) {
-            $response = json(['message' => 'Bitte melde dich erneut an.', 'url' => '/login'], 401);
+            $response = json(['message' => t('Bitte melde dich erneut an.'), 'url' => '/login'], 401);
         } catch (Failure $exception) {
             $response = json(['message' => $exception->getMessage(), 'errors' => $exception->errors], $exception->status);
         }
