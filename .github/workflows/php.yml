@@ -15,6 +15,19 @@ jobs:
     strategy:
       matrix:
         php: ['8.3', '8.5']
+        database: ['mariadb:11.4', 'mysql:8.4']
+    services:
+      database:
+        image: ${{ matrix.database }}
+        env:
+          MYSQL_DATABASE: nafinity_test
+          MYSQL_USER: board
+          MYSQL_PASSWORD: board
+          MYSQL_ROOT_PASSWORD: root-test-only
+        ports: ['33306:3306']
+        options: >-
+          --health-cmd="if command -v mariadb-admin > /dev/null; then mariadb-admin ping -h 127.0.0.1 --silent; else mysqladmin ping -h 127.0.0.1 --silent; fi"
+          --health-interval=5s --health-timeout=5s --health-retries=20
     steps:
       - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
@@ -35,7 +48,7 @@ jobs:
         run: |
           composer style:check
           npm run style:check
-      # The suite starts its own MariaDB from tests/compose.yaml.
+      # CI supplies each supported database; local runs may start tests/compose.yaml.
       - name: Run the suite
         run: composer test
       - name: Run the browser module tests

@@ -39,7 +39,7 @@ Current package checks are `composer test`, `composer style:check`, `npm test` a
 `npm run style:check`. The suite starts its isolated MariaDB and refuses another schema.
 MariaDB and MySQL are supported; the PostgreSQL rows below are historical prototype evidence.
 
-On **6 October 2026**, PHP 8.5.10 passed 538 tests with 1,767 assertions, Node passed
+On **6 October 2026**, the v0.1.4 candidate on PHP 8.5.10 passed 538 tests with 1,767 assertions, Node passed
 38 browser-module tests, and both formatting checks passed. The framework minimum is
 `^0.2.8`; HTTP and worker subprocesses no longer change `variables_order` to expose
 process environment values.
@@ -173,3 +173,28 @@ Exact model digests, cold/warm rows and the before/after result are in
 [`tests/benchmarks/results/2026-10-06.json`](../tests/benchmarks/results/2026-10-06.json).
 Reproduce with the commands and environment options in
 [`tests/benchmarks/README.md`](../tests/benchmarks/README.md). No tool writes were executed.
+
+## Cell rebalancing on 6 October 2026
+
+A production HTTP measurement against 5,000 fixture cards exposed 10,038 SQL
+statements and a 377.3 ms response when adjacent positions forced a rebalance.
+Rebalancing now writes two passes in batches of at most 250 cards, reducing
+round trips while retaining the existing project transaction and unique constraint.
+Temporary positions exclude both the old and final sets: legitimate negative
+positions, including the signed integer boundary, cannot collide with that pass.
+
+The negative-position regression failed before the fix with a duplicate position
+error. The patch candidate passed 540 PHP tests with 1,771 assertions, 38 JavaScript
+tests and both formatting checks. The move dialog, version conflicts and ordering
+contract are unchanged; the public ticket guide needs no new workflow instructions.
+
+The MySQL 8.4 run also exposed an unquoted `system` column in role migrations
+and writes. `naf/rbac` v0.1.3 fixes its migration/repository; Board requires that
+minimum and quotes its historical project-role import too. The complete Board
+suite passed 540 tests with 1,771 assertions on MySQL 8.4.11. CI now runs both
+MariaDB 11.4 and MySQL 8.4 on PHP 8.3 and 8.5. Existing stored roles and grants
+are unchanged; there is no new schema migration.
+
+The rendered Classic dark primary action used white on `#9b8cff` (2.77:1).
+Its on-accent foreground is now `#211d35` (5.87:1), both for explicit dark
+brightness and system dark mode. Anthracite retains its own foreground colours.
