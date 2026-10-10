@@ -465,7 +465,7 @@ settings()->has('theme');                           // registered and readable, 
 settings()->collection();                           // Naf\Support\Collection as a snapshot
 settings()->forProject($projectId)->get('name');
 settings()->forProjectUser($projectId)->get('muted');
-settings()->forApplication()->get('mail_enabled');  // declared config values only
+settings()->forApplication()->get('mail_enabled');  // effective installation configuration
 settings()->save(['theme' => 'dark'], resetKeys: []);
 ```
 
@@ -490,6 +490,7 @@ $context->settings()->add(new SettingDefinition(
     writePermission: 'example.reports.view',
     sensitive: false,
     configKey: null,
+    advanced: false,            // opt into advanced installation fields
 ));
 ```
 
@@ -503,8 +504,14 @@ $context->settings()->add(new SettingDefinition(
   values. For `project`, writing requires `manage` by default; an explicitly given plugin write
   permission applies to that plugin's own key. Legacy project fields immutably require at least
   `manage`. Project reads always require membership.
-- `application` is read-only, has no HTTP route and is readable in the CLI without a session.
-  There is no global write permission.
+- `application` reads effective configuration, including administration overrides, and is
+  readable by trusted PHP/CLI code without a session. Its HTTP endpoints and writes require
+  installation `settings.manage`. Writable definitions need a `configKey`; resets restore
+  server configuration. See [installation configuration](Settings-And-AI.md#installation-configuration).
+- `advanced: true` places an installation field below the standard fields when the advanced
+  view is enabled. The default is false. Generated configuration fields opt in automatically;
+  cards containing only advanced fields appear in the separate advanced section. Hidden
+  controls are disabled and omitted from saves. This flag controls presentation, not permissions.
 - `sensitive: true` never leaves the server: not in `all()`, not over HTTP, not in logs, events
   or errors. Trusted server-side code may read such a value individually after the normal scope
   check. In the form, sensitive inputs stay empty; a value that is not submitted stays unchanged.
@@ -521,7 +528,10 @@ same internal persistence
 New plugin values live in `user_settings`, `project_settings` and `project_user_settings`: one
 row per key, `value_json TEXT`, at most 16 KiB per value. No DDL per field.
 
-A mixed write runs in **one** transaction: for project values under the project lock with the
+Application overrides use the private encrypted configuration file, loaded before plugin
+boot, rather than these database tables. See the installation configuration guide above.
+
+A mixed user/project write runs in **one** transaction: for project values under the project lock with the
 current record fully loaded, so that fields not submitted are not overwritten; for user values
 with the user row locked. An error prevents every write of the request. A key may not be set and
 reset at the same time.
@@ -530,6 +540,7 @@ reset at the same time.
 
 | Route name | Method and path | Context |
 |---|---|---|
+| `api.settings.application.read` / `.write` | GET / POST `/api/settings/application` | authorized installation administrator |
 | `api.settings.user.read` / `.write` | GET / POST `/api/settings/user` | the signed-in user |
 | `api.settings.project.read` / `.write` | GET / POST `/api/projects/{project}/settings` | project |
 | `api.settings.project_user.read` / `.write` | GET / POST `/api/projects/{project}/settings/user` | project + signed-in user |
@@ -537,7 +548,9 @@ reset at the same time.
 GET returns `{"values": {...}}`; `?key=…` narrows it to one registered, readable, non-sensitive
 key (404 otherwise), and a missing permission gives 403. POST expects
 `{"values": {...}, "resetKeys": [...]}` and answers after a successful mutation with the same
-filtered list. All responses carry `Cache-Control: private, no-store`.
+filtered list. Application forms additionally submit `configurationRevision` for stale-write
+protection and per-field `modes` (`configuration`, `administration`, `empty`). Only submitted
+fields change; hidden advanced fields preserve their current values. All responses carry `Cache-Control: private, no-store`.
 
 > PHP's session module additionally sends its own
 > `Cache-Control: no-store, no-cache, must-revalidate`. Both headers are in the response, with
@@ -566,6 +579,7 @@ interface FieldTypeInterface
 ```
 
 Standard types: `text`, `textarea`, `boolean`, `integer`, `date`, `select`, `multiselect`.
+Global configuration also registers `configuration_json` and write-only `secret` fields.
 Validation checks **the permitted raw representation first**, then normalises, then checks the
 normalised domain; invalid input is never silently turned into a default.
 `options['nullable'] = true` explicitly allows `null`. Boolean accepts `bool` as well as `'0'`
