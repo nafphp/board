@@ -36,7 +36,7 @@ $writable = $application !== null || $section->scope !== 'project'
     <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
     <?php if ($application !== null): ?>
         <input type="hidden" name="configurationRevision" value="<?= s($application->revision()) ?>" />
-        <p class="settings-hint"><?= s(t('Die Administration überschreibt die Serverkonfiguration. Wähle „Serverkonfiguration“, um wieder deren Wert zu verwenden. Änderungen gelten für neue Anfragen; laufende Worker müssen neu gestartet werden.')) ?></p>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t('Die Administration überschreibt die Serverkonfiguration. Wähle „Serverkonfiguration“, um wieder deren Wert zu verwenden. Änderungen gelten für neue Anfragen; laufende Worker müssen neu gestartet werden.')]) ?>
     <?php endif ?>
     <fieldset <?= $writable ? '' : 'disabled' ?>>
         <?php foreach ([false, true] as $advancedGroup): ?>

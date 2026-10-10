@@ -35,18 +35,18 @@ use function Naf\View\s;
     </dialog>
     <dialog id="people-invite" class="settings-subdialog" aria-labelledby="people-invite-title">
         <header><h2 id="people-invite-title"><?= s(t('Person einladen')) ?></h2><button class="icon-button" type="button" data-people-close aria-label="<?= s(t('Schließen')) ?>"><?= Icon::mark('close') ?></button></header>
-        <div class="settings-subdialog-body">
-            <p class="settings-hint"><?= s(t('Wähle das erste Board. Die Person legt ihr Konto selbst an und erhält nur dort Zugang. Weitere Boards kannst du später über die Kontosuche zuweisen.')) ?></p>
+        <div class="settings-subdialog-body settings-invitation">
+            <?= partial('components/notice', ['severity' => 'info', 'message' => t('Wähle das erste Board. Die Person legt ihr Konto selbst an und erhält nur dort Zugang. Weitere Boards kannst du später über die Kontosuche zuweisen.')]) ?>
             <?php if ($inviteTargets): ?>
                 <?= partial('settings/invite-form', ['projectId' => null, 'token' => csrf()->token(), 'inviteTargets' => $inviteTargets, 'inviteRoles' => ['member' => 'Member', 'viewer' => 'Viewer']]) ?>
-            <?php else: ?><p class="settings-hint"><?= s(t('Du kannst derzeit für kein aktives Board Mitglieder verwalten.')) ?></p><?php endif ?>
+            <?php else: ?><?= partial('components/notice', ['severity' => 'warning', 'message' => t('Du kannst derzeit für kein aktives Board Mitglieder verwalten.')]) ?><?php endif ?>
         </div>
     </dialog>
     <dialog id="people-bulk" class="settings-subdialog" aria-labelledby="people-bulk-title">
         <header><h2 id="people-bulk-title"><?= s(t('Update')) ?></h2><button class="icon-button" type="button" data-people-close aria-label="<?= s(t('Schließen')) ?>"><?= Icon::mark('close') ?></button></header>
         <div class="settings-subdialog-body">
             <p data-bulk-summary></p>
-            <p class="settings-hint"><?= s(t('Nur aktivierte Eigenschaften werden geändert. Alle Änderungen werden gemeinsam gespeichert. Bei einem Fehler wird nichts übernommen.')) ?></p>
+            <?= partial('components/notice', ['severity' => 'info', 'message' => t('Nur aktivierte Eigenschaften werden geändert. Alle Änderungen werden gemeinsam gespeichert. Bei einem Fehler wird nichts übernommen.')]) ?>
             <form method="post" action="<?= s(route('installation.users.bulk')) ?>" data-enhanced data-bulk-form>
                 <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
                 <div data-bulk-targets></div>

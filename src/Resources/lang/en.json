@@ -1147,5 +1147,9 @@
   "Nutzer bearbeiten": "Edit user",
   "Fortgeschrittene Einstellungen": "Advanced settings",
   "Erweiterte Einstellungen": "Advanced settings",
-  "Zusätzliche Konfigurationswerte in den Bereichen und unter den Standard-Einstellungen anzeigen.": "Show additional configuration values in their sections and below the standard settings."
+  "Zusätzliche Konfigurationswerte in den Bereichen und unter den Standard-Einstellungen anzeigen.": "Show additional configuration values in their sections and below the standard settings.",
+  "Hinweis": "Notice",
+  "Information": "Information",
+  "Warnung": "Warning",
+  "Fehler": "Error"
 }

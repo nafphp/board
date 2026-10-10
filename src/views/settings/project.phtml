@@ -4,6 +4,7 @@ use Naf\Board\Domain\Placement;
 
 use function Naf\Board\extensions;
 use function Naf\Board\field;
+use function Naf\Board\partial;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
@@ -65,9 +66,7 @@ if (!$knownScale) {
             'hint'    => 'Wo ein neues Ticket in seiner Spalte landet. Gilt für alle, die nichts anderes für sich eingestellt haben.',
         ]) ?>
         <?php if ($offScale): ?>
-            <p class="settings-hint">
-                <?= s(t(':count Tickets tragen eine Schätzung, die diese Skala nicht anbietet. Sie bleiben erhalten und sind markiert.', ['count' => $offScale])) ?>
-            </p>
+            <?= partial('components/notice', ['severity' => 'warning', 'message' => t(':count Tickets tragen eine Schätzung, die diese Skala nicht anbietet. Sie bleiben erhalten und sind markiert.', ['count' => $offScale])]) ?>
         <?php endif ?>
         <div class="form-errors" role="alert"></div>
         <div class="settings-actions">

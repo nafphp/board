@@ -1,5 +1,5 @@
 <?php
-
+use Naf\Board\Domain\Placement;
 /**
  * What one person chooses for themselves, in every project.
  *
@@ -7,10 +7,10 @@
  * @var object $user
  */
 
-use Naf\Board\Domain\Placement;
 use Naf\Board\Support\Locales;
 
 use function Naf\Board\field;
+use function Naf\Board\partial;
 use function Naf\config;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
@@ -112,9 +112,7 @@ $logins = (array) config('auth:logins', []);
 <?php if ($logins): ?>
     <section class="settings-section">
         <h3><?= s(t('Externe Konten')) ?></h3>
-        <p class="settings-hint">
-            <?= s(t('Verknüpfe dein angemeldetes Konto ausdrücklich mit deinem Firmenkonto.')) ?>
-        </p>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t('Verknüpfe dein angemeldetes Konto ausdrücklich mit deinem Firmenkonto.')]) ?>
         <div class="settings-actions">
             <?php foreach ($logins as $key => $login): ?>
                 <a class="button subtle" href="<?= s(route('oauth.connect', ['provider' => $key])) ?>">

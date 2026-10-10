@@ -60,7 +60,7 @@ use function Naf\View\s;
             'choice' => ['searchLabel' => 'Rollen suchen'],
         ]) ?>
         <datalist id="member-accounts"></datalist>
-        <p class="settings-hint account-search-status" role="status" data-account-status></p>
+        <?= partial('components/notice', ['severity' => 'notice', 'messageAttributes' => ['data-account-status' => true, 'role' => 'status']]) ?>
         <div class="form-errors" role="alert"></div>
         <div class="settings-actions">
             <button class="button primary"><?= s(t('Mitgliedschaft speichern')) ?></button>
@@ -68,9 +68,9 @@ use function Naf\View\s;
     </form>
 </section>
 
-<section class="settings-section">
+<section class="settings-section settings-invitation">
     <h3><?= s(t('Neue Person einladen')) ?></h3>
-    <p class="settings-hint"><?= s(t('Die Person legt ihr Konto über den Einladungslink selbst an und erhält nur Zugang zu diesem Board.')) ?></p>
+    <?= partial('components/notice', ['severity' => 'info', 'message' => t('Die Person legt ihr Konto über den Einladungslink selbst an und erhält nur Zugang zu diesem Board.')]) ?>
     <?= partial('settings/invite-form', ['projectId' => $projectId, 'token' => $token, 'inviteRoles' => array_diff_key($availableRoles, ['remove' => true])]) ?>
 </section>
 <?php if ($invitations): ?>

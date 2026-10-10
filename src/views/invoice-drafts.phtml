@@ -1,5 +1,6 @@
 <?php
 use function Naf\Board\field;
+use function Naf\Board\partial;
 use function Naf\Board\template;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
@@ -34,7 +35,7 @@ $states = ['prepared' => 'Vorschau', 'sending' => 'Übergabe wird geprüft', 'un
 <div class="settings-grid">
     <section class="settings-card<?= $draft !== null ? ' wide' : '' ?>">
         <h2><?= s(t('Rechnungszugänge')) ?></h2>
-        <p class="settings-hint"><?= s(t('Firmenname und Kennung helfen dir, den richtigen Zugang zu wählen. Der API-Zugang bestimmt den tatsächlichen Rechnungsaussteller; dessen Stammdaten pflegst du im Rechnungstool.')) ?></p>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t('Firmenname und Kennung helfen dir, den richtigen Zugang zu wählen. Der API-Zugang bestimmt den tatsächlichen Rechnungsaussteller; dessen Stammdaten pflegst du im Rechnungstool.')]) ?>
         <?php if ($connections !== []): ?>
         <form method="get" action="<?= s(route('invoice.drafts')) ?>">
             <?= $invoiceField(['label' => 'Rechnungszugang', 'name' => 'connection', 'type' => 'select', 'options' => $connectionOptions, 'value' => $selected['id'] ?? array_key_first($connectionOptions)]) ?>
@@ -44,7 +45,7 @@ $states = ['prepared' => 'Vorschau', 'sending' => 'Übergabe wird geprüft', 'un
         <details <?= $connections === [] ? 'open' : '' ?>>
             <summary><?= s(t('Rechnungszugang hinzufügen')) ?></summary>
             <?php if (!$encryptionReady): ?>
-                <p class="settings-hint"><?= s(t('Für Rechnungszugänge muss der Betreiber zuerst den Export-Schlüssel konfigurieren.')) ?></p>
+                <?= partial('components/notice', ['severity' => 'warning', 'message' => t('Für Rechnungszugänge muss der Betreiber zuerst den Export-Schlüssel konfigurieren.')]) ?>
             <?php else: ?>
             <form method="post" action="<?= s(route('invoice.connections.create')) ?>">
                 <input type="hidden" name="_csrf" value="<?= s($token) ?>">
@@ -54,7 +55,7 @@ $states = ['prepared' => 'Vorschau', 'sending' => 'Übergabe wird geprüft', 'un
                 <?= $invoiceField(['label' => 'Firmenkennung im Rechnungstool', 'name' => 'company_reference', 'type' => 'text', 'required' => true]) ?>
                 <?= $invoiceField(['label' => 'API-Schlüssel', 'name' => 'api_key', 'type' => 'password', 'required' => true, 'attributes' => ['autocomplete' => 'new-password', 'maxlength' => '4096']]) ?>
                 <?= $invoiceField(['label' => 'FastBill: E-Mail-Adresse des API-Kontos', 'name' => 'email', 'type' => 'text']) ?>
-                <p class="settings-hint"><?= s(t('Persönlich umfasst nur deine Stunden. Firma umfasst alle Personen auf dem gewählten Board und benötigt Installations- und Board-Exportrechte. Zugangsdaten werden verschlüsselt gespeichert.')) ?></p>
+                <?= partial('components/notice', ['severity' => 'info', 'message' => t('Persönlich umfasst nur deine Stunden. Firma umfasst alle Personen auf dem gewählten Board und benötigt Installations- und Board-Exportrechte. Zugangsdaten werden verschlüsselt gespeichert.')]) ?>
                 <button class="button primary" type="submit"><?= s(t('Zugang speichern')) ?></button>
             </form>
             <?php endif ?>
@@ -63,7 +64,7 @@ $states = ['prepared' => 'Vorschau', 'sending' => 'Übergabe wird geprüft', 'un
     <?php if ($selected !== null): ?>
     <section class="settings-card">
         <h2><?= s($selected['company_name']) ?></h2>
-        <p class="settings-hint"><?= s($selected['company_reference']) ?> · <?= s(t((int) $selected['owner_id'] === 0 ? 'Firma' : 'Persönlich')) ?></p>
+        <?= partial('components/notice', ['severity' => 'notice', 'message' => $selected['company_reference'] . ' · ' . t((int) $selected['owner_id'] === 0 ? 'Firma' : 'Persönlich')]) ?>
         <form method="post" action="<?= s(route('invoice.drafts.preview')) ?>">
             <input type="hidden" name="_csrf" value="<?= s($token) ?>">
             <input type="hidden" name="connection" value="<?= s($selected['id']) ?>">
@@ -87,12 +88,12 @@ $states = ['prepared' => 'Vorschau', 'sending' => 'Übergabe wird geprüft', 'un
             <?php foreach ($extraFields as $name => $label): ?>
                 <?= $invoiceField(['label' => $label, 'name' => $name, 'type' => 'text', 'required' => true]) ?>
             <?php endforeach ?>
-            <p class="settings-hint"><?= s(t('Bereits übergebene oder reservierte Buchungen werden ausgelassen. Buchungstage zählen vollständig in UTC; den Leistungszeitraum bestätigst du separat. Die Vorschau liest den vorhandenen Kunden im Rechnungstool.')) ?></p>
+            <?= partial('components/notice', ['severity' => 'info', 'message' => t('Bereits übergebene oder reservierte Buchungen werden ausgelassen. Buchungstage zählen vollständig in UTC; den Leistungszeitraum bestätigst du separat. Die Vorschau liest den vorhandenen Kunden im Rechnungstool.')]) ?>
             <button class="button primary" type="submit"><?= s(t('Vorschau prüfen')) ?></button>
         </form>
         <details>
             <summary><?= s(t('Zugang trennen')) ?></summary>
-            <p class="settings-hint"><?= s(t('Der gespeicherte Schlüssel wird gelöscht. Einen API-Schlüssel widerrufst du zusätzlich im Rechnungstool. Eine bereits gestartete Übergabe kann noch abgeschlossen werden.')) ?></p>
+            <?= partial('components/notice', ['severity' => 'warning', 'message' => t('Der gespeicherte Schlüssel wird gelöscht. Einen API-Schlüssel widerrufst du zusätzlich im Rechnungstool. Eine bereits gestartete Übergabe kann noch abgeschlossen werden.')]) ?>
             <form method="post" action="<?= s(route('invoice.connections.delete')) ?>">
                 <input type="hidden" name="_csrf" value="<?= s($token) ?>">
                 <input type="hidden" name="connection" value="<?= s($selected['id']) ?>">
@@ -119,9 +120,9 @@ $states = ['prepared' => 'Vorschau', 'sending' => 'Übergabe wird geprüft', 'un
             </tr><?php endforeach ?></tbody>
         </table></div>
         <p><strong><?= s(t('Voraussichtlicher Nettobetrag (EUR)')) ?>: <?= s(number_format($netTotal, 2, ',', '.')) ?></strong></p>
-        <p class="settings-hint"><?= s(t('Die endgültigen Beträge und Rundungen berechnet das Rechnungstool.')) ?></p>
+        <?= partial('components/notice', ['severity' => 'notice', 'message' => t('Die endgültigen Beträge und Rundungen berechnet das Rechnungstool.')]) ?>
         <?php if ($draft['state'] === 'prepared'): ?>
-        <p class="settings-hint"><?= s(t('Mit deiner Bestätigung werden diese Positionen als Rechnungsentwurf übertragen. Prüfe Aussteller, Kunde, Leistungszeitraum und Steuerfall. Der Entwurf wird nicht versendet. Die Vorschau gilt eine Stunde.')) ?></p>
+        <?= partial('components/notice', ['severity' => 'warning', 'message' => t('Mit deiner Bestätigung werden diese Positionen als Rechnungsentwurf übertragen. Prüfe Aussteller, Kunde, Leistungszeitraum und Steuerfall. Der Entwurf wird nicht versendet. Die Vorschau gilt eine Stunde.')]) ?>
         <form method="post" action="<?= s(route('invoice.drafts.send')) ?>">
             <input type="hidden" name="_csrf" value="<?= s($token) ?>">
             <input type="hidden" name="draft" value="<?= s($draft['id']) ?>">
@@ -129,10 +130,10 @@ $states = ['prepared' => 'Vorschau', 'sending' => 'Übergabe wird geprüft', 'un
         </form>
         <?php elseif ($draft['state'] === 'created'): ?>
             <p><?= s(t('Entwurfs-ID im Rechnungstool')) ?>: <strong><?= s($draft['remote_id']) ?></strong></p>
-            <p class="settings-hint"><?= s(t('Prüfe und vervollständige den Entwurf im Rechnungstool. Dort kannst du ihn später abschließen und bei Bedarf an DATEV übergeben.')) ?></p>
+            <?= partial('components/notice', ['severity' => 'info', 'message' => t('Prüfe und vervollständige den Entwurf im Rechnungstool. Dort kannst du ihn später abschließen und bei Bedarf an DATEV übergeben.')]) ?>
         <?php elseif (in_array($draft['state'], ['sending', 'uncertain'], true)): ?>
-            <?php if ($draft['message'] !== null): ?><p class="settings-hint"><?= s($draft['message']) ?></p><?php endif ?>
-            <p class="settings-hint"><?= s(t('Die Übergabe ist nicht eindeutig bestätigt. Es erfolgt kein automatischer zweiter Versuch. Prüfe im Rechnungstool die Referenz Nafinity :id.', ['id' => $draft['id']])) ?></p>
+            <?php if ($draft['message'] !== null): ?><?= partial('components/notice', ['severity' => 'warning', 'message' => $draft['message']]) ?><?php endif ?>
+            <?= partial('components/notice', ['severity' => 'warning', 'message' => t('Die Übergabe ist nicht eindeutig bestätigt. Es erfolgt kein automatischer zweiter Versuch. Prüfe im Rechnungstool die Referenz Nafinity :id.', ['id' => $draft['id']])]) ?>
             <?php if ((int) $draft['attempted_at'] < time() - 60): ?>
             <form method="post" action="<?= s(route('invoice.drafts.resolve')) ?>">
                 <input type="hidden" name="_csrf" value="<?= s($token) ?>">

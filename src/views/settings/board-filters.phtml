@@ -10,13 +10,13 @@ use function Naf\View\s;
 ?>
 <form method="post" data-enhanced data-settings-form="board_filters" action="<?= s(route('api.settings.user.write')) ?>">
     <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
-    <p class="settings-hint"><?= s(t('Wähle, welche Filter du auf deinen Boards sehen möchtest. Neue Filter werden automatisch angezeigt.')) ?></p>
+    <?= partial('components/notice', ['severity' => 'info', 'message' => t('Wähle, welche Filter du auf deinen Boards sehen möchtest. Neue Filter werden automatisch angezeigt.')]) ?>
     <?= partial('fields/board_filters', [
         'name'     => 'values[board_filters]',
         'value'    => settings()->get('board_filters', []),
         'disabled' => false,
     ]) ?>
-    <p class="settings-hint"><?= s(t('Aktive Filter bleiben sichtbar, bis du sie zurücksetzt. Die Suche ist immer verfügbar.')) ?></p>
+    <?= partial('components/notice', ['severity' => 'info', 'message' => t('Aktive Filter bleiben sichtbar, bis du sie zurücksetzt. Die Suche ist immer verfügbar.')]) ?>
     <div class="form-errors" role="alert"></div>
     <div class="settings-actions">
         <button class="button primary"><?= s(t('Einstellungen speichern')) ?></button>

@@ -3116,3 +3116,57 @@ label > .choice {
     animation: none;
   }
 }
+
+/* Shared notices keep severity, text and icon together in every view. */
+.ui-notice {
+  --notice-tone: var(--muted);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 13px 15px;
+  border-left: 3px solid var(--notice-tone);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--notice-tone) 7%, var(--surface));
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.ui-notice--info {
+  --notice-tone: var(--accent);
+}
+.ui-notice--warning {
+  --notice-tone: light-dark(#916000, #efbe62);
+}
+.ui-notice--error {
+  --notice-tone: var(--danger);
+}
+.ui-notice__icon {
+  margin-top: 1px;
+  color: var(--notice-tone);
+}
+.ui-notice__content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ui-notice__title {
+  margin: 0 0 4px;
+  font-weight: 650;
+}
+.ui-notice__message {
+  margin: 0;
+}
+.ui-notice:has(.ui-notice__message:empty):not(:has(.ui-notice__title)) {
+  display: none;
+}
+@media (forced-colors: active) {
+  .ui-notice {
+    border: 1px solid CanvasText;
+    border-left-width: 3px;
+    background: Canvas;
+    color: CanvasText;
+  }
+  .ui-notice__icon {
+    color: CanvasText;
+  }
+}

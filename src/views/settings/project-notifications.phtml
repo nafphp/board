@@ -1,12 +1,12 @@
 <?php
-
+use function Naf\Board\partial;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
 
 ?>
-<p class="settings-hint"><?= s(t('Aktiviere den Schalter, um ein Projekt stummzuschalten. Gilt nur für dich.')) ?></p>
+<?= partial('components/notice', ['severity' => 'info', 'message' => t('Aktiviere den Schalter, um ein Projekt stummzuschalten. Gilt nur für dich.')]) ?>
 <div class="project-notifications">
     <?php foreach ($projects as $notificationProject): ?>
         <?php $muted = (bool) ($notificationProject['notifications_muted'] ?? false); ?>

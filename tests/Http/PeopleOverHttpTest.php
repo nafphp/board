@@ -16,6 +16,8 @@ final class PeopleOverHttpTest extends AcceptanceTestCase
     {
         $page = $this->page($this->alice, '/settings');
         self::assertStringContainsString('settings-people-table', $page);
+        self::assertStringContainsString('ui-notice--info', $page);
+        self::assertStringNotContainsString('class="settings-hint"', $page);
         self::assertStringContainsString('class="button primary" data-people-dialog="people-invite"', $page);
         self::assertStringContainsString('data-bulk-target', $page);
         self::assertStringNotContainsString('class="rbac-grants"', $page);

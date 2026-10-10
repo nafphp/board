@@ -599,5 +599,9 @@
   "Nutzer bearbeiten": "Nutzer bearbeiten",
   "Fortgeschrittene Einstellungen": "Fortgeschrittene Einstellungen",
   "Erweiterte Einstellungen": "Erweiterte Einstellungen",
-  "Zusätzliche Konfigurationswerte in den Bereichen und unter den Standard-Einstellungen anzeigen.": "Zusätzliche Konfigurationswerte in den Bereichen und unter den Standard-Einstellungen anzeigen."
+  "Zusätzliche Konfigurationswerte in den Bereichen und unter den Standard-Einstellungen anzeigen.": "Zusätzliche Konfigurationswerte in den Bereichen und unter den Standard-Einstellungen anzeigen.",
+  "Hinweis": "Hinweis",
+  "Information": "Information",
+  "Warnung": "Warnung",
+  "Fehler": "Fehler"
 }
