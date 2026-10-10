@@ -44,12 +44,7 @@ final class TimeExportService
     /** @param list<int> $projects Explicit scope, authorized before the first row is read. */
     public function write(array $projects, string $format, TimeExportOptions $options): array
     {
-        $actor  = $this->access->actor();
-        $groups = [];
-        foreach (array_unique($projects) as $project) {
-            $scope            = $this->access->project($project);
-            $groups[$project] = $this->records($project, $actor, (string) $scope->project['name'], $options);
-        }
+        $groups = $this->bookings($projects, $options);
 
         return $this->renderer->write($format, 'time', [
             'recorded_at' => t('Gebucht am (UTC)'),
@@ -61,6 +56,25 @@ final class TimeExportService
             'hours'       => t('Stunden'),
             'unit'        => t('Einheit'),
         ], $groups, 'hours-' . gmdate('Y-m-d'));
+    }
+
+    /**
+     * Authorized, personal bookings for another export source to transform.
+     * All projects are checked eagerly; rows remain lazy and use the same date scope.
+     *
+     * @param list<int> $projects
+     * @return array<int, iterable<array{record: array, data: array}>>
+     */
+    public function bookings(array $projects, TimeExportOptions $options): array
+    {
+        $actor  = $this->access->actor();
+        $groups = [];
+        foreach (array_unique($projects) as $project) {
+            $scope            = $this->access->project($project);
+            $groups[$project] = $this->records($project, $actor, (string) $scope->project['name'], $options);
+        }
+
+        return $groups;
     }
 
     private function records(int $project, int $actor, string $name, TimeExportOptions $options): iterable

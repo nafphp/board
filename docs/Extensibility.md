@@ -1074,6 +1074,14 @@ for booking semantics and the historical-data limit. There is no invoice schema 
 accounting-tool import in this dataset. A provider-specific writer can be registered through
 the same exporter registry when its required input fields and import contract are available.
 
+Extensions that transform personal bookings reuse
+`TimeExportService::bookings($projects, $options)`. It eagerly authorizes every project,
+captures the authenticated actor and returns the same lazy normalized records used by
+`write()`. Pass a `TimeExportOptions` for the inclusive UTC booking-date filter. Do not
+query `ticket_time_entries` from an adapter or accept a different user id. An optional
+adapter may aggregate integer minutes into another dataset and pass it to `ExportRenderer`;
+its format definitions opt into that dataset, keeping those formats out of raw time menus.
+
 ### Changing what an export says
 
 ```php

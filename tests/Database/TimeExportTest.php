@@ -156,6 +156,23 @@ final class TimeExportTest extends BoardTestCase
         $this->assertSame(0, (int) $this->scalar('SELECT COUNT(*) FROM ticket_time_entries WHERE project_id=?', [$this->projectA]));
     }
 
+    public function testReusableBookingSourceAuthorizesEagerlyAndStaysPersonal(): void
+    {
+        $ticket = $this->tickets->create($this->projectA, $this->ticketData());
+        $this->book($ticket, 120);
+        $source = app()->container()->make(TimeExportService::class);
+        $dates  = TimeExportOptions::fromInput([]);
+        $this->assertDenied(404, fn() => $source->bookings([$this->projectA, $this->projectB], $dates));
+        $groups = $source->bookings([$this->projectA, $this->projectA], $dates);
+        $this->assertSame([$this->projectA], array_keys($groups));
+        $rows = iterator_to_array($groups[$this->projectA]);
+        $this->assertSame(2, $rows[0]['data']['minutes']);
+        $this->assertSame((int) $this->alice->getId(), (int) $rows[0]['record']['user_id']);
+        $this->actAs($this->member);
+        $groups = $source->bookings([$this->projectA], $dates);
+        $this->assertSame([], iterator_to_array($groups[$this->projectA]));
+    }
+
     public function testPagingAndEventsUseTheSharedPipelineAndIdentifyTheSource(): void
     {
         $ticket = $this->tickets->create($this->projectA, $this->ticketData());
