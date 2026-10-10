@@ -46,19 +46,22 @@ use function Naf\View\s;
     <?php foreach ($people as $person): ?>
         <details class="settings-row">
             <summary class="settings-row-head">
-                <span class="settings-row-title"><?= s($person['name']) ?></span>
-                <span class="settings-row-marks">
-                    <?php if (!$person['active']): ?>
-                        <span class="settings-row-mark"><?= s(t('inaktiv')) ?></span>
-                    <?php endif ?>
-                    <?php if ($person['roles'] === []): ?>
-                        <span class="settings-row-mark"><?= s(t('keine Rolle')) ?></span>
-                    <?php endif ?>
-                    <?php foreach ($person['roles'] as $grant): ?>
-                        <span class="settings-row-mark">
-                            <?= s($grant['label']) ?><?= $grant['scope'] === '' ? '' : ' · ' . s($grant['scope']) ?>
-                        </span>
-                    <?php endforeach ?>
+                <span class="settings-user-info">
+                    <span class="settings-row-title"><?= s($person['name']) ?></span>
+                    <span class="settings-user-roles">
+                        <?php if (!$person['active']): ?>
+                            <span class="settings-user-state"><?= s(t('inaktiv')) ?></span>
+                        <?php endif ?>
+                        <?php if ($person['roles'] === []): ?>
+                            <span class="settings-user-state"><?= s(t('keine Rolle')) ?></span>
+                        <?php endif ?>
+                        <?php foreach ($person['roles'] as $grant): ?>
+                            <span class="settings-user-role <?= $grant['scope'] === '' ? 'is-global' : '' ?>">
+                                <span class="settings-user-place"><?= s($grant['scopeLabel']) ?></span>
+                                <span class="settings-user-role-name"><?= s(t($grant['label'])) ?></span>
+                            </span>
+                        <?php endforeach ?>
+                    </span>
                 </span>
                 <?= Icon::mark('expand_more', 'sm', 'mi-turn settings-row-caret') ?>
             </summary>

@@ -350,6 +350,57 @@
   color: #10b981;
   background: #10b98118;
 }
+/* Account summaries keep the place readable and the role secondary. */
+.settings-user-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.settings-user-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.settings-user-role {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  max-width: 100%;
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--muted) 8%, transparent);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.settings-user-place {
+  min-width: 0;
+  font-weight: 500;
+}
+.settings-user-role-name {
+  min-width: 0;
+  padding-left: 7px;
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+}
+.settings-user-role.is-global {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.settings-user-role.is-global .settings-user-place {
+  color: var(--muted);
+  font-weight: 400;
+}
+.settings-user-role.is-global .settings-user-role-name {
+  color: var(--accent);
+}
+.settings-user-state {
+  color: var(--muted);
+  font-size: 12px;
+}
 .structure-order {
   display: flex;
   gap: 2px;
