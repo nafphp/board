@@ -7,10 +7,12 @@ dialog. Editors are fetched on demand rather than rendered for every account.
 The primary invitation action sits at the top right above the table.
 
 Select individual rows or all eligible rows on the current page to reveal the
-bulk action bar. Search and pagination clear the selection. The confirmation
-form states the target count and requires explicitly enabling each property;
+bulk action bar with its **Update** action. Search and pagination clear the
+selection. The confirmation form states the target count and requires explicitly enabling each property;
 unselected properties are omitted, and empty strings, false and null remain
 values when their field type accepts them. Own-account rows cannot be selected.
+The compact selection controls retain native keyboard and screen-reader behavior;
+disabled controls show a lock, and the page selector marks partial selection.
 
 The initial properties add or remove one **global role**. These operations merge
 with current grants, preserve other roles and every scoped grant, and are

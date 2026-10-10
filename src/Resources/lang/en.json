@@ -1018,7 +1018,7 @@
   ":count Konten · Seite :page von :pages": ":count accounts · Page :page of :pages",
   "Nutzer suchen": "Search accounts",
   "Name oder E-Mail suchen …": "Search name or email …",
-  "Mass-Update": "Bulk update",
+  "Update": "Update",
   "Person bearbeiten": "Edit person",
   "Nur aktivierte Eigenschaften werden geändert. Alle Änderungen werden gemeinsam gespeichert. Bei einem Fehler wird nichts übernommen.": "Only enabled properties are changed. All changes are saved together. If anything fails, nothing is applied.",
   "Änderungen für Auswahl speichern": "Save changes for selection",

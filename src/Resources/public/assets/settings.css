@@ -739,11 +739,104 @@ body .rbac-grants {
 .settings-people-table .settings-select-cell {
   width: 30px;
 }
+/* Preserve native checkbox semantics while making selection and locks distinct. */
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]) {
+  appearance: none;
+  box-sizing: border-box;
+  position: relative;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--muted) 70%, var(--surface));
+  border-radius: 4px;
+  background: var(--input);
+  color: var(--on-accent);
+  cursor: var(--cursor-pointer, pointer);
+  vertical-align: middle;
+}
 .settings-people-table input[type='checkbox'] {
   width: 16px;
   height: 16px;
-  margin: 0;
-  accent-color: var(--accent);
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):enabled:hover {
+  border-color: var(--accent);
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):is(
+  :checked,
+  :indeterminate
+) {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):checked::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 7px;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -60%) rotate(45deg);
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):indeterminate::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 2px;
+  border: 0;
+  border-radius: 1px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):disabled {
+  border-color: color-mix(in srgb, var(--muted) 35%, var(--surface));
+  background: color-mix(in srgb, var(--muted) 15%, var(--surface));
+  color: var(--muted);
+  cursor: not-allowed;
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):disabled::before {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 5px;
+  border: 1px solid currentColor;
+  border-radius: 1px;
+  background: none;
+  transform: translate(-50%, 0);
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):disabled::after {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  width: 5px;
+  height: 4px;
+  border: 1px solid currentColor;
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+  transform: translateX(-50%);
+}
+@media (forced-colors: active) {
+  :is(.settings-people-table input[type='checkbox'], [data-bulk-enable]) {
+    appearance: auto;
+  }
+  :is(.settings-people-table input[type='checkbox'], [data-bulk-enable])::before,
+  :is(.settings-people-table input[type='checkbox'], [data-bulk-enable])::after {
+    display: none;
+  }
 }
 .settings-person-open {
   display: grid;
@@ -851,22 +944,4 @@ body .rbac-grants {
   .settings-subdialog-body {
     padding: 18px;
   }
-}
-
-.settings-configuration-field {
-  padding: 20px 0;
-  border-bottom: 1px solid var(--line);
-}
-.settings-configuration-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 10px 0 16px;
-  color: var(--muted);
-  font-size: 12px;
-  overflow-wrap: anywhere;
-}
-.settings-configuration-source {
-  max-width: 320px;
 }
