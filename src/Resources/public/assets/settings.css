@@ -288,7 +288,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 13px 4px;
+  padding: 14px 12px;
   cursor: pointer;
   border-radius: 10px;
   list-style: none;
@@ -400,6 +400,11 @@
   color: var(--muted);
   font-size: 12px;
 }
+.settings-user-email {
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  overflow-wrap: anywhere;
+}
 .structure-order {
   display: flex;
   gap: 2px;
@@ -431,12 +436,19 @@
 }
 .settings-row-caret,
 .settings-detail .rbac-role-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
   color: var(--muted);
-  flex-shrink: 0;
+  transform-origin: center;
 }
 .settings-row-body,
 .settings-detail .rbac-grants .rbac-group {
-  padding: 4px 4px 22px;
+  padding: 16px 12px 24px;
 }
 /* The label carries its own bottom margin, so the grid only spaces columns. */
 .settings-fields {
@@ -600,8 +612,6 @@ body .rbac-grants {
 }
 /* RBAC disclosures share the settings rows and Material Symbols caret above. */
 .settings-detail .rbac-role-caret {
-  width: auto;
-  height: auto;
   margin-left: 0;
   transform: none;
 }

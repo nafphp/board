@@ -66,7 +66,7 @@ use function Naf\View\s;
                 <?= Icon::mark('expand_more', 'sm', 'mi-turn settings-row-caret') ?>
             </summary>
             <div class="settings-row-body">
-                <p class="settings-hint"><?= s($person['email']) ?></p>
+                <p class="settings-hint settings-user-email"><?= s($person['email']) ?></p>
                 <?= partial('rbac/grants', [
                     'user'   => $person['id'],
                     'name'   => $person['name'],
