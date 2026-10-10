@@ -9,11 +9,17 @@ use Naf\Board\Definition\ExporterDefinition;
 use Naf\Board\Definition\SettingSection;
 use Naf\Board\Definition\UiContribution;
 use Naf\Board\Export\CsvExporter;
+use Naf\Board\Export\Invoice\EasybillExporter;
+use Naf\Board\Export\Invoice\FastbillExporter;
+use Naf\Board\Export\Invoice\LexwareExporter;
+use Naf\Board\Export\Invoice\SevdeskExporter;
+use Naf\Board\Export\InvoiceItems;
 use Naf\Board\Export\JsonExporter;
 use Naf\Board\Export\PdfExporter;
 use Naf\Board\Export\TextExporter;
 use Naf\Board\ExtensionContext;
 use Naf\Board\Modules\Providers\ExportSectionProvider;
+use Naf\Board\Modules\Providers\InvoiceExportProvider;
 use Naf\Board\Modules\Providers\PersonalExportProvider;
 use Naf\Board\Support\UiContext;
 
@@ -52,6 +58,16 @@ final class CoreExport implements ExtensionProviderInterface
             template: 'profile/export',
             provider: PersonalExportProvider::class,
             index: 100,
+            permission: null,
+            modes: [UiContext::MODE_PAGE, UiContext::MODE_DETAIL, UiContext::MODE_CREATE],
+        ));
+
+        $context->ui()->add(new UiContribution(
+            id: 'core.invoice_export',
+            slot: 'profile.panels',
+            template: 'profile/invoice-export',
+            provider: InvoiceExportProvider::class,
+            index: 110,
             permission: null,
             modes: [UiContext::MODE_PAGE, UiContext::MODE_DETAIL, UiContext::MODE_CREATE],
         ));
@@ -96,5 +112,15 @@ final class CoreExport implements ExtensionProviderInterface
             index: 400,
             sources: ['time'],
         ));
+
+        foreach ([
+            ['invoice.csv', 'Rechnungspositionen – CSV', CsvExporter::class, 'csv', 'text/csv; charset=utf-8'],
+            ['invoice.lexware', 'Lexware Office – API-Positionen (JSON)', LexwareExporter::class, 'json', 'application/json; charset=utf-8'],
+            ['invoice.sevdesk', 'sevdesk – API-Positionen (JSON)', SevdeskExporter::class, 'json', 'application/json; charset=utf-8'],
+            ['invoice.easybill', 'easybill – API-Positionen (JSON)', EasybillExporter::class, 'json', 'application/json; charset=utf-8'],
+            ['invoice.fastbill', 'FastBill – API-Positionen (JSON)', FastbillExporter::class, 'json', 'application/json; charset=utf-8'],
+        ] as $index => [$id, $label, $writer, $extension, $mime]) {
+            $exporters->add(new ExporterDefinition($id, $label, $extension, $mime, $writer, 100 + $index, [InvoiceItems::SOURCE]));
+        }
     }
 }

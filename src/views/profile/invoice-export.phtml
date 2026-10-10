@@ -1,0 +1,41 @@
+<?php
+use Naf\Board\Support\Icon;
+
+use function Naf\Board\field;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$boards = [];
+foreach ($invoiceProjects as $board) {
+    $boards[(string) $board['id']] = $board['name'];
+}
+$invoiceField = static fn(array $properties): string => field(['id' => 'invoice-export-' . $properties['name'], ...$properties]);
+?>
+<?php if ($invoiceFormats !== [] && $boards !== []): ?>
+<details class="profile-section" name="profile-section" data-profile-section-id="invoice_export">
+    <summary>
+        <span class="profile-section-icon" aria-hidden="true"><?= Icon::mark('download', 'sm') ?></span>
+        <span><strong><?= s(t('Rechnungspositionen exportieren')) ?></strong><small><?= s(t('Eigene Stunden für dein Rechnungstool aufbereiten')) ?></small></span>
+        <span class="profile-chevron" aria-hidden="true"><?= Icon::mark('expand_more', 'sm') ?></span>
+    </summary>
+    <form method="get" action="<?= s(route('profile.invoice_export')) ?>" class="profile-form">
+        <?= $invoiceField(['label' => 'Board', 'name' => 'project', 'type' => 'select', 'options' => $boards]) ?>
+        <?= $invoiceField(['label' => 'Format', 'name' => 'format', 'type' => 'select', 'value' => 'invoice.csv', 'options' => $invoiceFormats]) ?>
+        <div class="form-grid">
+            <?= $invoiceField(['label' => 'Gebucht ab', 'name' => 'from', 'type' => 'date']) ?>
+            <?= $invoiceField(['label' => 'Gebucht bis', 'name' => 'until', 'type' => 'date']) ?>
+        </div>
+        <div class="form-grid">
+            <?= $invoiceField(['label' => 'Netto-Stundensatz (EUR)', 'name' => 'rate', 'type' => 'text', 'required' => true]) ?>
+            <?= $invoiceField(['label' => 'Steuersatz (%)', 'name' => 'tax', 'type' => 'text', 'required' => true]) ?>
+        </div>
+        <?= $invoiceField(['label' => 'sevdesk: ID der Stunden-Einheit', 'name' => 'sevdesk_unity', 'type' => 'text']) ?>
+        <p class="profile-help"><?= s(t('Die Einheiten-ID wird nur für sevdesk benötigt und muss aus deinem sevdesk-Konto stammen.')) ?></p>
+        <p class="profile-help"><?= s(t('Nur deine gebuchten Minuten, je Ticket zusammengefasst. Beide Grenztage zählen vollständig in UTC. Der Buchungszeitraum ist kein bestätigter Leistungszeitraum.')) ?></p>
+        <p class="profile-help"><?= s(t('CSV ist ein neutrales Positionsformat. Die JSON-Formate liefern Positionsdaten für die jeweilige API; sie können nicht im Datei-Import der Rechnungstools hochgeladen werden. Kunden- und Rechnungsdaten ergänzt die übernehmende Anwendung.')) ?></p>
+        <p class="profile-help"><?= s(t('DATEV übernimmt vollständige Belege oder Buchungssätze. Erstelle die Rechnung in deinem Rechnungstool und nutze anschließend dessen DATEV-Übergabe.')) ?></p>
+        <button class="button primary" type="submit"><?= s(t('Positionen herunterladen')) ?></button>
+    </form>
+</details>
+<?php endif ?>

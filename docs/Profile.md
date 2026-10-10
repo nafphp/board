@@ -222,3 +222,12 @@ and [session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_
 The local delivery options follow the official documentation of
 [Mailpit](https://mailpit.axllent.org/docs/install/docker/) and
 [msmtp](https://marlam.de/msmtp/msmtp.html).
+
+## Invoice-position export
+
+The account modal also offers **Export invoice items** for one readable board, with explicit
+EUR net hourly pricing and tax percentage. Neutral CSV and Lexware Office, sevdesk, easybill
+and FastBill API-position JSON use the same authorized personal booking source and exporter
+registry. The JSON files contain positions for a receiving integration, not complete invoices
+or web-upload imports. See [Invoice exports](Invoice-Exports.md) for required fields, provider
+specifications, precision and the downstream DATEV boundary.

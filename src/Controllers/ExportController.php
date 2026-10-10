@@ -8,9 +8,11 @@ use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\BoardQueryInterface;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Export\ExportOptions;
+use Naf\Board\Export\InvoiceExportOptions;
 use Naf\Board\Export\TimeExportOptions;
 use Naf\Board\Rbac\Installation;
 use Naf\Board\Services\ExportService;
+use Naf\Board\Services\InvoiceExportService;
 use Naf\Board\Services\TimeExportService;
 use Naf\Board\Support\Input;
 use Psr\Http\Message\ResponseInterface;
@@ -35,6 +37,7 @@ final class ExportController
         private BoardQueryInterface $query,
         private AccessInterface $access,
         private TimeExportService $time,
+        private InvoiceExportService $invoices,
     ) {
     }
 
@@ -93,6 +96,16 @@ final class ExportController
                 : [Input::id($selection, 'project')];
 
             return $this->file($this->time->write($projects, $format, TimeExportOptions::fromInput($input)));
+        });
+    }
+
+    /** Invoice items share the personal booking source and the central download response. */
+    public function invoiceItems(): ResponseInterface
+    {
+        return Respond::read(function () {
+            $this->access->actor();
+
+            return $this->file($this->invoices->write(InvoiceExportOptions::fromInput(request()->getQueryParams())));
         });
     }
 

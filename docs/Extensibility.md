@@ -1245,3 +1245,10 @@ works by being used.
 Nafinity's own `home` route replaces an extension's early route. Provider route overrides
 follow Board's routes, and host routes run last. The framework dispatcher uses the bound target
 class, so a provider's service replacement reaches the controller too.
+
+### Invoice-position adapters
+
+Core contributes the `invoice-items` source and its profile card. Its neutral aggregation,
+provider writers and extension contract are documented in [Invoice exports](Invoice-Exports.md).
+Register formats with `sources: ['invoice-items']` to add them to that card; they use the same
+renderer and events as ticket and time exports.

@@ -70,6 +70,7 @@ route()->add(
 route()->add('GET', '/ai/tools', [AiController::class, 'tools'], 'ai.tools');
 route()->add('POST', '/ai/tools/call', [AiController::class, 'call'], 'ai.call');
 route()->add('GET', '/profile/export', [ExportController::class, 'personal'], 'profile.export');
+route()->add('GET', '/profile/invoice-export', [ExportController::class, 'invoiceItems'], 'profile.invoice_export');
 route()->add('GET', '/profile', [ProfileController::class, 'show'], 'profile');
 route()->add('POST', '/profile/password', [ProfileController::class, 'password'], 'profile.password');
 route()->add('POST', '/profile/email', [ProfileController::class, 'requestEmail'], 'profile.email');
