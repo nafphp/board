@@ -83,7 +83,7 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
         <script type="module" src="/assets/app.js"></script>
         <script type="module" src="/assets/settings.js?v=10"></script>
         <script type="module" src="/assets/workspace-search.js?v=3"></script>
-        <link rel="stylesheet" href="/assets/workspace.css?v=3" />
+        <link rel="stylesheet" href="/assets/workspace.css?v=4" />
         <script type="module" src="/assets/profile.js?v=2"></script>
         <link rel="stylesheet" href="/assets/profile.css?v=14" />
         <script type="module" src="/assets/ai/chat.js?v=5"></script>
@@ -153,9 +153,6 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
                         aria-controls="sidebar"
                     >
 <?= Icon::mark('menu', 'lg') ?></button>
-                    <?php if ($current !== null): ?>
-                        <span class="topbar-context"><?= s($project['name']) ?></span>
-                    <?php endif ?>
                     <div class="topbar-tools"><?= slot('topbar.tools', $uiContext) ?></div>
                     <div class="topbar-right">
                         <?php // Rendered empty and hidden: the roster arrives over the

@@ -125,7 +125,11 @@ final class WorkspaceSearchOverHttpTest extends AcceptanceTestCase
         $dom = new DOMDocument();
         @$dom->loadHTML($global);
         self::assertSame(0, (new DOMXPath($dom))->query('//span[@class="topbar-context"]')->length);
-        self::assertStringContainsString('class="topbar-context">Nafinity</span>', $board);
+        @$dom->loadHTML($board);
+        $xpath = new DOMXPath($dom);
+        self::assertSame(0, $xpath->query('//header[@class="topbar"]//span[@class="topbar-context"]')->length);
+        self::assertSame(1, $xpath->query('//header[@class="topbar"]//input[@type="search" and @name="q"]')->length);
+        self::assertSame(0, $xpath->query('//form[@class="filterbar"]//input[@name="q" and not(@type="hidden")]')->length);
     }
 
     public function testGuestsMalformedQueriesShortQueriesAndPrivateResponses(): void

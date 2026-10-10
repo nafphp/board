@@ -15,11 +15,11 @@ preserved on close, and after a successful save the same card is reopened. The a
 the operating system's reduced-motion option. On small screens the dialog takes up nearly the
 whole area.
 
-The top bar shows the current project's name on project pages, including board,
-ticket and project settings pages. Other pages omit the context label because their
-heading already names the area. The label does not imply a clickable breadcrumb
-hierarchy. Navigation stays in the sidebar and the project's tabs. Long project names
-truncate in the bar so its actions remain available on narrow screens.
+The top bar contains one global workspace search on every application page, without a
+project-name prefix. The project heading and sidebar identify the current board. Navigation
+stays in the sidebar and the project's tabs. The board's filter row contains dedicated filters
+only, with no second text search. Existing board URLs with a `q` filter remain supported and
+retain that value when another filter changes; **Reset** clears it with the other filters.
 
 The top bar's workspace search finds readable projects by name/key and tickets by title,
 plain description or ticket reference. Autocomplete is grouped by board, including matching

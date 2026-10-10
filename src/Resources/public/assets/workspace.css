@@ -1,10 +1,6 @@
 .topbar {
   gap: 18px;
 }
-.topbar-context {
-  max-width: 150px;
-  margin-right: 0;
-}
 .topbar-tools {
   display: flex;
   align-items: center;
@@ -199,9 +195,6 @@
   .topbar {
     gap: 12px;
   }
-  .topbar-context {
-    max-width: 110px;
-  }
   .topbar-right {
     gap: 12px;
   }
@@ -216,9 +209,6 @@
   }
   .topbar .mobile-menu {
     margin-right: 0;
-  }
-  .topbar-context {
-    max-width: 40%;
   }
   .topbar-tools {
     order: 4;

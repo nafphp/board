@@ -47,8 +47,17 @@ final class BoardFilterPreferencesOverHttpTest extends AcceptanceTestCase
         $this->save(array_fill_keys(self::FILTERS, false));
         $this->assertSame([], $this->controls($this->alice));
         $page = $this->page($this->alice, '/projects/' . self::PROJECT);
-        $this->assertStringContainsString('name="q"', $page);
+        $dom  = new DOMDocument();
+        @$dom->loadHTML($page);
+        $xpath = new DOMXPath($dom);
+        $this->assertSame(1, $xpath->query('//input[@type="search" and @name="q"]')->length);
+        $this->assertSame(0, $xpath->query('//form[@class="filterbar"]//input[@name="q"]')->length);
         $this->assertCount(1, $this->controls($this->alice, '?status=closed'));
+
+        @$dom->loadHTML($this->page($this->alice, '/projects/' . self::PROJECT . '?q=Projekt'));
+        $query = (new DOMXPath($dom))->query('//form[@class="filterbar"]//input[@name="q" and @type="hidden"]');
+        $this->assertSame(1, $query->length);
+        $this->assertSame('Projekt', $query->item(0)->getAttribute('value'));
     }
 
     public function testTheNativeSwitchFormAndEnhancedFormCanSaveFalse(): void

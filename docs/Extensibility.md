@@ -892,7 +892,9 @@ the current form immediately; `choice()` emits it itself. The empty string clear
 filter, while `false` and `0` remain active values. A hidden but active filter is still
 shown so the user can clear it. Filters without a view stay usable through URLs and
 their active values survive changing a visible control, but they have no visibility
-switch. The dedicated fulltext search is always available.
+switch. Global workspace search stays available in the top bar; the board filter row
+has no separate text-search input. Existing board URL `q` values remain supported and
+are retained as hidden controls until the filters are reset.
 
 To hide a control programmatically for the current account, use the existing settings
 facade. Preserve other entries when changing only one:

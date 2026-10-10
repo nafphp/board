@@ -81,15 +81,9 @@ $emptyCellHint = $filters
     'actions' => slot('board.actions', $boardSlot),
 ]) ?>
 <form method="get" class="filterbar" action="<?= s(route('board', ['project' => $projectId])) ?>">
-    <label class="search-field">
-        <?= Icon::mark('search') ?>
-        <input
-            name="q"
-            aria-label="<?= s(t('Tickets durchsuchen')) ?>"
-            placeholder="<?= s(t('Tickets durchsuchen …')) ?>"
-            value="<?= s($filters['q'] ?? '') ?>"
-        />
-    </label>
+    <?php if (array_key_exists('q', $filters)): ?>
+        <?= partial('board/filter-value', ['name' => 'q', 'value' => $filters['q']]) ?>
+    <?php endif ?>
     <?php $visibleFilters = settings()->get('board_filters', []); ?>
     <?php foreach (extensions()->boardFilters()->all() as $id => $filter): ?>
         <?php if ($filter->view !== null && (($visibleFilters[$id] ?? true) || array_key_exists($id, $filters))): ?>
