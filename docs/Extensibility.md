@@ -342,6 +342,7 @@ The fixed slots:
 | `sidebar.workspace` | Workspace entries in the left menu |
 | `sidebar.project` | Navigation for the selected project |
 | `sidebar.footer` | The lower menu area |
+| `topbar.tools` | Workspace search and ticket creation, before the account actions |
 | `topbar.actions` | Actions in the top bar |
 | `projects.actions`, `projects.card.badges` | Project overview |
 | `board.actions`, `board.card.badges`, `board.card.details`, `board.card.actions`, `board.column.summary` | Board |
@@ -359,7 +360,7 @@ scope. The context is available in the template as `$slot`.
 
 | Context | Slots | Holds |
 |---|---|---|
-| `PageSlotContext` | `sidebar.*`, `topbar.actions`, `projects.actions`, `notifications.actions`, `activity.actions`, `profile.panels` | `ui()` only |
+| `PageSlotContext` | `sidebar.*`, `topbar.tools`, `topbar.actions`, `projects.actions`, `notifications.actions`, `activity.actions`, `profile.panels` | `ui()` only |
 | `ProjectSlotContext` | `projects.card.badges` | `project`, `projectId()` |
 | `BoardSlotContext` | `board.*` | `project`, `scope`, `labels`, `members`, `metadata`, `token`, `card`, `column`, `value()` |
 | `TicketSlotContext` | `ticket.actions`, `ticket.main.widgets`, `ticket.sidebar.panels` | `ticket`, `project`, `scope`, `board`, `params`, `token`, `editable`, `isNew`, `columns`, `swimlanes`, `labels`, `members`, `metadata`, `fields`, `links`, `attachments`, `activity`, `timer`, `preferences`, `creator`, `field`, `value()`, `fieldsIn()` |

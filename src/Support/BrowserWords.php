@@ -10,6 +10,11 @@ use function Naf\I18n\t;
 final class BrowserWords
 {
     private const array KEYS = [
+        'Suche läuft …',
+        'Die Suche konnte nicht geladen werden. Bitte erneut versuchen.',
+        ':count Vorschläge',
+        'Keine passenden Tickets oder Boards gefunden.',
+
         ': ausgeführt.',
         ':count ausgewählt',
         'Änderungen gelten für :count ausgewählte Konten.',

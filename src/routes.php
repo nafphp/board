@@ -12,6 +12,7 @@ use Naf\Board\Controllers\PasswordResetController;
 use Naf\Board\Controllers\PreferenceController;
 use Naf\Board\Controllers\ProfileController;
 use Naf\Board\Controllers\ProjectController;
+use Naf\Board\Controllers\SearchController;
 use Naf\Board\Controllers\SessionController;
 use Naf\Board\Controllers\SettingsApiController as S;
 use Naf\Board\Controllers\TicketController;
@@ -123,6 +124,8 @@ $routes = [
     ['POST', '/notifications/read', [PreferenceController::class, 'markRead'], 'notifications.read'],
     ['POST', '/projects/{project}/mute', [PreferenceController::class, 'mute'], 'project.mute'],
 
+    ['GET', '/search', [SearchController::class, 'index'], 'workspace.search'],
+    ['GET', '/search/suggestions', [SearchController::class, 'suggestions'], 'workspace.suggestions'],
     ['GET', '/projects', [BoardController::class, 'projects'], 'projects'],
     ['POST', '/projects', [ProjectController::class, 'create'], 'projects.create'],
     ['GET', '/projects/{project}', [BoardController::class, 'board'], 'board'],

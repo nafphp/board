@@ -15,10 +15,28 @@ preserved on close, and after a successful save the same card is reopened. The a
 the operating system's reduced-motion option. On small screens the dialog takes up nearly the
 whole area.
 
-The top bar shows a plain context label: the current project's name inside a project,
-or the page title elsewhere. It does not imply a clickable breadcrumb hierarchy.
-Navigation stays in the sidebar and the project's tabs. Long names truncate in the
-bar so its actions remain available on narrow screens.
+The top bar shows the current project's name on project pages, including board,
+ticket and project settings pages. Other pages omit the context label because their
+heading already names the area. The label does not imply a clickable breadcrumb
+hierarchy. Navigation stays in the sidebar and the project's tabs. Long project names
+truncate in the bar so its actions remain available on narrow screens.
+
+The top bar's workspace search finds readable projects by name/key and tickets by title,
+plain description or ticket reference. Autocomplete is grouped by board, including matching
+archived or closed records. Each response replaces the entire result container; there is no
+fixed set of boards or ticket slots. Typing is debounced; clearing, closing or changing the
+query invalidates earlier responses. Arrow keys select results, Enter follows the selection
+(or opens the result page), and Escape closes the suggestions. The native GET search page
+also works without JavaScript. Suggestions return at most eight tickets and six additional
+matching boards; the result page allows 50 tickets and 20 matching boards, with a refinement
+hint when more exist. Both endpoints use current project authorization and private, uncached
+responses. SQL wildcard characters are treated literally.
+
+**New ticket** follows the search and reuses the existing ticket dialog. In a writable project
+it targets that project directly; outside a project it first offers the writable, unarchived
+boards. Read-only project views and the creation page do not offer another creation action.
+The previous duplicate action in the large project heading is removed. Extensions can replace
+the `core.topbar.workspace` contribution or add controls to the `topbar.tools` slot.
 
 ## Switches
 

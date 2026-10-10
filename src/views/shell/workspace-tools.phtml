@@ -1,0 +1,42 @@
+<?php
+
+use Naf\Board\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+?>
+<div class="workspace-search" data-workspace-search data-endpoint="<?= s(route('workspace.suggestions')) ?>">
+    <form method="get" action="<?= s(route('workspace.search')) ?>" role="search" class="workspace-search-form">
+        <button type="submit" aria-label="<?= s(t('Suchen')) ?>"><?= Icon::mark('search') ?></button>
+        <input type="search" name="q" value="<?= s($searchQuery) ?>" maxlength="120" autocomplete="off"
+            aria-label="<?= s(t('Tickets und Projekte suchen')) ?>" placeholder="<?= s(t('Tickets und Projekte suchen …')) ?>"
+            data-workspace-query />
+    </form>
+    <div class="workspace-search-popup" data-search-popup hidden>
+        <p class="workspace-search-status" data-search-status role="status" aria-live="polite"></p>
+        <div class="workspace-search-results" id="workspace-suggestions" data-search-results role="listbox" aria-label="<?= s(t('Suchvorschläge nach Board')) ?>"></div>
+        <a class="workspace-search-all" href="<?= s(route('workspace.search')) ?>" data-search-all><?= s(t('Suchergebnisse öffnen')) ?><?= Icon::mark('arrow_forward', 'sm') ?></a>
+    </div>
+</div>
+<?php if ($createTargets !== []): ?>
+    <?php if (!$chooseProject): ?>
+        <a class="button primary topbar-create-button" data-ticket-link data-ticket-create-link
+            href="<?= s(route('ticket.new', ['project' => $createTargets[0]['id']])) ?>">
+            <?= Icon::mark('add', 'sm') ?><span><?= s(t('Neues Ticket')) ?></span>
+        </a>
+    <?php else: ?>
+        <details class="topbar-create" data-create-picker data-menu>
+            <summary class="button primary topbar-create-button"><?= Icon::mark('add', 'sm') ?><span><?= s(t('Neues Ticket')) ?></span></summary>
+            <div class="topbar-create-popup">
+                <p><?= s(t('In welchem Board?')) ?></p>
+                <?php foreach ($createTargets as $target): ?>
+                    <a href="<?= s(route('ticket.new', ['project' => $target['id']])) ?>" data-ticket-link data-ticket-create-link>
+                        <?= Icon::mark('view_kanban', 'sm') ?><span><?= s($target['name']) ?></span>
+                    </a>
+                <?php endforeach ?>
+            </div>
+        </details>
+    <?php endif ?>
+<?php endif ?>

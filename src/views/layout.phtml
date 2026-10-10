@@ -82,6 +82,8 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
         <link rel="stylesheet" href="/assets/app.css?v=39" />
         <script type="module" src="/assets/app.js"></script>
         <script type="module" src="/assets/settings.js?v=9"></script>
+        <script type="module" src="/assets/workspace-search.js?v=2"></script>
+        <link rel="stylesheet" href="/assets/workspace.css?v=2" />
         <script type="module" src="/assets/profile.js?v=2"></script>
         <link rel="stylesheet" href="/assets/profile.css?v=13" />
         <script type="module" src="/assets/ai/chat.js?v=5"></script>
@@ -151,7 +153,10 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
                         aria-controls="sidebar"
                     >
 <?= Icon::mark('menu', 'lg') ?></button>
-                    <span class="topbar-context"><?= s($project['name'] ?? t($title ?? 'Board')) ?></span>
+                    <?php if ($current !== null): ?>
+                        <span class="topbar-context"><?= s($project['name']) ?></span>
+                    <?php endif ?>
+                    <div class="topbar-tools"><?= slot('topbar.tools', $uiContext) ?></div>
                     <div class="topbar-right">
                         <?php // Rendered empty and hidden: the roster arrives over the
                               // socket a moment after the page does, and a bar that
