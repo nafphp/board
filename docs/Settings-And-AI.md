@@ -84,8 +84,8 @@ still only be assigned or changed by owners. A custom role that is in use can on
 after a different assignment. Versions prevent overwriting role changes made in the meantime. A
 revocation takes effect on the next action, including in the AI tools and in upload recovery.
 
-In the installation's Users card, role summaries show the board's current name beside the
-role. Installation-wide roles are marked **Installation**; wildcard project grants say
+In Global settings' Users card, role summaries show the board's current name beside the
+role. Installation-wide roles are marked **Global**; wildcard project grants say
 **All projects**. Long names wrap. Archived boards retain their names, and inaccessible or
 missing places show **Unavailable**. Additional scope kinds use the labels supplied by their
 registered RBAC scope source.

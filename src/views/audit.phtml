@@ -34,7 +34,7 @@ $day = null;
 ?>
 <section class="page-heading settings-heading">
     <div>
-        <span class="eyebrow"><?= s(t('DIESE INSTALLATION')) ?></span>
+        <span class="eyebrow"><?= s(t('GLOBAL')) ?></span>
         <h1><?= s(t('Protokoll')) ?></h1>
         <p><?= s(t('Jede aufgezeichnete Änderung, auch außerhalb der Boards.')) ?></p>
     </div>
@@ -54,7 +54,7 @@ $day = null;
         'name'    => 'scope',
         'label'   => 'Bereich',
         'value'   => $chosen['scope'],
-        'options' => ['alle' => t('Alle Bereiche')] + array_map(t(...), $scopes),
+        'options' => ['alle' => t('Alle Bereiche')] + $scopes,
         'id'      => 'audit-scope',
     ]) ?>
     <?= choice([
@@ -89,7 +89,7 @@ $day = null;
             $detail = ActivityDetail::of($entry);
             $icon   = ActivityLabel::icon((string) $entry['event_type']) ?? 'radio_button_unchecked';
             $where  = (string) ($entry['project_name'] ?? '')
-                ?: (str_starts_with((string) $entry['scope'], 'project:') ? t('Gelöschtes Projekt') : t('Installation'));
+                ?: (str_starts_with((string) $entry['scope'], 'project:') ? t('Gelöschtes Projekt') : t('Global'));
             ?>
             <?php if ($moment['day'] !== $day): ?>
                 <?php $day = $moment['day']; ?>

@@ -198,7 +198,7 @@ final class AuditLog
         foreach ($rows as $row) {
             $scope         = (string) $row['scope'];
             $named[$scope] = $scope === ''
-                ? 'Installation'
+                ? 'Global'
                 : ((string) ($row['name'] ?? '') ?: self::unnamed($scope));
         }
 
@@ -255,6 +255,6 @@ final class AuditLog
     {
         $parsed = Scope::parse($scope);
 
-        return $parsed->isEverywhere() ? 'Installation' : $parsed->type . ' ' . $parsed->id;
+        return $parsed->isEverywhere() ? 'Global' : $parsed->type . ' ' . $parsed->id;
     }
 }

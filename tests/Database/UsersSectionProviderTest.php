@@ -27,7 +27,7 @@ final class UsersSectionProviderTest extends BoardTestCase
         $roles = $this->rolesOf((int) $this->bob->getId());
 
         $this->assertSame('Archived <Research> & Design', $roles['project:' . $this->projectB]['scopeLabel']);
-        $this->assertSame('Installation', $roles['']['scopeLabel']);
+        $this->assertSame('Global', $roles['']['scopeLabel']);
         $this->assertSame('owner', $roles['project:' . $this->projectB]['role']);
     }
 

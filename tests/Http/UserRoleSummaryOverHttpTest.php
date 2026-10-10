@@ -31,7 +31,7 @@ final class UserRoleSummaryOverHttpTest extends AcceptanceTestCase
             $text = implode(' ', array_map(static fn($chip) => $chip->textContent, iterator_to_array($chips)));
 
             $this->assertStringContainsString($name, $text);
-            $this->assertStringContainsString('Installation', $text);
+            $this->assertStringContainsString('Global', $text);
             $this->assertStringContainsString('Administrator', $text);
             $this->assertStringNotContainsString('project:', $text);
             $this->assertSame(0, $xpath->query('//span[contains(@class,"settings-user-role")]//img')->length);

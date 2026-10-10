@@ -50,9 +50,9 @@ final class InstallationController
             }
 
             return $this->pages->render('settings', [
-                'title'   => 'Installation',
-                'eyebrow' => 'DIESE INSTALLATION',
-                'heading' => 'Installation',
+                'title'   => 'Global',
+                'eyebrow' => 'GLOBAL',
+                'heading' => 'Global',
                 'lede'    => 'Gilt für alle Projekte und alle Mitglieder.',
                 'scopes'  => ['application'],
                 'return'  => '/settings',

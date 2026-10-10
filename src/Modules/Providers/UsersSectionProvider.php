@@ -67,7 +67,7 @@ final class UsersSectionProvider implements SettingSectionProviderInterface
     private function scopeLabels(array $projects): array
     {
         $labels = [
-            ''                                    => t('Installation'),
+            ''                                    => t('Global'),
             (string) Scope::allOf(Project::SCOPE) => t('Alle Projekte'),
         ];
 
