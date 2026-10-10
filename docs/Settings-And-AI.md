@@ -1,10 +1,15 @@
 # Settings, custom roles and local AI
 
-Settings are reached through the entry at the bottom of the sidebar. The project picker switches
-between personal settings and the settings of a visible project. A card opens as a large dialog
-and slides back on the X or Escape. Input is preserved on close, and after a successful save the
-same card is reopened. The animation honours the operating system's reduced-motion option. On
-small screens the dialog takes up nearly the whole area.
+Personal settings live in the account modal, reached through the profile picture. A board's
+Settings tab holds its shared project settings; it has no separate **For me in this project**
+card. General notification preferences belong to the account modal. Individual projects can be
+muted or enabled on the Notifications page, and the `project_user` setting `muted` remains
+available through the settings API. Extensions can still contribute `project_user` cards.
+
+A project settings card opens as a large dialog and slides back on the X or Escape. Input is
+preserved on close, and after a successful save the same card is reopened. The animation honours
+the operating system's reduced-motion option. On small screens the dialog takes up nearly the
+whole area.
 
 ## Appearance
 

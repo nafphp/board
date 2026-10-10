@@ -126,17 +126,6 @@ final class CoreSettings implements ExtensionProviderInterface
             ));
             $index += 100;
         }
-
-        $sections->add(new SettingSection(
-            'project_personal',
-            'project_user',
-            'Für mich in diesem Projekt',
-            null,
-            null,
-            900,
-            null,
-            'notifications',
-        ));
     }
 
     private function personal(ExtensionContext $context): void
@@ -233,6 +222,7 @@ final class CoreSettings implements ExtensionProviderInterface
             ['legacy' => ['store' => 'user_preferences', 'column' => 'notify_mail']],
         ));
 
+        // The notifications page owns this control; keep its settings API available.
         $settings->add(new SettingDefinition(
             'muted',
             'project_user',
