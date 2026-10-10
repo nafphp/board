@@ -30,7 +30,7 @@ return [
     'session'         => ['storage' => 'default', 'trust_proxy_headers' => false],
     'csrf_validation' => true,
 
-    'nafinity' => ['mail_enabled' => false, 'mail_from' => 'notifications@example.test'],
+    'nafinity' => ['mail_enabled' => false, 'mail_from' => 'notifications@example.test', 'exports' => ['key' => 'ENV:NAFINITY_TEST_EXPORT_KEY']],
     'mail'     => ['transport' => Outbox::class],
 
     // Tokens are issued by the web process alone, so the suite checks the whole

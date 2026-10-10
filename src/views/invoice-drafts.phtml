@@ -1,0 +1,158 @@
+<?php
+use function Naf\Board\field;
+use function Naf\Board\template;
+use function Naf\Form\csrf;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$this->setLayout(template('layout'));
+$this->block('content');
+$token           = csrf()->token();
+$invoiceField    = static fn(array $properties): string => field(['id' => 'draft-' . $properties['name'], ...$properties]);
+$providerOptions = [];
+foreach ($formats as $format) {
+    $providerOptions[$format->id] = preg_replace('/ – .+$/u', '', t($format->label));
+}
+$connectionOptions = [];
+foreach ($connections as $connection) {
+    $connectionOptions[$connection['id']] = $connection['company_name'] . ' · ' . $connection['company_reference'] . ' · ' . ($providerOptions[$connection['provider']] ?? $connection['provider']) . ' · ' . t((int) $connection['owner_id'] === 0 ? 'Firma' : 'Persönlich');
+}
+$boards = [];
+foreach ($invoiceProjects as $board) {
+    $boards[$board['id']] = $board['name'];
+}
+$states = ['prepared' => 'Vorschau', 'sending' => 'Übergabe wird geprüft', 'uncertain' => 'Im Rechnungstool prüfen', 'created' => 'Entwurf erstellt', 'released' => 'Buchungen wieder freigegeben'];
+?>
+<section class="page-heading settings-heading">
+    <div>
+        <span class="eyebrow"><?= s(t('ABRECHNUNG')) ?></span>
+        <h1><?= s(t('Rechnungsentwürfe')) ?></h1>
+        <p><?= s(t('Gebuchte Stunden prüfen und als Entwurf an dein Rechnungstool übergeben.')) ?></p>
+    </div>
+</section>
+<div class="settings-grid">
+    <section class="settings-card<?= $draft !== null ? ' wide' : '' ?>">
+        <h2><?= s(t('Rechnungszugänge')) ?></h2>
+        <p class="settings-hint"><?= s(t('Firmenname und Kennung helfen dir, den richtigen Zugang zu wählen. Der API-Zugang bestimmt den tatsächlichen Rechnungsaussteller; dessen Stammdaten pflegst du im Rechnungstool.')) ?></p>
+        <?php if ($connections !== []): ?>
+        <form method="get" action="<?= s(route('invoice.drafts')) ?>">
+            <?= $invoiceField(['label' => 'Rechnungszugang', 'name' => 'connection', 'type' => 'select', 'options' => $connectionOptions, 'value' => $selected['id'] ?? array_key_first($connectionOptions)]) ?>
+            <button class="button primary" type="submit"><?= s(t('Zugang auswählen')) ?></button>
+        </form>
+        <?php endif ?>
+        <details <?= $connections === [] ? 'open' : '' ?>>
+            <summary><?= s(t('Rechnungszugang hinzufügen')) ?></summary>
+            <?php if (!$encryptionReady): ?>
+                <p class="settings-hint"><?= s(t('Für Rechnungszugänge muss der Betreiber zuerst den Export-Schlüssel konfigurieren.')) ?></p>
+            <?php else: ?>
+            <form method="post" action="<?= s(route('invoice.connections.create')) ?>">
+                <input type="hidden" name="_csrf" value="<?= s($token) ?>">
+                <?= $invoiceField(['label' => 'Anbieter', 'name' => 'provider', 'type' => 'select', 'options' => $providerOptions]) ?>
+                <?= $invoiceField(['label' => 'Abrechnungsbereich', 'name' => 'scope', 'type' => 'select', 'options' => $companyAllowed ? ['personal' => t('Persönlich'), 'company' => t('Firma')] : ['personal' => t('Persönlich')]]) ?>
+                <?= $invoiceField(['label' => 'Firmenname / Rechnungsaussteller', 'name' => 'company_name', 'type' => 'text', 'required' => true]) ?>
+                <?= $invoiceField(['label' => 'Firmenkennung im Rechnungstool', 'name' => 'company_reference', 'type' => 'text', 'required' => true]) ?>
+                <?= $invoiceField(['label' => 'API-Schlüssel', 'name' => 'api_key', 'type' => 'password', 'required' => true, 'attributes' => ['autocomplete' => 'new-password', 'maxlength' => '4096']]) ?>
+                <?= $invoiceField(['label' => 'FastBill: E-Mail-Adresse des API-Kontos', 'name' => 'email', 'type' => 'text']) ?>
+                <p class="settings-hint"><?= s(t('Persönlich umfasst nur deine Stunden. Firma umfasst alle Personen auf dem gewählten Board und benötigt Installations- und Board-Exportrechte. Zugangsdaten werden verschlüsselt gespeichert.')) ?></p>
+                <button class="button primary" type="submit"><?= s(t('Zugang speichern')) ?></button>
+            </form>
+            <?php endif ?>
+        </details>
+    </section>
+    <?php if ($selected !== null): ?>
+    <section class="settings-card">
+        <h2><?= s($selected['company_name']) ?></h2>
+        <p class="settings-hint"><?= s($selected['company_reference']) ?> · <?= s(t((int) $selected['owner_id'] === 0 ? 'Firma' : 'Persönlich')) ?></p>
+        <form method="post" action="<?= s(route('invoice.drafts.preview')) ?>">
+            <input type="hidden" name="_csrf" value="<?= s($token) ?>">
+            <input type="hidden" name="connection" value="<?= s($selected['id']) ?>">
+            <?= $invoiceField(['label' => 'Board', 'name' => 'project', 'type' => 'select', 'options' => $boards]) ?>
+            <div class="form-grid">
+                <?= $invoiceField(['label' => 'Gebucht ab', 'name' => 'from', 'type' => 'date']) ?>
+                <?= $invoiceField(['label' => 'Gebucht bis', 'name' => 'until', 'type' => 'date']) ?>
+            </div>
+            <?= $invoiceField(['label' => 'Kunden-ID im Rechnungstool', 'name' => 'customer_id', 'type' => 'text', 'required' => true]) ?>
+            <?= $invoiceField(['label' => 'Rechnungstitel', 'name' => 'title', 'type' => 'text', 'required' => true]) ?>
+            <?= $invoiceField(['label' => 'Rechnungsdatum', 'name' => 'invoice_date', 'type' => 'date', 'value' => gmdate('Y-m-d'), 'required' => true]) ?>
+            <div class="form-grid">
+                <?= $invoiceField(['label' => 'Leistung ab', 'name' => 'service_from', 'type' => 'date', 'required' => true]) ?>
+                <?= $invoiceField(['label' => 'Leistung bis', 'name' => 'service_until', 'type' => 'date', 'required' => true]) ?>
+            </div>
+            <?= $invoiceField(['label' => 'Steuerfall', 'name' => 'tax_case', 'type' => 'select', 'options' => ['standard' => t('Reguläre Umsatzsteuer'), 'small_business' => t('Kleinunternehmen (§19 UStG)')]]) ?>
+            <div class="form-grid">
+                <?= $invoiceField(['label' => 'Netto-Stundensatz (EUR)', 'name' => 'rate', 'type' => 'text', 'required' => true]) ?>
+                <?= $invoiceField(['label' => 'Steuersatz (%)', 'name' => 'tax', 'type' => 'select', 'options' => ['19' => '19', '7' => '7', '0' => '0']]) ?>
+            </div>
+            <?php foreach ($extraFields as $name => $label): ?>
+                <?= $invoiceField(['label' => $label, 'name' => $name, 'type' => 'text', 'required' => true]) ?>
+            <?php endforeach ?>
+            <p class="settings-hint"><?= s(t('Bereits übergebene oder reservierte Buchungen werden ausgelassen. Buchungstage zählen vollständig in UTC; den Leistungszeitraum bestätigst du separat. Die Vorschau liest den vorhandenen Kunden im Rechnungstool.')) ?></p>
+            <button class="button primary" type="submit"><?= s(t('Vorschau prüfen')) ?></button>
+        </form>
+        <details>
+            <summary><?= s(t('Zugang trennen')) ?></summary>
+            <p class="settings-hint"><?= s(t('Der gespeicherte Schlüssel wird gelöscht. Einen API-Schlüssel widerrufst du zusätzlich im Rechnungstool. Eine bereits gestartete Übergabe kann noch abgeschlossen werden.')) ?></p>
+            <form method="post" action="<?= s(route('invoice.connections.delete')) ?>">
+                <input type="hidden" name="_csrf" value="<?= s($token) ?>">
+                <input type="hidden" name="connection" value="<?= s($selected['id']) ?>">
+                <button class="button danger" type="submit"><?= s(t('Zugang trennen')) ?></button>
+            </form>
+        </details>
+    </section>
+    <?php endif ?>
+    <?php if ($draft !== null): $snapshot = $draft['snapshot']; ?>
+    <section class="settings-card wide" data-invoice-draft="<?= s($draft['id']) ?>">
+        <h2><?= s(t($states[$draft['state']])) ?></h2>
+        <p><strong><?= s($snapshot['company_name']) ?></strong> · <?= s($snapshot['company_reference']) ?></p>
+        <p><?= s(t('Rechnungskunde')) ?>: <strong><?= s($snapshot['customer']) ?></strong> · <?= s($snapshot['input']['customer_id']) ?></p>
+        <p><?= s($snapshot['input']['title']) ?> · <?= s($snapshot['input']['invoice_date']) ?></p>
+        <p><?= s(t('Leistungszeitraum')) ?>: <?= s($snapshot['input']['service_from']) ?> – <?= s($snapshot['input']['service_until']) ?></p>
+        <p><?= s(t($snapshot['input']['tax_case'] === 'standard' ? 'Reguläre Umsatzsteuer' : 'Kleinunternehmen (§19 UStG)')) ?></p>
+        <?php $netTotal = 0;
+        $precision      = ($snapshot['format'] ?? '') === 'invoice.lexware' ? 4 : 6; ?>
+        <div class="invoice-drafts-table"><table class="member-table">
+            <thead><tr><th><?= s(t('Ticket')) ?></th><th><?= s(t('Person')) ?></th><th><?= s(t('Minuten')) ?></th><th><?= s(t('Stunden')) ?></th><th><?= s(t('Netto-Stundensatz (EUR)')) ?></th><th><?= s(t('Steuersatz (%)')) ?></th></tr></thead>
+            <tbody><?php foreach ($snapshot['rows'] as $row): $quantity = round($row['data']['quantity'], $precision);
+                $netTotal += round($quantity * $row['data']['net_rate'], 2); ?><tr>
+                <td><?= s($row['data']['name']) ?></td><td><?= s($row['data']['person']) ?></td><td><?= s($row['data']['minutes']) ?></td><td><?= s($quantity) ?></td><td><?= s(number_format($row['data']['net_rate'], 2, ',', '.')) ?></td><td><?= s($row['data']['tax_rate']) ?></td>
+            </tr><?php endforeach ?></tbody>
+        </table></div>
+        <p><strong><?= s(t('Voraussichtlicher Nettobetrag (EUR)')) ?>: <?= s(number_format($netTotal, 2, ',', '.')) ?></strong></p>
+        <p class="settings-hint"><?= s(t('Die endgültigen Beträge und Rundungen berechnet das Rechnungstool.')) ?></p>
+        <?php if ($draft['state'] === 'prepared'): ?>
+        <p class="settings-hint"><?= s(t('Mit deiner Bestätigung werden diese Positionen als Rechnungsentwurf übertragen. Prüfe Aussteller, Kunde, Leistungszeitraum und Steuerfall. Der Entwurf wird nicht versendet. Die Vorschau gilt eine Stunde.')) ?></p>
+        <form method="post" action="<?= s(route('invoice.drafts.send')) ?>">
+            <input type="hidden" name="_csrf" value="<?= s($token) ?>">
+            <input type="hidden" name="draft" value="<?= s($draft['id']) ?>">
+            <button class="button primary" type="submit"><?= s(t('Rechnungsentwurf erstellen')) ?></button>
+        </form>
+        <?php elseif ($draft['state'] === 'created'): ?>
+            <p><?= s(t('Entwurfs-ID im Rechnungstool')) ?>: <strong><?= s($draft['remote_id']) ?></strong></p>
+            <p class="settings-hint"><?= s(t('Prüfe und vervollständige den Entwurf im Rechnungstool. Dort kannst du ihn später abschließen und bei Bedarf an DATEV übergeben.')) ?></p>
+        <?php elseif (in_array($draft['state'], ['sending', 'uncertain'], true)): ?>
+            <?php if ($draft['message'] !== null): ?><p class="settings-hint"><?= s($draft['message']) ?></p><?php endif ?>
+            <p class="settings-hint"><?= s(t('Die Übergabe ist nicht eindeutig bestätigt. Es erfolgt kein automatischer zweiter Versuch. Prüfe im Rechnungstool die Referenz Nafinity :id.', ['id' => $draft['id']])) ?></p>
+            <?php if ((int) $draft['attempted_at'] < time() - 60): ?>
+            <form method="post" action="<?= s(route('invoice.drafts.resolve')) ?>">
+                <input type="hidden" name="_csrf" value="<?= s($token) ?>">
+                <input type="hidden" name="draft" value="<?= s($draft['id']) ?>">
+                <?= $invoiceField(['label' => 'Ergebnis der Prüfung', 'name' => 'resolution', 'type' => 'select', 'options' => ['created' => t('Entwurf vorhanden'), 'not_created' => t('Kein Entwurf vorhanden – Buchungen freigeben')]]) ?>
+                <?= $invoiceField(['label' => 'Entwurfs-ID im Rechnungstool', 'name' => 'remote_id', 'type' => 'text']) ?>
+                <label><input type="checkbox" name="confirmation" value="checked" required> <?= s(t('Ich habe den Vorgang im richtigen Rechnungskonto geprüft.')) ?></label>
+                <button class="button" type="submit"><?= s(t('Prüfung speichern')) ?></button>
+            </form>
+            <?php endif ?>
+        <?php endif ?>
+    </section>
+    <?php endif ?>
+    <?php if ($history !== []): ?>
+    <section class="settings-card">
+        <h2><?= s(t('Letzte Übergaben')) ?></h2>
+        <ul><?php foreach ($history as $entry): ?><li>
+            <a href="<?= s(route('invoice.drafts') . '?draft=' . $entry['id']) ?>"><?= s($entry['snapshot']['customer']) ?> · <?= s($entry['snapshot']['company_name']) ?> · <?= s(t($states[$entry['state']])) ?></a>
+        </li><?php endforeach ?></ul>
+    </section>
+    <?php endif ?>
+</div>
+<?php $this->endblock('content'); ?>

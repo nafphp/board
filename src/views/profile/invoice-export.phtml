@@ -12,6 +12,7 @@ foreach ($invoiceProjects as $board) {
 }
 $invoiceField = static fn(array $properties): string => field(['id' => 'invoice-export-' . $properties['name'], ...$properties]);
 ?>
+<p class="profile-help"><a class="button" href="<?= s(route('invoice.drafts')) ?>"><?= s(t('Rechnungsentwürfe öffnen')) ?></a></p>
 <?php if ($invoiceFormats !== [] && $boards !== []): ?>
 <details class="profile-section" name="profile-section" data-profile-section-id="invoice_export">
     <summary>

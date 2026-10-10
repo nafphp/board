@@ -16,7 +16,7 @@ final class InvoiceItems
         foreach ($bookings as $booking) {
             $record = $booking['record'];
             $data   = $booking['data'];
-            $key    = json_encode([(int) $record['ticket_id'], $data['key'], $data['title']], JSON_THROW_ON_ERROR);
+            $key    = json_encode([(int) $record['ticket_id'], $record['user_id'] ?? null, $data['key'], $data['title']], JSON_THROW_ON_ERROR);
             if (!isset($items[$key])) {
                 $items[$key] = ['record' => ['ticket_id' => (int) $record['ticket_id'], 'booking_ids' => []], 'data' => [
                     'project'     => $data['project'], 'ticket' => $data['key'],

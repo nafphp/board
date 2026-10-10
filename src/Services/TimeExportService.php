@@ -8,11 +8,12 @@ use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\BoardQueryInterface;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Export\TimeExportOptions;
+use Naf\Board\Rbac\Installation;
 use PDO;
 
 use function Naf\I18n\t;
 
-/** The current person's booked time, passed through the shared export pipeline. */
+/** Authorized booked time, passed through the shared export pipeline. */
 final class TimeExportService
 {
     public function __construct(
@@ -24,11 +25,11 @@ final class TimeExportService
     }
 
     /** Read access to the original project is required, also for historical bookings. */
-    public function availableProjects(): array
+    public function availableProjects(bool $company = false): array
     {
-        return array_values(array_filter($this->query->projects(), function (array $project): bool {
+        return array_values(array_filter($this->query->projects(), function (array $project) use ($company): bool {
             try {
-                $this->access->project((int) $project['id']);
+                $this->access->project((int) $project['id'], $company ? 'export' : 'read');
 
                 return true;
             } catch (Failure $failure) {
@@ -59,25 +60,29 @@ final class TimeExportService
     }
 
     /**
-     * Authorized, personal bookings for another export source to transform.
+     * Authorized bookings for another export source to transform; personal by default.
      * All projects are checked eagerly; rows remain lazy and use the same date scope.
+     * Company billing additionally requires installation settings and board export rights.
      *
      * @param list<int> $projects
      * @return array<int, iterable<array{record: array, data: array}>>
      */
-    public function bookings(array $projects, TimeExportOptions $options): array
+    public function bookings(array $projects, TimeExportOptions $options, bool $company = false): array
     {
         $actor  = $this->access->actor();
         $groups = [];
         foreach (array_unique($projects) as $project) {
-            $scope            = $this->access->project($project);
-            $groups[$project] = $this->records($project, $actor, (string) $scope->project['name'], $options);
+            if ($company && !\Naf\Rbac\rbac()->allows($actor, Installation::MANAGE_SETTINGS)) {
+                throw new Failure(t('Diese Seite ist Administratoren vorbehalten.'), 403);
+            }
+            $scope            = $this->access->project($project, $company ? 'export' : 'read');
+            $groups[$project] = $this->records($project, $company ? null : $actor, (string) $scope->project['name'], $options);
         }
 
         return $groups;
     }
 
-    private function records(int $project, int $actor, string $name, TimeExportOptions $options): iterable
+    private function records(int $project, ?int $actor, string $name, TimeExportOptions $options): iterable
     {
         $where  = '';
         $params = [];
@@ -89,12 +94,13 @@ final class TimeExportService
             $where .= ' AND e.recorded_at < ?';
             $params[] = $options->before;
         }
-        $query = $this->pdo->prepare('SELECT e.*, u.name AS user_name FROM ticket_time_entries e
+        $userFilter = $actor === null ? '' : ' AND e.user_id=?';
+        $query      = $this->pdo->prepare('SELECT e.*, u.name AS user_name FROM ticket_time_entries e
             JOIN users u ON u.id=e.user_id
-            WHERE e.project_id=? AND e.user_id=? AND e.id>? ' . $where . ' ORDER BY e.id LIMIT 500');
+            WHERE e.project_id=?' . $userFilter . ' AND e.id>? ' . $where . ' ORDER BY e.id LIMIT 500');
         $after = 0;
         while (true) {
-            $query->execute([$project, $actor, $after, ...$params]);
+            $query->execute([$project, ...($actor === null ? [] : [$actor]), $after, ...$params]);
             $rows = $query->fetchAll(PDO::FETCH_ASSOC);
             if ($rows === []) {
                 return;

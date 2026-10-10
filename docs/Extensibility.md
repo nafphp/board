@@ -1258,3 +1258,8 @@ Core contributes the `invoice-items` source and its profile card. Its neutral ag
 provider writers and extension contract are documented in [Invoice exports](Invoice-Exports.md).
 Register formats with `sources: ['invoice-items']` to add them to that card; they use the same
 renderer and events as ticket and time exports.
+
+The same definition can opt into direct invoice drafts with `draftAdapter: YourAdapter::class`,
+implementing `InvoiceDraftAdapterInterface`. `ExporterRegistry::forDrafts()` supplies the
+account selectors; central services own previews, credentials and booking claims. See
+[Invoice exports](Invoice-Exports.md#create-a-draft-directly-in-your-invoicing-tool).

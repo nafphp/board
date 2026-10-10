@@ -86,6 +86,10 @@ overrides belong in providers, not in an extension's early bootstrap or route fi
   Sources authorize their projects before handing rows to `ExportRenderer`; format definitions
   opt into `sources` (default `tickets`), and export events identify the source. Timer stops
   journal whole minutes atomically; manual totals and historical totals are not backfilled.
+  Invoice definitions can add a `draftAdapter` in the same registry. Personal and installation
+  accounts share encrypted storage, immutable previews and durable booking claims. Company
+  billing requires installation settings rights and board export authorization; adapters never
+  query hours, finalize invoices or retry an ambiguous external write.
 - A slot hands its contributions a typed context, not a loose array. Use that context and its
   `value()` and `field` instead of reaching for an own query or form.
 - Uninstalling a package takes its contributions away and leaves the stored data alone.

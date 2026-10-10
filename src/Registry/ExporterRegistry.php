@@ -24,4 +24,10 @@ final class ExporterRegistry extends DefinitionRegistry
     {
         return parent::get($id);
     }
+
+    /** @return list<ExporterDefinition> */
+    public function forDrafts(): array
+    {
+        return array_values(array_filter($this->forSource('invoice-items'), static fn(ExporterDefinition $format): bool => $format->draftAdapter !== null));
+    }
 }

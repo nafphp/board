@@ -25,9 +25,10 @@ final class ExportRenderer
      *
      * @param array<string, string> $columns
      * @param array<int, iterable<array{record: array, data: array}>> $groups Records by project
+     * @param callable(ExportLine): void|null $observe Captures successfully rendered, transformed rows
      * @return array{stream: resource, filename: string, mime: string}
      */
-    public function write(string $format, string $source, array $columns, array $groups, string $basename): array
+    public function write(string $format, string $source, array $columns, array $groups, string $basename, ?callable $observe = null): array
     {
         $definition = extensions()->exporters()->get($format);
         if ($definition === null || !in_array($source, $definition->sources, true)) {
@@ -49,6 +50,9 @@ final class ExportRenderer
                     $line = new ExportLine($format, $project, $record['record'], $record['data'], $source);
                     event()->dispatch($line);
                     fwrite($out, $writer->line($line, $columns));
+                    if ($observe !== null) {
+                        $observe($line);
+                    }
                     $counts[$project]++;
                 }
             }

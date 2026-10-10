@@ -5,13 +5,18 @@ declare(strict_types=1);
 namespace Naf\Board\Modules;
 
 use Naf\Board\Contracts\ExtensionProviderInterface;
+use Naf\Board\Definition\AssetDefinition;
 use Naf\Board\Definition\ExporterDefinition;
 use Naf\Board\Definition\SettingSection;
 use Naf\Board\Definition\UiContribution;
 use Naf\Board\Export\CsvExporter;
+use Naf\Board\Export\Invoice\EasybillDraftAdapter;
 use Naf\Board\Export\Invoice\EasybillExporter;
+use Naf\Board\Export\Invoice\FastbillDraftAdapter;
 use Naf\Board\Export\Invoice\FastbillExporter;
+use Naf\Board\Export\Invoice\LexwareDraftAdapter;
 use Naf\Board\Export\Invoice\LexwareExporter;
+use Naf\Board\Export\Invoice\SevdeskDraftAdapter;
 use Naf\Board\Export\Invoice\SevdeskExporter;
 use Naf\Board\Export\InvoiceItems;
 use Naf\Board\Export\JsonExporter;
@@ -32,6 +37,7 @@ final class CoreExport implements ExtensionProviderInterface
 {
     public function register(ExtensionContext $context): void
     {
+        $context->assets()->add(new AssetDefinition('core.invoice-drafts', '/assets/invoice-drafts.css', 'css', 105));
         $context->settingSections()->add(new SettingSection(
             id: 'project_export',
             scope: 'project',
@@ -72,6 +78,21 @@ final class CoreExport implements ExtensionProviderInterface
             modes: [UiContext::MODE_PAGE, UiContext::MODE_DETAIL, UiContext::MODE_CREATE],
         ));
 
+        $context->settingSections()->add(new SettingSection(
+            id: 'invoice_drafts',
+            scope: 'application',
+            label: 'Rechnungsentwürfe',
+            template: 'settings/invoice-drafts',
+            index: 260,
+            icon: 'download',
+        ));
+
+        $draftAdapters = [
+            'invoice.lexware'  => LexwareDraftAdapter::class,
+            'invoice.sevdesk'  => SevdeskDraftAdapter::class,
+            'invoice.easybill' => EasybillDraftAdapter::class,
+            'invoice.fastbill' => FastbillDraftAdapter::class,
+        ];
         $exporters = $context->exporters();
 
         $exporters->add(new ExporterDefinition(
@@ -120,7 +141,7 @@ final class CoreExport implements ExtensionProviderInterface
             ['invoice.easybill', 'easybill – API-Positionen (JSON)', EasybillExporter::class, 'json', 'application/json; charset=utf-8'],
             ['invoice.fastbill', 'FastBill – API-Positionen (JSON)', FastbillExporter::class, 'json', 'application/json; charset=utf-8'],
         ] as $index => [$id, $label, $writer, $extension, $mime]) {
-            $exporters->add(new ExporterDefinition($id, $label, $extension, $mime, $writer, 100 + $index, [InvoiceItems::SOURCE]));
+            $exporters->add(new ExporterDefinition($id, $label, $extension, $mime, $writer, 100 + $index, [InvoiceItems::SOURCE], $draftAdapters[$id] ?? null));
         }
     }
 }

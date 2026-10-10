@@ -17,6 +17,7 @@ final readonly class ExporterDefinition
      * @param class-string $writer    ExporterInterface implementation doing the writing
      * @param int          $index     Sort value, ascending
      * @param list<string> $sources   Supported datasets; existing plugin writers default to tickets
+     * @param class-string|null $draftAdapter Optional InvoiceDraftAdapterInterface for invoice-items delivery
      */
     public function __construct(
         public string $id,
@@ -26,6 +27,7 @@ final readonly class ExporterDefinition
         public string $writer,
         public int $index = 100,
         public array $sources = ['tickets'],
+        public ?string $draftAdapter = null,
     ) {
         if ($sources === [] || array_filter($sources, static fn(mixed $source): bool => !is_string($source) || !preg_match('/^[a-z0-9]+(?:[._-][a-z0-9]+)*$/D', $source)) !== []) {
             throw new InvalidArgumentException('An exporter needs valid source ids.');

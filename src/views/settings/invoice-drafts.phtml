@@ -1,0 +1,8 @@
+<?php
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+?>
+<p class="settings-hint"><?= s(t('Persönliche Einreichungen und Firmenabrechnungen verwenden dieselben Exportadapter. Firmenzugänge rechnen alle gebuchten Stunden eines berechtigten Boards ab.')) ?></p>
+<a class="button primary" href="<?= s(route('invoice.drafts')) ?>"><?= s(t('Rechnungsentwürfe öffnen')) ?></a>
