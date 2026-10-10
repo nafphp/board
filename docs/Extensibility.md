@@ -936,6 +936,17 @@ right trade: the listener sees the finished state rather than a proposal.
 purpose. By then the session is published and the person is in; rolling that back would leave
 them signed in with no record of it. Refusing a sign-in is the authentication provider's job.
 
+### Project deletion
+
+`ProjectServiceInterface::delete($project, ['confirmation' => $currentName])` permanently
+removes an owned project, including an archived one. It checks current membership and
+the exact current name inside the existing project lock and transaction. It dispatches
+`Change` with type `project.deleted` and the project's `name` before removing any core
+data. A listener can remove its own dependent rows while the project still exists; throwing
+refuses the operation and rolls everything back. Core deletion does not discover or delete
+extension-owned tables. Plugins with foreign keys to project data must handle this event.
+Audit history keeps the original scope after its project and ticket references are detached.
+
 ## Export
 
 Two registries' worth of question, answered by one registry and one event:

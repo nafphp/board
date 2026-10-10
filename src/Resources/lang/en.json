@@ -811,5 +811,17 @@
   "Ja": "Yes",
   "Kommentare, Anhänge, Verknüpfungen und erfasste Zeit gehen mit. Das Protokoll behält den Vorgang.": "Comments, attachments, links and tracked time come along. The audit log retains the event.",
   "Mir zuweisen": "Assign to me",
-  "Das Werkzeug \":tool\" ist bereits von \":owner\" belegt. Nenne es in replaceNames, um es zu ersetzen.": "The tool \":tool\" is already taken by \":owner\". List it in replaceNames to replace it."
+  "Das Werkzeug \":tool\" ist bereits von \":owner\" belegt. Nenne es in replaceNames, um es zu ersetzen.": "The tool \":tool\" is already taken by \":owner\". List it in replaceNames to replace it.",
+  "Projekt verwalten": "Manage project",
+  "Projekt löschen": "Delete project",
+  "Projekt endgültig löschen": "Permanently delete project",
+  "Projekt endgültig löschen?": "Permanently delete project?",
+  "Projektname bestätigen": "Confirm project name",
+  "Gib :name zur Bestätigung ein.": "Enter :name to confirm.",
+  "Das Projekt mit allen Tickets, Kommentaren und Anhängen wird endgültig gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.": "The project and all its tickets, comments and attachments will be permanently deleted. This action cannot be undone.",
+  "Nur Owner können das Projekt löschen.": "Only owners can delete the project.",
+  "Der Projektname stimmt nicht überein.": "The project name does not match.",
+  "Projekt gelöscht": "Project deleted",
+  "Gelöschtes Projekt": "Deleted project",
+  "Endgültig löschen": "Permanently delete"
 }

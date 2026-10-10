@@ -43,6 +43,9 @@ or a plugin metaframework.
 
 - Every read and write path requires project authorization. Composite foreign keys give
   integrity, not read authorization.
+- Project deletion requires an active owner and confirmation of the current project name,
+  including for archived projects. `project.deleted` is dispatched before core cleanup so
+  extensions can remove their own dependent data in the same transaction.
 - Writes carry a ticket version; a stale write ends with 409 and the interface offers a reload.
 - Attachments are private: 10 MiB per file, 30 MiB per ticket, 200 MiB per project, reached
   only through the application via `Naf\Storage\storage('attachments')`. The allowlist and

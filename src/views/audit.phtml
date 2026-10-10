@@ -88,7 +88,8 @@ $day = null;
             $moment = Format::moment((string) $entry['created_at'], $preferences);
             $detail = ActivityDetail::of($entry);
             $icon   = ActivityLabel::icon((string) $entry['event_type']) ?? 'radio_button_unchecked';
-            $where  = (string) ($entry['project_name'] ?? '') ?: t('Installation');
+            $where  = (string) ($entry['project_name'] ?? '')
+                ?: (str_starts_with((string) $entry['scope'], 'project:') ? t('Gelöschtes Projekt') : t('Installation'));
             ?>
             <?php if ($moment['day'] !== $day): ?>
                 <?php $day = $moment['day']; ?>

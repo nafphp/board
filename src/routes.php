@@ -113,6 +113,7 @@ $routes = [
     ['POST', '/projects/{project}/members', [ProjectController::class, 'member'], 'project.members'],
     ['POST', '/projects/{project}/structure', [ProjectController::class, 'structure'], 'project.structure'],
     ['POST', '/projects/{project}/archive', [ProjectController::class, 'archive'], 'project.archive'],
+    ['POST', '/projects/{project}/delete', [ProjectController::class, 'delete'], 'project.delete'],
 
     ['GET', '/projects/{project}/export/{format}', [ExportController::class, 'board'], 'project.export'],
     ['GET', '/projects/{project}/export', [ExportController::class, 'selection'], 'project.export.settings'],

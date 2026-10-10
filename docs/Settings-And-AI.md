@@ -15,6 +15,21 @@ preserved on close, and after a successful save the same card is reopened. The a
 the operating system's reduced-motion option. On small screens the dialog takes up nearly the
 whole area.
 
+## Project management
+
+The General card ends with a quiet **Manage project** section for owners. Archiving keeps
+the project readable and can be undone with Restore. **Delete project** opens a collapsed
+form requiring the project's current name and an explicit confirmation. The server checks
+actual ownership under the project lock; ticket deletion or management permissions alone
+do not allow project deletion. Archived projects can also be deleted by their owners.
+
+Deletion permanently removes the project, its tickets, comments, attachment records,
+structure, notifications, memberships, settings and project-specific role grants in one
+transaction. Other projects and account settings remain. Audit entries retain their scope
+and the deletion records the project's name; only installation audit readers can reach the
+detached history. Private files become inaccessible immediately and are removed by the
+existing orphan sweep once older than 24 hours. A failure rolls back the entire deletion.
+
 ## Appearance
 
 Personal settings keep the color palette and brightness independent. **Classic** is the
@@ -43,7 +58,7 @@ The board, counts, drag restrictions and shareable URL use the same server query
 
 - Personal: appearance, language, time zone, notifications and configured external accounts.
 - Local AI: connection, models, live test, extra prompts, memory and feedback.
-- General: project details and archiving according to your own permissions.
+- General: project details and project management according to your own permissions.
 - Roles & permissions: view the default roles; owners can create, change and delete custom ones.
 - Users: assign existing accounts by email, change roles and revoke access.
 - Columns, swimlanes and labels: edit the existing board structure.

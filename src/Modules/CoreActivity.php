@@ -31,6 +31,7 @@ final class CoreActivity implements ExtensionProviderInterface
     private const array TYPES = [
         'project.created'          => ['Projekt erstellt', 'add'],
         'project.updated'          => ['Projekt bearbeitet', 'edit'],
+        'project.deleted'          => ['Projekt gelöscht', 'delete'],
         'project.archived'         => ['Projekt archiviert', 'folder_open'],
         'project.restored'         => ['Projekt wiederhergestellt', 'refresh'],
         'project.member_changed'   => ['Mitgliedschaft geändert', 'group'],
