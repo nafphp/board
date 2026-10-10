@@ -27,6 +27,7 @@ $archived    = count(array_filter($projects, static fn($item) => $item['archived
  */
 $actor      = (int) (auth()->user()?->getIdentifier() ?? 0);
 $everyBoard = $actor !== 0 && rbac()->allows($actor, Installation::ADMIN_PROJECTS);
+$canCreate  = $actor !== 0 && rbac()->allows($actor, Installation::CREATE_PROJECTS);
 $heading    = $everyBoard ? 'Alle Projekte' : 'Deine Projekte';
 
 // The layout is handed the variables after this file has run, so the tab says
@@ -46,7 +47,7 @@ $this->setVariable('title', $heading);
         <?php endif ?>
     </div>
     <?= slot('projects.actions', $uiContext) ?>
-    <button class="button primary" data-dialog="new-project"><?= s(t('+ Neues Projekt')) ?></button>
+    <?php if ($canCreate): ?><button class="button primary" data-dialog="new-project"><?= s(t('+ Neues Projekt')) ?></button><?php endif ?>
 </section>
 <div class="project-cards">
     <?php foreach ($projects as $projectItem): ?>
@@ -64,8 +65,8 @@ $this->setVariable('title', $heading);
         <div class="empty-state">
             <span>◌</span>
             <h2><?= s(t('Noch keine Projekte')) ?></h2>
-            <p><?= s(t('Erstelle ein Projekt oder lass dich zu einem bestehenden Projekt hinzufügen.')) ?></p>
-            <button class="button primary" data-dialog="new-project"><?= s(t('Projekt erstellen')) ?></button>
+            <p><?= s($canCreate ? t('Erstelle ein Projekt oder lass dich zu einem bestehenden Projekt hinzufügen.') : t('Lass dich zu einem bestehenden Projekt hinzufügen.')) ?></p>
+            <?php if ($canCreate): ?><button class="button primary" data-dialog="new-project"><?= s(t('Projekt erstellen')) ?></button><?php endif ?>
         </div>
     <?php endif ?>
 </div>

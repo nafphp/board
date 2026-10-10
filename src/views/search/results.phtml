@@ -1,0 +1,29 @@
+<?php
+
+use Naf\Board\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+$suggestions ??= false;
+$option = 0;
+?>
+<?php foreach ($groups as $group): ?>
+    <section class="workspace-result-group" role="group" aria-label="<?= s($group['project']['name']) ?>">
+        <a class="workspace-result-board" href="<?= s($group['project']['url']) ?>"
+            <?php if ($suggestions): ?>data-search-result role="option" aria-selected="false" id="workspace-option-<?= $option++ ?>"<?php endif ?>>
+            <?= Icon::mark('view_kanban', 'sm') ?>
+            <span><?= s($group['project']['name']) ?></span>
+            <small><?= s(t($group['project']['archived'] ? 'Archiviert' : 'Board')) ?></small>
+        </a>
+        <?php foreach ($group['tickets'] as $ticket): ?>
+            <a class="workspace-result-ticket" href="<?= s($ticket['url']) ?>"
+                <?php if ($suggestions): ?>data-search-result role="option" aria-selected="false" id="workspace-option-<?= $option++ ?>"<?php endif ?>>
+                <?= Icon::mark('radio_button_unchecked', 'sm') ?>
+                <span class="workspace-result-text"><small><?= s($ticket['reference']) ?><?php if ($ticket['archived']): ?> · <?= s(t('Archiviert')) ?><?php elseif ($ticket['closed']): ?> · <?= s(t('Geschlossen')) ?><?php endif ?></small>
+                    <span><?= s($ticket['title']) ?></span></span>
+                <?= Icon::mark('arrow_forward', 'sm') ?>
+            </a>
+        <?php endforeach ?>
+    </section>
+<?php endforeach ?>

@@ -15,6 +15,7 @@ use Naf\Board\Domain\ProjectScope;
 use Naf\Board\Rbac\Grants;
 use Naf\Board\Support\Abbreviation;
 use Naf\Board\Support\Input;
+use Naf\Board\Support\MembershipRole;
 use Naf\ORM\Core\EntityManager;
 use PDO;
 use Throwable;
@@ -30,6 +31,7 @@ final class ProjectService implements ProjectServiceInterface
         private Auth $auth,
         private AccessInterface $access,
         private EntityManager $entityManager,
+        private MembershipRole $membershipRoles,
     ) {
     }
 
@@ -161,31 +163,62 @@ final class ProjectService implements ProjectServiceInterface
         });
     }
 
+    public function delete(int $project, array $data): void
+    {
+        // Read access also reaches archived projects. Destruction belongs to an
+        // actual owner, independently of the permission to delete tickets.
+        $this->access->write($project, 'read', function (ProjectScope $scope) use ($project, $data) {
+            if ($scope->role !== 'owner') {
+                throw new Failure(t('Nur Owner können das Projekt löschen.'), 403);
+            }
+            if (($data['confirmation'] ?? null) !== $scope->project['name']) {
+                throw new Failure(t('Der Projektname stimmt nicht überein.'));
+            }
+
+            // Extensions can remove their own dependent rows here. A listener
+            // refusing the deletion rolls back the entire operation.
+            event()->dispatch(new Change($project, null, $this->access->actor(), 'project.deleted', [
+                'name' => $scope->project['name'],
+            ]));
+
+            // History outlives its subject and retains the original scope.
+            $this->pdo->prepare('UPDATE activities SET project_id=NULL,ticket_id=NULL WHERE project_id=?')->execute([$project]);
+            $this->pdo->prepare('DELETE d FROM notification_deliveries d JOIN notifications n ON n.id=d.notification_id WHERE n.project_id=?')->execute([$project]);
+            $this->pdo->prepare('UPDATE comments SET parent_id=NULL WHERE project_id=?')->execute([$project]);
+
+            // Scoped grants can exist without a membership. Remove all of them
+            // through RBAC's assignment API, preserving other scopes.
+            $grants = $this->pdo->prepare('SELECT DISTINCT user_id FROM rbac_user_roles WHERE scope=?');
+            $grants->execute(['project:' . $project]);
+            foreach ($grants->fetchAll(PDO::FETCH_COLUMN) as $user) {
+                Grants::inProject((int) $user, $project, null);
+            }
+
+            // Attachment files become unreferenced; the existing storage sweep
+            // removes them after commit, just as it does for deleted tickets.
+            foreach ([
+                'notifications', 'comments', 'attachments', 'ticket_links',
+                'ticket_assignees', 'ticket_labels', 'ticket_metadata', 'ticket_timers', 'ticket_time_entries',
+                'tickets', 'labels', 'board_columns', 'swimlanes', 'boards',
+                'project_preferences', 'project_user_settings', 'project_settings', 'project_invitations',
+                'project_members', 'project_role_permissions', 'project_roles',
+            ] as $table) {
+                $this->pdo->prepare("DELETE FROM $table WHERE project_id=?")->execute([$project]);
+            }
+            $this->pdo->prepare('DELETE FROM projects WHERE id=?')->execute([$project]);
+        });
+    }
+
     public function member(int $project, array $data): void
     {
         $validated = Input::validate($data, ['email' => 'required|string|email|max:190']);
         $email     = strtolower(trim((string) $validated['email']));
         $role      = $data['role'] ?? 'member';
-        if (
-            !is_string($role)
-            || (!in_array($role, ['owner', 'manager', 'member', 'viewer', 'remove'], true) && preg_match('/^custom:[1-9][0-9]*$/D', $role) !== 1)
-        ) {
-            throw new Failure(t('Ungültige Projektrolle.'));
-        }
         $this->access->write($project, 'members', function (ProjectScope $scope) use (
             $project,
             $email,
             $role,
         ) {
-            $customRoleId = str_starts_with($role, 'custom:') ? Input::id(substr($role, 7)) : null;
-            $storedRole   = $customRoleId === null ? $role : 'viewer';
-            if ($customRoleId !== null) {
-                $statement = $this->pdo->prepare('SELECT id FROM project_roles WHERE project_id=? AND id=?');
-                $statement->execute([$project, $customRoleId]);
-                if (!$statement->fetchColumn()) {
-                    throw new Failure(t('Rolle nicht gefunden.'), 404);
-                }
-            }
             $statement = $this->pdo->prepare('SELECT id FROM users WHERE email=? AND active=1');
             $statement->execute([$email]);
             $user = $statement->fetchColumn();
@@ -196,16 +229,10 @@ final class ProjectService implements ProjectServiceInterface
                 'SELECT role,active,custom_role_id FROM project_members WHERE project_id=? AND user_id=?',
             );
             $statement->execute([$project, $user]);
-            $old              = $statement->fetch();
-            $grantsManagement = in_array($role, ['owner', 'manager'], true);
-            $changesManager   = $old && in_array($old['role'], ['owner', 'manager'], true);
-
-            $newRights     = $this->access->permissions($project, $storedRole, $customRoleId);
-            $oldRights     = $old ? $this->access->permissions($project, $old['role'], $old['custom_role_id'] === null ? null : (int) $old['custom_role_id']) : [];
-            $exceedsRights = array_diff([...$newRights, ...$oldRights], $scope->permissions ?? []);
-            if ($scope->role !== 'owner' && ($grantsManagement || $changesManager || $exceedsRights)) {
-                throw new Failure(t('Diese Rolle kann nur ein Owner vergeben oder ändern.'), 403);
-            }
+            $old          = $statement->fetch();
+            $resolved     = $this->membershipRoles->resolve($scope, $role, $old ?: [], true);
+            $customRoleId = $resolved['custom_role_id'];
+            $storedRole   = $resolved['role'];
             if (
                 $old
                 && $old['role'] === 'owner'

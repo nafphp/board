@@ -1,28 +1,52 @@
-/*
- * Whether the filter row still describes the board underneath it.
- *
- * Changing a filter changes nothing until it is applied, so between the two
- * there is a board showing one thing and a row saying another -- and nothing on
- * screen admits it. The button does now: it brightens as soon as the row differs
- * from what this page was loaded with, and goes quiet again the moment it
- * matches, which it does if you change a filter back.
- *
- * Compared against what the page was loaded with rather than against "empty",
- * because a board opened on a filtered link is already showing a filtered board,
- * and there is nothing to apply about that.
- */
-const form = document.querySelector('.filterbar');
-const apply = form?.querySelector('[data-apply]');
-
-if (form && apply) {
-  // Every control the form would actually submit, in the order it would submit
-  // them -- so this asks the same question the address bar would answer.
+// Native GET navigation keeps the board, counts, drag rules and shared URL in
+// agreement. A choice applies immediately; only fulltext typing is debounced.
+export function reactiveFilters(form) {
+  if (!form) return;
+  const apply = form.querySelector('[data-apply]');
+  if (apply) apply.hidden = true;
   const asked = () => new URLSearchParams(new FormData(form)).toString();
   const loaded = asked();
+  let timer;
+  let submitting = false;
+  let composing = false;
 
-  const check = () => apply.toggleAttribute('data-changed', asked() !== loaded);
-
-  // Typed into, picked from a list, or set by the choice widget, which says both.
-  form.addEventListener('input', check);
-  form.addEventListener('change', check);
+  const submit = () => {
+    clearTimeout(timer);
+    if (submitting || asked() === loaded) return;
+    form.requestSubmit();
+  };
+  form.addEventListener('submit', () => {
+    clearTimeout(timer);
+    submitting = true;
+  });
+  // Choice search inputs have no name and must never apply a board filter.
+  form.addEventListener('change', (event) => {
+    if (event.target.name && event.target.type !== 'hidden') submit();
+  });
+  form.addEventListener('input', (event) => {
+    if (event.target.name !== 'q' || composing || event.isComposing) return;
+    clearTimeout(timer);
+    timer = setTimeout(submit, 400);
+  });
+  form.addEventListener('compositionstart', () => {
+    composing = true;
+    clearTimeout(timer);
+  });
+  form.addEventListener('compositionend', (event) => {
+    composing = false;
+    if (event.target.name === 'q') {
+      clearTimeout(timer);
+      timer = setTimeout(submit, 400);
+    }
+  });
 }
+
+reactiveFilters(document.querySelector('.filterbar'));
+
+document.addEventListener('click', (event) => {
+  const shortcut = event.target.closest?.('[data-profile-section]');
+  if (!shortcut) return;
+  const dialog = document.getElementById('profile-dialog');
+  const section = dialog?.querySelector('[data-profile-section-id="board_filters"]');
+  if (section) section.open = true;
+});

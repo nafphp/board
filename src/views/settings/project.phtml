@@ -4,6 +4,7 @@ use Naf\Board\Domain\Placement;
 
 use function Naf\Board\extensions;
 use function Naf\Board\field;
+use function Naf\Board\partial;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
@@ -65,9 +66,7 @@ if (!$knownScale) {
             'hint'    => 'Wo ein neues Ticket in seiner Spalte landet. Gilt für alle, die nichts anderes für sich eingestellt haben.',
         ]) ?>
         <?php if ($offScale): ?>
-            <p class="settings-hint">
-                <?= s(t(':count Tickets tragen eine Schätzung, die diese Skala nicht anbietet. Sie bleiben erhalten und sind markiert.', ['count' => $offScale])) ?>
-            </p>
+            <?= partial('components/notice', ['severity' => 'warning', 'message' => t(':count Tickets tragen eine Schätzung, die diese Skala nicht anbietet. Sie bleiben erhalten und sind markiert.', ['count' => $offScale])]) ?>
         <?php endif ?>
         <div class="form-errors" role="alert"></div>
         <div class="settings-actions">
@@ -81,20 +80,43 @@ if (!$knownScale) {
     </fieldset>
 </form>
 <?php if ($scope->role === 'owner'): ?>
-    <section class="settings-section">
-        <h3><?= s(t('Archiv')) ?></h3>
-        <form method="post" data-enhanced action="<?= s(route('project.archive', ['project' => $projectId])) ?>">
+    <section class="settings-section project-management">
+        <h3><?= s(t('Projekt verwalten')) ?></h3>
+        <form class="project-archive" method="post" data-enhanced action="<?= s(route('project.archive', ['project' => $projectId])) ?>">
             <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
             <input type="hidden" name="action" value="<?= $project['archived_at'] ? 'restore' : 'archive' ?>" />
-            <p class="settings-hint">
+            <p class="project-management-note">
                 <?= s(t('Archivierte Projekte bleiben lesbar. Änderungen werden gesperrt.')) ?>
             </p>
+            <button class="button subtle">
+                <?= s($project['archived_at'] ? t('Projekt wiederherstellen') : t('Projekt archivieren')) ?>
+            </button>
             <div class="form-errors" role="alert"></div>
-            <div class="settings-actions">
-                <button class="button subtle">
-                    <?= s($project['archived_at'] ? t('Projekt wiederherstellen') : t('Projekt archivieren')) ?>
-                </button>
-            </div>
         </form>
+        <details class="project-delete">
+            <summary><?= s(t('Projekt löschen')) ?></summary>
+            <form method="post" data-enhanced action="<?= s(route('project.delete', ['project' => $projectId])) ?>">
+                <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                <p class="project-management-note">
+                    <?= s(t('Das Projekt mit allen Tickets, Kommentaren und Anhängen wird endgültig gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.')) ?>
+                </p>
+                <?= field([
+                    'label'      => 'Projektname bestätigen',
+                    'name'       => 'confirmation',
+                    'required'   => true,
+                    'hint'       => t('Gib :name zur Bestätigung ein.', ['name' => $project['name']]),
+                    'attributes' => ['maxlength' => 120, 'autocomplete' => 'off'],
+                ]) ?>
+                <div class="form-errors" role="alert"></div>
+                <div class="settings-actions">
+                    <button class="button danger subtle"
+                            data-confirm="<?= s(t('Projekt endgültig löschen?')) ?>"
+                            data-confirm-detail="<?= s($project['name']) ?>"
+                            data-confirm-yes="<?= s(t('Endgültig löschen')) ?>">
+                        <?= s(t('Projekt endgültig löschen')) ?>
+                    </button>
+                </div>
+            </form>
+        </details>
     </section>
 <?php endif ?>

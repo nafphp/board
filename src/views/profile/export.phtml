@@ -1,0 +1,38 @@
+<?php
+use Naf\Board\Support\Icon;
+
+use function Naf\Board\field;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$boards = ['all' => t('Alle')];
+foreach ($exportProjects as $board) {
+    $boards[(string) $board['id']] = $board['name'];
+}
+$exportField = static fn(array $properties): string => field(['id' => 'personal-export-' . $properties['name'], ...$properties]);
+?>
+<?php if ($exportFormats !== []): ?>
+<details class="profile-section" name="profile-section" data-profile-section-id="personal_export">
+    <summary>
+        <span class="profile-section-icon" aria-hidden="true"><?= Icon::mark('download', 'sm') ?></span>
+        <span>
+            <strong><?= s(t('Daten exportieren')) ?></strong>
+            <small><?= s(t('Deine gebuchten Stunden herunterladen')) ?></small>
+        </span>
+        <span class="profile-chevron" aria-hidden="true"><?= Icon::mark('expand_more', 'sm') ?></span>
+    </summary>
+    <form method="get" action="<?= s(route('profile.export')) ?>" class="profile-form">
+        <?= $exportField(['label' => 'Daten', 'name' => 'source', 'type' => 'select', 'value' => 'time', 'options' => ['time' => t('Geleistete Stunden')]]) ?>
+        <?= $exportField(['label' => 'Board', 'name' => 'project', 'type' => 'select', 'value' => 'all', 'options' => $boards]) ?>
+        <?= $exportField(['label' => 'Format', 'name' => 'format', 'type' => 'select', 'value' => 'pdf', 'options' => $exportFormats]) ?>
+        <div class="form-grid">
+            <?= $exportField(['label' => 'Gebucht ab', 'name' => 'from', 'type' => 'date']) ?>
+            <?= $exportField(['label' => 'Gebucht bis', 'name' => 'until', 'type' => 'date']) ?>
+        </div>
+        <p class="profile-help"><?= s(t('Optional. Beide Tage zählen vollständig in UTC; leere Felder begrenzen den Zeitraum nicht.')) ?></p>
+        <p class="profile-help"><?= s(t('Enthält nur deine mit Stopp gebuchten Minuten ab Einführung des Stundenprotokolls. Laufende und pausierte Timer sowie manuell gesetzte Ticket-Summen sind nicht enthalten.')) ?></p>
+        <button class="button primary" type="submit"><?= s(t('Export herunterladen')) ?></button>
+    </form>
+</details>
+<?php endif ?>

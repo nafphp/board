@@ -479,36 +479,6 @@
   white-space: nowrap;
   cursor: var(--cursor-pointer, pointer);
 }
-.ai-stream-toggle input {
-  appearance: none;
-  position: relative;
-  width: 23px;
-  height: 13px;
-  padding: 0;
-  margin: 0;
-  border: 0;
-  border-radius: 10px;
-  background: var(--line);
-  transition: background 0.18s;
-  cursor: inherit;
-}
-.ai-stream-toggle input::before {
-  content: '';
-  position: absolute;
-  width: 9px;
-  height: 9px;
-  left: 2px;
-  top: 2px;
-  border-radius: 50%;
-  background: var(--surface);
-  transition: transform 0.18s;
-}
-.ai-stream-toggle input:checked {
-  background: color-mix(in srgb, var(--accent) 75%, var(--line));
-}
-.ai-stream-toggle input:checked::before {
-  transform: translateX(10px);
-}
 .ai-confirmation {
   border-block: 1px solid var(--accent);
   background: var(--accent-soft);
@@ -587,24 +557,9 @@
   .ai-welcome-mark {
     border: 1px solid ButtonText;
   }
-  .ai-stream-toggle input {
-    appearance: auto;
-  }
-  .ai-stream-toggle input::before {
-    display: none;
-  }
   .ai-input-wrap:focus-within {
     outline: 2px solid Highlight;
   }
-}
-.ai-check {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.ai-check input {
-  width: 18px;
-  height: 18px;
 }
 .ai-advanced {
   border-top: 1px solid var(--line);

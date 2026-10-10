@@ -10,6 +10,7 @@
  */
 
 use function Naf\Board\field;
+use function Naf\Board\partial;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
@@ -39,26 +40,56 @@ use function Naf\View\s;
     <form method="post" data-enhanced action="<?= s(route('project.members', ['project' => $projectId])) ?>">
         <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
         <?= field([
-            'label'      => 'E-Mail-Adresse',
+            'label'      => 'Konto suchen',
             'name'       => 'email',
-            'type'       => 'email',
+            'id'         => 'member-account',
+            'type'       => 'text',
             'required'   => true,
-            'attributes' => ['placeholder' => 'person@beispiel.de'],
+            'hint'       => 'Suche nach Name oder E-Mail und wähle ein bestehendes Konto aus.',
+            'attributes' => ['placeholder' => 'Name oder E-Mail', 'list' => 'member-accounts', 'autocomplete' => 'off', 'data-account-search' => route('project.accounts', ['project' => $projectId])],
         ]) ?>
         <?= field([
             'label'   => 'Rolle',
             'name'    => 'role',
+            'id'      => 'membership-role',
             'type'    => 'select',
-            'value'   => '',
+            'value'   => isset($availableRoles['member']) ? 'member' : 'viewer',
             'options' => $availableRoles,
             'hint'    => 'Du kannst nur Rechte vergeben, die du selbst besitzt. Eigene Rollen gelten '
                 . 'nur für dieses Projekt.',
             'choice' => ['searchLabel' => 'Rollen suchen'],
         ]) ?>
-        <p class="settings-hint"><?= s(t('Die Person braucht bereits ein Konto.')) ?></p>
+        <datalist id="member-accounts"></datalist>
+        <?= partial('components/notice', ['severity' => 'notice', 'messageAttributes' => ['data-account-status' => true, 'role' => 'status']]) ?>
         <div class="form-errors" role="alert"></div>
         <div class="settings-actions">
             <button class="button primary"><?= s(t('Mitgliedschaft speichern')) ?></button>
         </div>
     </form>
 </section>
+
+<section class="settings-section settings-invitation">
+    <h3><?= s(t('Neue Person einladen')) ?></h3>
+    <?= partial('components/notice', ['severity' => 'info', 'message' => t('Die Person legt ihr Konto über den Einladungslink selbst an und erhält nur Zugang zu diesem Board.')]) ?>
+    <?= partial('settings/invite-form', ['projectId' => $projectId, 'token' => $token, 'inviteRoles' => array_diff_key($availableRoles, ['remove' => true])]) ?>
+</section>
+<?php if ($invitations): ?>
+    <section class="settings-section">
+        <h3><?= s(t('Offene Einladungen')) ?></h3>
+        <ul class="pending-invitations">
+            <?php foreach ($invitations as $invitation): ?>
+                <li>
+                    <div>
+                        <strong><?= s($invitation['email']) ?></strong>
+                        <small><?= s($availableRoles[$invitation['role']] ?? $invitation['role']) ?> · <?= s(t('Gültig bis :date', ['date' => gmdate('d.m.Y', (int) $invitation['expires_at'])])) ?></small>
+                    </div>
+                    <form method="post" data-enhanced action="<?= s(route('project.invitations.revoke', ['project' => $projectId, 'invitation' => $invitation['id']])) ?>">
+                        <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                        <div class="form-errors" role="alert"></div>
+                        <button class="button subtle"><?= s(t('Zurückziehen')) ?></button>
+                    </form>
+                </li>
+            <?php endforeach ?>
+        </ul>
+    </section>
+<?php endif ?>

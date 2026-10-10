@@ -1,5 +1,6 @@
 <?php
 use function Naf\Board\field;
+use function Naf\Board\partial;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
@@ -16,7 +17,7 @@ $empty = $installationExport && $exportProjects === [];
 ?>
 <form method="get" action="<?= s($action) ?>">
     <?php if ($empty): ?>
-        <p class="settings-hint"><?= s(t('Es gibt keine Boards, die du exportieren darfst.')) ?></p>
+        <?= partial('components/notice', ['severity' => 'warning', 'message' => t('Es gibt keine Boards, die du exportieren darfst.')]) ?>
     <?php endif ?>
     <fieldset <?= $empty ? 'disabled' : '' ?>>
         <?php if ($installationExport): ?>
@@ -26,7 +27,7 @@ $empty = $installationExport && $exportProjects === [];
                 'hint'    => 'Alle umfasst aktive Boards, für die du eine Exportberechtigung hast.',
             ]) ?>
         <?php else: ?>
-            <p class="settings-hint"><?= s(t('Exportiert ausschließlich Tickets aus „:board“.', ['board' => $project['name']])) ?></p>
+            <?= partial('components/notice', ['severity' => 'info', 'message' => t('Exportiert ausschließlich Tickets aus „:board“.', ['board' => $project['name']])]) ?>
         <?php endif ?>
         <?= $exportField(['label' => 'Format', 'name' => 'format', 'type' => 'select', 'options' => $exportFormats, 'value' => array_key_first($exportFormats)]) ?>
         <div class="form-grid">
@@ -43,7 +44,7 @@ $empty = $installationExport && $exportProjects === [];
             <?= $exportField(['label' => 'Geändert ab', 'name' => 'updated_from', 'type' => 'date']) ?>
             <?= $exportField(['label' => 'Geändert bis', 'name' => 'updated_until', 'type' => 'date']) ?>
         </div>
-        <p class="settings-hint"><?= s(t('Optional. Beide Tage zählen vollständig in UTC; leere Felder begrenzen den Zeitraum nicht.')) ?></p>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t('Optional. Beide Tage zählen vollständig in UTC; leere Felder begrenzen den Zeitraum nicht.')]) ?>
         <div class="form-grid">
             <?= $exportField([
                 'label'   => 'Beschreibung', 'name' => 'description', 'type' => 'select', 'value' => '0',
@@ -56,7 +57,7 @@ $empty = $installationExport && $exportProjects === [];
                 'hint'    => 'Enthält nur Felder, die du im jeweiligen Board lesen darfst.',
             ]) ?>
         </div>
-        <p class="settings-hint"><?= s(t('Der Export enthält Tickets mit Labels und Verantwortlichen. Anhänge, Kommentare und die Boardstruktur sind nicht enthalten.')) ?></p>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t('Der Export enthält Tickets mit Labels und Verantwortlichen. Anhänge, Kommentare und die Boardstruktur sind nicht enthalten.')]) ?>
         <div class="settings-actions">
             <button class="button primary" type="submit"><?= s(t('Export herunterladen')) ?></button>
         </div>

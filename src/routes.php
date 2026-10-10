@@ -6,12 +6,18 @@ use Naf\Board\Controllers\AttachmentController;
 use Naf\Board\Controllers\BoardController;
 use Naf\Board\Controllers\ExportController;
 use Naf\Board\Controllers\InstallationController;
+use Naf\Board\Controllers\InvitationController;
+use Naf\Board\Controllers\InvoiceDraftController;
+use Naf\Board\Controllers\PasswordResetController;
 use Naf\Board\Controllers\PreferenceController;
 use Naf\Board\Controllers\ProfileController;
 use Naf\Board\Controllers\ProjectController;
+use Naf\Board\Controllers\SearchController;
 use Naf\Board\Controllers\SessionController;
 use Naf\Board\Controllers\SettingsApiController as S;
 use Naf\Board\Controllers\TicketController;
+use Naf\Board\Controllers\UserAccountController;
+use Naf\Board\Controllers\UserDirectoryController;
 use Naf\Board\Support\AttachmentStorage;
 use Naf\Database\Core\MigrationRunner;
 use Naf\Database\Support\MigrationRegistry;
@@ -40,6 +46,8 @@ route()->add(
     },
     'health.ready',
 );
+route()->add('GET', '/api/settings/application', [S::class, 'readApplication'], 'api.settings.application.read');
+route()->add('POST', '/api/settings/application', [S::class, 'writeApplication'], 'api.settings.application.write');
 route()->add('GET', '/api/settings/user', [S::class, 'readUser'], 'api.settings.user.read');
 route()->add('POST', '/api/settings/user', [S::class, 'writeUser'], 'api.settings.user.write');
 route()->add(
@@ -68,6 +76,14 @@ route()->add(
 );
 route()->add('GET', '/ai/tools', [AiController::class, 'tools'], 'ai.tools');
 route()->add('POST', '/ai/tools/call', [AiController::class, 'call'], 'ai.call');
+route()->add('GET', '/profile/export', [ExportController::class, 'personal'], 'profile.export');
+route()->add('GET', '/profile/invoice-export', [ExportController::class, 'invoiceItems'], 'profile.invoice_export');
+route()->add('GET', '/exports/invoices', [InvoiceDraftController::class, 'show'], 'invoice.drafts');
+route()->add('POST', '/exports/invoices/connections', [InvoiceDraftController::class, 'connect'], 'invoice.connections.create');
+route()->add('POST', '/exports/invoices/disconnect', [InvoiceDraftController::class, 'disconnect'], 'invoice.connections.delete');
+route()->add('POST', '/exports/invoices/preview', [InvoiceDraftController::class, 'preview'], 'invoice.drafts.preview');
+route()->add('POST', '/exports/invoices/send', [InvoiceDraftController::class, 'send'], 'invoice.drafts.send');
+route()->add('POST', '/exports/invoices/resolve', [InvoiceDraftController::class, 'resolve'], 'invoice.drafts.resolve');
 route()->add('GET', '/profile', [ProfileController::class, 'show'], 'profile');
 route()->add('POST', '/profile/password', [ProfileController::class, 'password'], 'profile.password');
 route()->add('POST', '/profile/email', [ProfileController::class, 'requestEmail'], 'profile.email');
@@ -80,8 +96,23 @@ $routes = [
     ['GET', '/login', [SessionController::class, 'login'], 'login'],
     ['POST', '/login', [SessionController::class, 'authenticate'], 'login.submit'],
     ['POST', '/logout', [SessionController::class, 'logout'], 'logout'],
+    ['GET', '/password-reset/{token}', [PasswordResetController::class, 'show'], 'password_reset.show'],
+    ['POST', '/password-reset/{token}', [PasswordResetController::class, 'accept'], 'password_reset.accept'],
+
+    ['POST', '/invitations', [InvitationController::class, 'create'], 'invitations.create'],
+    ['GET', '/invitations/created', [InvitationController::class, 'created'], 'invitations.created'],
+    ['GET', '/invitations/{token}', [InvitationController::class, 'show'], 'invitations.show'],
+    ['POST', '/invitations/{token}', [InvitationController::class, 'accept'], 'invitations.accept'],
+    ['GET', '/projects/{project}/accounts', [InvitationController::class, 'search'], 'project.accounts'],
+    ['POST', '/projects/{project}/invitations/{invitation}/revoke', [InvitationController::class, 'revoke'], 'project.invitations.revoke'],
 
     ['GET', '/settings', [InstallationController::class, 'settings'], 'installation.settings'],
+    ['GET', '/settings/users', [UserDirectoryController::class, 'index'], 'installation.users.index'],
+    ['POST', '/settings/users/bulk', [UserDirectoryController::class, 'update'], 'installation.users.bulk'],
+    ['GET', '/settings/users/{user}', [UserDirectoryController::class, 'show'], 'installation.users.show'],
+    ['POST', '/settings/users/{user}', [UserAccountController::class, 'update'], 'installation.users.account'],
+    ['POST', '/settings/users/{user}/password-reset', [UserAccountController::class, 'requestReset'], 'installation.users.password_reset'],
+    ['GET', '/settings/users/{user}/password-reset/created', [UserAccountController::class, 'created'], 'installation.users.password_reset.created'],
     ['GET', '/settings/export', [ExportController::class, 'installation'], 'installation.export'],
     ['POST', '/settings/users', [InstallationController::class, 'createAccount'], 'installation.users.create'],
     ['GET', '/audit', [InstallationController::class, 'audit'], 'audit'],
@@ -93,6 +124,8 @@ $routes = [
     ['POST', '/notifications/read', [PreferenceController::class, 'markRead'], 'notifications.read'],
     ['POST', '/projects/{project}/mute', [PreferenceController::class, 'mute'], 'project.mute'],
 
+    ['GET', '/search', [SearchController::class, 'index'], 'workspace.search'],
+    ['GET', '/search/suggestions', [SearchController::class, 'suggestions'], 'workspace.suggestions'],
     ['GET', '/projects', [BoardController::class, 'projects'], 'projects'],
     ['POST', '/projects', [ProjectController::class, 'create'], 'projects.create'],
     ['GET', '/projects/{project}', [BoardController::class, 'board'], 'board'],
@@ -113,6 +146,7 @@ $routes = [
     ['POST', '/projects/{project}/members', [ProjectController::class, 'member'], 'project.members'],
     ['POST', '/projects/{project}/structure', [ProjectController::class, 'structure'], 'project.structure'],
     ['POST', '/projects/{project}/archive', [ProjectController::class, 'archive'], 'project.archive'],
+    ['POST', '/projects/{project}/delete', [ProjectController::class, 'delete'], 'project.delete'],
 
     ['GET', '/projects/{project}/export/{format}', [ExportController::class, 'board'], 'project.export'],
     ['GET', '/projects/{project}/export', [ExportController::class, 'selection'], 'project.export.settings'],

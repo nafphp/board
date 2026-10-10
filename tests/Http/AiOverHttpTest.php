@@ -81,6 +81,18 @@ final class AiOverHttpTest extends AcceptanceTestCase
         $this->assertSame(400, $response['status']);
     }
 
+    public function testInvalidToolArgumentsReturnAValidationResponse(): void
+    {
+        $response = $this->post($this->alice, '/ai/tools/call', [
+            'project'   => self::PROJECT,
+            'name'      => 'nafinity_board',
+            'arguments' => ['project_id' => self::OTHER_PROJECT],
+        ]);
+
+        $this->assertSame(422, $response['status']);
+        $this->assertSame(['message' => 'Ungültige Werkzeugargumente.'], json_decode($response['body'], true));
+    }
+
     public function testTheCatalogFollowsTheCustomRole(): void
     {
         $names = $this->toolNames();

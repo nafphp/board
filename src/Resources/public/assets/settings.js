@@ -1,4 +1,16 @@
 import { t } from './i18n.js';
+import { mountAdvancedSettings } from './settings-configuration.js';
+import { mountMemberControls } from './members.js';
+import { mountPeopleDirectory } from './people.js?v=3';
+document.querySelectorAll('[data-people-directory]').forEach(mountPeopleDirectory);
+
+mountMemberControls();
+
+let settingsStorage;
+try {
+  settingsStorage = window.sessionStorage;
+} catch {}
+const advancedSettings = mountAdvancedSettings(document, settingsStorage);
 
 const dialog = document.querySelector('#settings-detail');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -82,6 +94,7 @@ async function openCard(id, animate = true) {
   const card = document.querySelector(`[data-settings-open="${CSS.escape(id)}"]`);
   const content = document.querySelector(`[data-settings-content="${CSS.escape(id)}"]`);
   if (!card || !content) return;
+  if (card.closest('[data-settings-advanced-group]')) advancedSettings?.show();
   activeCard = card;
   activeContent = content;
   placeholder = document.createComment('settings content');
@@ -140,6 +153,7 @@ document.querySelectorAll('[data-settings-open]').forEach((card) => {
 });
 dialog?.querySelector('[data-settings-close]').addEventListener('click', closeCard);
 dialog?.addEventListener('cancel', (event) => {
+  if (event.target !== dialog) return;
   event.preventDefault();
   closeCard();
 });
@@ -203,4 +217,12 @@ document.addEventListener('input', (event) => {
   for (const pick of custom.closest('.field-palette').querySelectorAll('.field-pick')) {
     pick.setAttribute('aria-pressed', String(pick.dataset.color === custom.value));
   }
+});
+
+// Editing a displayed config value explicitly selects an administration override.
+document.addEventListener('input', (event) => {
+  const field = event.target.closest?.('[data-configuration-field]');
+  if (!field || event.target.matches('[data-configuration-source]')) return;
+  const source = field.querySelector('[data-configuration-source]');
+  if (source) source.value = 'administration';
 });

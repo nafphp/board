@@ -69,6 +69,7 @@ final class BoardQuery implements BoardQueryInterface
             SELECT p.*,
                    COALESCE(r.name, m.role, ?) AS role,
                    CASE WHEN m.user_id IS NULL THEN 0 ELSE 1 END AS is_member,
+                   COALESCE(pp.muted, 0) AS notifications_muted,
 
                 (SELECT COUNT(*)
                  FROM tickets t
@@ -78,6 +79,7 @@ final class BoardQuery implements BoardQueryInterface
             FROM projects p
             $join project_members m ON m.project_id = p.id AND m.user_id = ? AND m.active = 1
             LEFT JOIN project_roles r ON r.project_id=m.project_id AND r.id=m.custom_role_id
+            LEFT JOIN project_preferences pp ON pp.project_id=p.id AND pp.user_id=?
             ORDER BY CASE
                          WHEN p.archived_at IS NULL THEN 0
                          ELSE 1
@@ -85,7 +87,7 @@ final class BoardQuery implements BoardQueryInterface
                      p.id
             SQL,
         );
-        $statement->execute([Installation::ADMIN_ROLE_NAME, $actor]);
+        $statement->execute([Installation::ADMIN_ROLE_NAME, $actor, $actor]);
 
         return $statement->fetchAll();
     }

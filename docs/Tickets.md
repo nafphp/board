@@ -10,6 +10,14 @@ the ticket, description and empty space included. The card menu stays independen
 including right after a drag gesture, and the native title link still supports the keyboard, the
 context menu and opening in a new tab.
 
+When dragging a ticket, a muted placeholder reserves its original position until the card
+lands. The active drop preview uses the accent colour; closing columns retain their completion
+highlight. Both placeholders match the carried card's height. Returning to the original
+position activates that same placeholder, without adding a second gap. Empty-state hints stay
+hidden during dragging, so their larger box does not compete with the card-sized previews.
+After dropping, the original gap closes with the board's normal motion; cancellation restores
+the card to that reserved position.
+
 ## Creating a ticket in the modal
 
 **+ New ticket** on the board opens the right-hand ticket drawer. It renders the same
@@ -113,8 +121,12 @@ Attributes and associations that are not submitted are preserved. Updates requir
 movement retain their board revision checks. Status changes use the existing state service. System values such as creator
 and change date are read-only.
 
-Time tracking is a manually editable **total in minutes**; it is not a stopwatch and not a
-per-person booking journal. The display converts to hours and minutes. When an estimate exists,
+The ticket keeps a manually editable **total in minutes** and a server-backed work timer.
+Starting or resuming counts elapsed seconds; pausing holds them without booking, and stopping
+adds whole minutes to the ticket. Remaining seconds carry into the next session. New timer
+bookings also enter a per-person journal used by the [personal hours export](Profile.md#exporting-personal-hours).
+Manual edits of the aggregate do not create personal bookings. The display converts to hours
+and minutes. When an estimate exists,
 progress and remaining time — or an overrun — are shown. The start date may not lie after the
 due date.
 

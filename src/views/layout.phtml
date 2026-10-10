@@ -1,5 +1,6 @@
 <?php
 
+use Naf\Board\Rbac\Installation;
 use Naf\Board\Support\BrowserWords;
 use Naf\Board\Support\Format;
 use Naf\Board\Support\Icon;
@@ -12,14 +13,16 @@ use function Naf\Board\partial;
 use function Naf\Board\slot;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
+use function Naf\Rbac\rbac;
 use function Naf\route;
 use function Naf\View\asset;
 use function Naf\View\s;
 
-$profile  = $user->getProfile();
-$token    = csrf()->token();
-$current  = $project['id'] ?? null;
-$roleName = isset($scope)
+$canCreate = rbac()->allows((int) $user->getIdentifier(), Installation::CREATE_PROJECTS);
+$profile   = $user->getProfile();
+$token     = csrf()->token();
+$current   = $project['id'] ?? null;
+$roleName  = isset($scope)
     ? ($scope->roleName ?? ucfirst($scope->role))
     : t('Persönliches Konto');
 $roleContext = $current ? $roleName . ' · ' . $project['name'] : $roleName;
@@ -75,15 +78,17 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
         <script type="application/json" id="nafinity-browser-words"><?= json_encode(BrowserWords::all(), JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
         <title><?= s(t($title ?? 'Board')) ?> · Nafinity</title>
         <script src="/assets/boot.js?v=2"></script>
-        <link rel="stylesheet" href="/assets/icons.css?v=2" />
-        <link rel="stylesheet" href="/assets/app.css?v=36" />
+        <link rel="stylesheet" href="/assets/icons.css?v=4" />
+        <link rel="stylesheet" href="/assets/app.css?v=41" />
         <script type="module" src="/assets/app.js"></script>
-        <script type="module" src="/assets/settings.js?v=5"></script>
-        <script type="module" src="/assets/profile.js?v=1"></script>
-        <link rel="stylesheet" href="/assets/profile.css?v=12" />
+        <script type="module" src="/assets/settings.js?v=11"></script>
+        <script type="module" src="/assets/workspace-search.js?v=3"></script>
+        <link rel="stylesheet" href="/assets/workspace.css?v=4" />
+        <script type="module" src="/assets/profile.js?v=2"></script>
+        <link rel="stylesheet" href="/assets/profile.css?v=14" />
         <script type="module" src="/assets/ai/chat.js?v=5"></script>
-        <link rel="stylesheet" href="/assets/settings.css?v=14" />
-        <link rel="stylesheet" href="/assets/ai.css?v=5" />
+        <link rel="stylesheet" href="/assets/settings.css?v=26" />
+        <link rel="stylesheet" href="/assets/ai.css?v=6" />
         <link rel="stylesheet" href="/assets/board.css?v=6" />
         <link rel="stylesheet" href="/assets/cursor.css?v=2" />
         <link rel="stylesheet" href="/assets/ticket.css?v=7" />
@@ -106,11 +111,13 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
                 <?= slot('sidebar.workspace', $uiContext) ?>
                 <div class="section-caption">
                     <span class="caption-label"><?= s(t('PROJEKTE')) ?></span>
+                    <?php if ($canCreate): ?>
                     <button
                         class="icon-button"
                         data-dialog="new-project"
                         aria-label="<?= s(t('Projekt erstellen')) ?>"
                     ><?= Icon::mark('add') ?></button>
+                    <?php endif ?>
                 </div>
                 <?php /* Three rows fit; beyond that the list scrolls and gets a fade at its
                          foot. The stylesheet cannot count, so the count is said here. */ ?>
@@ -146,14 +153,7 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
                         aria-controls="sidebar"
                     >
 <?= Icon::mark('menu', 'lg') ?></button>
-                    <div class="breadcrumb">
-                        <span><?= s(t('Workspace')) ?></span>
-                        <span>/</span>
-                        <?php // Without a project this used to fall back to the product name,
-                              // which on the account page read as standing in a project called
-                              // Nafinity. The page says for itself where it is.?>
-                        <strong><?= s($project['name'] ?? t($title ?? 'Board')) ?></strong>
-                    </div>
+                    <div class="topbar-tools"><?= slot('topbar.tools', $uiContext) ?></div>
                     <div class="topbar-right">
                         <?php // Rendered empty and hidden: the roster arrives over the
                               // socket a moment after the page does, and a bar that
@@ -206,6 +206,7 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
             'preferences'    => $preferences,
             'user'           => $user,
         ]) ?>
+        <?php if ($canCreate): ?>
         <dialog id="new-project" class="modal">
             <form method="post" action="<?= s(route('projects.create')) ?>" data-enhanced>
                 <div class="dialog-heading">
@@ -277,6 +278,7 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
                 </button>
             </form>
         </dialog>
+        <?php endif ?>
         <dialog id="ticket-drawer" class="ticket-drawer" aria-label="Ticketdetails">
             <div class="drawer-content"></div>
         </dialog>

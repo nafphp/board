@@ -30,6 +30,7 @@ final readonly class SettingDefinition
      * @param string|null $writePermission Project action required to write
      * @param bool        $sensitive       Whether the value must never leave the server
      * @param string|null $configKey       Declared NAF config key used before the default
+     * @param bool        $advanced        Shown in the advanced installation settings
      */
     public function __construct(
         public string $key,
@@ -44,6 +45,7 @@ final readonly class SettingDefinition
         public ?string $writePermission = null,
         public bool $sensitive = false,
         public ?string $configKey = null,
+        public bool $advanced = false,
     ) {
         if (!in_array($scope, self::SCOPES, true)) {
             throw new InvalidArgumentException(

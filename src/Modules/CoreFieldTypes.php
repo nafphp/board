@@ -6,6 +6,7 @@ namespace Naf\Board\Modules;
 
 use Naf\Board\Contracts\ExtensionProviderInterface;
 use Naf\Board\ExtensionContext;
+use Naf\Board\Support\Fields\BoardFilterVisibilityType;
 use Naf\Board\Support\Fields\BooleanType;
 use Naf\Board\Support\Fields\DateType;
 use Naf\Board\Support\Fields\IntegerType;
@@ -32,5 +33,6 @@ final class CoreFieldTypes implements ExtensionProviderInterface
         $types->add(new DateType());
         $types->add(new SelectType());
         $types->add(new MultiselectType());
+        $types->add(new BoardFilterVisibilityType());
     }
 }

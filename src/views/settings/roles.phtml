@@ -5,17 +5,16 @@ use Naf\Board\Support\Icon;
 
 use function Naf\Board\extensions;
 use function Naf\Board\field;
+use function Naf\Board\partial;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
 
 ?>
-<p class="settings-note">
-    <?= s(t(
-        'Alle Rollen dürfen das Projekt lesen. Nur Owner verwalten eigene Rollen und andere '
+<?= partial('components/notice', ['severity' => 'info', 'message' => t(
+    'Alle Rollen dürfen das Projekt lesen. Nur Owner verwalten eigene Rollen und andere '
         . 'Owner. Mindestens ein Owner bleibt immer erhalten.',
-    )) ?>
-</p>
+)]) ?>
 <div class="role-defaults">
     <?php foreach (['owner', 'manager', 'member', 'viewer'] as $builtIn): ?>
         <details>
@@ -107,6 +106,7 @@ use function Naf\View\s;
                                 <label title="<?= s(t($definition->description)) ?>">
                                     <input
                                         type="checkbox"
+                                        role="switch"
                                         name="permissions[]"
                                         value="<?= s($permission) ?>"
                                         <?= in_array($permission, $role['permissions'] ?? [], true) ? 'checked' : '' ?>
@@ -116,14 +116,12 @@ use function Naf\View\s;
                             <?php endforeach ?>
                         </div>
                         <?php if ($role['unavailable'] ?? []): ?>
-                            <p class="settings-hint">
-                                <?= s(t(
-                                    'Diese Rolle hält :count Recht(e) einer Erweiterung, die gerade nicht '
-                                    . 'installiert ist. Sie bleiben gespeichert und wirken erst wieder, '
-                                    . 'wenn die Erweiterung zurück ist.',
-                                    ['count' => count($role['unavailable'])],
-                                )) ?>
-                            </p>
+                            <?= partial('components/notice', ['severity' => 'warning', 'message' => t(
+                                'Diese Rolle hält :count Recht(e) einer Erweiterung, die gerade nicht '
+                                . 'installiert ist. Sie bleiben gespeichert und wirken erst wieder, '
+                                . 'wenn die Erweiterung zurück ist.',
+                                ['count' => count($role['unavailable'])],
+                            )]) ?>
                         <?php endif ?>
                         <?php if ($scope->allows('roles')): ?>
                             <div class="form-errors" role="alert"></div>

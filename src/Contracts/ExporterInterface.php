@@ -7,16 +7,9 @@ namespace Naf\Board\Contracts;
 use Naf\Board\Export\ExportLine;
 
 /**
- * What a format has to be able to do.
- *
- * Three calls rather than one, because an export is written while it is
- * produced: a board with fifty thousand tickets should cost what one ticket
- * costs plus a file, not what fifty thousand tickets cost in memory. So a writer
- * is handed one line at a time and returns the text for it.
- *
- * A writer is built once per export and may keep state for that export -- which
- * is how a format that needs to know whether it has written a row yet knows it,
- * without a flag being passed into every call.
+ * A writer receives normalized records from any supported source. It is created once per
+ * file; open and close run once, and line runs after export listeners. Streaming formats
+ * return each chunk immediately; document renderers such as PDF may buffer until close.
  */
 interface ExporterInterface
 {

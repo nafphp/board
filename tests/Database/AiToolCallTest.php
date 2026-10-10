@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Naf\Board\Tests\Database;
 
 use Naf\Board\Tests\Support\AiProjectTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Calling a tool is checked again on the way in.
@@ -68,5 +69,35 @@ final class AiToolCallTest extends AiProjectTestCase
             'name'      => 'nafinity_board',
             'arguments' => ['project_id' => 999],
         ]));
+    }
+
+    #[DataProvider('invalidToolArguments')]
+    public function testArgumentsThatViolateTheToolSchemaAreRefused(string $name, array $arguments): void
+    {
+        $this->assertDenied(422, fn() => $this->ai->call($this->project, [
+            'name'      => $name,
+            'arguments' => $arguments,
+        ]));
+    }
+
+    public static function invalidToolArguments(): iterable
+    {
+        yield 'missing required argument' => ['nafinity_ticket', []];
+        yield 'wrong argument type' => ['nafinity_ticket', ['ticket_id' => '1']];
+        yield 'argument below minimum' => ['nafinity_ticket', ['ticket_id' => 0]];
+        yield 'unknown argument' => ['nafinity_board', ['unexpected' => true]];
+    }
+
+    public function testAnInvalidConfirmedWriteDoesNotChangeTheBoard(): void
+    {
+        $before                     = $this->query->board($this->project);
+        $call                       = $this->createCall();
+        $call['arguments']['title'] = [];
+
+        $this->assertDenied(422, fn() => $this->ai->call($this->project, [...$call, 'confirmed' => true]));
+
+        $after = $this->query->board($this->project);
+        $this->assertSame($before['total'], $after['total']);
+        $this->assertSame($before['board']['revision'], $after['board']['revision']);
     }
 }

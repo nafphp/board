@@ -1,0 +1,47 @@
+<?php
+use Naf\Board\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$bulkable ??= ($bulkProperties ?? []) !== [];
+$pageUrl = static fn(int $number) => route('installation.settings') . '?' . http_build_query(['users_q' => $search, 'users_page' => $number]) . '#installation_users';
+?>
+<div data-people-results>
+    <div class="settings-table-scroll">
+        <table class="settings-people-table">
+            <caption class="sr-only"><?= s(t('Nutzer')) ?></caption>
+            <thead><tr>
+                <?php if ($bulkable): ?><th class="settings-select-cell"><input type="checkbox" data-bulk-all aria-label="<?= s(t('Alle wählbaren Zeilen dieser Seite auswählen')) ?>" /></th><?php endif ?>
+                <th scope="col"><?= s(t('Person')) ?></th>
+                <th scope="col"><?= s(t('Status')) ?></th>
+                <th scope="col"><?= s(t('Rollen')) ?></th>
+                <th scope="col"><span class="sr-only"><?= s(t('Bearbeiten')) ?></span></th>
+            </tr></thead>
+            <tbody>
+                <?php foreach ($people as $person): ?>
+                    <tr data-person-row>
+                        <?php if ($bulkable): ?><td class="settings-select-cell"><input type="checkbox" data-bulk-target value="<?= (int) $person['id'] ?>" <?= $actor === $person['id'] ? 'disabled' : '' ?> aria-label="<?= s(t(':name auswählen', ['name' => $person['name']])) ?>" /></td><?php endif ?>
+                        <td><button type="button" class="settings-person-open" data-person-open="<?= s(route('installation.users.show', ['user' => $person['id']])) ?>" aria-haspopup="dialog"><strong><?= s($person['name']) ?></strong><small><?= s($person['email']) ?></small></button></td>
+                        <td><span class="settings-person-state <?= $person['active'] ? 'is-active' : '' ?>"><?= s(t($person['active'] ? 'aktiv' : 'inaktiv')) ?></span></td>
+                        <td><div class="settings-user-roles">
+                            <?php if ($person['roles'] === []): ?><span class="settings-user-state"><?= s(t('keine Rolle')) ?></span><?php endif ?>
+                            <?php foreach (array_slice($person['roles'], 0, 3) as $grant): ?>
+                                <span class="settings-user-role <?= $grant['scope'] === '' ? 'is-global' : '' ?>"><span class="settings-user-place"><?= s($grant['scopeLabel']) ?></span><span class="settings-user-role-name"><?= s(t($grant['label'])) ?></span></span>
+                            <?php endforeach ?>
+                            <?php if (count($person['roles']) > 3): ?><span class="settings-user-state">+<?= count($person['roles']) - 3 ?></span><?php endif ?>
+                        </div></td>
+                        <td><button type="button" class="icon-button" data-person-open="<?= s(route('installation.users.show', ['user' => $person['id']])) ?>" aria-haspopup="dialog" aria-label="<?= s(t(':name bearbeiten', ['name' => $person['name']])) ?>"><?= Icon::mark('edit', 'sm') ?></button></td>
+                    </tr>
+                <?php endforeach ?>
+            </tbody>
+        </table>
+    </div>
+    <?php if (!$people): ?><p class="settings-row-empty"><?= s(t('Keine Konten gefunden.')) ?></p><?php endif ?>
+    <nav class="settings-table-pages" aria-label="<?= s(t('Nutzerseiten')) ?>">
+        <span><?= s(t(':count Konten · Seite :page von :pages', ['count' => $total, 'page' => $page, 'pages' => $pages])) ?></span>
+        <?php if ($page > 1): ?><a class="button" data-people-page href="<?= s($pageUrl($page - 1)) ?>"><?= s(t('Zurück')) ?></a><?php endif ?>
+        <?php if ($page < $pages): ?><a class="button" data-people-page href="<?= s($pageUrl($page + 1)) ?>"><?= s(t('Weiter')) ?></a><?php endif ?>
+    </nav>
+</div>

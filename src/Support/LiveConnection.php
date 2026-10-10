@@ -125,7 +125,7 @@ final class LiveConnection
      * What this person decided, asked once however often it is wanted.
      *
      * A page asks these questions several times over -- the status beside the
-     * breadcrumb, the roster in the bar, and the token that has to agree with
+     * page context, the roster in the bar, and the token that has to agree with
      * both -- and each was a query of its own. Held for the length of the
      * request that asked, and keyed by person, so nothing here has to be
      * invalidated: the request that writes a preference answers with a redirect

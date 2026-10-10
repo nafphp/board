@@ -1,5 +1,5 @@
 <?php
-
+use Naf\Board\Domain\Placement;
 /**
  * What one person chooses for themselves, in every project.
  *
@@ -7,10 +7,10 @@
  * @var object $user
  */
 
-use Naf\Board\Domain\Placement;
 use Naf\Board\Support\Locales;
 
 use function Naf\Board\field;
+use function Naf\Board\partial;
 use function Naf\config;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
@@ -59,17 +59,17 @@ $logins = (array) config('auth:logins', []);
         'options' => array_combine($zones, $zones),
         'choice'  => ['searchLabel' => 'Zeitzonen suchen'],
     ]) ?>
-    <div class="checkbox-list">
+    <div class="switch-list">
         <?= field([
             'label' => 'Benachrichtigungen in Nafinity',
             'name'  => 'notify_in_app',
-            'type'  => 'checkbox',
+            'type'  => 'switch',
             'value' => (int) $preferences['notify_in_app'],
         ]) ?>
         <?= field([
             'label' => 'Zusätzlich per E-Mail, wenn für den Workspace aktiviert',
             'name'  => 'notify_mail',
-            'type'  => 'checkbox',
+            'type'  => 'switch',
             'value' => (int) $preferences['notify_mail'],
         ]) ?>
     </div>
@@ -81,17 +81,17 @@ $logins = (array) config('auth:logins', []);
           // the presence channel out of this person's token, so they send
           // nothing and therefore also see nobody. Being invisible while
           // watching the others is not a setting worth offering.?>
-    <div class="checkbox-list">
+    <div class="switch-list">
         <?= field([
             'label' => 'Änderungen anderer sofort auf dem Board zeigen',
             'name'  => 'live_updates',
-            'type'  => 'checkbox',
+            'type'  => 'switch',
             'value' => (int) ($preferences['live_updates'] ?? 1),
         ]) ?>
         <?= field([
             'label' => 'Anzeigen, wer gerade im Projekt ist',
             'name'  => 'presence',
-            'type'  => 'checkbox',
+            'type'  => 'switch',
             'value' => (int) ($preferences['presence'] ?? 1),
             'hint'  => 'Die anderen sehen, auf welcher Seite du gerade bist und welches Ticket du geöffnet hast. Aus siehst du sie ebenfalls nicht mehr.',
         ]) ?>
@@ -112,9 +112,7 @@ $logins = (array) config('auth:logins', []);
 <?php if ($logins): ?>
     <section class="settings-section">
         <h3><?= s(t('Externe Konten')) ?></h3>
-        <p class="settings-hint">
-            <?= s(t('Verknüpfe dein angemeldetes Konto ausdrücklich mit deinem Firmenkonto.')) ?>
-        </p>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t('Verknüpfe dein angemeldetes Konto ausdrücklich mit deinem Firmenkonto.')]) ?>
         <div class="settings-actions">
             <?php foreach ($logins as $key => $login): ?>
                 <a class="button subtle" href="<?= s(route('oauth.connect', ['provider' => $key])) ?>">

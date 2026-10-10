@@ -1,0 +1,66 @@
+<?php
+use function Naf\Board\partial;
+use function Naf\Form\csrf;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+?>
+<div class="settings-person-heading">
+    <h3 data-person-title><?= s($person['name']) ?></h3>
+    <span class="settings-person-state <?= $person['active'] ? 'is-active' : '' ?>"><?= s(t($person['active'] ? 'aktiv' : 'inaktiv')) ?></span>
+</div>
+<p class="settings-user-email"><?= s($person['email']) ?></p>
+<p data-person-status role="status" aria-live="polite"></p>
+<section class="settings-person-section" aria-labelledby="person-account-title">
+    <h4 id="person-account-title"><?= s(t('Nutzerkonto')) ?></h4>
+    <?php if ($canManage): ?>
+        <form method="post" action="<?= s(route('installation.users.account', ['user' => $person['id']])) ?>" data-person-account>
+            <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
+            <input type="hidden" name="revision" value="<?= s($revision) ?>" />
+            <div class="form-grid">
+                <label><?= s(t('Name')) ?><input name="name" value="<?= s($person['name']) ?>" maxlength="120" autocomplete="off" required /></label>
+                <label><?= s(t('E-Mail')) ?><input type="email" name="email" value="<?= s($person['email']) ?>" maxlength="190" autocomplete="off" required <?= !$person['local_password'] ? 'readonly' : '' ?> /></label>
+            </div>
+            <?php if (!$person['local_password']): ?><?= partial('components/notice', ['severity' => 'notice', 'message' => t('Die E-Mail-Adresse und das Passwort werden vom Anmeldedienst verwaltet.')]) ?><?php endif ?>
+            <label class="switch-field">
+                <input type="hidden" name="active" value="<?= $self ? (int) $person['active'] : 0 ?>" />
+                <input type="checkbox" role="switch" name="active" value="1" <?= $person['active'] ? 'checked' : '' ?> <?= $self ? 'disabled' : '' ?> />
+                <?= s(t('Konto aktiv')) ?>
+            </label>
+            <?= partial('components/notice', ['severity' => 'warning', 'message' => t($self ? 'Dein eigenes Konto kannst du hier nicht deaktivieren.' : 'Deaktivierte Konten können sich nicht anmelden. Ihre Inhalte und Mitgliedschaften bleiben erhalten.')]) ?>
+            <?= partial('components/notice', ['severity' => 'warning', 'message' => t('Änderungen an E-Mail oder Kontostatus beenden bisherige Anmeldungen. Eine geänderte Adresse ist zunächst unbestätigt.')]) ?>
+            <div class="form-errors" role="alert"></div>
+            <div class="settings-actions"><button class="button primary" type="submit"><?= s(t('Nutzer speichern')) ?></button></div>
+        </form>
+    <?php else: ?><?= partial('components/notice', ['severity' => 'notice', 'message' => t('Du kannst dieses Konto ansehen. Für Änderungen fehlen dir die erforderlichen Rechte.')]) ?><?php endif ?>
+    <dl class="settings-person-meta">
+        <div><dt><?= s(t('Kontoquelle')) ?></dt><dd><?= s(t($person['local_password'] ? 'Lokales Konto' : 'Extern verwaltetes Konto')) ?></dd></div>
+        <div><dt><?= s(t('Erstellt am')) ?></dt><dd><?= s($person['created_at']) ?> UTC</dd></div>
+        <div><dt><?= s(t('E-Mail-Bestätigung')) ?></dt><dd><?= s(t($person['email_verified_at'] ? 'bestätigt' : 'nicht bestätigt')) ?></dd></div>
+    </dl>
+</section>
+<section class="settings-person-section" aria-labelledby="person-security-title">
+    <h4 id="person-security-title"><?= s(t('Kontosicherheit')) ?></h4>
+    <?php if ($canReset): ?>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t('Die Person legt ihr neues Passwort über einen einmaligen Link selbst fest. Bestehende Anmeldungen enden erst beim Speichern des neuen Passworts.')]) ?>
+        <form method="post" action="<?= s(route('installation.users.password_reset', ['user' => $person['id']])) ?>" data-person-reset>
+            <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
+            <input type="hidden" name="revision" value="<?= s($revision) ?>" />
+            <?php if ($mailEnabled): ?><label class="switch-field"><input type="checkbox" role="switch" name="send_email" value="1" checked /><?= s(t('Reset-Link per E-Mail versenden')) ?></label><?php endif ?>
+            <div class="form-errors" role="alert"></div>
+            <button class="button" type="submit"><?= s(t('Reset-Link erstellen')) ?></button>
+            <div data-reset-result hidden>
+                <label><?= s(t('Reset-Link')) ?><input type="url" readonly data-reset-link /></label>
+                <?= partial('components/notice', ['severity' => 'notice', 'message' => t('Dieser Link gilt 30 Minuten und kann nur einmal verwendet werden. Ein neuer Link ersetzt den bisherigen.')]) ?>
+                <button type="button" class="button subtle" data-reset-copy><?= s(t('Link kopieren')) ?></button>
+                <p data-reset-status role="status"></p>
+            </div>
+        </form>
+    <?php else: ?><?= partial('components/notice', ['severity' => 'warning', 'message' => t(!$person['local_password'] ? 'Das Passwort wird vom Anmeldedienst verwaltet.' : (!$person['active'] ? 'Aktiviere das Konto, um einen Reset-Link zu erstellen.' : 'Für Passwort-Resets brauchst du die entsprechende Berechtigung.'))]) ?><?php endif ?>
+</section>
+<details class="settings-person-section settings-person-roles">
+    <summary><?= s(t('Rollen und Zugriffe')) ?></summary>
+    <?= partial('components/notice', ['severity' => 'info', 'message' => t('Eine Rolle ohne Ort gilt überall, eine mit Ort nur dort. Deine eigenen Rollen kann nur jemand anderes ändern.')]) ?>
+    <?= partial('settings/user-roles', ['user' => (int) $person['id'], 'return' => '/settings#installation_users']) ?>
+</details>

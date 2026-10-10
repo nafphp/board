@@ -1,0 +1,57 @@
+<?php
+use function Naf\Board\field;
+use function Naf\Board\partial;
+use function Naf\config;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+?>
+<form class="invitation-form" method="post" data-enhanced action="<?= s(route('invitations.create')) ?>">
+    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+    <?php if ($projectId): ?>
+        <input type="hidden" name="project_id" value="<?= (int) $projectId ?>" />
+    <?php else: ?>
+        <?= field([
+            'label'    => 'Board',
+            'name'     => 'project_id',
+            'type'     => 'select',
+            'options'  => $inviteTargets,
+            'required' => true,
+            'value'    => '',
+            'choice'   => ['placeholder' => 'Board wählen', 'searchLabel' => 'Boards suchen'],
+        ]) ?>
+    <?php endif ?>
+    <?= field([
+        'label'      => 'E-Mail-Adresse',
+        'name'       => 'email',
+        'id'         => 'invite-email',
+        'type'       => 'email',
+        'required'   => true,
+        'attributes' => ['maxlength' => 190, 'autocomplete' => 'off', 'placeholder' => 'person@beispiel.de'],
+    ]) ?>
+    <?= field([
+        'label'   => 'Rolle im Board',
+        'name'    => 'role',
+        'id'      => 'invite-role',
+        'type'    => 'select',
+        'value'   => isset($inviteRoles['member']) ? 'member' : 'viewer',
+        'options' => $inviteRoles,
+        'choice'  => ['searchLabel' => 'Rollen suchen'],
+    ]) ?>
+    <div class="invitation-notices">
+        <?php if (config('nafinity:mail_enabled', false)): ?>
+            <label class="invite-delivery">
+                <input type="checkbox" role="switch" name="send_email" value="1" checked />
+                <?= s(t('Einladung per E-Mail senden')) ?>
+            </label>
+        <?php else: ?>
+            <?= partial('components/notice', ['severity' => 'notice', 'message' => t('Du erhältst einen Link zum Weitergeben. E-Mail-Versand ist derzeit deaktiviert.')]) ?>
+        <?php endif ?>
+        <?= partial('components/notice', ['severity' => 'notice', 'message' => t('Der Link gilt sieben Tage. Eine neue Einladung an dieselbe Adresse ersetzt den bisherigen Link.')]) ?>
+    </div>
+    <div class="form-errors" role="alert"></div>
+    <div class="settings-actions">
+        <button class="button primary"><?= s(t('Person einladen')) ?></button>
+    </div>
+</form>

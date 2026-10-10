@@ -5,37 +5,29 @@ declare(strict_types=1);
 namespace Naf\Board\Export;
 
 /**
- * One record on its way out, and the one thing a listener may change about it.
- *
- * The ticket is the ticket as it is stored, and it is readonly. What a listener
- * edits is `$data` -- the row that will be written, which exists only for the
- * length of this export. So a plugin that reports a ticket differently to an
- * external system reports it differently; it does not quietly change what the
- * board says, which is the whole reason these are two things and not one.
- *
- * `$exporter` is here because "differently" is usually only true of one format.
- * A listener that rewrote a value for every export would also rewrite it for the
- * spreadsheet the team reads, and that is not what anybody asked for.
- *
- * Mutable on purpose, and the only mutable event payload in this application.
- * The alternative -- a listener returning a new line, the dispatcher threading
- * the result through -- would need the event system to care about return values
- * in a way it deliberately does not.
+ * One source record and its mutable outgoing values. The source distinguishes datasets;
+ * the format distinguishes writers. Listeners should check both before mapping values.
  */
 final class ExportLine
 {
+    /** The original source row, independent of the dataset. */
+    public readonly array $record;
+
     /**
      * @param string $exporter Id of the format being written
      * @param int    $project  The project being exported
-     * @param array  $ticket   The stored ticket, joined with its column and swimlane
+     * @param array  $ticket   Legacy alias of record; a ticket row for source=tickets, a booking for source=time
      * @param array  $data     Column key to value, as it will be written
+     * @param string $source   Dataset id, defaulting to tickets for existing callers
      */
     public function __construct(
         public readonly string $exporter,
         public readonly int $project,
         public readonly array $ticket,
         public array $data,
+        public readonly string $source = 'tickets',
     ) {
+        $this->record = $ticket;
     }
 
     /**

@@ -1,0 +1,12 @@
+<?php
+
+use function Naf\Board\choice;
+
+?>
+<?= choice([
+    'name'    => $name,
+    'label'   => $filter->label,
+    'value'   => $value === '' ? '' : ($value ? '1' : '0'),
+    'options' => ['' => 'All test tickets', '1' => 'High priority', '0' => 'Other priorities'],
+    'id'      => 'test-filter',
+]) ?>

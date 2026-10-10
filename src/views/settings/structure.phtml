@@ -17,6 +17,7 @@
 use Naf\Board\Support\Icon;
 
 use function Naf\Board\field;
+use function Naf\Board\partial;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
@@ -106,9 +107,7 @@ $fields = static function (array $item) use ($kind, $colored, $noun): void {
 ?>
 <div class="settings-rows" data-kind="<?= s($kind) ?>">
     <?php if ($kind === 'column'): ?>
-        <p class="settings-note">
-            <?= s(t('Spalten sind die Schritte, die ein Ticket durchläuft. Die Reihenfolge hier ist die Reihenfolge auf dem Board.')) ?>
-        </p>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t('Spalten sind die Schritte, die ein Ticket durchläuft. Die Reihenfolge hier ist die Reihenfolge auf dem Board.')]) ?>
     <?php endif ?>
     <?php if (!$items): ?>
         <p class="settings-row-empty"><?= s(t($emptyLabel)) ?></p>

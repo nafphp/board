@@ -1,0 +1,74 @@
+<?php
+use function Naf\Form\csrf;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+?>
+<!doctype html>
+<html lang="<?= s(\Naf\I18n\lang()) ?>" data-theme="system" data-palette="classic" data-appearance-source="local">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="referrer" content="no-referrer" />
+        <title><?= s(t('Einladung')) ?> · Nafinity</title>
+        <script src="/assets/boot.js?v=2"></script>
+        <link rel="stylesheet" href="/assets/app.css?v=38" />
+    </head>
+    <body class="login-body">
+        <div class="login-art">
+            <a class="brand" href="/">
+                <span class="brand-symbol">∞</span> nafinity<span class="brand-dot"></span>
+            </a>
+            <div class="login-message">
+                <span class="eyebrow"><?= s(t('EINLADUNG')) ?></span>
+                <h1><?= s($invitation['project_name'] ?? t('Willkommen bei Nafinity.')) ?></h1>
+                <p><?= s(t('Ein Konto. Gemeinsam im Board arbeiten.')) ?></p>
+            </div>
+        </div>
+        <main class="login-panel">
+            <div class="login-card">
+                <h2><?= s($matching ? t('Board beitreten') : t('Dein Konto anlegen')) ?></h2>
+                <?php if ($error): ?>
+                    <p class="form-errors visible" role="alert"><?= s($error) ?></p>
+                <?php endif ?>
+                <?php if ($invitation): ?>
+                    <p class="muted"><?= s(t('Einladung für :email', ['email' => $invitation['email']])) ?></p>
+                    <?php if ($signedIn && !$matching): ?>
+                        <p><?= s(t('Diese Einladung gehört zu einer anderen E-Mail-Adresse. Bitte melde dich zuerst ab.')) ?></p>
+                        <form method="post" action="<?= s(route('logout')) ?>">
+                            <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
+                            <input type="hidden" name="return_to" value="/invitations/<?= s($token) ?>" />
+                            <button class="button subtle"><?= s(t('Abmelden')) ?></button>
+                        </form>
+                    <?php elseif ($invitation['existing'] && !$signedIn): ?>
+                        <p><?= s(t('Bitte melde dich mit dem eingeladenen Konto an.')) ?></p>
+                        <a class="button primary full-width" href="/login?invitation=<?= s($token) ?>"><?= s(t('Anmelden und Einladung öffnen')) ?></a>
+                    <?php else: ?>
+                        <form method="post" action="<?= s(route('invitations.accept', ['token' => $token])) ?>">
+                            <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
+                            <?php if (!$matching): ?>
+                                <label>
+                                    <?= s(t('Name')) ?>
+                                    <input name="name" value="<?= s($name) ?>" maxlength="120" autocomplete="name" required />
+                                </label>
+                                <label>
+                                    <?= s(t('Passwort')) ?>
+                                    <input type="password" name="password" autocomplete="new-password" minlength="15" required />
+                                </label>
+                                <small class="muted"><?= s(t('Mindestens 15 Zeichen, höchstens 72 Bytes.')) ?></small>
+                                <label>
+                                    <?= s(t('Passwort bestätigen')) ?>
+                                    <input type="password" name="password_confirmation" autocomplete="new-password" minlength="15" required />
+                                </label>
+                            <?php endif ?>
+                            <button class="button primary full-width"><?= s($matching ? t('Board beitreten') : t('Konto anlegen und Board beitreten')) ?></button>
+                        </form>
+                    <?php endif ?>
+                <?php else: ?>
+                    <a class="button subtle" href="/login"><?= s(t('Zur Anmeldung')) ?></a>
+                <?php endif ?>
+            </div>
+        </main>
+    </body>
+</html>

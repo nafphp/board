@@ -273,6 +273,27 @@ in is spread first, so a foreign `$data['user']` does not overwrite the shell da
 only resolves the view mapping and renders a partial. Project and record authorization remain
 the controller's job.
 
+### Account invitations
+
+`InvitationServiceInterface` is the shared service for board and installation invite forms:
+`create(project, data)` takes `email`, `role` (default `member`) and optional `send_email`;
+it returns an expiring `invitation_url`. `pending(project)` lists revocable invitations,
+`revoke(project, invitation)` invalidates one, and `search(project, query)` returns the bounded,
+authorized active-account directory. `targets()` lists boards the current actor may invite to.
+`find(token)` returns the public preview; `accept(token, data)` handles registration or the
+authenticated matching account and consumes the link atomically. Account email always comes
+from the invitation. Acceptance preserves an existing active membership. See
+[Profile](Profile.md#inviting-people-and-assigning-boards) for the identity and expiry rules.
+
+Contributions can inject this contract or replace its implementation through the normal
+service provider binding. The settings forms and public controllers use the same contract.
+A replacement must retain project authorization, role limits, recipient identity checks,
+expiry, one-time consumption and account/membership transaction boundaries; returning an
+unchecked registration URL would bypass them. `project.invited`, `project.invitation_revoked`,
+`account.created` and `project.member_changed` are ordinary transactional `Change` kinds.
+Their payloads exclude credentials and invitation tokens. A listener may reject a write;
+it must not send the invitation a second time.
+
 ## Permissions
 
 ```php
@@ -321,6 +342,7 @@ The fixed slots:
 | `sidebar.workspace` | Workspace entries in the left menu |
 | `sidebar.project` | Navigation for the selected project |
 | `sidebar.footer` | The lower menu area |
+| `topbar.tools` | Workspace search, before the account actions |
 | `topbar.actions` | Actions in the top bar |
 | `projects.actions`, `projects.card.badges` | Project overview |
 | `board.actions`, `board.card.badges`, `board.card.details`, `board.card.actions`, `board.column.summary` | Board |
@@ -338,7 +360,7 @@ scope. The context is available in the template as `$slot`.
 
 | Context | Slots | Holds |
 |---|---|---|
-| `PageSlotContext` | `sidebar.*`, `topbar.actions`, `projects.actions`, `notifications.actions`, `activity.actions`, `profile.panels` | `ui()` only |
+| `PageSlotContext` | `sidebar.*`, `topbar.tools`, `topbar.actions`, `projects.actions`, `notifications.actions`, `activity.actions`, `profile.panels` | `ui()` only |
 | `ProjectSlotContext` | `projects.card.badges` | `project`, `projectId()` |
 | `BoardSlotContext` | `board.*` | `project`, `scope`, `labels`, `members`, `metadata`, `token`, `card`, `column`, `value()` |
 | `TicketSlotContext` | `ticket.actions`, `ticket.main.widgets`, `ticket.sidebar.panels` | `ticket`, `project`, `scope`, `board`, `params`, `token`, `editable`, `isNew`, `columns`, `swimlanes`, `labels`, `members`, `metadata`, `fields`, `links`, `attachments`, `activity`, `timer`, `preferences`, `creator`, `field`, `value()`, `fieldsIn()` |
@@ -433,7 +455,7 @@ possible but has to preserve those areas.
 
 ## Settings
 
-```php
+```php-inline
 use function Naf\Board\settings;
 
 settings()->get('theme', 'system');                 // brightness: system | light | dark
@@ -443,7 +465,7 @@ settings()->has('theme');                           // registered and readable, 
 settings()->collection();                           // Naf\Support\Collection as a snapshot
 settings()->forProject($projectId)->get('name');
 settings()->forProjectUser($projectId)->get('muted');
-settings()->forApplication()->get('mail_enabled');  // declared config values only
+settings()->forApplication()->get('mail_enabled');  // effective installation configuration
 settings()->save(['theme' => 'dark'], resetKeys: []);
 ```
 
@@ -468,6 +490,7 @@ $context->settings()->add(new SettingDefinition(
     writePermission: 'example.reports.view',
     sensitive: false,
     configKey: null,
+    advanced: false,            // opt into advanced installation fields
 ));
 ```
 
@@ -481,8 +504,14 @@ $context->settings()->add(new SettingDefinition(
   values. For `project`, writing requires `manage` by default; an explicitly given plugin write
   permission applies to that plugin's own key. Legacy project fields immutably require at least
   `manage`. Project reads always require membership.
-- `application` is read-only, has no HTTP route and is readable in the CLI without a session.
-  There is no global write permission.
+- `application` reads effective configuration, including administration overrides, and is
+  readable by trusted PHP/CLI code without a session. Its HTTP endpoints and writes require
+  installation `settings.manage`. Writable definitions need a `configKey`; resets restore
+  server configuration. See [installation configuration](Settings-And-AI.md#installation-configuration).
+- `advanced: true` places an installation field below the standard fields when the advanced
+  view is enabled. The default is false. Generated configuration fields opt in automatically;
+  cards containing only advanced fields appear in the separate advanced section. Hidden
+  controls are disabled and omitted from saves. This flag controls presentation, not permissions.
 - `sensitive: true` never leaves the server: not in `all()`, not over HTTP, not in logs, events
   or errors. Trusted server-side code may read such a value individually after the normal scope
   check. In the form, sensitive inputs stay empty; a value that is not submitted stays unchanged.
@@ -499,7 +528,10 @@ same internal persistence
 New plugin values live in `user_settings`, `project_settings` and `project_user_settings`: one
 row per key, `value_json TEXT`, at most 16 KiB per value. No DDL per field.
 
-A mixed write runs in **one** transaction: for project values under the project lock with the
+Application overrides use the private encrypted configuration file, loaded before plugin
+boot, rather than these database tables. See the installation configuration guide above.
+
+A mixed user/project write runs in **one** transaction: for project values under the project lock with the
 current record fully loaded, so that fields not submitted are not overwritten; for user values
 with the user row locked. An error prevents every write of the request. A key may not be set and
 reset at the same time.
@@ -508,6 +540,7 @@ reset at the same time.
 
 | Route name | Method and path | Context |
 |---|---|---|
+| `api.settings.application.read` / `.write` | GET / POST `/api/settings/application` | authorized installation administrator |
 | `api.settings.user.read` / `.write` | GET / POST `/api/settings/user` | the signed-in user |
 | `api.settings.project.read` / `.write` | GET / POST `/api/projects/{project}/settings` | project |
 | `api.settings.project_user.read` / `.write` | GET / POST `/api/projects/{project}/settings/user` | project + signed-in user |
@@ -515,7 +548,9 @@ reset at the same time.
 GET returns `{"values": {...}}`; `?key=…` narrows it to one registered, readable, non-sensitive
 key (404 otherwise), and a missing permission gives 403. POST expects
 `{"values": {...}, "resetKeys": [...]}` and answers after a successful mutation with the same
-filtered list. All responses carry `Cache-Control: private, no-store`.
+filtered list. Application forms additionally submit `configurationRevision` for stale-write
+protection and per-field `modes` (`configuration`, `administration`, `empty`). Only submitted
+fields change; hidden advanced fields preserve their current values. All responses carry `Cache-Control: private, no-store`.
 
 > PHP's session module additionally sends its own
 > `Cache-Control: no-store, no-cache, must-revalidate`. Both headers are in the response, with
@@ -544,6 +579,7 @@ interface FieldTypeInterface
 ```
 
 Standard types: `text`, `textarea`, `boolean`, `integer`, `date`, `select`, `multiselect`.
+Global configuration also registers `configuration_json` and write-only `secret` fields.
 Validation checks **the permitted raw representation first**, then normalises, then checks the
 normalised domain; invalid input is never silently turned into a default.
 `options['nullable'] = true` explicitly allows `null`. Boolean accepts `bool` as well as `'0'`
@@ -707,6 +743,8 @@ existing script that reads `form.elements.x.value` or `selectedOptions[0]` keeps
 | `optionData` | `value => ['name' => 'value']`, rendered as `data-*` on that option |
 | `nativeData` | `data-*` on the native control, for an existing script hook |
 | `disabled` | Leaves the native control in place, unenhanced |
+| `id`, `listId` | Unique native-control and listbox ids when several controls share a name |
+| `clearField` | Emit the multiselect clear marker, default `true` |
 
 A list shorter than `searchFrom` gets no search box, and keyboard focus then lands on the
 popup instead of the hidden input. Inside a ticket's inline fields the trigger renders
@@ -730,20 +768,31 @@ A whole labelled field — label, control and hint — is `field()`, which hands
 ```
 
 Its `type` covers `text`, `email`, `url`, `password`, `number`, `color`, `date`, `search`,
-`textarea`, `checkbox`, `select` and `multiselect`; `attributes` passes anything else through to
+`textarea`, `checkbox`, `switch`, `select` and `multiselect`; `attributes` passes anything else through to
 the control, and `choice` passes further arguments to the select. Both helpers live in
 `Naf\Board\`, so a package writes the same call the host does.
+
+Use `type: switch` for an on/off control. It renders a native checkbox with `role="switch"`
+and the shared switch appearance, including keyboard focus and a disabled state. Its value is
+`1` when checked; when unchecked the field is omitted, just like `type: checkbox`. Registered
+`boolean` settings fields also render as switches and keep their preceding hidden `0` field so that
+switching off submits an explicit false value. Multiple-choice selection remains a checkbox.
 
 A `multiselect` renders checkboxes preceded by an empty field of the same name. PHP folds
 `name` and `name[]` into one array when the bare name is parsed first, so a submission with
 nothing ticked arrives as an empty string, and the settings controller reads that as an empty
-list rather than a list holding an empty string.
+list rather than a list holding an empty string. If several multiselects contribute to
+the same array, place one clear marker before all of them and pass `clearField: false`
+to each. Repeating the bare marker between `name[]` controls would discard earlier
+selections in PHP. Give those controls distinct `id` and `listId` values so their
+accessible listbox references remain unique.
 
 The browser side is `public/assets/choice.js`. It enhances every `[data-choice]` on load,
 and exports `enhanceChoices(scope)`, `openChoice(root)`, `closeChoices(scope)` and
 `refreshChoices(scope)`. A list that JavaScript fills in later — the way the AI card fills its
 model lists — calls `refreshChoices(form)` afterwards so the drawn list is rebuilt from the
-native options.
+native options. The component also enhances controls within `nafinity:fragment-updated`
+containers and closes their popovers on `nafinity:fragment-removing`.
 
 ## Views
 
@@ -761,6 +810,35 @@ the mapping selects a different target. Cycles are detected and reported. The ho
 remove a mapping last.
 
 An additive widget contribution needs **no** view override.
+
+### Notice component
+
+Render reusable notices through the native partial helper:
+
+```php
+<?= \Naf\Board\partial('components/notice', [
+    'severity' => 'warning',
+    'title'    => \Naf\I18n\t('Check before saving'),
+    'message'  => \Naf\I18n\t('This change ends existing sessions.'),
+]) ?>
+```
+
+`message` and the optional `title` are translated plain text; the component escapes both.
+There is no raw HTML argument. `severity` accepts `notice`, `info` (the default), `warning`
+and `error`. Unknown values fall back to `info`. Each variant has a local Material Symbols
+icon, its own colour and an accessible severity label. Errors use `role="alert"`; other
+variants use `role="note"`. Use errors for actual failures rather than general guidance.
+
+For a dynamic message, `messageAttributes` can carry trusted view attributes such as
+`['data-account-status' => true, 'role' => 'status']`. The hook is on the message paragraph,
+so replacing its `textContent` preserves the icon. An empty notice without a title is hidden.
+Keep attribute names in application code; message and attribute values remain escaped.
+Shared styling lives in `app.css`, icons in `icons.css`. The ordinary application layout
+loads both. A standalone page using this component must also load those stylesheets.
+
+Notice partials use the same override lookup as other views. Existing `field()` and
+`choice()` components remain the entry points for form controls; this component does not
+change form submission or introduce a second rendering layer.
 
 ## Board filters
 
@@ -787,6 +865,59 @@ The core query parameters (`column`, `swimlane`, `assignee`, `label`, `status`, 
 stay compatible; plugin filters arrive as `filters[example.reviewed]`. An unknown filter reports
 **422** instead of being silently ignored. The normalised result feeds the filter display, the
 count and the card query together, and activates the same drag-and-drop restriction as before.
+
+### Filter controls and personal visibility
+
+Give `BoardFilterDefinition` a `view` to put its control directly in the filter bar.
+The same definition then appears automatically in the account's **Board filters**
+switch list. The board and the settings resolve the registry after all providers and
+the host's `extensions.php`, so later contributions, replacements and removals need
+no edit to the board template or a second list of settings. New controls are visible
+by default. `index` orders both lists; ids stay stable when labels change.
+
+For the reviewed filter above, add `view: 'example-a/review-filter'` after its index.
+The template receives `$filter` (the definition), `$name` (`filters[example.reviewed]`),
+`$value` (the normalized value or an empty string), and the authorized `$project`,
+`$scope`, `$columns`, `$swimlanes`, `$members` and `$labels`. For example:
+
+```php
+<?php
+use function Naf\Board\choice;
+use function Naf\I18n\t;
+
+echo choice([
+    'name' => $name,
+    'label' => $filter->label,
+    'value' => $value === '' ? '' : ($value ? '1' : '0'),
+    'options' => ['' => t('Alle'), '1' => t('Geprüft'), '0' => t('Nicht geprüft')],
+    'id' => 'filter-example-reviewed',
+]);
+```
+
+The view can also use ordinary named form controls. A bubbling `change` event applies
+the current form immediately; `choice()` emits it itself. The empty string clears a
+filter, while `false` and `0` remain active values. A hidden but active filter is still
+shown so the user can clear it. Filters without a view stay usable through URLs and
+their active values survive changing a visible control, but they have no visibility
+switch. Global workspace search stays available in the top bar; the board filter row
+has no separate text-search input. Existing board URL `q` values remain supported and
+are retained as hidden controls until the filters are reset.
+
+To hide a control programmatically for the current account, use the existing settings
+facade. Preserve other entries when changing only one:
+
+```php-inline
+use function Naf\Board\settings;
+
+$visibility = settings()->get('board_filters', []);
+$visibility['example.reviewed'] = false;
+settings()->save(['board_filters' => $visibility]);
+```
+
+Settings validate ids against the current registry and accept boolean values (native
+forms may send `0` and `1`). Removing an extension hides its control and switch without deleting stored data;
+normalization ignores ids that are no longer registered. This is a display preference, not an
+authorization boundary: each filter query still has the existing project checks.
 
 ## Estimation, activity and AI
 
@@ -837,22 +968,22 @@ request data.
 ## Events
 
 Registries say what exists; events are how a plugin takes part in something already running.
-There are five, and each is a class: `dispatch(new Change(…))`, `listen(Change::class, …)`.
+Each event is a class: `dispatch(new Change(…))`, `listen(Change::class, …)`.
 A misspelled class is an error where it is written, while a misspelled event name used to be a
 listener that never ran and never said so.
 
 | Event | Carries | When |
 |---|---|---|
-| `Change` | project, ticket, actor, type, payload | Anything was written — 24 kinds, from `ticket.moved` to `account.created` |
+| `Change` | project, ticket, actor, type, payload | Anything was written — registered kinds, from `ticket.moved` to `account.created` |
 | `GrantsChanged` | actor, subject, scope, before, after | Roles or permissions moved (from `naf/rbac`) |
 | `SignIn` | email, provider, outcome, account | Somebody tried to sign in, successfully or not |
-| `ExportStarted` | format, project, columns | An export is about to write its first record |
-| `ExportLine` | format, project, ticket, row | One record, before it is written |
-| `ExportFinished` | format, project, columns, count | An export wrote its last record |
+| `ExportStarted` | format, source, project, columns | An export is about to write its first record |
+| `ExportLine` | format, source, project, record, row | One record, before it is written |
+| `ExportFinished` | format, source, project, columns, count | An export wrote its last record |
 
-`Change` is one event with twenty-four kinds rather than twenty-four events, because the
-listeners that exist mostly want all of them — the audit log and the live updates do — and a
-plugin interested in one writes one line:
+`Change` uses registered kinds to identify writes. The listeners that exist mostly want all
+of them — the audit log and the live updates do — and a plugin interested in one writes one
+line:
 
 ```php
 event()->listen(Change::class, function (Change $change): void {
@@ -885,6 +1016,17 @@ right trade: the listener sees the finished state rather than a proposal.
 purpose. By then the session is published and the person is in; rolling that back would leave
 them signed in with no record of it. Refusing a sign-in is the authentication provider's job.
 
+### Project deletion
+
+`ProjectServiceInterface::delete($project, ['confirmation' => $currentName])` permanently
+removes an owned project, including an archived one. It checks current membership and
+the exact current name inside the existing project lock and transaction. It dispatches
+`Change` with type `project.deleted` and the project's `name` before removing any core
+data. A listener can remove its own dependent rows while the project still exists; throwing
+refuses the operation and rolls everything back. Core deletion does not discover or delete
+extension-owned tables. Plugins with foreign keys to project data must handle this event.
+Audit history keeps the original scope after its project and ticket references are detached.
+
 ## Export
 
 Two registries' worth of question, answered by one registry and one event:
@@ -902,10 +1044,14 @@ $context->exporters()->add(new ExporterDefinition(
 
 The writer implements `ExporterInterface`: `open()`, `line()` and `close()`. It is built fresh for
 each export and may keep the state of that one export, so a format that needs to know whether it
-has written a record yet simply remembers. Records arrive one at a time and are written as they
-arrive — an export costs one ticket in memory plus a file, not a copy of the board.
+has written a record yet simply remembers. CSV, JSON and text stream records as they arrive. PDF buffers a document and therefore
+uses memory proportional to its rendered pages.
 
-Registering a format adds it to the format selector in both export settings cards. Board settings
+Registering a format adds it to selectors for the datasets listed in its `sources`. Existing
+definitions default to `['tickets']`; opt into personal hours with `sources: ['time']` or
+both with `sources: ['tickets', 'time']`. `ExporterRegistry::forSource()` drives the selectors
+and `ExportRenderer` rejects unsupported combinations. Core CSV, JSON and text support both;
+PDF currently supports hours. A ticket-specific plugin is not offered for hours by accident. Board settings
 export only their own project; installation settings offer one board or all authorized active
 boards in a single file. Both download endpoints use the same exporter registry.
 
@@ -953,6 +1099,48 @@ that board's row count. `ExportLine::project` identifies each row's board. Write
 temporary stream. Exports read live data and are not a transactionally consistent backup.
 Attachments, comments and board structure are outside this ticket export.
 
+### Additional datasets and accounting adapters
+
+Ticket queries (`ExportService`) and personal time queries (`TimeExportService`) supply
+normalized data to one `ExportRenderer`. The renderer creates a fresh writer, opens one
+temporary stream, dispatches the existing events, finalizes the document and closes the
+stream on failure. It publishes `ExportFinished` only after the writer has finalized the file.
+
+A source authorizes **all** selected projects before reading any rows, then calls
+`ExportRenderer::write($format, $source, $columns, $groups, $basename)`. `$groups` maps project
+ids to lazy iterables of `['record' => $originalRow, 'data' => $outgoingValues]`. The source
+owns selection and authorization; format writers never query data. Use a stable namespaced
+source id and declare it in supported format definitions. This is also the path for a future
+billing dataset once the application has the required invoice information.
+
+Export events expose `source`, defaulting to `tickets` for existing callers. `ExportLine::record`
+is the immutable source row; `ticket` remains its compatibility alias. For `time`, it contains
+the stored booking snapshot, not a current ticket. A listener for a particular dataset must
+check `source` as well as `isFor()`, for example:
+
+```php
+event()->listen(ExportLine::class, static function (ExportLine $line): void {
+    if ($line->source !== 'time' || !$line->isFor('example.billing')) {
+        return;
+    }
+    $line->data['hours'] = $line->data['minutes'] / 60;
+});
+```
+
+Personal time exports require current project read access and always select the authenticated
+user, independent of any `user` request parameter. See [personal hours](Profile.md#exporting-personal-hours)
+for booking semantics and the historical-data limit. There is no invoice schema or universal
+accounting-tool import in this dataset. A provider-specific writer can be registered through
+the same exporter registry when its required input fields and import contract are available.
+
+Extensions that transform personal bookings reuse
+`TimeExportService::bookings($projects, $options)`. It eagerly authorizes every project,
+captures the authenticated actor and returns the same lazy normalized records used by
+`write()`. Pass a `TimeExportOptions` for the inclusive UTC booking-date filter. Do not
+query `ticket_time_entries` from an adapter or accept a different user id. An optional
+adapter may aggregate integer minutes into another dataset and pass it to `ExportRenderer`;
+its format definitions opt into that dataset, keeping those formats out of raw time menus.
+
 ### Changing what an export says
 
 ```php
@@ -975,7 +1163,7 @@ would be a poor way to learn. `ExportLine` carries the stored ticket as `readonl
 the row and the export says something else; the board still says what the board said. An export
 that edited the tickets it was reading is the worst possible way to find that out.
 
-Ask `isFor()` first. A mapping that was true of every format would also rewrite the spreadsheet
+Check `source` and `isFor()` first. A mapping that was true of every format would also rewrite the spreadsheet
 the team reads, which is rarely what anybody means by "the external system needs `done`".
 
 There is no transformer registry and no export hook manager. A listener on a documented event is
@@ -1116,3 +1304,21 @@ works by being used.
 Nafinity's own `home` route replaces an extension's early route. Provider route overrides
 follow Board's routes, and host routes run last. The framework dispatcher uses the bound target
 class, so a provider's service replacement reaches the controller too.
+
+### Invoice-position adapters
+
+Core contributes the `invoice-items` source and its profile card. Its neutral aggregation,
+provider writers and extension contract are documented in [Invoice exports](Invoice-Exports.md).
+Register formats with `sources: ['invoice-items']` to add them to that card; they use the same
+renderer and events as ticket and time exports.
+
+The same definition can opt into direct invoice drafts with `draftAdapter: YourAdapter::class`,
+implementing `InvoiceDraftAdapterInterface`. `ExporterRegistry::forDrafts()` supplies the
+account selectors; central services own previews, credentials and booking claims. See
+[Invoice exports](Invoice-Exports.md#create-a-draft-directly-in-your-invoicing-tool).
+
+## Bulk-editable properties
+
+Mass editing is an explicit resource/property capability, with shared field types
+and domain handlers inside a single transaction. See [People and bulk properties](People-And-Bulk-Updates.md) for registration, handler contracts, authorization
+and concurrency requirements. Existing settings and ticket fields do not opt in automatically.

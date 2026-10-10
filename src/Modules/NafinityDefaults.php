@@ -28,6 +28,7 @@ final class NafinityDefaults implements ExtensionProviderInterface
         CoreGrantAudit::class,
         CoreSignInAudit::class,
         CoreFieldTypes::class,
+        CoreBulkProperties::class,
         CoreEstimation::class,
         CoreActivity::class,
         CoreNavigation::class,

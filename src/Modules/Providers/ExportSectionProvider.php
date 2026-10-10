@@ -28,7 +28,7 @@ final class ExportSectionProvider implements SettingSectionProviderInterface
             return ['visible' => false];
         }
         $formats = [];
-        foreach (extensions()->exporters()->all() as $exporter) {
+        foreach (extensions()->exporters()->forSource('tickets') as $exporter) {
             $formats[$exporter->id] = t($exporter->label);
         }
 

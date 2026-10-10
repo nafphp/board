@@ -325,6 +325,14 @@ window.addEventListener('resize', reposition);
 window.addEventListener('scroll', reposition, true);
 window.visualViewport?.addEventListener('resize', reposition);
 
+document.addEventListener('nafinity:fragment-updated', (event) => {
+  const scope = event.detail?.container ?? event.detail?.node;
+  if (scope) enhanceChoices(scope);
+});
+document.addEventListener('nafinity:fragment-removing', (event) => {
+  if (event.detail?.node) closeChoices(event.detail.node);
+});
+
 // Every page loads this module, so the first pass belongs here rather than in
 // whichever feature happened to need a select first.
 if (document.readyState === 'loading')

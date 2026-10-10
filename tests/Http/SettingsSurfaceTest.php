@@ -23,12 +23,11 @@ final class SettingsSurfaceTest extends AcceptanceTestCase
         'column',
         'swimlane',
         'label',
-        'project_personal',
         'project_export',
     ];
 
     /** What an account is: what holds for one person, in every project. */
-    private const array ACCOUNT_CARDS = ['personal', 'ai'];
+    private const array ACCOUNT_CARDS = ['personal', 'board_filters', 'ai'];
 
     /**
      * @return array<string,array{string}>
@@ -82,6 +81,24 @@ final class SettingsSurfaceTest extends AcceptanceTestCase
                 sprintf('the project card "%s" is offered outside a project', $card),
             );
         }
+    }
+
+    public function testProjectSettingsDoNotRepeatThePersonalNotificationCard(): void
+    {
+        $settings = $this->page($this->alice, '/projects/' . self::PROJECT . '/settings');
+
+        $this->assertStringNotContainsString('data-settings-open="project_personal"', $settings);
+        $this->assertStringNotContainsString('Für mich in diesem Projekt', $settings);
+        $this->assertStringContainsString('name="notify_in_app"', $settings);
+        $this->assertStringContainsString('name="notify_mail"', $settings);
+
+        $notifications = $this->page($this->alice, '/notifications');
+        $this->assertMatchesRegularExpression(
+            '#<form[^>]*action="/projects/' . self::PROJECT . '/mute"[^>]*>.*?'
+            . 'name="muted" value="1".*?name="muted" value="0".*?</form>#s',
+            $notifications,
+            'project notifications can no longer be muted or enabled',
+        );
     }
 
     /** The settings are a view of the project, reached and left through its tabs. */

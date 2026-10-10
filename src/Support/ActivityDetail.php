@@ -91,7 +91,7 @@ final class ActivityDetail
         }
 
         return match ((string) $item['event_type']) {
-            'ticket.created', 'project.created' => self::quoted($payload['title'] ?? $payload['name'] ?? null),
+            'ticket.created', 'project.created', 'project.deleted' => self::quoted($payload['title'] ?? $payload['name'] ?? null),
             // The entry outlives the ticket, so it carries what the ticket was
             // called: the link beside it is gone with the row it pointed at.
             'ticket.deleted' => self::deleted($payload),
