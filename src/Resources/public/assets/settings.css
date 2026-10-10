@@ -234,12 +234,6 @@
   font-size: 12px;
   line-height: 1.5;
 }
-.permission-grid input {
-  width: 17px;
-  height: 17px;
-  flex-shrink: 0;
-  accent-color: var(--accent);
-}
 @media (max-width: 650px) {
   .settings-context {
     flex-direction: column;
@@ -582,14 +576,15 @@ label > small {
 
 /* The role editor naf/rbac ships, in this application's colours. Its own
    defaults are neutral so that this is the whole of the mapping. */
-.rbac-roles,
-.rbac-grants {
+body .rbac-roles,
+body .rbac-grants {
   --rbac-line: var(--line);
   --rbac-muted: var(--muted);
   --rbac-accent: var(--accent);
   --rbac-danger: var(--danger, #e05260);
   --rbac-surface: var(--input);
   --rbac-radius: 10px;
+  --rbac-switch-thumb: var(--surface);
 }
 .rbac-roles .rbac-button.is-primary,
 .rbac-grants .rbac-button.is-primary {
@@ -600,9 +595,6 @@ label > small {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-.invite-delivery input {
-  width: auto;
 }
 .pending-invitations {
   padding: 0;

@@ -15,6 +15,16 @@ preserved on close, and after a successful save the same card is reopened. The a
 the operating system's reduced-motion option. On small screens the dialog takes up nearly the
 whole area.
 
+## Switches
+
+On/off controls share the same switch appearance, including personal notifications,
+live updates, presence, the local assistant, live answers, invitation delivery, and permissions
+for project and installation roles. Registered `boolean` settings use it too. Switches
+keep their native checkbox behavior, keyboard activation, visible focus and disabled state.
+Personal settings, roles and invitations still take effect through their form's Save or submit
+button; project mute switches retain their immediate save behavior. Multiple-choice controls,
+such as ticket assignees, keep checkboxes.
+
 ## Project management
 
 The General card ends with a quiet **Manage project** section for owners. Archiving keeps

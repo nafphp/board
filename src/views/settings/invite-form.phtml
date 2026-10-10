@@ -40,7 +40,7 @@ use function Naf\View\s;
     ]) ?>
     <?php if (config('nafinity:mail_enabled', false)): ?>
         <label class="invite-delivery">
-            <input type="checkbox" name="send_email" value="1" checked />
+            <input type="checkbox" role="switch" name="send_email" value="1" checked />
             <?= s(t('Einladung per E-Mail senden')) ?>
         </label>
     <?php else: ?>

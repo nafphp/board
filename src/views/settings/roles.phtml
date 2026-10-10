@@ -107,6 +107,7 @@ use function Naf\View\s;
                                 <label title="<?= s(t($definition->description)) ?>">
                                     <input
                                         type="checkbox"
+                                        role="switch"
                                         name="permissions[]"
                                         value="<?= s($permission) ?>"
                                         <?= in_array($permission, $role['permissions'] ?? [], true) ? 'checked' : '' ?>

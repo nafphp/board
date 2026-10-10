@@ -1213,40 +1213,6 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 .filter-visibility-row + .filter-visibility-row {
   border-top: 1px solid var(--line);
 }
-:is(.filter-visibility, .project-notifications) input[role='switch'] {
-  appearance: none;
-  flex: none;
-  position: relative;
-  width: 36px;
-  height: 21px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--muted);
-  cursor: inherit;
-  transition: background 0.18s;
-}
-:is(.filter-visibility, .project-notifications) input[role='switch']::before {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background: var(--surface);
-  transition: transform 0.18s;
-}
-:is(.filter-visibility, .project-notifications) input[role='switch']:checked {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-:is(.filter-visibility, .project-notifications) input[role='switch']:checked::before {
-  transform: translateX(15px);
-}
-:is(.filter-visibility, .project-notifications) input[role='switch']:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-}
 .clear-filter {
   color: var(--accent);
   font-size: 11px;
@@ -1933,6 +1899,88 @@ input[type='checkbox'] {
   height: 14px;
   margin: 0;
 }
+/* Keep native form submission and keyboard activation for every on/off control. */
+input[type='checkbox'][role='switch'] {
+  appearance: none;
+  box-sizing: border-box;
+  flex: none;
+  position: relative;
+  width: 36px;
+  height: 21px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--muted);
+  cursor: var(--cursor-pointer, pointer);
+  vertical-align: middle;
+  transition:
+    background 0.18s,
+    border-color 0.18s;
+}
+input[type='checkbox'][role='switch']::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--surface);
+  transition: transform 0.18s;
+}
+input[type='checkbox'][role='switch']:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+input[type='checkbox'][role='switch']:checked::before {
+  transform: translateX(15px);
+}
+input[type='checkbox'][role='switch']:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+input[type='checkbox'][role='switch']:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.switch-field {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 4px;
+  cursor: var(--cursor-pointer, pointer);
+}
+.switch-field > input[role='switch'] {
+  grid-column: 1;
+  grid-row: 1;
+}
+.switch-field > .field-hint {
+  grid-column: 2;
+}
+label[data-setting-key]:has(> input[role='switch']) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+label[data-setting-key] > input[role='switch'] {
+  order: -1;
+}
+@media (prefers-reduced-motion: reduce) {
+  input[type='checkbox'][role='switch'],
+  input[type='checkbox'][role='switch']::before {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  input[type='checkbox'][role='switch'] {
+    appearance: auto;
+  }
+  input[type='checkbox'][role='switch']::before {
+    display: none;
+  }
+}
 textarea {
   resize: vertical;
   line-height: 1.7;
@@ -1982,34 +2030,17 @@ fieldset:disabled .choice-trigger,
 fieldset:disabled select {
   cursor: default;
 }
-.checkbox-list {
+.switch-list {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 12px;
   display: grid;
-  gap: 10px;
-  max-height: 165px;
-  overflow: auto;
+  gap: 12px;
   background: var(--input);
 }
-.checkbox-list label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.switch-list .switch-field {
   margin: 0;
-  font-size: 11px;
-}
-/* A checkbox that needs a sentence to explain it gets one under its label
-   rather than beside it, lined up with the label and not with the box: three
-   unequal things in a row read as three things rather than as one. */
-.checkbox-list label:has(.field-hint) {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: baseline;
-  row-gap: 4px;
-}
-.checkbox-list label:has(.field-hint) .field-hint {
-  grid-column: 2;
+  font-size: 12px;
 }
 .ticket-detail {
   max-width: 1080px;

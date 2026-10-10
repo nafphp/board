@@ -751,9 +751,15 @@ A whole labelled field — label, control and hint — is `field()`, which hands
 ```
 
 Its `type` covers `text`, `email`, `url`, `password`, `number`, `color`, `date`, `search`,
-`textarea`, `checkbox`, `select` and `multiselect`; `attributes` passes anything else through to
+`textarea`, `checkbox`, `switch`, `select` and `multiselect`; `attributes` passes anything else through to
 the control, and `choice` passes further arguments to the select. Both helpers live in
 `Naf\Board\`, so a package writes the same call the host does.
+
+Use `type: switch` for an on/off control. It renders a native checkbox with `role="switch"`
+and the shared switch appearance, including keyboard focus and a disabled state. Its value is
+`1` when checked; when unchecked the field is omitted, just like `type: checkbox`. Registered
+`boolean` settings fields also render as switches and keep their preceding hidden `0` field so that
+switching off submits an explicit false value. Multiple-choice selection remains a checkbox.
 
 A `multiselect` renders checkboxes preceded by an empty field of the same name. PHP folds
 `name` and `name[]` into one array when the bare name is parsed first, so a submission with
