@@ -84,6 +84,27 @@ final class InvoiceExportTest extends TestCase
         $this->assertStringContainsString('1 min', $item['description']);
     }
 
+    public function testLexwareRefusesAnInvoiceAboveItsDocumentedPositionLimitAndResetsForTheNextFile(): void
+    {
+        $rows   = iterator_to_array((new InvoiceItems())->rows([$this->booking(1, 90)], $this->options()));
+        $line   = new ExportLine('invoice.lexware', 1, [], $rows[0]['data'], 'invoice-items');
+        $writer = new LexwareExporter();
+        $json   = $writer->open([]);
+        for ($position = 0; $position < 300; ++$position) {
+            $json .= $writer->line($line, []);
+        }
+        $this->assertCount(300, json_decode($json . $writer->close(), true, flags: JSON_THROW_ON_ERROR)['lineItems']);
+
+        try {
+            $writer->line($line, []);
+            $this->fail('Lexware accepted more than 300 invoice items');
+        } catch (Failure $error) {
+            $this->assertSame(422, $error->status);
+        }
+        $json = $writer->open([]) . $writer->line($line, []) . $writer->close();
+        $this->assertCount(1, json_decode($json, true, flags: JSON_THROW_ON_ERROR)['lineItems']);
+    }
+
     public function testNativeApiPositionFixturesAndEmptyFiles(): void
     {
         $options = $this->options(['sevdesk_unity' => '4242']);

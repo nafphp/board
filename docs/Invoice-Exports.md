@@ -38,7 +38,8 @@ CSV headers are `project`, `ticket`, `name`, `description`, `person`, `booked_fr
 `minutes` is exact; `quantity` is hours rounded to six decimals and `unit` is `HUR`.
 Prices are net EUR per hour. Lexware accepts at most four quantity decimals, so that adapter
 rounds the outgoing hours to four decimals while preserving exact minutes in the description.
-The destination computes invoice totals; review its rounding before finalizing the invoice.
+Lexware exports refuse more than 300 positions with HTTP 422; narrow the booking-date range
+when that limit is reached. The destination computes invoice totals; review its rounding before finalizing the invoice.
 FastBill's documented item fields do not define a unit field; its description therefore
 includes both exact minutes and decimal hours. Configure the intended hour display in the
 receiving application rather than assuming an undocumented API field.

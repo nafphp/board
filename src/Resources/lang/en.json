@@ -916,5 +916,6 @@
   "Ungültiger Dezimalwert.": "Invalid decimal value.",
   "Dieser Dezimalwert ist zu groß.": "This decimal value is too large.",
   "Wert zu groß.": "Value too large.",
-  "Bitte gib einen nicht negativen Dezimalwert mit höchstens zwei Nachkommastellen ein.": "Enter a non-negative decimal with at most two decimal places."
+  "Bitte gib einen nicht negativen Dezimalwert mit höchstens zwei Nachkommastellen ein.": "Enter a non-negative decimal with at most two decimal places.",
+  "Lexware Office erlaubt höchstens 300 Rechnungspositionen. Bitte grenze den Buchungszeitraum weiter ein.": "Lexware Office allows at most 300 invoice items. Narrow the booking-date range."
 }
