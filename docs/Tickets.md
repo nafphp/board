@@ -10,9 +10,13 @@ the ticket, description and empty space included. The card menu stays independen
 including right after a drag gesture, and the native title link still supports the keyboard, the
 context menu and opening in a new tab.
 
-When dragging a ticket, the drop preview occupies the card's layout height immediately.
-Only that slot is highlighted, including in a closing column; the surrounding cell and its
-other tickets stay unmarked. Short cards therefore leave a short preview as well.
+When dragging a ticket, a muted placeholder reserves its original position until the card
+lands. The active drop preview uses the accent colour; closing columns retain their completion
+highlight. Both placeholders match the carried card's height. Returning to the original
+position activates that same placeholder, without adding a second gap. Empty-state hints stay
+hidden during dragging, so their larger box does not compete with the card-sized previews.
+After dropping, the original gap closes with the board's normal motion; cancellation restores
+the card to that reserved position.
 
 ## Creating a ticket in the modal
 
