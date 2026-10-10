@@ -934,6 +934,57 @@ body .rbac-grants {
 .settings-bulk-property fieldset:disabled {
   opacity: 0.45;
 }
+.settings-person-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.settings-person-heading h3 {
+  margin: 0;
+}
+.settings-person-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+[data-person-status]:empty {
+  display: none;
+}
+.settings-person-section .settings-hint {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.settings-person-section h4 {
+  margin: 0 0 18px;
+  font-size: 14px;
+}
+.settings-person-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0 0;
+  font-size: 11px;
+}
+.settings-person-meta dt {
+  color: var(--muted);
+}
+.settings-person-meta dd {
+  margin: 5px 0 0;
+  overflow-wrap: anywhere;
+}
+.settings-person-roles > summary {
+  padding-bottom: 12px;
+  cursor: var(--cursor-pointer, pointer);
+  font-size: 14px;
+  font-weight: 600;
+}
+[data-reset-result] {
+  margin-top: 20px;
+}
 @media (max-width: 650px) {
   .settings-toolbar > button {
     margin-left: auto;
@@ -943,6 +994,9 @@ body .rbac-grants {
   }
   .settings-subdialog-body {
     padding: 18px;
+  }
+  .settings-person-meta {
+    grid-template-columns: 1fr;
   }
 }
 

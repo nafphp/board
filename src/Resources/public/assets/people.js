@@ -33,6 +33,25 @@ export function mountPeopleDirectory(root) {
   let generation = 0;
   let controller;
   let loadingPerson = false;
+  let accountBusy = false;
+
+  function replacePerson(html) {
+    const parsed = new DOMParser().parseFromString(html, 'text/html');
+    if (!parsed.querySelector('[data-person-title]')) throw new Error('Missing person');
+    content.replaceChildren(...parsed.body.childNodes);
+    document.dispatchEvent(
+      new CustomEvent('nafinity:fragment-updated', { detail: { container: content } }),
+    );
+  }
+
+  editor.addEventListener('close', () => {
+    content.querySelectorAll('[data-reset-link]').forEach((input) => {
+      input.value = '';
+    });
+    content.querySelectorAll('[data-reset-result]').forEach((result) => {
+      result.hidden = true;
+    });
+  });
 
   const open = (dialog, trigger) => {
     dialog.addEventListener('close', () => trigger?.focus({ preventScroll: true }), { once: true });
@@ -89,6 +108,19 @@ export function mountPeopleDirectory(root) {
   });
 
   root.addEventListener('click', async (event) => {
+    const copy = event.target.closest('[data-reset-copy]');
+    if (copy) {
+      const form = copy.closest('form');
+      try {
+        await navigator.clipboard.writeText(form.querySelector('[data-reset-link]').value);
+        form.querySelector('[data-reset-status]').textContent = t('Link kopiert.');
+      } catch {
+        form.querySelector('[data-reset-status]').textContent = t(
+          'Bitte kopiere den Link aus dem Feld.',
+        );
+      }
+      return;
+    }
     const close = event.target.closest('[data-people-close]');
     if (close) {
       close.closest('dialog').close();
@@ -145,18 +177,79 @@ export function mountPeopleDirectory(root) {
     try {
       const response = await fetch(person.dataset.personOpen, { headers: { Accept: 'text/html' } });
       if (!response.ok || response.redirected) throw new Error('Person unavailable');
-      const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
-      if (!parsed.querySelector('[data-person-title]')) throw new Error('Missing person');
-      content.replaceChildren(...parsed.body.childNodes);
-      document.dispatchEvent(
-        new CustomEvent('nafinity:fragment-updated', { detail: { container: content } }),
-      );
+      replacePerson(await response.text());
       if (root.closest('#settings-detail')?.open) open(editor, person);
     } catch {
       error.textContent = t('Das Konto konnte nicht geladen werden. Bitte erneut versuchen.');
     } finally {
       person.removeAttribute('aria-busy');
       loadingPerson = false;
+    }
+  });
+
+  root.addEventListener('submit', async (event) => {
+    const form = event.target;
+    if (!form.matches('[data-person-account], [data-person-reset]')) return;
+    event.preventDefault();
+    if (accountBusy) return;
+    accountBusy = true;
+    const data = new FormData(form);
+    const buttons = [...content.querySelectorAll('button[type="submit"]')];
+    buttons.forEach((button) => {
+      button.disabled = true;
+    });
+    const errors = form.querySelector('.form-errors');
+    errors.replaceChildren();
+    errors.classList.remove('visible');
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: data,
+        headers: { Accept: 'application/json' },
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        errors.textContent = result.message || t('Die Änderung konnte nicht gespeichert werden.');
+        for (const messages of Object.values(result.errors || {})) {
+          for (const message of messages) {
+            const line = document.createElement('div');
+            line.textContent = message;
+            errors.append(line);
+          }
+        }
+        errors.classList.add('visible');
+        return;
+      }
+      if (result.url === '/login') {
+        location.assign(result.url);
+        return;
+      }
+      if (form.matches('[data-person-account]')) {
+        if (editor.open) {
+          replacePerson(result.editor);
+          content.querySelector('[data-person-status]').textContent = t('Nutzerkonto gespeichert.');
+          content.querySelector('[data-person-account] button[type="submit"]').focus({
+            preventScroll: true,
+          });
+        }
+        await loadResults(new URL(location.href));
+      } else if (editor.open) {
+        form.querySelector('[data-reset-link]').value = result.reset_url;
+        form.querySelector('[data-reset-result]').hidden = false;
+        form.querySelector('[data-reset-status]').textContent = t(
+          result.sent
+            ? 'Der Reset-Link wurde per E-Mail versendet.'
+            : 'Gib diesen Link vertraulich an die Person weiter.',
+        );
+      }
+    } catch {
+      errors.textContent = t('Die Verbindung ist unterbrochen. Deine Eingaben bleiben erhalten.');
+      errors.classList.add('visible');
+    } finally {
+      accountBusy = false;
+      buttons.forEach((button) => {
+        button.disabled = false;
+      });
     }
   });
 

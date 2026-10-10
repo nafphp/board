@@ -27,6 +27,7 @@ final class Installation
 {
     public const string VIEW_USERS      = 'users.view';
     public const string MANAGE_USERS    = 'users.manage';
+    public const string RESET_PASSWORDS = 'users.reset_password';
     public const string IMPERSONATE     = 'users.impersonate';
     public const string CREATE_PROJECTS = 'projects.create';
     public const string ADMIN_PROJECTS  = 'projects.administer';
@@ -70,9 +71,16 @@ final class Installation
             new PermissionDefinition(
                 self::MANAGE_USERS,
                 'Nutzer verwalten',
-                'Konten anlegen, einladen und deaktivieren.',
+                'Konten anlegen, einladen, bearbeiten und deaktivieren.',
                 'Nutzer',
                 20,
+            ),
+            new PermissionDefinition(
+                self::RESET_PASSWORDS,
+                'Passwörter zurücksetzen',
+                'Einmalige Reset-Links für lokale Nutzerkonten erstellen.',
+                'Nutzer',
+                25,
             ),
             new PermissionDefinition(
                 self::IMPERSONATE,
@@ -136,6 +144,7 @@ final class Installation
                 'rbac.manage.own',
                 self::VIEW_USERS,
                 self::MANAGE_USERS,
+                self::RESET_PASSWORDS,
                 self::IMPERSONATE,
                 self::CREATE_PROJECTS,
                 self::ADMIN_PROJECTS,

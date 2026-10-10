@@ -75,7 +75,8 @@ final class UserDirectory
     public function person(int $id): array
     {
         $this->authorize();
-        $query = $this->pdo->prepare('SELECT id, name, email, active FROM users WHERE id=?');
+        $query = $this->pdo->prepare("SELECT id, name, email, active, created_at, email_verified_at, security_version,
+            (password_hash IS NOT NULL AND password_hash<>'') AS local_password FROM users WHERE id=?");
         $query->execute([$id]);
         $person = $query->fetch(PDO::FETCH_ASSOC);
         if (!$person) {

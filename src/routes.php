@@ -8,12 +8,14 @@ use Naf\Board\Controllers\ExportController;
 use Naf\Board\Controllers\InstallationController;
 use Naf\Board\Controllers\InvitationController;
 use Naf\Board\Controllers\InvoiceDraftController;
+use Naf\Board\Controllers\PasswordResetController;
 use Naf\Board\Controllers\PreferenceController;
 use Naf\Board\Controllers\ProfileController;
 use Naf\Board\Controllers\ProjectController;
 use Naf\Board\Controllers\SessionController;
 use Naf\Board\Controllers\SettingsApiController as S;
 use Naf\Board\Controllers\TicketController;
+use Naf\Board\Controllers\UserAccountController;
 use Naf\Board\Controllers\UserDirectoryController;
 use Naf\Board\Support\AttachmentStorage;
 use Naf\Database\Core\MigrationRunner;
@@ -93,6 +95,8 @@ $routes = [
     ['GET', '/login', [SessionController::class, 'login'], 'login'],
     ['POST', '/login', [SessionController::class, 'authenticate'], 'login.submit'],
     ['POST', '/logout', [SessionController::class, 'logout'], 'logout'],
+    ['GET', '/password-reset/{token}', [PasswordResetController::class, 'show'], 'password_reset.show'],
+    ['POST', '/password-reset/{token}', [PasswordResetController::class, 'accept'], 'password_reset.accept'],
 
     ['POST', '/invitations', [InvitationController::class, 'create'], 'invitations.create'],
     ['GET', '/invitations/created', [InvitationController::class, 'created'], 'invitations.created'],
@@ -103,8 +107,11 @@ $routes = [
 
     ['GET', '/settings', [InstallationController::class, 'settings'], 'installation.settings'],
     ['GET', '/settings/users', [UserDirectoryController::class, 'index'], 'installation.users.index'],
-    ['GET', '/settings/users/{user}', [UserDirectoryController::class, 'show'], 'installation.users.show'],
     ['POST', '/settings/users/bulk', [UserDirectoryController::class, 'update'], 'installation.users.bulk'],
+    ['GET', '/settings/users/{user}', [UserDirectoryController::class, 'show'], 'installation.users.show'],
+    ['POST', '/settings/users/{user}', [UserAccountController::class, 'update'], 'installation.users.account'],
+    ['POST', '/settings/users/{user}/password-reset', [UserAccountController::class, 'requestReset'], 'installation.users.password_reset'],
+    ['GET', '/settings/users/{user}/password-reset/created', [UserAccountController::class, 'created'], 'installation.users.password_reset.created'],
     ['GET', '/settings/export', [ExportController::class, 'installation'], 'installation.export'],
     ['POST', '/settings/users', [InstallationController::class, 'createAccount'], 'installation.users.create'],
     ['GET', '/audit', [InstallationController::class, 'audit'], 'audit'],

@@ -39,6 +39,8 @@ final class AuditLog
      */
     public const array PERSONAL = [
         'account.password_changed',
+        'account.password_reset_requested',
+        'account.updated',
         'account.email_requested',
         'account.email_changed',
         'account.signed_in',

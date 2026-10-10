@@ -27,11 +27,10 @@ use function Naf\View\s;
         <button type="button" class="button primary" data-people-dialog="people-bulk" aria-haspopup="dialog"><?= s(t('Update')) ?></button>
         <button type="button" class="button" data-bulk-clear><?= s(t('Auswahl aufheben')) ?></button>
     </div>
-    <p class="settings-hint"><?= s(t('Eine Rolle ohne Ort gilt überall, eine mit Ort nur dort. Deine eigenen Rollen kann nur jemand anderes ändern.')) ?></p>
     <p class="form-errors" data-people-error role="alert"></p>
     <?= partial('settings/users-table', compact('people', 'actor', 'page', 'pages', 'search', 'total', 'bulkProperties')) ?>
     <dialog id="people-editor" class="settings-subdialog" aria-labelledby="people-editor-title">
-        <header><h2 id="people-editor-title"><?= s(t('Person bearbeiten')) ?></h2><button class="icon-button" type="button" data-people-close aria-label="<?= s(t('Schließen')) ?>"><?= Icon::mark('close') ?></button></header>
+        <header><h2 id="people-editor-title"><?= s(t('Nutzer bearbeiten')) ?></h2><button class="icon-button" type="button" data-people-close aria-label="<?= s(t('Schließen')) ?>"><?= Icon::mark('close') ?></button></header>
         <div class="settings-subdialog-body" data-person-content></div>
     </dialog>
     <dialog id="people-invite" class="settings-subdialog" aria-labelledby="people-invite-title">

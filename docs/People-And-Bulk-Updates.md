@@ -6,9 +6,71 @@ with at most 50 accounts per page. Search matches literal name/email substrings;
 dialog. Editors are fetched on demand rather than rendered for every account.
 The primary invitation action sits at the top right above the table.
 
+## Manage an account
+
+The editor starts with account details: name, email and active status. It shows
+the account source, creation time in UTC and email verification state. Roles and
+access appear in a separate collapsed section. Disabling an account preserves
+its content, roles and memberships. You cannot disable your own account or the
+last active installation administrator.
+
+Reading requires `settings.manage` and `users.view`. Editing also requires
+`users.manage`. The current permissions of the target must be contained in the
+actor's permissions in every scope the target can reach: editing credentials
+must not bypass private board or administrator boundaries. Administrators have
+the account capabilities. Password recovery additionally requires the separate
+`users.reset_password` permission, so delegating account edits does not
+implicitly delegate password recovery.
+
+`POST /settings/users/{user}` accepts `name`, `email`, `active` (0 or 1) and the
+editor's opaque `revision`, plus CSRF. Unknown fields are refused. Writes lock
+current roles, permissions, grants and affected accounts before reauthorizing.
+An outdated revision or unavailable email returns 409 without changing data.
+The UI preserves failed edits and asks the person to reopen a stale editor.
+Changing name preserves sessions. Changing email or status increases the native
+security version, invalidates all prior sessions and pending account recovery
+and email-change links; a new email is unverified. Changing your own email asks
+you to sign in again. The old address receives the existing security notice.
+
+Externally managed accounts show their source. Their display name and activation
+can be edited, but their email and password remain with their sign-in provider.
+
+### Recover a local password
+
+For an active local account, **Create reset link** creates a random one-use link,
+valid for 30 minutes. Optionally send it using configured mail; otherwise copy it
+and pass it privately to the person. The link uses `app:url`, never the request
+Host header. Only its SHA-256 hash is stored. A new link replaces the old one.
+Issuing a link leaves the password and sessions intact.
+
+`POST /settings/users/{user}/password-reset` takes the account `revision`, optional
+`send_email` (0 or 1), and CSRF. Issuance is limited to 20 attempts per actor/hour
+and 3 per target/15 minutes. A mail failure refuses the operation and preserves
+the previous link. JSON responses expose the link only to the authorized actor;
+plain forms redirect to an authorized, one-time result page.
+
+The recipient opens `GET /password-reset/{token}` and submits a new password with
+confirmation and CSRF to the same path. The native password rule requires at
+least 15 characters and at most 72 bytes. The page reveals no account identity,
+uses `no-store` and `no-referrer`, and never echoes password input. Consumption
+checks expiry, account activation, credential version, bound email and the
+issuer's current rights again under locks. Revocation of issuer rights makes
+outstanding links unusable. A concurrent second consumer receives 410.
+
+Success atomically writes the password, consumes the link, invalidates pending
+email changes, increases the security version and queues a security notice.
+The recipient signs in normally afterwards; recovery never creates a session.
+Invalid and expired links return 410. Consumption is rate limited per token and
+peer. Maintenance removes expired rows. Database-backed audit events participate
+in the transaction; a failing listener refuses the write. External mail delivery
+cannot be rolled back and may contain a link that a later refusal invalidates.
+
+Account audit data records the changed field names, without credential values,
+email values or raw recovery tokens.
+
 Select individual rows or all eligible rows on the current page to reveal the
-bulk action bar with its **Update** action. Search and pagination clear the
-selection. The confirmation form states the target count and requires explicitly enabling each property;
+bulk action bar with its **Update** action. Search and pagination clear the selection. The confirmation
+form states the target count and requires explicitly enabling each property;
 unselected properties are omitted, and empty strings, false and null remain
 values when their field type accepts them. Own-account rows cannot be selected.
 The compact selection controls retain native keyboard and screen-reader behavior;

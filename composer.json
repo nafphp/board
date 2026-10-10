@@ -17,7 +17,7 @@
         "naf/orm": "^0.2.2",
         "naf/queue": "^0.2.3",
         "naf/schedule": "^0.2.3",
-        "naf/mail": "^0.2.2",
+        "naf/mail": "^0.2.3",
         "naf/auth": "^0.2.1",
         "naf/view": "^0.2.1",
         "naf/cli": "^0.2.2",

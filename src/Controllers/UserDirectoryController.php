@@ -9,6 +9,7 @@ use Naf\Board\Contracts\BoardQueryInterface;
 use Naf\Board\Contracts\PageRendererInterface;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Services\BulkUpdateService;
+use Naf\Board\Services\UserAdministration;
 use Naf\Board\Services\UserDirectory;
 use Naf\Board\Support\Input;
 use Psr\Http\Message\ResponseInterface;
@@ -26,6 +27,7 @@ final class UserDirectoryController
         private AccessInterface $access,
         private BoardQueryInterface $boards,
         private PageRendererInterface $pages,
+        private UserAdministration $users,
     ) {
     }
 
@@ -44,9 +46,7 @@ final class UserDirectoryController
 
     public function show(string $user): ResponseInterface
     {
-        return Respond::read(fn() => response($this->pages->fragment('settings/user-detail', [
-            'person' => $this->directory->person(Input::id($user)),
-        ]))->withHeader('Cache-Control', 'private, no-store'));
+        return Respond::read(fn() => response($this->pages->fragment('settings/user-detail', $this->users->editor(Input::id($user))))->withHeader('Cache-Control', 'private, no-store'));
     }
 
     public function update(): ResponseInterface
