@@ -1213,7 +1213,7 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 .filter-visibility-row + .filter-visibility-row {
   border-top: 1px solid var(--line);
 }
-.filter-visibility input[role='switch'] {
+:is(.filter-visibility, .project-notifications) input[role='switch'] {
   appearance: none;
   flex: none;
   position: relative;
@@ -1225,7 +1225,7 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   cursor: inherit;
   transition: background 0.18s;
 }
-.filter-visibility input[role='switch']::before {
+:is(.filter-visibility, .project-notifications) input[role='switch']::before {
   content: '';
   position: absolute;
   top: 2px;
@@ -1236,14 +1236,14 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   background: var(--surface);
   transition: transform 0.18s;
 }
-.filter-visibility input[role='switch']:checked {
+:is(.filter-visibility, .project-notifications) input[role='switch']:checked {
   background: var(--accent);
   border-color: var(--accent);
 }
-.filter-visibility input[role='switch']:checked::before {
+:is(.filter-visibility, .project-notifications) input[role='switch']:checked::before {
   transform: translateX(15px);
 }
-.filter-visibility input[role='switch']:focus-visible {
+:is(.filter-visibility, .project-notifications) input[role='switch']:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }

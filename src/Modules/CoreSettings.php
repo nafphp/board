@@ -222,7 +222,7 @@ final class CoreSettings implements ExtensionProviderInterface
             ['legacy' => ['store' => 'user_preferences', 'column' => 'notify_mail']],
         ));
 
-        // The notifications page owns this control; keep its settings API available.
+        // The account modal and notifications page use this per-person value.
         $settings->add(new SettingDefinition(
             'muted',
             'project_user',

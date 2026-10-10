@@ -452,7 +452,7 @@ final class SettingsService implements SettingsServiceInterface
                 $lock->execute([$context->projectId]);
                 $scope = $this->access->project((int) $context->projectId, 'read', true);
 
-                if ($scope->project['archived_at'] !== null) {
+                if ($context->scope === 'project' && $scope->project['archived_at'] !== null) {
                     throw new Failure(t('Dieses Projekt ist archiviert.'), 403);
                 }
             }

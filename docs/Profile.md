@@ -4,7 +4,12 @@ The avatar in the top right and the whole user card at the bottom of the sidebar
 dialog. Name, avatar and arrow form one button that also works from the keyboard. The card and
 the header show the role in the current project, including custom roles. Outside a project it
 reads "personal account", because roles are project-scoped. The modal lists the assigned project
-roles with links to their boards, plus password change, email change and sign-out.
+roles with links to their boards, personal settings, board filter visibility, local AI, password
+change, email change and sign-out. **Project notifications** offers a mute switch per assigned
+project, with the saved state shown beside its name. The switch saves immediately for the current
+account and keeps the modal open; other members' notification preferences remain independent.
+Archived memberships stay listed, while administrative access without a membership does not add
+a project to this personal list.
 
 The native HTML dialog holds keyboard focus. The X, Escape and a click on the backdrop close it
 and return focus to the trigger. Opening and closing animate over 260 and 150 ms;

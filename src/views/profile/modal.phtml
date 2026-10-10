@@ -103,6 +103,22 @@ use function Naf\View\s;
                 </div>
             </details>
 
+            <?php if ($memberships): ?>
+                <details class="profile-section" name="profile-section" data-profile-section-id="project_notifications">
+                    <summary>
+                        <span class="profile-section-icon" aria-hidden="true"><?= Icon::mark('notifications', 'sm') ?></span>
+                        <span>
+                            <strong><?= s(t('Projekt-Benachrichtigungen')) ?></strong>
+                            <small><?= s(t('Einzelne Projekte für dich stummschalten')) ?></small>
+                        </span>
+                        <span class="profile-chevron" aria-hidden="true"><?= Icon::mark('expand_more', 'sm') ?></span>
+                    </summary>
+                    <div class="profile-settings">
+                        <?= partial('settings/project-notifications', ['projects' => $memberships]) ?>
+                    </div>
+                </details>
+            <?php endif ?>
+
             <details class="profile-section" name="profile-section" data-profile-section-id="board_filters">
                 <summary>
                     <span class="profile-section-icon" aria-hidden="true"><?= Icon::mark('tune', 'sm') ?></span>

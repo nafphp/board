@@ -1,8 +1,10 @@
 import { t } from './i18n.js';
+import { projectNotificationSettings } from './project-notifications.js';
 
 const dialog = document.querySelector('#profile-dialog');
 
 if (dialog) {
+  dialog.querySelectorAll('[data-project-notification]').forEach(projectNotificationSettings);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const status = dialog.querySelector('[data-profile-status]');
   const content = dialog.querySelector('[data-profile-content]');

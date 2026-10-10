@@ -2,9 +2,13 @@
 
 Personal settings live in the account modal, reached through the profile picture. A board's
 Settings tab holds its shared project settings; it has no separate **For me in this project**
-card. General notification preferences belong to the account modal. Individual projects can be
-muted or enabled on the Notifications page, and the `project_user` setting `muted` remains
-available through the settings API. Extensions can still contribute `project_user` cards.
+card. General notification preferences belong to the account modal. Its **Project notifications**
+section lists the projects the person belongs to, including archived ones, with their current mute
+state. Each switch immediately saves the person's `project_user` setting `muted` through the
+existing settings API while keeping the modal open. A failed save restores the last confirmed
+switch state and displays the error. Without JavaScript, each form has a Save button. The
+Notifications page also retains its mute and enable controls. Extensions can still contribute
+`project_user` cards.
 
 A project settings card opens as a large dialog and slides back on the X or Escape. Input is
 preserved on close, and after a successful save the same card is reopened. The animation honours

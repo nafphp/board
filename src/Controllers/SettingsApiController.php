@@ -44,7 +44,10 @@ final class SettingsApiController
 
     public function writeUser(): ResponseInterface
     {
-        return $this->write(SettingsContext::user($this->access->actor()), route('preferences'));
+        return $this->respond(fn() => $this->write(
+            SettingsContext::user($this->access->actor()),
+            route('preferences'),
+        ));
     }
 
     public function readProject(string $project): ResponseInterface
@@ -59,13 +62,15 @@ final class SettingsApiController
 
     public function writeProject(string $project): ResponseInterface
     {
-        $id = Input::id($project);
-        $this->access->project($id);
+        return $this->respond(function () use ($project) {
+            $id = Input::id($project);
+            $this->access->project($id);
 
-        return $this->write(
-            SettingsContext::project($id),
-            route('project.settings', ['project' => $id]),
-        );
+            return $this->write(
+                SettingsContext::project($id),
+                route('project.settings', ['project' => $id]),
+            );
+        });
     }
 
     public function readProjectUser(string $project): ResponseInterface
@@ -80,13 +85,15 @@ final class SettingsApiController
 
     public function writeProjectUser(string $project): ResponseInterface
     {
-        $id = Input::id($project);
-        $this->access->project($id);
+        return $this->respond(function () use ($project) {
+            $id = Input::id($project);
+            $this->access->project($id);
 
-        return $this->write(
-            SettingsContext::projectUser($id, $this->access->actor()),
-            route('project.settings', ['project' => $id]),
-        );
+            return $this->write(
+                SettingsContext::projectUser($id, $this->access->actor()),
+                route('project.settings', ['project' => $id]),
+            );
+        });
     }
 
     /**
@@ -114,25 +121,23 @@ final class SettingsApiController
      * @param SettingsContext $context  Scope and owner
      * @param string          $fallback Where a native form post returns to
      */
-    private function write(SettingsContext $context, string $fallback): ResponseInterface
+    private function write(SettingsContext $context, string $fallback): array
     {
-        return $this->respond(function () use ($context, $fallback) {
-            $body      = Input::body();
-            $values    = $body['values'] ?? [];
-            $resetKeys = $body['resetKeys'] ?? [];
+        $body      = Input::body();
+        $values    = $body['values'] ?? [];
+        $resetKeys = $body['resetKeys'] ?? [];
 
-            if (!is_array($values) || !is_array($resetKeys)) {
-                throw new Failure(t('Erwartet wird {"values": {...}, "resetKeys": [...]}.'), 422);
-            }
+        if (!is_array($values) || !is_array($resetKeys)) {
+            throw new Failure(t('Erwartet wird {"values": {...}, "resetKeys": [...]}.'), 422);
+        }
 
-            $this->settings->save($context, $this->coerce($context, $values), array_values($resetKeys));
+        $this->settings->save($context, $this->coerce($context, $values), array_values($resetKeys));
 
-            if (!$this->wantsJson()) {
-                return ['redirect' => $fallback];
-            }
+        if (!$this->wantsJson()) {
+            return ['redirect' => $fallback];
+        }
 
-            return $this->values($context);
-        });
+        return $this->values($context);
     }
 
     /**
