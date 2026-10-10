@@ -1151,5 +1151,7 @@
   "Hinweis": "Notice",
   "Information": "Information",
   "Warnung": "Warning",
-  "Fehler": "Error"
+  "Fehler": "Error",
+  "Rollen bearbeiten": "Edit roles",
+  "Rollen speichern": "Save roles"
 }

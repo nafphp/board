@@ -24,6 +24,14 @@ export function syncSelection(root) {
   return count;
 }
 
+export function syncRoleSummary(row) {
+  const summary = row.querySelector('[data-person-role-summary]');
+  const labels = [...row.querySelectorAll('input[type="checkbox"]:checked')].map((input) =>
+    input.closest('label').textContent.trim(),
+  );
+  summary.textContent = labels.join(', ') || summary.dataset.empty;
+}
+
 export function mountPeopleDirectory(root) {
   const document = root.ownerDocument;
   const error = root.querySelector('[data-people-error]');
@@ -92,6 +100,8 @@ export function mountPeopleDirectory(root) {
   }
 
   root.addEventListener('change', (event) => {
+    const roleRow = event.target.closest('[data-person-role-row]');
+    if (roleRow) syncRoleSummary(roleRow);
     if (event.target.matches('[data-bulk-all]')) {
       root.querySelectorAll('[data-bulk-target]:not(:disabled)').forEach((input) => {
         input.checked = event.target.checked;

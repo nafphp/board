@@ -1,7 +1,7 @@
 import { t } from './i18n.js';
 import { mountAdvancedSettings } from './settings-configuration.js';
 import { mountMemberControls } from './members.js';
-import { mountPeopleDirectory } from './people.js?v=2';
+import { mountPeopleDirectory } from './people.js?v=3';
 document.querySelectorAll('[data-people-directory]').forEach(mountPeopleDirectory);
 
 mountMemberControls();

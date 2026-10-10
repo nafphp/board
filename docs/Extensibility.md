@@ -743,6 +743,8 @@ existing script that reads `form.elements.x.value` or `selectedOptions[0]` keeps
 | `optionData` | `value => ['name' => 'value']`, rendered as `data-*` on that option |
 | `nativeData` | `data-*` on the native control, for an existing script hook |
 | `disabled` | Leaves the native control in place, unenhanced |
+| `id`, `listId` | Unique native-control and listbox ids when several controls share a name |
+| `clearField` | Emit the multiselect clear marker, default `true` |
 
 A list shorter than `searchFrom` gets no search box, and keyboard focus then lands on the
 popup instead of the hidden input. Inside a ticket's inline fields the trigger renders
@@ -779,13 +781,18 @@ switching off submits an explicit false value. Multiple-choice selection remains
 A `multiselect` renders checkboxes preceded by an empty field of the same name. PHP folds
 `name` and `name[]` into one array when the bare name is parsed first, so a submission with
 nothing ticked arrives as an empty string, and the settings controller reads that as an empty
-list rather than a list holding an empty string.
+list rather than a list holding an empty string. If several multiselects contribute to
+the same array, place one clear marker before all of them and pass `clearField: false`
+to each. Repeating the bare marker between `name[]` controls would discard earlier
+selections in PHP. Give those controls distinct `id` and `listId` values so their
+accessible listbox references remain unique.
 
 The browser side is `public/assets/choice.js`. It enhances every `[data-choice]` on load,
 and exports `enhanceChoices(scope)`, `openChoice(root)`, `closeChoices(scope)` and
 `refreshChoices(scope)`. A list that JavaScript fills in later — the way the AI card fills its
 model lists — calls `refreshChoices(form)` afterwards so the drawn list is rebuilt from the
-native options.
+native options. The component also enhances controls within `nafinity:fragment-updated`
+containers and closes their popovers on `nafinity:fragment-removing`.
 
 ## Views
 

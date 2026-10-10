@@ -62,5 +62,5 @@ use function Naf\View\s;
 <details class="settings-person-section settings-person-roles">
     <summary><?= s(t('Rollen und Zugriffe')) ?></summary>
     <?= partial('components/notice', ['severity' => 'info', 'message' => t('Eine Rolle ohne Ort gilt überall, eine mit Ort nur dort. Deine eigenen Rollen kann nur jemand anderes ändern.')]) ?>
-    <?= partial('rbac/grants', ['user' => (int) $person['id'], 'name' => $person['name'], 'return' => '/settings#installation_users']) ?>
+    <?= partial('settings/user-roles', ['user' => (int) $person['id'], 'return' => '/settings#installation_users']) ?>
 </details>

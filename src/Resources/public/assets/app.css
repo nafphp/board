@@ -3005,6 +3005,7 @@ label > .choice {
   color: var(--accent);
   white-space: nowrap;
 }
+.choice-trigger[hidden],
 .choice-popup[hidden] {
   display: none;
 }

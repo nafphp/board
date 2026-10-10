@@ -612,16 +612,6 @@ body .rbac-grants {
   height: auto;
   border: 0;
 }
-/* A faint tint keeps a board's heading and its expanded roles together. */
-.settings-detail .rbac-grants .rbac-role[open] {
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--accent) 5%, transparent);
-}
-.settings-detail .rbac-grants .rbac-group {
-  grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
-  margin: 0;
-}
-
 .invite-delivery {
   display: flex;
   align-items: center;
@@ -962,6 +952,75 @@ body .rbac-grants {
   font-size: 14px;
   font-weight: 600;
 }
+.settings-role-group {
+  margin-top: 20px;
+}
+.settings-person-roles .settings-role-group h4 {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 550;
+}
+.settings-role-row {
+  border-bottom: 1px solid var(--line);
+}
+.settings-role-heading,
+.settings-role-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) 28px;
+  align-items: center;
+  gap: 14px;
+}
+.settings-role-heading {
+  min-height: 44px;
+  padding: 8px 0;
+  list-style: none;
+  font-size: 12px;
+}
+summary.settings-role-heading {
+  cursor: var(--cursor-pointer, pointer);
+}
+.settings-role-heading::-webkit-details-marker {
+  display: none;
+}
+.settings-role-heading:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.settings-role-scope,
+.settings-role-current {
+  overflow-wrap: anywhere;
+}
+.settings-role-current {
+  color: var(--muted);
+  text-align: right;
+}
+.settings-role-edit {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--muted) 8%, transparent);
+}
+.settings-role-heading:hover .settings-role-edit,
+.settings-role-row[open] .settings-role-edit {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.settings-role-control {
+  padding-bottom: 14px;
+}
+.settings-role-control > .choice {
+  grid-column: 2 / -1;
+  min-width: 0;
+}
+.settings-role-control .choice-trigger {
+  min-height: 36px;
+  font-size: 12px;
+}
 [data-reset-result] {
   margin-top: 20px;
 }
@@ -977,6 +1036,13 @@ body .rbac-grants {
   }
   .settings-person-meta {
     grid-template-columns: 1fr;
+  }
+  .settings-role-heading,
+  .settings-role-control {
+    gap: 10px;
+  }
+  .settings-role-control > .choice {
+    grid-column: 1 / -1;
   }
 }
 

@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { selectedTargets, syncSelection } from '../../src/Resources/public/assets/people.js';
+import {
+  selectedTargets,
+  syncSelection,
+  syncRoleSummary,
+} from '../../src/Resources/public/assets/people.js';
 
 function directory(inputs) {
   const all = {};
@@ -65,4 +69,18 @@ test('changing result pages clears the mass-update bar rather than retaining inv
   syncSelection(next);
   assert.deepEqual(selectedTargets(next), []);
   assert.equal(next.bar.hidden, true);
+});
+
+test('the compact role summary keeps multiple roles and clears without inserting HTML', () => {
+  const summary = { dataset: { empty: 'Unassigned' } };
+  let labels = ['Member', '<img src=x onerror=alert(1)>'];
+  const row = {
+    querySelector: () => summary,
+    querySelectorAll: () => labels.map((textContent) => ({ closest: () => ({ textContent }) })),
+  };
+  syncRoleSummary(row);
+  assert.equal(summary.textContent, 'Member, <img src=x onerror=alert(1)>');
+  labels = [];
+  syncRoleSummary(row);
+  assert.equal(summary.textContent, 'Unassigned');
 });

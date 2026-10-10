@@ -21,6 +21,8 @@
  *                               a `mark` is drawn as a symbol in front of the entry
  * @var array       $nativeData  ['name' => 'value'] rendered as data-* on the native control
  * @var string      $id          id of the native control
+ * @var string      $listId      unique listbox id, useful for controls sharing a name
+ * @var bool        $clearField  emit the multiselect's clear marker; shared names need only one
  * @var string      $class       extra classes on the wrapper
  * @var string      $width       'fit' keeps the open list as narrow as its entries
  * @var bool        $required
@@ -52,8 +54,9 @@ $class ??= '';
 $width ??= '';
 $required ??= false;
 $disabled ??= false;
+$clearField ??= true;
 
-$listId   = 'choice-list-' . preg_replace('/[^A-Za-z0-9_-]/', '-', $name);
+$listId ??= 'choice-list-' . preg_replace('/[^A-Za-z0-9_-]/', '-', $name);
 $selected = $multiple ? array_map('strval', (array) $value) : [];
 $loop     = 0;
 ?>
@@ -71,7 +74,7 @@ $loop     = 0;
         <?php // The clear field comes first on purpose: PHP turns name and name[]
               // into one array when the bare name is parsed before the list, and a
               // submission with nothing ticked then carries the empty value alone.?>
-        <input type="hidden" name="<?= s($name) ?>" value="" />
+        <?php if ($clearField): ?><input type="hidden" name="<?= s($name) ?>" value="" /><?php endif ?>
         <div class="ticket-options" role="group" aria-label="<?= s(t($label)) ?>">
             <?php foreach ($options as $key => $text): ?>
                 <?php // A wrapping <label for> needs one labelable target, and the
