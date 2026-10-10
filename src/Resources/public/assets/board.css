@@ -211,25 +211,23 @@ html.board-dragging .ticket-card::after {
   display: none;
 }
 
-.board-cell.is-target {
+/* Mark the card-sized slot, rather than the cell's minimum height or its other cards. */
+.board-cell.is-target > .card-slot {
   background: color-mix(in srgb, var(--accent) 8%, transparent);
-  outline: 1px dashed color-mix(in srgb, var(--accent) 45%, transparent);
-  outline-offset: 5px;
 }
 /* The closing column promises the reward before the card even lands there. */
-.board-cell.is-target.is-closing {
+.board-cell.is-target.is-closing > .card-slot {
   background: linear-gradient(
     180deg,
     color-mix(in srgb, #2fbf8f 14%, transparent),
     color-mix(in srgb, #ffd267 12%, transparent)
   );
-  outline-color: color-mix(in srgb, #2fbf8f 65%, transparent);
+  border-color: color-mix(in srgb, #2fbf8f 65%, var(--line));
   animation: closing-glow 1.3s ease-in-out infinite;
 }
 @keyframes closing-glow {
   50% {
-    outline-offset: 8px;
-    outline-color: color-mix(in srgb, #ffd267 70%, transparent);
+    border-color: color-mix(in srgb, #ffd267 70%, var(--line));
   }
 }
 
@@ -323,7 +321,7 @@ html.board-dragging .ticket-card::after {
   .ticket-card.celebrating,
   .ticket-card.celebrating::before,
   .ticket-card.rejected,
-  .board-cell.is-target.is-closing {
+  .board-cell.is-target.is-closing > .card-slot {
     animation: none;
   }
   .ticket-card:hover {

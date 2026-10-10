@@ -264,7 +264,7 @@ function slotIndex() {
 // where it happens to sit and cannot settle into a dead zone.
 function openings(cell) {
   const gap = parseFloat(getComputedStyle(cell).rowGap) || 0;
-  // What the slot takes up right now, which is less than the card while it is still growing.
+  // Remove the slot and its gap from the candidate positions below it.
   const span =
     drag.slot.parentElement === cell ? drag.slot.getBoundingClientRect().height + gap : 0;
   const spots = [];
@@ -359,8 +359,9 @@ function lift(card, x, y) {
   drag.card = card;
   drag.offsetX = x - box.left;
   drag.offsetY = y - box.top;
-  drag.width = box.width;
-  drag.height = box.height;
+  // Measure the layout size: the pressed card may still be scaled by its active animation.
+  drag.width = card.offsetWidth;
+  drag.height = card.offsetHeight;
   drag.x = x;
   drag.y = y;
   drag.tilt = 0;
@@ -371,14 +372,14 @@ function lift(card, x, y) {
 
   drag.slot = document.createElement('div');
   drag.slot.className = 'card-slot';
-  drag.slot.style.height = box.height + 'px';
+  drag.slot.style.height = drag.height + 'px';
   card.before(drag.slot);
   card.remove();
 
   drag.ghost = card.cloneNode(true);
   drag.ghost.classList.add('ticket-ghost');
   drag.ghost.setAttribute('aria-hidden', 'true');
-  drag.ghost.style.width = box.width + 'px';
+  drag.ghost.style.width = drag.width + 'px';
   document.body.append(drag.ghost);
   paintGhost();
   if (!reducedMotion.matches) {
@@ -386,16 +387,8 @@ function lift(card, x, y) {
       [{ transform: drag.ghost.style.transform.replace('scale(1.035)', 'scale(1)') }, {}],
       { duration: 200, easing: spring },
     );
-    drag.slot.animate(
-      [
-        { height: '0px', opacity: 0 },
-        { height: box.height + 'px', opacity: 1 },
-      ],
-      {
-        duration: 240,
-        easing: spring,
-      },
-    );
+    // Reserve the full card size immediately so lifting it never opens a growing gap.
+    drag.slot.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: spring });
   }
   document.documentElement.classList.add('board-dragging');
   highlight(drag.originCell);

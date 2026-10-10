@@ -10,6 +10,10 @@ the ticket, description and empty space included. The card menu stays independen
 including right after a drag gesture, and the native title link still supports the keyboard, the
 context menu and opening in a new tab.
 
+When dragging a ticket, the drop preview occupies the card's layout height immediately.
+Only that slot is highlighted, including in a closing column; the surrounding cell and its
+other tickets stay unmarked. Short cards therefore leave a short preview as well.
+
 ## Creating a ticket in the modal
 
 **+ New ticket** on the board opens the right-hand ticket drawer. It renders the same
