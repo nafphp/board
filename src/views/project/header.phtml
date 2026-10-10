@@ -25,7 +25,8 @@ use function Naf\View\s;
 
 $projectId = (int) $project['id'];
 $actions ??= '';
-$views = [
+$canWrite = $scope->allows('write');
+$views    = [
     'board'    => [t('Board'), 'view_kanban', route('board', ['project' => $projectId])],
     'activity' => [t('Aktivität'), 'history', route('project.activity', ['project' => $projectId])],
     'settings' => [t('Einstellungen'), 'settings', route('project.settings', ['project' => $projectId])],
@@ -52,6 +53,14 @@ $views = [
                 <span class="avatar avatar-small" title="<?= s($member['name']) ?>"><?= s(mb_substr($member['name'], 0, 1)) ?></span>
             <?php endforeach ?>
         </div>
+        <?php if ($canWrite): ?>
+            <a
+                class="button primary"
+                data-ticket-link
+                data-ticket-create-link
+                href="<?= s(route('ticket.new', ['project' => $projectId])) ?>"
+            ><?= s(t('+ Neues Ticket')) ?></a>
+        <?php endif ?>
     </div>
 </section>
 <nav class="tabs" aria-label="<?= s(t('Projektansichten')) ?>">

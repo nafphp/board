@@ -62,16 +62,7 @@
   border: 0;
   box-shadow: none;
 }
-.topbar-create-button {
-  flex-shrink: 0;
-  gap: 6px;
-  min-height: 36px;
-  padding: 8px 12px;
-  font-size: 12px;
-  white-space: nowrap;
-}
-.workspace-search-popup,
-.topbar-create-popup {
+.workspace-search-popup {
   position: absolute;
   z-index: 30;
   top: calc(100% + 9px);
@@ -87,8 +78,7 @@
 .workspace-search-all[hidden] {
   display: none;
 }
-.workspace-search-status,
-.topbar-create-popup > p {
+.workspace-search-status {
   margin: 0;
   padding: 13px 15px 10px;
   font-size: 11px;
@@ -107,8 +97,7 @@
   border-top: 1px solid var(--line);
 }
 .workspace-result-board,
-.workspace-result-ticket,
-.topbar-create-popup a {
+.workspace-result-ticket {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -122,8 +111,7 @@
   font-size: 12px;
   font-weight: 650;
 }
-.workspace-result-board > span,
-.topbar-create-popup a > span {
+.workspace-result-board > span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -167,8 +155,7 @@
 }
 .workspace-result-board:hover,
 .workspace-result-ticket:hover,
-[data-search-result][aria-selected='true'],
-.topbar-create-popup a:hover {
+[data-search-result][aria-selected='true'] {
   background: var(--hover);
 }
 .workspace-result-ticket:is(:hover, [aria-selected='true']) > .mi:last-child {
@@ -187,27 +174,6 @@
 .workspace-search-all:hover {
   color: var(--accent);
   background: var(--hover);
-}
-.topbar-create {
-  position: relative;
-  flex-shrink: 0;
-}
-.topbar-create > summary {
-  list-style: none;
-  cursor: pointer;
-}
-.topbar-create > summary::-webkit-details-marker {
-  display: none;
-}
-.topbar-create-popup {
-  right: 0;
-  width: min(300px, calc(100vw - 32px));
-  max-height: 60vh;
-  overflow: auto;
-  padding: 5px;
-}
-.topbar-create-popup a {
-  font-size: 12px;
 }
 .workspace-search-page {
   max-width: 780px;
@@ -261,8 +227,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .workspace-search-popup,
-  .topbar-create-popup {
+  .workspace-search-popup {
     animation: none;
   }
   .workspace-search-form {

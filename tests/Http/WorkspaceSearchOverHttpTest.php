@@ -103,17 +103,25 @@ final class WorkspaceSearchOverHttpTest extends AcceptanceTestCase
         }
     }
 
-    public function testCreationUsesTheCurrentBoardOrAnAuthorizedBoardPickerAndDoesNotRepeatTheHeading(): void
+    public function testCreationLivesInTheCurrentBoardHeadingAndRequiresWriteAccess(): void
     {
         $board = $this->page($this->alice, '/projects/1');
         self::assertSame(1, substr_count($board, 'data-ticket-create-link'));
-        self::assertMatchesRegularExpression('#<div class="topbar-tools">.*?href="/projects/1/tickets/new"#s', $board);
+        $dom = new DOMDocument();
+        @$dom->loadHTML($board);
+        $xpath = new DOMXPath($dom);
+        self::assertSame(1, $xpath->query('//section[@class="page-heading"]//a[@data-ticket-create-link]')->length);
+        self::assertSame(0, $xpath->query('//div[@class="topbar-tools"]//*[@data-ticket-create-link]')->length);
+        self::assertStringContainsString('href="/projects/1/tickets/new"', $board);
         self::assertStringNotContainsString('data-ticket-create-link', $this->page($this->viewer, '/projects/1'));
         self::assertStringNotContainsString('data-ticket-create-link', $this->page($this->alice, '/projects/1/tickets/new'));
+        foreach (['/projects', '/settings', '/search?q=Studio'] as $path) {
+            $workspace = $this->page($this->alice, $path);
+            self::assertStringNotContainsString('data-ticket-create-link', $workspace);
+            self::assertStringNotContainsString('data-create-picker', $workspace);
+        }
         $global = $this->page($this->bob, '/projects');
-        self::assertStringContainsString('data-create-picker', $global);
-        self::assertStringContainsString('/projects/2/tickets/new', $global);
-        self::assertStringNotContainsString('/projects/1/tickets/new', $global);
+        self::assertStringNotContainsString('data-ticket-create-link', $global);
         $dom = new DOMDocument();
         @$dom->loadHTML($global);
         self::assertSame(0, (new DOMXPath($dom))->query('//span[@class="topbar-context"]')->length);

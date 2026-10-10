@@ -152,9 +152,4 @@ if (typeof document !== 'undefined') {
   document
     .querySelectorAll('[data-workspace-search]')
     .forEach((root) => mountWorkspaceSearch(root));
-  document.querySelectorAll('[data-create-picker]').forEach((picker) => {
-    picker.addEventListener('click', (event) => {
-      if (event.target.closest('a')) picker.open = false;
-    });
-  });
 }

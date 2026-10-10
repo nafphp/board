@@ -20,23 +20,3 @@ use function Naf\View\s;
         <a class="workspace-search-all" href="<?= s(route('workspace.search')) ?>" data-search-all><?= s(t('Suchergebnisse öffnen')) ?><?= Icon::mark('arrow_forward', 'sm') ?></a>
     </div>
 </div>
-<?php if ($createTargets !== []): ?>
-    <?php if (!$chooseProject): ?>
-        <a class="button primary topbar-create-button" data-ticket-link data-ticket-create-link
-            href="<?= s(route('ticket.new', ['project' => $createTargets[0]['id']])) ?>">
-            <?= Icon::mark('add', 'sm') ?><span><?= s(t('Neues Ticket')) ?></span>
-        </a>
-    <?php else: ?>
-        <details class="topbar-create" data-create-picker data-menu>
-            <summary class="button primary topbar-create-button"><?= Icon::mark('add', 'sm') ?><span><?= s(t('Neues Ticket')) ?></span></summary>
-            <div class="topbar-create-popup">
-                <p><?= s(t('In welchem Board?')) ?></p>
-                <?php foreach ($createTargets as $target): ?>
-                    <a href="<?= s(route('ticket.new', ['project' => $target['id']])) ?>" data-ticket-link data-ticket-create-link>
-                        <?= Icon::mark('view_kanban', 'sm') ?><span><?= s($target['name']) ?></span>
-                    </a>
-                <?php endforeach ?>
-            </div>
-        </details>
-    <?php endif ?>
-<?php endif ?>

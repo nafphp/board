@@ -32,11 +32,11 @@ matching boards; the result page allows 50 tickets and 20 matching boards, with 
 hint when more exist. Both endpoints use current project authorization and private, uncached
 responses. SQL wildcard characters are treated literally.
 
-**New ticket** follows the search and reuses the existing ticket dialog. In a writable project
-it targets that project directly; outside a project it first offers the writable, unarchived
-boards. Read-only project views and the creation page do not offer another creation action.
-The previous duplicate action in the large project heading is removed. Extensions can replace
-the `core.topbar.workspace` contribution or add controls to the `topbar.tools` slot.
+**New ticket** appears in the project heading, using the same primary button style as
+**New project** in the project overview. It opens the existing ticket dialog for the current
+writable project. Workspace pages and read-only project views omit the action; there is no
+cross-board creation picker. The top bar contains workspace search only. Extensions can
+replace the `core.topbar.workspace` search contribution or add controls to `topbar.tools`.
 
 ## Switches
 

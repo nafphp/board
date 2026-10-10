@@ -342,7 +342,7 @@ The fixed slots:
 | `sidebar.workspace` | Workspace entries in the left menu |
 | `sidebar.project` | Navigation for the selected project |
 | `sidebar.footer` | The lower menu area |
-| `topbar.tools` | Workspace search and ticket creation, before the account actions |
+| `topbar.tools` | Workspace search, before the account actions |
 | `topbar.actions` | Actions in the top bar |
 | `projects.actions`, `projects.card.badges` | Project overview |
 | `board.actions`, `board.card.badges`, `board.card.details`, `board.card.actions`, `board.column.summary` | Board |
