@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Naf\Board\Services;
 
+use InvalidArgumentException;
 use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\AiServiceInterface;
 use Naf\Board\Contracts\AiToolProviderInterface;
@@ -73,7 +74,11 @@ final class AiService implements AiServiceInterface
             throw new Failure(t('Dieses Werkzeug ist für dich hier nicht verfügbar.'), 403);
         }
 
-        return $registry->call($name, $arguments);
+        try {
+            return $registry->call($name, $arguments);
+        } catch (InvalidArgumentException) {
+            throw new Failure(t('Ungültige Werkzeugargumente.'));
+        }
     }
 
     /**

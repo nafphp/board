@@ -166,6 +166,10 @@ and events as the interface. The HTTP routes under `/ai` use the native NAF sess
 rate limit. The local registration is separate from the public `/mcp` endpoint, which still
 requires a token; it opens no anonymous access.
 
+Tool arguments must match the tool's input schema. Unknown properties, missing required
+arguments, invalid types and values outside the allowed range return HTTP 422 with a translated
+validation message. A rejected call does not execute the tool, even after write confirmation.
+
 Nafinity itself provides:
 
 - List your own projects when no project is selected.
