@@ -210,3 +210,11 @@ document.addEventListener('input', (event) => {
     pick.setAttribute('aria-pressed', String(pick.dataset.color === custom.value));
   }
 });
+
+// Editing a displayed config value explicitly selects an administration override.
+document.addEventListener('input', (event) => {
+  const field = event.target.closest?.('[data-configuration-field]');
+  if (!field || event.target.matches('[data-configuration-source]')) return;
+  const source = field.querySelector('[data-configuration-source]');
+  if (source) source.value = 'administration';
+});

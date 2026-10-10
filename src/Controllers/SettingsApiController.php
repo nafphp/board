@@ -9,6 +9,7 @@ use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\SettingsServiceInterface;
 use Naf\Board\Definition\SettingDefinition;
 use Naf\Board\Domain\Failure;
+use Naf\Board\Services\ApplicationSettings;
 use Naf\Board\Support\Input;
 use Naf\Board\Support\SettingsContext;
 use Psr\Http\Message\ResponseInterface;
@@ -35,6 +36,20 @@ final class SettingsApiController
         private SettingsServiceInterface $settings,
         private AccessInterface $access,
     ) {
+    }
+
+    public function readApplication(): ResponseInterface
+    {
+        return $this->respond(function () {
+            \Naf\app()->container()->get(ApplicationSettings::class)->authorize();
+
+            return $this->values(SettingsContext::application());
+        });
+    }
+
+    public function writeApplication(): ResponseInterface
+    {
+        return $this->respond(fn() => $this->write(SettingsContext::application(), route('installation.settings')));
     }
 
     public function readUser(): ResponseInterface
@@ -131,7 +146,43 @@ final class SettingsApiController
             throw new Failure(t('Erwartet wird {"values": {...}, "resetKeys": [...]}.'), 422);
         }
 
-        $this->settings->save($context, $this->coerce($context, $values), array_values($resetKeys));
+        foreach ($resetKeys as $key) {
+            if (!is_string($key)) {
+                throw new Failure(t('Bitte prüfe die Eingaben.'), 422);
+            }
+        }
+        if ($context->scope === 'application') {
+            \Naf\app()->container()->get(ApplicationSettings::class)->authorize();
+            $modes = $body['modes'] ?? [];
+            if (!is_array($modes)) {
+                throw new Failure(t('Bitte prüfe die Eingaben.'), 422);
+            }
+            foreach ($modes as $key => $mode) {
+                $definition = is_string($key) ? extensions()->settings()->find('application', $key) : null;
+                if ($definition === null || !in_array($mode, ['configuration', 'administration', 'empty'], true)) {
+                    throw new Failure(t('Bitte prüfe die Eingaben.'), 422);
+                }
+                if ($mode === 'configuration') {
+                    unset($values[$key]);
+                    $resetKeys[] = $key;
+                } elseif ($mode === 'empty') {
+                    $values[$key] = null;
+                } elseif ($definition->sensitive && ($values[$key] ?? '') === '') {
+                    unset($values[$key]);
+                }
+            }
+        }
+        $values    = $this->coerce($context, $values);
+        $resetKeys = array_values(array_unique($resetKeys));
+        if ($context->scope === 'application') {
+            $revision = $body['configurationRevision'] ?? null;
+            if ($revision !== null && !is_string($revision)) {
+                throw new Failure(t('Bitte prüfe die Eingaben.'), 422);
+            }
+            \Naf\app()->container()->get(ApplicationSettings::class)->save($values, $resetKeys, $revision);
+        } else {
+            $this->settings->save($context, $values, $resetKeys);
+        }
 
         if (!$this->wantsJson()) {
             return ['redirect' => $fallback];

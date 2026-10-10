@@ -30,6 +30,48 @@ Personal settings, roles and invitations still take effect through their form's 
 button; project mute switches retain their immediate save behavior. Multiple-choice controls,
 such as ticket assignees, keep checkboxes.
 
+## Installation configuration
+
+Global settings use the same typed fields and cards as personal/project settings.
+Every leaf of the merged server configuration is described automatically; provider
+metadata supplies choices, ranges and secret fields, including SMTP configuration.
+Lists and structured values use JSON. Existing application definitions and extension
+replacements take precedence over generated fields.
+
+The source next to each field distinguishes administration overrides, environment
+references, server configuration and declared defaults. Editing a field selects an
+administration override. Choosing **Server configuration** deletes that override;
+**Clear value** stores an explicit null where allowed. Passwords are write-only: a
+blank password input retains the previous value. Secrets never appear in HTML, JSON
+read responses or audit payloads.
+
+Writes require installation `settings.manage` and native CSRF validation. The global
+endpoint is `GET/POST /api/settings/application`; values cannot be written into personal
+preferences. Form revisions reject stale edits with 409. Validation is all-or-nothing;
+database changes must connect to an existing application database where the current
+administrator remains active and authorized. Existing mail adapters validate active
+mail configuration without sending a message. The audit records changed/reset keys.
+
+Overrides load before any plugin boots through the framework's `config_sources.php`
+convention, so database, sessions, auth and mail see the same values. They live outside
+the database in `storage/configuration/values.enc`, encrypted through the existing token
+cipher, with a generated `key` beside it. The directory is private (0700), files are 0600,
+and writes are locked and atomic. All application processes/replicas must share this
+private storage; back it up with its key. The key's protection rests on filesystem access.
+
+New requests read the saved configuration; restart already-running queue/schedule/socket
+workers after changing their configuration. If a start-critical override prevents boot,
+set the process environment `NAFINITY_CONFIG_OVERRIDES=0` and restart affected processes
+to recover using server configuration. Restore a valid encrypted file and its key, or
+move `storage/configuration/values.enc` aside, before removing the recovery override.
+The fixed storage location and recovery switch deliberately remain outside editable config.
+
+Custom mail transports may implement `ConfigurableTransportInterface::configurationFields()`
+to return colon-separated config paths with label, type, default, index, options and sensitive
+metadata. This optional contract extends the existing transport interface; it introduces
+no dependency on Board or its renderer. Extensions can also declare application
+`SettingDefinition` values with `configKey` using the existing registry.
+
 ## Project management
 
 The General card ends with a quiet **Manage project** section for owners. Archiving keeps

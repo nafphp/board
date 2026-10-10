@@ -18,6 +18,8 @@ use Naf\Board\Modules\Providers\StructureSectionProvider;
 use Naf\Board\Modules\Providers\UsersSectionProvider;
 use Naf\Board\Support\Locales;
 
+use function Naf\config;
+
 /**
  * The settings cards and values Nafinity already had.
  *
@@ -279,9 +281,8 @@ final class CoreSettings implements ExtensionProviderInterface
     {
         $settings = $context->settings();
 
-        // Declared server configuration, readable by trusted code and by the CLI.
-        // It has no card and no HTTP route: there is no global administrator role
-        // to write it, and inventing one here would be inventing a right.
+        // Server configuration is visible to installation administrators.
+        // config.php supplies defaults; administrators can store explicit overrides.
         $context->settingSections()->add(new SettingSection(
             'application',
             'application',
@@ -329,38 +330,39 @@ final class CoreSettings implements ExtensionProviderInterface
             'application',
             'application',
             'Protokoll aufbewahren (Tage, 0 = unbegrenzt)',
-            'number',
+            'integer',
             0,
             400,
             ['min' => 0, 'max' => 3650],
+            configKey: 'nafinity:audit_retention_days',
         ));
         $settings->add(new SettingDefinition(
             'mail_enabled',
             'application',
-            'application',
-            'Mailversand aktiviert',
+            'configuration_mail',
+            'Mailbenachrichtigungen aktiviert',
             'boolean',
-            false,
-            100,
+            filter_var(config('nafinity:mail_enabled', false), FILTER_VALIDATE_BOOL),
+            10,
             [],
             null,
             null,
             false,
-            'nafinity:mail_enabled',
+            'mail:notifications_enabled',
         ));
         $settings->add(new SettingDefinition(
             'mail_from',
             'application',
-            'application',
+            'configuration_mail',
             'Absenderadresse',
             'text',
-            '',
-            200,
+            (string) config('nafinity:mail_from', ''),
+            20,
             ['nullable' => true],
             null,
             null,
             false,
-            'nafinity:mail_from',
+            'mail:from',
         ));
     }
 }
