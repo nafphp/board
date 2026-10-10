@@ -1,4 +1,12 @@
 {
+  "Boardfilter": "Boardfilter",
+  "Sichtbare Boardfilter": "Sichtbare Boardfilter",
+  "Boardfilter anpassen": "Boardfilter anpassen",
+  "Sichtbare Filter auf deinen Boards": "Sichtbare Filter auf deinen Boards",
+  "Wähle, welche Filter du auf deinen Boards sehen möchtest. Neue Filter werden automatisch angezeigt.": "Wähle, welche Filter du auf deinen Boards sehen möchtest. Neue Filter werden automatisch angezeigt.",
+  "Aktive Filter bleiben sichtbar, bis du sie zurücksetzt. Die Suche ist immer verfügbar.": "Aktive Filter bleiben sichtbar, bis du sie zurücksetzt. Die Suche ist immer verfügbar.",
+  "Bitte wähle die sichtbaren Boardfilter.": "Bitte wähle die sichtbaren Boardfilter.",
+  "Diesen Boardfilter gibt es nicht.": "Diesen Boardfilter gibt es nicht.",
   "DEIN WORKSPACE": "DEIN WORKSPACE",
   "Ich (:name)": "Ich (:name)",
   "PROJEKTE": "PROJEKTE",

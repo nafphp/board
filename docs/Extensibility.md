@@ -433,7 +433,7 @@ possible but has to preserve those areas.
 
 ## Settings
 
-```php
+```php-inline
 use function Naf\Board\settings;
 
 settings()->get('theme', 'system');                 // brightness: system | light | dark
@@ -787,6 +787,57 @@ The core query parameters (`column`, `swimlane`, `assignee`, `label`, `status`, 
 stay compatible; plugin filters arrive as `filters[example.reviewed]`. An unknown filter reports
 **422** instead of being silently ignored. The normalised result feeds the filter display, the
 count and the card query together, and activates the same drag-and-drop restriction as before.
+
+### Filter controls and personal visibility
+
+Give `BoardFilterDefinition` a `view` to put its control directly in the filter bar.
+The same definition then appears automatically in the account's **Board filters**
+switch list. The board and the settings resolve the registry after all providers and
+the host's `extensions.php`, so later contributions, replacements and removals need
+no edit to the board template or a second list of settings. New controls are visible
+by default. `index` orders both lists; ids stay stable when labels change.
+
+For the reviewed filter above, add `view: 'example-a/review-filter'` after its index.
+The template receives `$filter` (the definition), `$name` (`filters[example.reviewed]`),
+`$value` (the normalized value or an empty string), and the authorized `$project`,
+`$scope`, `$columns`, `$swimlanes`, `$members` and `$labels`. For example:
+
+```php
+<?php
+use function Naf\Board\choice;
+use function Naf\I18n\t;
+
+echo choice([
+    'name' => $name,
+    'label' => $filter->label,
+    'value' => $value === '' ? '' : ($value ? '1' : '0'),
+    'options' => ['' => t('Alle'), '1' => t('Geprüft'), '0' => t('Nicht geprüft')],
+    'id' => 'filter-example-reviewed',
+]);
+```
+
+The view can also use ordinary named form controls. A bubbling `change` event applies
+the current form immediately; `choice()` emits it itself. The empty string clears a
+filter, while `false` and `0` remain active values. A hidden but active filter is still
+shown so the user can clear it. Filters without a view stay usable through URLs and
+their active values survive changing a visible control, but they have no visibility
+switch. The dedicated fulltext search is always available.
+
+To hide a control programmatically for the current account, use the existing settings
+facade. Preserve other entries when changing only one:
+
+```php-inline
+use function Naf\Board\settings;
+
+$visibility = settings()->get('board_filters', []);
+$visibility['example.reviewed'] = false;
+settings()->save(['board_filters' => $visibility]);
+```
+
+Settings validate ids against the current registry and accept boolean values (native
+forms may send `0` and `1`). Removing an extension hides its control and switch without deleting stored data;
+normalization ignores ids that are no longer registered. This is a display preference, not an
+authorization boundary: each filter query still has the existing project checks.
 
 ## Estimation, activity and AI
 

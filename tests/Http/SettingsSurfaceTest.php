@@ -28,7 +28,7 @@ final class SettingsSurfaceTest extends AcceptanceTestCase
     ];
 
     /** What an account is: what holds for one person, in every project. */
-    private const array ACCOUNT_CARDS = ['personal', 'ai'];
+    private const array ACCOUNT_CARDS = ['personal', 'board_filters', 'ai'];
 
     /**
      * @return array<string,array{string}>

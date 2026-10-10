@@ -103,6 +103,20 @@ use function Naf\View\s;
                 </div>
             </details>
 
+            <details class="profile-section" name="profile-section" data-profile-section-id="board_filters">
+                <summary>
+                    <span class="profile-section-icon" aria-hidden="true"><?= Icon::mark('tune', 'sm') ?></span>
+                    <span>
+                        <strong><?= s(t('Boardfilter')) ?></strong>
+                        <small><?= s(t('Sichtbare Filter auf deinen Boards')) ?></small>
+                    </span>
+                    <span class="profile-chevron" aria-hidden="true"><?= Icon::mark('expand_more', 'sm') ?></span>
+                </summary>
+                <div class="profile-settings">
+                    <?= partial('settings/board-filters') ?>
+                </div>
+            </details>
+
             <details class="profile-section" name="profile-section">
                 <summary>
                     <span class="profile-section-icon" aria-hidden="true"><?= Icon::mark('auto_awesome', 'sm') ?></span>

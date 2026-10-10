@@ -7,6 +7,7 @@ use Naf\Board\Support\Icon;
 use function Naf\Board\choice;
 use function Naf\Board\extensions;
 use function Naf\Board\partial;
+use function Naf\Board\settings;
 use function Naf\Board\slot;
 use function Naf\Board\template;
 use function Naf\Form\csrf;
@@ -60,8 +61,7 @@ foreach ($cards as $card) {
     $columnPoints[$card['column_id']] = ($columnPoints[$card['column_id']] ?? 0)
         + (int) $card['estimate_points'];
 }
-$priorityLabels = extensions()->priorities()->options();
-$boardHint      = match (true) {
+$boardHint = match (true) {
     $project['archived_at'] !== null => t('Archiviertes Projekt · Tickets können gelesen, aber nicht geändert werden'),
     !$canWrite                       => t('Du hast Lesezugriff auf dieses Board'),
     (bool) $filters                  => t('Gefilterte Ansicht · Verschieben über das Kartenmenü'),
@@ -90,95 +90,27 @@ $emptyCellHint = $filters
             value="<?= s($filters['q'] ?? '') ?>"
         />
     </label>
-    <?php
-    /*
-     * Your own name first and marked as yours. "Was liegt bei mir?" is the
-     * question this filter gets asked most, and hunting for your own name in an
-     * alphabetical list of colleagues is a poor way to answer it.
-     *
-     * The value stays the plain user id, so the filter, the query and a shared
-     * link are unchanged -- only what the entry is called and where it sits.
-     */
-    $people = array_column($members, 'name', 'id');
-$me         = (int) $scope->userId;
-$mine       = [];
-
-// Somebody who administers a board without being a member of it is not in
-// this list, and then there is no "me" entry to show.
-if (isset($people[$me])) {
-    $mine = [$me => t('Ich (:name)', ['name' => $people[$me]])];
-    unset($people[$me]);
-}
-?>
-    <?= choice([
-        'name'        => 'assignee',
-        'label'       => 'Verantwortliche',
-        'value'       => $filters['assignee'] ?? '',
-        'options'     => ['' => t('Alle Verantwortlichen')] + $mine + $people,
-        'id'          => 'filter-assignee',
-        'searchLabel' => 'Personen suchen',
-    ]) ?>
-    <?= choice([
-        'name'        => 'label',
-        'label'       => 'Label',
-        'value'       => $filters['label'] ?? '',
-        'options'     => ['' => t('Alle Labels')] + array_column($labels, 'name', 'id'),
-        'id'          => 'filter-label',
-        'searchLabel' => 'Labels suchen',
-    ]) ?>
-    <?= choice([
-        'name'    => 'priority',
-        'label'   => 'Priorität',
-        'value'   => $filters['priority'] ?? '',
-        'options' => ['' => t('Priorität')] + $priorityLabels,
-        'id'      => 'filter-priority',
-    ]) ?>
-    <?php /* A menu, not a section: its panel lies over the board rather than
-             growing inside the bar. Without this the sweep in disclosure.js
-             animates the element's own height, which pushes the board down for
-             the length of the animation and snaps it back at the end. */ ?>
-    <details class="extra-filters" data-menu>
-        <summary><?= s(t('Weitere Filter')) ?></summary>
-        <div>
-            <label>
-                <?= s(t('Spalte')) ?>
-                <?= choice([
-                    'name'        => 'column',
-                    'label'       => 'Spalte',
-                    'value'       => $filters['column'] ?? '',
-                    'options'     => ['' => t('Alle')] + array_column($columns, 'name', 'id'),
-                    'id'          => 'filter-column',
-                    'searchLabel' => 'Spalten suchen',
-                ]) ?>
-            </label>
-            <label>
-                <?= s(t('Swimlane')) ?>
-                <?= choice([
-                    'name'        => 'swimlane',
-                    'label'       => 'Swimlane',
-                    'value'       => $filters['swimlane'] ?? '',
-                    'options'     => ['' => t('Alle')] + array_column($swimlanes, 'name', 'id'),
-                    'id'          => 'filter-swimlane',
-                    'searchLabel' => 'Swimlanes suchen',
-                ]) ?>
-            </label>
-            <label>
-                <?= s(t('Status')) ?>
-                <?= choice([
-                    'name'    => 'status',
-                    'label'   => 'Status',
-                    'value'   => $filters['status'] ?? '',
-                    'options' => [
-                        ''         => t('Offen und geschlossen'),
-                        'open'     => t('Offen'),
-                        'closed'   => t('Geschlossen'),
-                        'archived' => t('Archiviert'),
-                    ],
-                    'id' => 'filter-status',
-                ]) ?>
-            </label>
-        </div>
-    </details>
+    <?php $visibleFilters = settings()->get('board_filters', []); ?>
+    <?php foreach (extensions()->boardFilters()->all() as $id => $filter): ?>
+        <?php if ($filter->view !== null && (($visibleFilters[$id] ?? true) || array_key_exists($id, $filters))): ?>
+            <?= partial($filter->view, [
+                'filter'    => $filter,
+                'name'      => 'filters[' . $id . ']',
+                'value'     => $filters[$id] ?? '',
+                'project'   => $project,
+                'scope'     => $scope,
+                'columns'   => $columns,
+                'swimlanes' => $swimlanes,
+                'members'   => $members,
+                'labels'    => $labels,
+            ]) ?>
+        <?php elseif ($filter->view === null && $id !== 'q' && array_key_exists($id, $filters)): ?>
+            <?= partial('board/filter-value', ['name' => 'filters[' . $id . ']', 'value' => $filters[$id]]) ?>
+        <?php endif ?>
+    <?php endforeach ?>
+    <button type="button" class="icon-button filter-settings" data-profile-open data-profile-section="board_filters" aria-haspopup="dialog" aria-controls="profile-dialog" aria-expanded="false" aria-label="<?= s(t('Boardfilter anpassen')) ?>" title="<?= s(t('Boardfilter anpassen')) ?>">
+        <?= Icon::mark('tune', 'sm') ?>
+    </button>
     <button class="button subtle" data-apply><?= s(t('Filtern')) ?></button>
     <?php if ($filters): ?>
         <a class="clear-filter" href="<?= s(route('board', ['project' => $projectId])) ?>"><?= s(t('Zurücksetzen')) ?></a>

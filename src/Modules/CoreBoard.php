@@ -44,13 +44,14 @@ final class CoreBoard implements ExtensionProviderInterface
         foreach (['column' => 'column_id', 'swimlane' => 'swimlane_id'] as $id => $column) {
             $filters->add(new BoardFilterDefinition(
                 $id,
-                ucfirst($id),
+                $id === 'column' ? 'Spalte' : 'Swimlane',
                 static fn(mixed $value) => Input::id($value, $id),
                 static fn(mixed $value, BoardFilterContext $filterContext) => new SqlCondition(
                     $filterContext->alias . '.' . $column . '=?',
                     [$value],
                 ),
                 $index,
+                'board/filter',
             ));
             $index += 100;
         }
@@ -58,7 +59,7 @@ final class CoreBoard implements ExtensionProviderInterface
         foreach (self::RELATIONS as $id => [$table, $column]) {
             $filters->add(new BoardFilterDefinition(
                 $id,
-                ucfirst($id),
+                $id === 'assignee' ? 'Verantwortliche' : 'Label',
                 static fn(mixed $value) => Input::id($value, $id),
                 static fn(mixed $value, BoardFilterContext $filterContext) => new SqlCondition(
                     "EXISTS(SELECT 1 FROM $table f WHERE f.project_id={$filterContext->alias}"
@@ -66,6 +67,7 @@ final class CoreBoard implements ExtensionProviderInterface
                     [$value],
                 ),
                 $index,
+                'board/filter',
             ));
             $index += 100;
         }
@@ -91,6 +93,7 @@ final class CoreBoard implements ExtensionProviderInterface
                 [$value],
             ),
             $index,
+            'board/filter',
         ));
         $index += 100;
 
@@ -110,6 +113,7 @@ final class CoreBoard implements ExtensionProviderInterface
                     [$value],
                 ),
                 $index,
+                'board/filter',
             ));
             $index += 100;
         }

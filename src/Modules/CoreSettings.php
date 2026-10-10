@@ -55,6 +55,16 @@ final class CoreSettings implements ExtensionProviderInterface
             'person',
         ));
         $sections->add(new SettingSection(
+            'board_filters',
+            'user',
+            'Boardfilter',
+            'settings/board-filters',
+            null,
+            150,
+            null,
+            'tune',
+        ));
+        $sections->add(new SettingSection(
             'ai',
             'user',
             'Lokale AI',
@@ -133,6 +143,15 @@ final class CoreSettings implements ExtensionProviderInterface
     {
         $settings = $context->settings();
         $zones    = array_combine(self::ZONES, self::ZONES);
+
+        $settings->add(new SettingDefinition(
+            'board_filters',
+            'user',
+            'board_filters',
+            'Sichtbare Boardfilter',
+            'board_filters',
+            [],
+        ));
 
         $settings->add(new SettingDefinition(
             'palette',

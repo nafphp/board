@@ -1,4 +1,12 @@
 {
+  "Boardfilter": "Board filters",
+  "Sichtbare Boardfilter": "Visible board filters",
+  "Boardfilter anpassen": "Customize board filters",
+  "Sichtbare Filter auf deinen Boards": "Visible filters on your boards",
+  "Wähle, welche Filter du auf deinen Boards sehen möchtest. Neue Filter werden automatisch angezeigt.": "Choose which filters to show on your boards. New filters appear automatically.",
+  "Aktive Filter bleiben sichtbar, bis du sie zurücksetzt. Die Suche ist immer verfügbar.": "Active filters stay visible until you reset them. Search is always available.",
+  "Bitte wähle die sichtbaren Boardfilter.": "Please choose the visible board filters.",
+  "Diesen Boardfilter gibt es nicht.": "This board filter does not exist.",
   "DEIN WORKSPACE": "YOUR WORKSPACE",
   "Ich (:name)": "Me (:name)",
   "PROJEKTE": "PROJECTS",

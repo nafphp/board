@@ -16,6 +16,20 @@ on that device until a user signs in; authenticated pages use the account's save
 Existing preference rows gain a `palette` column defaulting to `classic`, so upgrades keep their
 current appearance.
 
+## Board filters
+
+The account modal has a **Board filters** section, also reached through the sliders
+beside the board's filters. Each registered filter with a control has a switch. The
+selection belongs to the signed-in user across projects and is stored through the
+existing user settings service, under `board_filters` as a map of filter ids to booleans.
+An omitted id is visible, so newly installed filters appear automatically. Search stays
+available. A hidden filter on a shared URL stays visible while it is active and can be
+cleared normally; visibility never changes the card query or another user's settings.
+
+Choosing a filter applies it immediately. Fulltext typing applies after a short pause;
+the native GET form and its **Filter** button remain available without JavaScript.
+The board, counts, drag restrictions and shareable URL use the same server query.
+
 ## Cards and permissions
 
 - Personal: appearance, language, time zone, notifications and configured external accounts.

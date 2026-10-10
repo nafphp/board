@@ -1131,7 +1131,6 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 .filterbar input,
 .filterbar select,
 .filterbar .choice-trigger,
-.filterbar .extra-filters summary,
 .filterbar .button {
   height: var(--filter-height);
   font-size: 11px;
@@ -1147,8 +1146,7 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 .filterbar .choice {
   max-width: 190px;
 }
-/* The three of them share what is left over instead of each taking the width of
-   its longest entry, so they line up as a set rather than as three sizes. */
+/* Controls share the available space and wrap as more filters are enabled. */
 .filterbar .choice {
   min-width: 118px;
   flex: 1 1 150px;
@@ -1181,79 +1179,73 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   padding-left: 34px;
   width: 100%;
 }
-/* Criteria on the left, what you do with them on the right. The gap that opens
-   between the two is the only separator the row needs. */
-.extra-filters {
-  position: relative;
-  margin-left: auto;
-  font-size: 11px;
-  white-space: nowrap;
+/* Filter visibility belongs to the account and is reachable beside the controls. */
+.filterbar [data-apply][hidden] {
+  display: none;
 }
-.extra-filters summary {
+.filterbar .filter-settings {
+  flex: none;
+  margin-left: auto;
+  width: var(--filter-height);
+  height: var(--filter-height);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.filterbar .filter-settings:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.filter-visibility {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.filter-visibility .filter-visibility-row {
   display: flex;
   align-items: center;
-  list-style: none;
-  border: 1px solid var(--line);
-  padding: 0 11px;
-  border-radius: 7px;
-  background: var(--surface);
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 16px;
+  margin: 0;
+  font-size: 13px;
   cursor: var(--cursor-pointer, pointer);
 }
-.extra-filters summary:hover,
-.extra-filters[open] summary {
-  border-color: var(--accent);
-  color: var(--accent);
+.filter-visibility-row + .filter-visibility-row {
+  border-top: 1px solid var(--line);
 }
-/* Applying is the one thing in this row that changes what you see, so it reads
-   as the action and the rest as the settings for it. It stays quieter than the
-   page's own primary button, which creates tickets rather than narrowing them. */
-.filterbar .button {
-  min-height: var(--filter-height);
-  padding: 5px 14px;
-  border-color: transparent;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 600;
-  transition:
-    background 0.18s,
-    color 0.18s,
-    box-shadow 0.18s;
-}
-.filterbar .button:hover {
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
-}
-/* The row no longer describes the board under it. Filling the button is the
-   difference between a control that is available and one with something waiting
-   in it -- the same difference the page's primary button carries. */
-.filterbar .button[data-changed],
-.filterbar .button[data-changed]:hover {
-  background: var(--accent);
-  color: var(--on-accent);
-  box-shadow: 0 3px 8px color-mix(in srgb, var(--accent) 22%, transparent);
-}
-.filterbar .button[data-changed]:hover {
-  filter: brightness(1.08);
-}
-.extra-filters > div {
-  position: absolute;
-  right: 0;
-  top: 42px;
-  z-index: 3;
-  width: 240px;
-  padding: 16px;
-  background: var(--surface);
+.filter-visibility input[role='switch'] {
+  appearance: none;
+  flex: none;
+  position: relative;
+  width: 36px;
+  height: 21px;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  box-shadow: var(--card-shadow);
+  border-radius: 999px;
+  background: var(--muted);
+  cursor: inherit;
+  transition: background 0.18s;
 }
-.extra-filters label {
-  display: block;
-  margin-bottom: 10px;
+.filter-visibility input[role='switch']::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--surface);
+  transition: transform 0.18s;
 }
-.extra-filters select,
-.extra-filters .choice {
-  max-width: none;
-  width: 100%;
+.filter-visibility input[role='switch']:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.filter-visibility input[role='switch']:checked::before {
+  transform: translateX(15px);
+}
+.filter-visibility input[role='switch']:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 .clear-filter {
   color: var(--accent);
@@ -2781,9 +2773,6 @@ fieldset:disabled select {
     flex: 1;
     font-size: 10px;
   }
-  .filterbar .extra-filters {
-    font-size: 10px;
-  }
   .board-meta {
     font-size: 9px;
     margin: 18px 0;
@@ -2890,10 +2879,6 @@ fieldset:disabled select {
   }
   .context-card dl {
     grid-template-columns: 100px 1fr;
-  }
-  .extra-filters > div {
-    right: auto;
-    left: 0;
   }
   .column-heading {
     position: sticky;
