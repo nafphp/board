@@ -55,7 +55,7 @@ final class FileConfigurationStore
 
         return hash_hmac(
             'sha256',
-            json_encode($values, JSON_THROW_ON_ERROR),
+            json_encode($values, JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION),
             file_get_contents($this->directory . '/key'),
         );
     }
@@ -91,7 +91,7 @@ final class FileConfigurationStore
                 $this->atomicWrite($keyPath, Cipher::generateKey());
             }
             $cipher  = Cipher::fromKey(file_get_contents($keyPath));
-            $encoded = json_encode($values, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+            $encoded = json_encode($values, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
             if (strlen($encoded) > 1048576) {
                 throw new RuntimeException('Configuration overrides exceed 1 MiB.');
             }

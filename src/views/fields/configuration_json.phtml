@@ -5,4 +5,4 @@ use function Naf\View\s;
 ?>
 <textarea name="<?= s($name) ?>" id="<?= s($id) ?>" rows="5" spellcheck="false"
     <?= $disabled ? 'disabled' : '' ?>
-><?= $definition->sensitive ? '' : s(json_encode($value, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) ?></textarea>
+><?= $definition->sensitive ? '' : s(json_encode($value, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION)) ?></textarea>

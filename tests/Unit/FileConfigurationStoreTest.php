@@ -50,6 +50,14 @@ final class FileConfigurationStoreTest extends TestCase
         self::assertSame(['csrf_validation' => false, 'mail:smtp:port' => 465], $store->read());
     }
 
+    public function testJsonNumbersRetainTheirTypesAcrossStorage(): void
+    {
+        $store = new FileConfigurationStore($this->directory);
+        $store->update(fn() => ['provider:ratio' => 2.0, 'provider:steps' => [1, 2.0]]);
+        self::assertSame(2.0, $store->read()['provider:ratio']);
+        self::assertSame([1, 2.0], $store->read()['provider:steps']);
+    }
+
     public function testFailedValidationDoesNotChangeTheStoredDocument(): void
     {
         $store = new FileConfigurationStore($this->directory);
