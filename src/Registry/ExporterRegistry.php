@@ -6,18 +6,18 @@ namespace Naf\Board\Registry;
 
 use Naf\Board\Definition\ExporterDefinition;
 
-/**
- * The formats a board can be exported in.
- *
- * Nafinity ships two. A plugin that adds a third writes one line and gets an
- * option in the export settings, a working URL and the same rows the other two
- * see, without touching anything here.
- */
+/** Registered formats, filtered by the datasets their writers support. */
 final class ExporterRegistry extends DefinitionRegistry
 {
     public function __construct()
     {
         parent::__construct(ExporterDefinition::class, 'Exporter');
+    }
+
+    /** @return list<ExporterDefinition> */
+    public function forSource(string $source): array
+    {
+        return array_values(array_filter($this->all(), static fn(ExporterDefinition $format): bool => in_array($source, $format->sources, true)));
     }
 
     public function get(string $id): ?ExporterDefinition

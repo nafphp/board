@@ -121,8 +121,12 @@ Attributes and associations that are not submitted are preserved. Updates requir
 movement retain their board revision checks. Status changes use the existing state service. System values such as creator
 and change date are read-only.
 
-Time tracking is a manually editable **total in minutes**; it is not a stopwatch and not a
-per-person booking journal. The display converts to hours and minutes. When an estimate exists,
+The ticket keeps a manually editable **total in minutes** and a server-backed work timer.
+Starting or resuming counts elapsed seconds; pausing holds them without booking, and stopping
+adds whole minutes to the ticket. Remaining seconds carry into the next session. New timer
+bookings also enter a per-person journal used by the [personal hours export](Profile.md#exporting-personal-hours).
+Manual edits of the aggregate do not create personal bookings. The display converts to hours
+and minutes. When an estimate exists,
 progress and remaining time — or an overrun — are shown. The start date may not lie after the
 due date.
 

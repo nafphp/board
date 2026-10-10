@@ -322,5 +322,22 @@
   "Das Exportformat :format kann nicht schreiben.": "Das Exportformat :format kann nicht schreiben.",
   "Angemeldet": "Angemeldet",
   "Anmeldung abgelehnt": "Anmeldung abgelehnt",
-  "Angemeldet bleiben": "Angemeldet bleiben"
+  "Angemeldet bleiben": "Angemeldet bleiben",
+  "Datenexport": "Datenexport",
+  "Daten exportieren": "Daten exportieren",
+  "Deine gebuchten Stunden herunterladen": "Deine gebuchten Stunden herunterladen",
+  "Daten": "Daten",
+  "Geleistete Stunden": "Geleistete Stunden",
+  "Gebucht ab": "Gebucht ab",
+  "Gebucht bis": "Gebucht bis",
+  "Gebucht am (UTC)": "Gebucht am (UTC)",
+  "Minuten": "Minuten",
+  "Stunden": "Stunden",
+  "Einheit": "Einheit",
+  "Text": "Text",
+  "PDF": "PDF",
+  "Diese Exportdaten gibt es nicht.": "Diese Exportdaten gibt es nicht.",
+  "Gesamt: :hours Stunden (:minutes Minuten)": "Gesamt: :hours Stunden (:minutes Minuten)",
+  "Keine Datensätze im gewählten Zeitraum.": "Keine Datensätze im gewählten Zeitraum.",
+  "Enthält nur deine mit Stopp gebuchten Minuten ab Einführung des Stundenprotokolls. Laufende und pausierte Timer sowie manuell gesetzte Ticket-Summen sind nicht enthalten.": "Enthält nur deine mit Stopp gebuchten Minuten ab Einführung des Stundenprotokolls. Laufende und pausierte Timer sowie manuell gesetzte Ticket-Summen sind nicht enthalten."
 }

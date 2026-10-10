@@ -897,9 +897,9 @@ listener that never ran and never said so.
 | `Change` | project, ticket, actor, type, payload | Anything was written — 24 kinds, from `ticket.moved` to `account.created` |
 | `GrantsChanged` | actor, subject, scope, before, after | Roles or permissions moved (from `naf/rbac`) |
 | `SignIn` | email, provider, outcome, account | Somebody tried to sign in, successfully or not |
-| `ExportStarted` | format, project, columns | An export is about to write its first record |
-| `ExportLine` | format, project, ticket, row | One record, before it is written |
-| `ExportFinished` | format, project, columns, count | An export wrote its last record |
+| `ExportStarted` | format, source, project, columns | An export is about to write its first record |
+| `ExportLine` | format, source, project, record, row | One record, before it is written |
+| `ExportFinished` | format, source, project, columns, count | An export wrote its last record |
 
 `Change` is one event with twenty-four kinds rather than twenty-four events, because the
 listeners that exist mostly want all of them — the audit log and the live updates do — and a
@@ -964,10 +964,14 @@ $context->exporters()->add(new ExporterDefinition(
 
 The writer implements `ExporterInterface`: `open()`, `line()` and `close()`. It is built fresh for
 each export and may keep the state of that one export, so a format that needs to know whether it
-has written a record yet simply remembers. Records arrive one at a time and are written as they
-arrive — an export costs one ticket in memory plus a file, not a copy of the board.
+has written a record yet simply remembers. CSV, JSON and text stream records as they arrive. PDF buffers a document and therefore
+uses memory proportional to its rendered pages.
 
-Registering a format adds it to the format selector in both export settings cards. Board settings
+Registering a format adds it to selectors for the datasets listed in its `sources`. Existing
+definitions default to `['tickets']`; opt into personal hours with `sources: ['time']` or
+both with `sources: ['tickets', 'time']`. `ExporterRegistry::forSource()` drives the selectors
+and `ExportRenderer` rejects unsupported combinations. Core CSV, JSON and text support both;
+PDF currently supports hours. A ticket-specific plugin is not offered for hours by accident. Board settings
 export only their own project; installation settings offer one board or all authorized active
 boards in a single file. Both download endpoints use the same exporter registry.
 
@@ -1015,6 +1019,40 @@ that board's row count. `ExportLine::project` identifies each row's board. Write
 temporary stream. Exports read live data and are not a transactionally consistent backup.
 Attachments, comments and board structure are outside this ticket export.
 
+### Additional datasets and accounting adapters
+
+Ticket queries (`ExportService`) and personal time queries (`TimeExportService`) supply
+normalized data to one `ExportRenderer`. The renderer creates a fresh writer, opens one
+temporary stream, dispatches the existing events, finalizes the document and closes the
+stream on failure. It publishes `ExportFinished` only after the writer has finalized the file.
+
+A source authorizes **all** selected projects before reading any rows, then calls
+`ExportRenderer::write($format, $source, $columns, $groups, $basename)`. `$groups` maps project
+ids to lazy iterables of `['record' => $originalRow, 'data' => $outgoingValues]`. The source
+owns selection and authorization; format writers never query data. Use a stable namespaced
+source id and declare it in supported format definitions. This is also the path for a future
+billing dataset once the application has the required invoice information.
+
+Export events expose `source`, defaulting to `tickets` for existing callers. `ExportLine::record`
+is the immutable source row; `ticket` remains its compatibility alias. For `time`, it contains
+the stored booking snapshot, not a current ticket. A listener for a particular dataset must
+check `source` as well as `isFor()`, for example:
+
+```php
+event()->listen(ExportLine::class, static function (ExportLine $line): void {
+    if ($line->source !== 'time' || !$line->isFor('example.billing')) {
+        return;
+    }
+    $line->data['hours'] = $line->data['minutes'] / 60;
+});
+```
+
+Personal time exports require current project read access and always select the authenticated
+user, independent of any `user` request parameter. See [personal hours](Profile.md#exporting-personal-hours)
+for booking semantics and the historical-data limit. There is no invoice schema or universal
+accounting-tool import in this dataset. A provider-specific writer can be registered through
+the same exporter registry when its required input fields and import contract are available.
+
 ### Changing what an export says
 
 ```php
@@ -1037,7 +1075,7 @@ would be a poor way to learn. `ExportLine` carries the stored ticket as `readonl
 the row and the export says something else; the board still says what the board said. An export
 that edited the tickets it was reading is the worst possible way to find that out.
 
-Ask `isFor()` first. A mapping that was true of every format would also rewrite the spreadsheet
+Check `source` and `isFor()` first. A mapping that was true of every format would also rewrite the spreadsheet
 the team reads, which is rarely what anybody means by "the external system needs `done`".
 
 There is no transformer registry and no export hook manager. A listener on a documented event is

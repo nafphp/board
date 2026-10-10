@@ -17,6 +17,35 @@ and return focus to the trigger. Opening and closing animate over 260 and 150 ms
 both palettes and forced system colours are handled in CSS. Password and code are cleared from the fields on submit and on
 close; the application never puts them in LocalStorage or IndexedDB.
 
+## Exporting personal hours
+
+**Data export** in the account modal downloads the current account's booked time as PDF,
+UTF-8 text, CSV or JSON. Choose one accessible board or all accessible boards and optional
+inclusive UTC booking dates. Running and paused timers are not booked. Stopping books whole
+minutes; remaining seconds carry forward. Transferring a ticket also settles its clocks.
+
+The time journal begins with `M202610100002TimeEntries`. Older ticket totals and manually
+edited totals have no reliable author or booking date and are not backfilled. Bookings retain
+the original ticket key and title after a rename, transfer or ticket deletion. Project deletion
+removes its bookings. Reading or exporting them still requires current read access to the
+original project, including archived projects. Even administrators receive only their own
+entries through this personal endpoint; project-wide ticket export permissions remain separate.
+
+`GET /profile/export?source=time&format=pdf&project=all&from=2026-10-01&until=2026-10-31`
+uses the shared exporter registry and file renderer. Formats have the same eight columns:
+UTC booking timestamp, board, original ticket key/title, person, integer minutes, decimal hours
+(rounded to six places) and the unit code `HUR`. Minutes are the exact source quantity. CSV
+retains its UTF-8 BOM, semicolon separator and protection against spreadsheet formulas. PDF
+renders escaped text locally, repeats the headings on subsequent pages and includes a total.
+An empty selection is a valid empty download. All downloads are private and uncached.
+
+The file is a time report, not an invoice. Invoice adapters need additional seller/buyer,
+price, tax and invoice data. [EN 16931](https://ec.europa.eu/digital-building-blocks/sites/display/DIGITAL/Compliance+with+eInvoicing+standard)
+is the common semantic basis; [XRechnung](https://xeinkauf.de/xrechnung) and
+[ZUGFeRD/Factur-X](https://www.ferd-net.de/standards/zugferd-faq) are relevant invoice formats.
+Importing draft invoice lines into a specific accounting tool needs its own verified field
+mapping or API adapter. A plain time-report PDF is not a structured e-invoice.
+
 ## Changing the password
 
 Current password, new password and a repeat are required. The new password needs at least 15

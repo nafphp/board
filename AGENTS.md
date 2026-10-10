@@ -77,6 +77,10 @@ overrides belong in providers, not in an extension's early bootstrap or route fi
 - Export cards belong to board and installation settings. Both use the exporter registry;
   combined downloads retain per-board export and metadata read permissions.
   `ExportOptions` normalizes selection filters; the existing unfiltered export API stays valid.
+  Personal hours live in the profile slot and select only the authenticated account's journal.
+  Sources authorize their projects before handing rows to `ExportRenderer`; format definitions
+  opt into `sources` (default `tickets`), and export events identify the source. Timer stops
+  journal whole minutes atomically; manual totals and historical totals are not backfilled.
 - A slot hands its contributions a typed context, not a loose array. Use that context and its
   `value()` and `field` instead of reaching for an own query or form.
 - Uninstalling a package takes its contributions away and leaves the stored data alone.

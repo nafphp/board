@@ -69,7 +69,7 @@ final class ExportOverHttpTest extends AcceptanceTestCase
      */
     public function testAnUnknownFormatIsNotServed(): void
     {
-        foreach (['xlsx', 'csv2', 'txt'] as $format) {
+        foreach (['xlsx', 'csv2', 'unregistered'] as $format) {
             $this->assertSame(
                 404,
                 $this->export($this->alice, $format)['status'],

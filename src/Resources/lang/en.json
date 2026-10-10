@@ -823,5 +823,22 @@
   "Der Projektname stimmt nicht überein.": "The project name does not match.",
   "Projekt gelöscht": "Project deleted",
   "Gelöschtes Projekt": "Deleted project",
-  "Endgültig löschen": "Permanently delete"
+  "Endgültig löschen": "Permanently delete",
+  "Datenexport": "Data export",
+  "Daten exportieren": "Export data",
+  "Deine gebuchten Stunden herunterladen": "Download your booked hours",
+  "Daten": "Data",
+  "Geleistete Stunden": "Hours worked",
+  "Gebucht ab": "Booked from",
+  "Gebucht bis": "Booked until",
+  "Gebucht am (UTC)": "Booked at (UTC)",
+  "Minuten": "Minutes",
+  "Stunden": "Hours",
+  "Einheit": "Unit",
+  "Text": "Text",
+  "PDF": "PDF",
+  "Diese Exportdaten gibt es nicht.": "This export dataset does not exist.",
+  "Gesamt: :hours Stunden (:minutes Minuten)": "Total: :hours hours (:minutes minutes)",
+  "Keine Datensätze im gewählten Zeitraum.": "No records in the selected period.",
+  "Enthält nur deine mit Stopp gebuchten Minuten ab Einführung des Stundenprotokolls. Laufende und pausierte Timer sowie manuell gesetzte Ticket-Summen sind nicht enthalten.": "Includes only your minutes booked with Stop since the time log was introduced. Running and paused timers and manually set ticket totals are not included."
 }

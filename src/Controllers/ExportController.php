@@ -8,8 +8,10 @@ use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\BoardQueryInterface;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Export\ExportOptions;
+use Naf\Board\Export\TimeExportOptions;
 use Naf\Board\Rbac\Installation;
 use Naf\Board\Services\ExportService;
+use Naf\Board\Services\TimeExportService;
 use Naf\Board\Support\Input;
 use Psr\Http\Message\ResponseInterface;
 
@@ -32,6 +34,7 @@ final class ExportController
         private ExportService $exports,
         private BoardQueryInterface $query,
         private AccessInterface $access,
+        private TimeExportService $time,
     ) {
     }
 
@@ -71,6 +74,25 @@ final class ExportController
             return $this->file(
                 $this->exports->writeSelected($projects, $format, ExportOptions::fromInput($input), true),
             );
+        });
+    }
+
+    /** Personal exports are scoped to the signed-in account, never a request's user id. */
+    public function personal(): ResponseInterface
+    {
+        return Respond::read(function () {
+            $this->access->actor();
+            $input  = request()->getQueryParams();
+            $format = Input::validate($input, ['format' => 'required|string|max:80'])['format'];
+            if (($input['source'] ?? 'time') !== 'time') {
+                throw new Failure(t('Diese Exportdaten gibt es nicht.'), 404);
+            }
+            $selection = $input['project'] ?? 'all';
+            $projects  = $selection === 'all'
+                ? array_map(intval(...), array_column($this->time->availableProjects(), 'id'))
+                : [Input::id($selection, 'project')];
+
+            return $this->file($this->time->write($projects, $format, TimeExportOptions::fromInput($input)));
         });
     }
 
