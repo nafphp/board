@@ -15,6 +15,11 @@ preserved on close, and after a successful save the same card is reopened. The a
 the operating system's reduced-motion option. On small screens the dialog takes up nearly the
 whole area.
 
+The top bar shows a plain context label: the current project's name inside a project,
+or the page title elsewhere. It does not imply a clickable breadcrumb hierarchy.
+Navigation stays in the sidebar and the project's tabs. Long names truncate in the
+bar so its actions remain available on narrow screens.
+
 ## Switches
 
 On/off controls share the same switch appearance, including personal notifications,

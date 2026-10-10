@@ -802,20 +802,22 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   border-bottom: 1px solid var(--line);
   background: var(--surface);
 }
-.breadcrumb {
-  display: flex;
-  gap: 16px;
-  font-size: 11px;
-  color: var(--muted);
-}
-.breadcrumb strong {
-  color: var(--text);
+.topbar-context {
+  min-width: 0;
+  margin-right: 24px;
+  overflow: hidden;
+  font-size: 12px;
   font-weight: 550;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .topbar-right {
   display: flex;
+  flex-shrink: 0;
   gap: 21px;
   align-items: center;
+  margin-left: auto;
 }
 /* The picker is the application's own select, drawn as a chip: a top bar wants a pill
    rather than a form field, and the list that opens is the one every select here opens. */
@@ -2731,15 +2733,13 @@ fieldset:disabled select {
   }
   .mobile-menu {
     display: inline-grid !important;
+    flex-shrink: 0;
     margin-right: 12px;
   }
   .topbar {
     height: 57px;
     padding: 0 16px;
     justify-content: flex-start;
-  }
-  .topbar-right {
-    margin-left: auto;
   }
   /* Narrow screens keep the picker but drop the written name; the flag is enough to
      reach it, and the list itself still names every language in full. */
@@ -2749,9 +2749,9 @@ fieldset:disabled select {
   .topbar-right .language-picker .choice-trigger {
     padding: 5px 9px;
   }
-  .breadcrumb {
-    gap: 8px;
-    font-size: 10px;
+  .topbar-context {
+    margin-right: 12px;
+    font-size: 11px;
   }
   #main-content {
     padding: 24px 18px;
