@@ -15,6 +15,7 @@ use Naf\Board\Domain\ProjectScope;
 use Naf\Board\Rbac\Grants;
 use Naf\Board\Support\Abbreviation;
 use Naf\Board\Support\Input;
+use Naf\Board\Support\MembershipRole;
 use Naf\ORM\Core\EntityManager;
 use PDO;
 use Throwable;
@@ -30,6 +31,7 @@ final class ProjectService implements ProjectServiceInterface
         private Auth $auth,
         private AccessInterface $access,
         private EntityManager $entityManager,
+        private MembershipRole $membershipRoles,
     ) {
     }
 
@@ -198,7 +200,7 @@ final class ProjectService implements ProjectServiceInterface
                 'notifications', 'comments', 'attachments', 'ticket_links',
                 'ticket_assignees', 'ticket_labels', 'ticket_metadata', 'ticket_timers', 'ticket_time_entries',
                 'tickets', 'labels', 'board_columns', 'swimlanes', 'boards',
-                'project_preferences', 'project_user_settings', 'project_settings',
+                'project_preferences', 'project_user_settings', 'project_settings', 'project_invitations',
                 'project_members', 'project_role_permissions', 'project_roles',
             ] as $table) {
                 $this->pdo->prepare("DELETE FROM $table WHERE project_id=?")->execute([$project]);
@@ -212,26 +214,11 @@ final class ProjectService implements ProjectServiceInterface
         $validated = Input::validate($data, ['email' => 'required|string|email|max:190']);
         $email     = strtolower(trim((string) $validated['email']));
         $role      = $data['role'] ?? 'member';
-        if (
-            !is_string($role)
-            || (!in_array($role, ['owner', 'manager', 'member', 'viewer', 'remove'], true) && preg_match('/^custom:[1-9][0-9]*$/D', $role) !== 1)
-        ) {
-            throw new Failure(t('Ungültige Projektrolle.'));
-        }
         $this->access->write($project, 'members', function (ProjectScope $scope) use (
             $project,
             $email,
             $role,
         ) {
-            $customRoleId = str_starts_with($role, 'custom:') ? Input::id(substr($role, 7)) : null;
-            $storedRole   = $customRoleId === null ? $role : 'viewer';
-            if ($customRoleId !== null) {
-                $statement = $this->pdo->prepare('SELECT id FROM project_roles WHERE project_id=? AND id=?');
-                $statement->execute([$project, $customRoleId]);
-                if (!$statement->fetchColumn()) {
-                    throw new Failure(t('Rolle nicht gefunden.'), 404);
-                }
-            }
             $statement = $this->pdo->prepare('SELECT id FROM users WHERE email=? AND active=1');
             $statement->execute([$email]);
             $user = $statement->fetchColumn();
@@ -242,16 +229,10 @@ final class ProjectService implements ProjectServiceInterface
                 'SELECT role,active,custom_role_id FROM project_members WHERE project_id=? AND user_id=?',
             );
             $statement->execute([$project, $user]);
-            $old              = $statement->fetch();
-            $grantsManagement = in_array($role, ['owner', 'manager'], true);
-            $changesManager   = $old && in_array($old['role'], ['owner', 'manager'], true);
-
-            $newRights     = $this->access->permissions($project, $storedRole, $customRoleId);
-            $oldRights     = $old ? $this->access->permissions($project, $old['role'], $old['custom_role_id'] === null ? null : (int) $old['custom_role_id']) : [];
-            $exceedsRights = array_diff([...$newRights, ...$oldRights], $scope->permissions ?? []);
-            if ($scope->role !== 'owner' && ($grantsManagement || $changesManager || $exceedsRights)) {
-                throw new Failure(t('Diese Rolle kann nur ein Owner vergeben oder ändern.'), 403);
-            }
+            $old          = $statement->fetch();
+            $resolved     = $this->membershipRoles->resolve($scope, $role, $old ?: [], true);
+            $customRoleId = $resolved['custom_role_id'];
+            $storedRole   = $resolved['role'];
             if (
                 $old
                 && $old['role'] === 'owner'

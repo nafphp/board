@@ -1,0 +1,24 @@
+<?php
+use function Naf\Board\template;
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+$this->setLayout(template('layout'));
+$this->block('content');
+?>
+<section class="panel invitation-result">
+    <span class="eyebrow"><?= s($invitation['project_name']) ?></span>
+    <h1><?= s(t('Einladung erstellt')) ?></h1>
+    <p><?= s($invitation['sent'] ? t('Die Einladung wurde an :email gesendet.', ['email' => $invitation['email']]) : t('Gib diesen Link an :email weiter.', ['email' => $invitation['email']])) ?></p>
+    <label>
+        <?= s(t('Einladungslink')) ?>
+        <input id="invitation-link" type="url" readonly value="<?= s($invitation['invitation_url']) ?>" />
+    </label>
+    <p class="muted small"><?= s(t('Der Link gilt sieben Tage und kann nur einmal verwendet werden.')) ?></p>
+    <div class="settings-actions">
+        <button type="button" class="button primary" data-copy-invitation><?= s(t('Link kopieren')) ?></button>
+        <a class="button subtle" href="/projects/<?= (int) $invitation['project_id'] ?>/settings#users"><?= s(t('Zur Mitgliederverwaltung')) ?></a>
+    </div>
+    <p role="status" data-copy-status></p>
+</section>
+<?php $this->endblock('content'); ?>

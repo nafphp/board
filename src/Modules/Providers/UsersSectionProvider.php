@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Naf\Board\Modules\Providers;
 
+use Naf\Board\Contracts\InvitationServiceInterface;
 use Naf\Board\Contracts\SettingSectionProviderInterface;
 use Naf\Board\Definition\SettingSection;
 use Naf\Board\Support\UiContext;
@@ -24,6 +25,10 @@ use function Naf\Rbac\rbac;
  */
 final class UsersSectionProvider implements SettingSectionProviderInterface
 {
+    public function __construct(private InvitationServiceInterface $invitations)
+    {
+    }
+
     public function data(SettingSection $section, UiContext $context, array $page): array
     {
         $rows = app()->container()->get(PDO::class)
@@ -43,8 +48,9 @@ final class UsersSectionProvider implements SettingSectionProviderInterface
         );
 
         return [
-            'people'      => $people,
-            'description' => t(':count Konten', ['count' => count($people)]),
+            'people'        => $people,
+            'inviteTargets' => $this->invitations->targets(),
+            'description'   => t(':count Konten', ['count' => count($people)]),
         ];
     }
 }

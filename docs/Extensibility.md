@@ -273,6 +273,27 @@ in is spread first, so a foreign `$data['user']` does not overwrite the shell da
 only resolves the view mapping and renders a partial. Project and record authorization remain
 the controller's job.
 
+### Account invitations
+
+`InvitationServiceInterface` is the shared service for board and installation invite forms:
+`create(project, data)` takes `email`, `role` (default `member`) and optional `send_email`;
+it returns an expiring `invitation_url`. `pending(project)` lists revocable invitations,
+`revoke(project, invitation)` invalidates one, and `search(project, query)` returns the bounded,
+authorized active-account directory. `targets()` lists boards the current actor may invite to.
+`find(token)` returns the public preview; `accept(token, data)` handles registration or the
+authenticated matching account and consumes the link atomically. Account email always comes
+from the invitation. Acceptance preserves an existing active membership. See
+[Profile](Profile.md#inviting-people-and-assigning-boards) for the identity and expiry rules.
+
+Contributions can inject this contract or replace its implementation through the normal
+service provider binding. The settings forms and public controllers use the same contract.
+A replacement must retain project authorization, role limits, recipient identity checks,
+expiry, one-time consumption and account/membership transaction boundaries; returning an
+unchecked registration URL would bypass them. `project.invited`, `project.invitation_revoked`,
+`account.created` and `project.member_changed` are ordinary transactional `Change` kinds.
+Their payloads exclude credentials and invitation tokens. A listener may reject a write;
+it must not send the invitation a second time.
+
 ## Permissions
 
 ```php
@@ -888,22 +909,22 @@ request data.
 ## Events
 
 Registries say what exists; events are how a plugin takes part in something already running.
-There are five, and each is a class: `dispatch(new Change(…))`, `listen(Change::class, …)`.
+Each event is a class: `dispatch(new Change(…))`, `listen(Change::class, …)`.
 A misspelled class is an error where it is written, while a misspelled event name used to be a
 listener that never ran and never said so.
 
 | Event | Carries | When |
 |---|---|---|
-| `Change` | project, ticket, actor, type, payload | Anything was written — 24 kinds, from `ticket.moved` to `account.created` |
+| `Change` | project, ticket, actor, type, payload | Anything was written — registered kinds, from `ticket.moved` to `account.created` |
 | `GrantsChanged` | actor, subject, scope, before, after | Roles or permissions moved (from `naf/rbac`) |
 | `SignIn` | email, provider, outcome, account | Somebody tried to sign in, successfully or not |
 | `ExportStarted` | format, source, project, columns | An export is about to write its first record |
 | `ExportLine` | format, source, project, record, row | One record, before it is written |
 | `ExportFinished` | format, source, project, columns, count | An export wrote its last record |
 
-`Change` is one event with twenty-four kinds rather than twenty-four events, because the
-listeners that exist mostly want all of them — the audit log and the live updates do — and a
-plugin interested in one writes one line:
+`Change` uses registered kinds to identify writes. The listeners that exist mostly want all
+of them — the audit log and the live updates do — and a plugin interested in one writes one
+line:
 
 ```php
 event()->listen(Change::class, function (Change $change): void {

@@ -1,4 +1,7 @@
 import { t } from './i18n.js';
+import { mountMemberControls } from './members.js';
+
+mountMemberControls();
 
 const dialog = document.querySelector('#settings-detail');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');

@@ -46,6 +46,11 @@ or a plugin metaframework.
 - Project deletion requires an active owner and confirmation of the current project name,
   including for archived projects. `project.deleted` is dispatched before core cleanup so
   extensions can remove their own dependent data in the same transaction.
+- Board and installation invitation forms share `InvitationServiceInterface`. New accounts
+  choose their own password, get only the initial board and no installation grants. Token hashes,
+  expiry, current sponsor rights, bound email and atomic consumption are security boundaries;
+  existing accounts must authenticate and their credentials cannot be overwritten. Member
+  autocomplete is project-authorized, bounded and limited to active account names/emails.
 - Writes carry a ticket version; a stale write ends with 409 and the interface offers a reload.
 - Attachments are private: 10 MiB per file, 30 MiB per ticket, 200 MiB per project, reached
   only through the application via `Naf\Storage\storage('attachments')`. The allowlist and
@@ -94,16 +99,16 @@ listener that never ran and never said so.
 
 | Event | When |
 |---|---|
-| `Change` | Anything was written — 24 kinds, from `ticket.moved` to `account.created` |
+| `Change` | Anything was written — registered kinds, from `ticket.moved` to `account.created` |
 | `GrantsChanged` | Roles or permissions moved (from `naf/rbac`) |
 | `SignIn` | Somebody tried to sign in, successfully or not |
 | `ExportStarted`, `ExportLine`, `ExportFinished` | An export, at its ends and per record |
 
 Three things about them that are decisions rather than accidents:
 
-- **One write event with 24 kinds, not 24 events.** The listeners that exist mostly want all
+- **One write event with registered kinds.** The listeners that exist mostly want all
   of them, and a plugin wanting one writes one `if`. Splitting it would make the audit log and
-  the live updates register twenty-four times each.
+  the live updates register a listener for every kind.
 - **`Change` is dispatched inside the transaction that did the work**, so a listener that
   throws refuses the write. That is how a rule no permission can express — one depending on
   the data, the time, another system — gets to stop something.

@@ -6,6 +6,7 @@ use Naf\Board\Controllers\AttachmentController;
 use Naf\Board\Controllers\BoardController;
 use Naf\Board\Controllers\ExportController;
 use Naf\Board\Controllers\InstallationController;
+use Naf\Board\Controllers\InvitationController;
 use Naf\Board\Controllers\PreferenceController;
 use Naf\Board\Controllers\ProfileController;
 use Naf\Board\Controllers\ProjectController;
@@ -81,6 +82,13 @@ $routes = [
     ['GET', '/login', [SessionController::class, 'login'], 'login'],
     ['POST', '/login', [SessionController::class, 'authenticate'], 'login.submit'],
     ['POST', '/logout', [SessionController::class, 'logout'], 'logout'],
+
+    ['POST', '/invitations', [InvitationController::class, 'create'], 'invitations.create'],
+    ['GET', '/invitations/created', [InvitationController::class, 'created'], 'invitations.created'],
+    ['GET', '/invitations/{token}', [InvitationController::class, 'show'], 'invitations.show'],
+    ['POST', '/invitations/{token}', [InvitationController::class, 'accept'], 'invitations.accept'],
+    ['GET', '/projects/{project}/accounts', [InvitationController::class, 'search'], 'project.accounts'],
+    ['POST', '/projects/{project}/invitations/{invitation}/revoke', [InvitationController::class, 'revoke'], 'project.invitations.revoke'],
 
     ['GET', '/settings', [InstallationController::class, 'settings'], 'installation.settings'],
     ['GET', '/settings/export', [ExportController::class, 'installation'], 'installation.export'],

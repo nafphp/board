@@ -13,45 +13,31 @@ use Naf\Board\Rbac\Installation;
 use Naf\Board\Support\Icon;
 
 use function Naf\Auth\auth;
-use function Naf\Board\field;
 use function Naf\Board\partial;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\Rbac\rbac;
-use function Naf\route;
 use function Naf\View\s;
 
 ?>
 <div class="settings-rows" data-kind="user">
     <?php if (rbac()->allows((int) (auth()->user()?->getIdentifier() ?? 0), Installation::MANAGE_USERS)): ?>
-        <?php /* Opening an account used to mean having a shell on the server. */ ?>
         <details class="settings-row">
             <summary class="settings-row-head">
-                <span class="settings-row-title"><?= s(t('Konto anlegen')) ?></span>
+                <span class="settings-row-title"><?= s(t('Person einladen')) ?></span>
                 <?= Icon::mark('person_add', 'sm', 'settings-row-caret') ?>
             </summary>
             <div class="settings-row-body">
-                <form method="post" data-enhanced action="<?= s(route('installation.users.create')) ?>">
-                    <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
-                    <?= field(['label' => 'Name', 'name' => 'name', 'required' => true, 'attributes' => ['maxlength' => 120]]) ?>
-                    <?= field(['label' => 'E-Mail', 'name' => 'email', 'type' => 'email', 'required' => true, 'attributes' => ['maxlength' => 190]]) ?>
-                    <?= field([
-                        'label'      => 'Erstes Passwort',
-                        'name'       => 'password',
-                        'type'       => 'password',
-                        'required'   => true,
-                        'hint'       => 'Die Person ändert es danach selbst. Sag es ihr auf einem anderen Weg als per E-Mail.',
-                        'attributes' => ['autocomplete' => 'new-password'],
-                    ]) ?>
-                    <div class="form-errors" role="alert"></div>
-                    <div class="settings-actions">
-                        <button class="button primary"><?= s(t('Konto anlegen')) ?></button>
-                    </div>
-                </form>
+                <p class="settings-hint"><?= s(t('Wähle das erste Board. Die Person legt ihr Konto selbst an und erhält nur dort Zugang. Weitere Boards kannst du später über die Kontosuche zuweisen.')) ?></p>
+                <?php if ($inviteTargets): ?>
+                    <?= partial('settings/invite-form', ['projectId' => null, 'token' => csrf()->token(), 'inviteTargets' => $inviteTargets, 'inviteRoles' => ['member' => 'Member', 'viewer' => 'Viewer']]) ?>
+                <?php else: ?>
+                    <p class="settings-hint"><?= s(t('Du kannst derzeit für kein aktives Board Mitglieder verwalten.')) ?></p>
+                <?php endif ?>
             </div>
         </details>
     <?php endif ?>
-    <p class="settings-note">
+    <p class="settings-hint">
         <?= s(t(
             'Eine Rolle ohne Ort gilt überall, eine mit Ort nur dort. Deine eigenen Rollen kann '
             . 'nur jemand anderes ändern.',

@@ -90,16 +90,9 @@ final class AccountService implements AccountServiceInterface
     }
 
     /**
-     * Open an account for somebody else.
-     *
-     * Until now this existed only on the command line, which meant that adding
-     * a colleague required a shell on the server. It is a right -- `users.manage`
-     * -- and not a role, so an installation can hand it out without handing out
-     * everything else that comes with administering one.
-     *
-     * The password is set here and the person changes it afterwards. An
-     * invitation they answer themselves would be better, and is what this should
-     * become; what it must not stay is a shell command.
+     * Programmatic account provisioning requires `users.manage`.
+     * The settings interface uses InvitationServiceInterface instead, so people
+     * choose their own passwords and initially receive only board access.
      *
      * @param array<string, mixed> $input
      */

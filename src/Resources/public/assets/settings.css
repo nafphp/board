@@ -544,3 +544,39 @@ label > small {
 .rbac-grants .rbac-button.is-primary {
   color: var(--on-accent);
 }
+
+.invite-delivery {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.invite-delivery input {
+  width: auto;
+}
+.pending-invitations {
+  padding: 0;
+  list-style: none;
+}
+.pending-invitations li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.pending-invitations small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+}
+.invitation-result {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.account-search-status:empty {
+  display: none;
+}
