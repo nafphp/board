@@ -68,6 +68,9 @@ foreach ($scopes as $cardScope) {
         if (($data['visible'] ?? true) === false) {
             continue;
         }
+        $definitions = extensions()->settings()->forSection($cardScope, $id);
+        $advanced    = $cardScope === 'application' && $section->template === null && $definitions !== []
+            && array_filter($definitions, fn($definition) => !$definition->advanced) === [];
         $cards[] = [
             $id,
             t($section->label),
@@ -75,6 +78,7 @@ foreach ($scopes as $cardScope) {
             $section->icon ?? 'tune',
             $section->template ?? 'settings/fields',
             [...$data, 'section' => $section, 'scope' => $scope ?? null],
+            $advanced,
         ];
     }
 }
@@ -96,32 +100,60 @@ foreach ($scopes as $cardScope) {
         </div>
     </section>
 <?php endif ?>
-<div class="settings-tiles">
-    <?php foreach ($cards as [$id, $label, $description, $icon, $template, $extra]): ?>
-        <button
-            type="button"
-            class="settings-tile"
-            data-settings-open="<?= s($id) ?>"
-            aria-haspopup="dialog"
-            aria-controls="settings-detail"
-        >
-            <span class="settings-icon"><?= Icon::mark($icon, 'lg') ?></span>
-            <span class="settings-tile-text">
-                <strong><?= s($label) ?></strong>
-                <small data-settings-summary="<?= s($id) ?>"><?= s($description) ?></small>
-            </span>
-            <span class="settings-arrow"><?= Icon::mark('open_in_new', 'sm') ?></span>
-        </button>
-        <section
-            hidden
-            data-settings-content="<?= s($id) ?>"
-            data-title="<?= s($label) ?>"
-            data-description="<?= s($description) ?>"
-        >
-            <?= partial($template, [...$viewData, ...$extra]) ?>
-        </section>
-    <?php endforeach ?>
-</div>
+<?php $hasApplication = in_array('application', $scopes, true); ?>
+<?php if ($hasApplication): ?>
+    <div class="settings-advanced-toggle">
+        <?= partial('components/field', [
+            'type'       => 'switch',
+            'name'       => 'advanced-settings',
+            'label'      => 'Fortgeschrittene Einstellungen',
+            'hint'       => 'Zusätzliche Konfigurationswerte in den Bereichen und unter den Standard-Einstellungen anzeigen.',
+            'attributes' => [
+                'data-settings-advanced-toggle' => true,
+                'data-settings-preference'      => 'nafinity.settings.advanced.' . $user->getIdentifier(),
+                'aria-controls'                 => 'settings-advanced',
+                'aria-expanded'                 => 'false',
+            ],
+        ]) ?>
+    </div>
+<?php endif ?>
+<?php foreach ([false, true] as $advancedGroup): ?>
+    <?php $groupCards = array_filter($cards, fn($card) => $card[6] === $advancedGroup); ?>
+    <?php if ($advancedGroup && !$hasApplication): ?>
+        <?php continue; ?>
+    <?php endif ?>
+    <section <?= $advancedGroup ? 'id="settings-advanced" data-settings-advanced-group hidden' : '' ?>>
+        <?php if ($advancedGroup): ?>
+            <h2 class="settings-advanced-heading"><?= s(t('Erweiterte Einstellungen')) ?></h2>
+        <?php endif ?>
+        <div class="settings-tiles">
+        <?php foreach ($groupCards as [$id, $label, $description, $icon, $template, $extra]): ?>
+            <button
+                type="button"
+                class="settings-tile"
+                data-settings-open="<?= s($id) ?>"
+                aria-haspopup="dialog"
+                aria-controls="settings-detail"
+            >
+                <span class="settings-icon"><?= Icon::mark($icon, 'lg') ?></span>
+                <span class="settings-tile-text">
+                    <strong><?= s($label) ?></strong>
+                    <small data-settings-summary="<?= s($id) ?>"><?= s($description) ?></small>
+                </span>
+                <span class="settings-arrow"><?= Icon::mark('open_in_new', 'sm') ?></span>
+            </button>
+            <section
+                hidden
+                data-settings-content="<?= s($id) ?>"
+                data-title="<?= s($label) ?>"
+                data-description="<?= s($description) ?>"
+            >
+                <?= partial($template, [...$viewData, ...$extra]) ?>
+            </section>
+        <?php endforeach ?>
+        </div>
+    </section>
+<?php endforeach ?>
 <?php if ($projectId): ?>
     <p class="settings-footnote">
         <?= s(t(

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Naf\Board\Tests\Http;
 
+use DOMDocument;
+use DOMXPath;
 use Naf\Board\Support\Settings\FileConfigurationStore;
 use Naf\Board\Tests\Support\AcceptanceTestCase;
 use PDO;
@@ -20,6 +22,45 @@ final class InstallationSettingsOverHttpTest extends AcceptanceTestCase
         self::assertStringContainsString('DB_PASSWORD', $page);
         self::assertStringNotContainsString('Unbekannter Feldtyp:', $page);
         self::assertDoesNotMatchRegularExpression('/type="password"[^>]*value="[^"]+"/', $page);
+    }
+
+    public function testAdvancedConfigurationIsGroupedBelowStandardFieldsAndDisabledInitially(): void
+    {
+        $page     = $this->page($this->alice, '/settings');
+        $document = new DOMDocument();
+        $previous = libxml_use_internal_errors(true);
+
+        try {
+            $document->loadHTML($page);
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+        }
+        $xpath = new DOMXPath($document);
+        self::assertSame(1, $xpath->query('//*[@data-settings-advanced-toggle and @role="switch" and not(@checked)]')->length);
+        self::assertSame(1, $xpath->query('//*[@data-settings-advanced-group and @hidden]//*[@data-settings-open="configuration_custom_settings"]')->length);
+        self::assertSame(1, $xpath->query('//fieldset[@data-settings-advanced-fields and @hidden and @disabled]//*[@data-setting-key="config.custom_settings:limit"]')->length);
+        self::assertSame(1, $xpath->query('//*[@data-setting-key="mail_enabled" and not(ancestor::fieldset[@data-settings-advanced-fields])]')->length);
+        self::assertSame(1, $xpath->query('//fieldset[@data-settings-advanced-fields and @disabled]//*[@data-setting-key="config.mail:reply_to"]')->length);
+        self::assertStringContainsString('name="values[config.custom_settings:enabled]"', $page);
+        self::assertStringContainsString('name="values[config.custom_settings:steps]"', $page);
+        self::assertStringNotContainsString('data-settings-advanced-toggle', $this->page($this->alice, '/preferences'));
+    }
+
+    public function testSavingStandardFieldsPreservesAnAdvancedHostOverride(): void
+    {
+        $key = 'config.custom_settings:limit';
+
+        try {
+            $response = $this->post($this->alice, '/api/settings/application', ['values' => [$key => 12]]);
+            self::assertSame(200, $response['status'], $response['body']);
+            $response = $this->post($this->alice, '/api/settings/application', ['values' => ['mail_from' => 'standard@example.test']]);
+            self::assertSame(200, $response['status'], $response['body']);
+            $values = json_decode($this->alice->request('/api/settings/application')['body'], true)['values'];
+            self::assertSame(12, $values[$key]);
+        } finally {
+            $this->post($this->alice, '/api/settings/application', ['resetKeys' => [$key, 'mail_from']]);
+        }
     }
 
     public function testInstallationSettingsCannotBeWrittenIntoPersonalPreferences(): void

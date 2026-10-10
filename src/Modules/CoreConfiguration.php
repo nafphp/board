@@ -10,6 +10,7 @@ use Naf\Board\Definition\SettingSection;
 use Naf\Board\ExtensionContext;
 use Naf\Board\Support\Fields\ConfigurationJsonType;
 use Naf\Board\Support\Fields\SecretType;
+use Naf\Board\Support\Settings\ConfigurationLabels;
 use Naf\Core\Config;
 use Naf\Mail\Core\Transport\TransportConfiguration;
 
@@ -82,7 +83,7 @@ final class CoreConfiguration implements ExtensionProviderInterface
                 $context->settingSections()->add(new SettingSection(
                     $section,
                     'application',
-                    $labels[$group] ?? $group,
+                    $labels[$group] ?? ConfigurationLabels::label($group),
                     index: 300,
                     icon: 'tune',
                 ));
@@ -107,7 +108,7 @@ final class CoreConfiguration implements ExtensionProviderInterface
                 key: 'config.' . $path,
                 scope: 'application',
                 section: $section,
-                label: $field['label'] ?? $path,
+                label: $field['label'] ?? ConfigurationLabels::label($path),
                 type: $type,
                 default: array_key_exists('default', $field) ? $field['default'] : $value,
                 index: match (true) {
@@ -123,6 +124,7 @@ final class CoreConfiguration implements ExtensionProviderInterface
                 options: array_replace($options, $field['options'] ?? []),
                 sensitive: $sensitive,
                 configKey: $path,
+                advanced: true,
             ));
         }
     }

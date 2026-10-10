@@ -56,6 +56,21 @@ metadata supplies choices, ranges and secret fields, including SMTP configuratio
 Lists and structured values use JSON. Existing application definitions and extension
 replacements take precedence over generated fields.
 
+Installation settings initially show the standard fields and cards. The native
+**Advanced settings** switch reveals generated configuration cards below them and
+an **Advanced settings** fieldset below standard fields in mixed dialogs. The view
+preference is kept per administrator in the current browser tab; it does not change
+configuration. Hidden advanced controls are disabled and omitted from saves, so a
+standard-field save preserves all advanced overrides. Direct links to advanced cards
+reveal the advanced view. Extensions can opt fields in with `advanced: true` on
+`SettingDefinition` (the default remains false).
+
+New scalar, nested and list entries in the host's `config.php` are discovered on the
+next request without a schema registration; lists use JSON and secret-like paths
+retain the shared write-only treatment. A central display glossary capitalizes known
+abbreviations such as MCP, RBAC, API, SMTP and IMAP; unknown words are humanized and
+explicit provider labels take precedence. Literal configuration paths remain unchanged.
+
 The source next to each field distinguishes administration overrides, environment
 references, server configuration and declared defaults. Editing a field selects an
 administration override. Choosing **Server configuration** deletes that override;

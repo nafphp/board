@@ -1,9 +1,16 @@
 import { t } from './i18n.js';
+import { mountAdvancedSettings } from './settings-configuration.js';
 import { mountMemberControls } from './members.js';
 import { mountPeopleDirectory } from './people.js?v=2';
 document.querySelectorAll('[data-people-directory]').forEach(mountPeopleDirectory);
 
 mountMemberControls();
+
+let settingsStorage;
+try {
+  settingsStorage = window.sessionStorage;
+} catch {}
+const advancedSettings = mountAdvancedSettings(document, settingsStorage);
 
 const dialog = document.querySelector('#settings-detail');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -87,6 +94,7 @@ async function openCard(id, animate = true) {
   const card = document.querySelector(`[data-settings-open="${CSS.escape(id)}"]`);
   const content = document.querySelector(`[data-settings-content="${CSS.escape(id)}"]`);
   if (!card || !content) return;
+  if (card.closest('[data-settings-advanced-group]')) advancedSettings?.show();
   activeCard = card;
   activeContent = content;
   placeholder = document.createComment('settings content');

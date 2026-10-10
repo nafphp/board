@@ -17,6 +17,9 @@ return [
     'app'        => ['name' => 'Nafinity', 'url' => 'ENV:APP_URL'],
     'public_url' => 'ENV:APP_URL',
 
+    // Host-defined settings are discovered without a Board schema or provider.
+    'custom_settings' => ['enabled' => false, 'limit' => 0, 'steps' => ['first', 'second']],
+
     'database' => [
         'driver'   => 'mysql',
         'host'     => 'ENV:DB_HOST',

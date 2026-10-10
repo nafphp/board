@@ -1144,5 +1144,8 @@
   "Einmalige Reset-Links für lokale Nutzerkonten erstellen.": "Create single-use reset links for local accounts.",
   "Nutzerkonto bearbeitet": "User account edited",
   "Passwort-Reset angefordert": "Password reset requested",
-  "Nutzer bearbeiten": "Edit user"
+  "Nutzer bearbeiten": "Edit user",
+  "Fortgeschrittene Einstellungen": "Advanced settings",
+  "Erweiterte Einstellungen": "Advanced settings",
+  "Zusätzliche Konfigurationswerte in den Bereichen und unter den Standard-Einstellungen anzeigen.": "Show additional configuration values in their sections and below the standard settings."
 }
