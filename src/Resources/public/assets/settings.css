@@ -275,14 +275,16 @@
   color: var(--muted);
   font-size: 13px;
 }
-.settings-row {
+.settings-row,
+.settings-detail .rbac-role {
   border-bottom: 1px solid var(--line);
 }
 /* The row that adds one closes the list, so it carries no divider. */
 .settings-rows > .settings-row:last-child {
   border-bottom: 0;
 }
-.settings-row-head {
+.settings-row-head,
+.settings-detail .rbac-role-head {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -292,10 +294,12 @@
   list-style: none;
   transition: background 0.15s;
 }
-.settings-row-head::-webkit-details-marker {
+.settings-row-head::-webkit-details-marker,
+.settings-detail .rbac-role-head::-webkit-details-marker {
   display: none;
 }
-.settings-row-head:hover {
+.settings-row-head:hover,
+.settings-detail .rbac-role-head:hover {
   background: color-mix(in srgb, var(--accent) 5%, transparent);
 }
 .structure-swatch {
@@ -317,7 +321,8 @@
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   flex-shrink: 0;
 }
-.settings-row-title {
+.settings-row-title,
+.settings-detail .rbac-role-name {
   font-size: 14px;
   font-weight: 500;
 }
@@ -424,11 +429,13 @@
   opacity: 0.25;
   cursor: default;
 }
-.settings-row-caret {
+.settings-row-caret,
+.settings-detail .rbac-role-caret {
   color: var(--muted);
   flex-shrink: 0;
 }
-.settings-row-body {
+.settings-row-body,
+.settings-detail .rbac-grants .rbac-group {
   padding: 4px 4px 22px;
 }
 /* The label carries its own bottom margin, so the grid only spaces columns. */
@@ -569,7 +576,8 @@ label > small {
 @media (prefers-reduced-motion: reduce) {
   .field-pick,
   .structure-nudge,
-  .settings-row-head {
+  .settings-row-head,
+  .settings-detail .rbac-role-head {
     transition: none;
   }
 }
@@ -589,6 +597,28 @@ body .rbac-grants {
 .rbac-roles .rbac-button.is-primary,
 .rbac-grants .rbac-button.is-primary {
   color: var(--on-accent);
+}
+/* RBAC disclosures share the settings rows and Material Symbols caret above. */
+.settings-detail .rbac-role-caret {
+  width: auto;
+  height: auto;
+  margin-left: 0;
+  transform: none;
+}
+.settings-detail .rbac-role-caret::before {
+  content: 'expand_more';
+  width: auto;
+  height: auto;
+  border: 0;
+}
+/* A faint tint keeps a board's heading and its expanded roles together. */
+.settings-detail .rbac-grants .rbac-role[open] {
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+.settings-detail .rbac-grants .rbac-group {
+  grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
+  margin: 0;
 }
 
 .invite-delivery {

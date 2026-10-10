@@ -10,7 +10,8 @@
   src: url('/assets/vendor/material-symbols/material-symbols-outlined.woff2?v=2') format('woff2');
 }
 
-.mi {
+.mi,
+.settings-detail .rbac-role-caret::before {
   font-family: 'Material Symbols Outlined';
   font-weight: 400;
   font-style: normal;
@@ -32,7 +33,8 @@
 }
 
 /* Sizes are named rather than set per place, so icons stay in step with one another. */
-.mi-sm {
+.mi-sm,
+.settings-detail .rbac-role-caret::before {
   font-size: 16px;
 }
 .mi-md {
@@ -43,15 +45,18 @@
 }
 
 /* A chevron that states whether its section is open, and turns rather than jumps. */
-.mi-turn {
+.mi-turn,
+.settings-detail .rbac-role-caret {
   transition: transform 0.24s cubic-bezier(0.22, 0.7, 0.26, 1);
 }
 [open] > summary .mi-turn,
-[aria-expanded='true'] .mi-turn {
+[aria-expanded='true'] .mi-turn,
+.settings-detail .rbac-role[open] > summary .rbac-role-caret {
   transform: rotate(180deg);
 }
 @media (prefers-reduced-motion: reduce) {
-  .mi-turn {
+  .mi-turn,
+  .settings-detail .rbac-role-caret {
     transition: none;
   }
 }
