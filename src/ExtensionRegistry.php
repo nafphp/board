@@ -13,6 +13,7 @@ use Naf\Board\Registry\AiToolRegistry;
 use Naf\Board\Registry\AssetPackageRegistry;
 use Naf\Board\Registry\AssetRegistry;
 use Naf\Board\Registry\BoardFilterRegistry;
+use Naf\Board\Registry\BulkPropertyRegistry;
 use Naf\Board\Registry\EstimationScaleRegistry;
 use Naf\Board\Registry\ExporterRegistry;
 use Naf\Board\Registry\FieldTypeRegistry;
@@ -54,6 +55,7 @@ final class ExtensionRegistry
     private ?UiRegistry $ui                          = null;
     private ?NavigationRegistry $navigation          = null;
     private ?ViewRegistry $views                     = null;
+    private ?BulkPropertyRegistry $bulkProperties    = null;
     private ?SettingRegistry $settings               = null;
     private ?SettingSectionRegistry $settingSections = null;
     private ?FieldTypeRegistry $fieldTypes           = null;
@@ -200,6 +202,11 @@ final class ExtensionRegistry
     public function views(): ViewRegistry
     {
         return $this->views ??= new ViewRegistry();
+    }
+
+    public function bulkProperties(): BulkPropertyRegistry
+    {
+        return $this->bulkProperties ??= new BulkPropertyRegistry();
     }
 
     public function settings(): SettingRegistry

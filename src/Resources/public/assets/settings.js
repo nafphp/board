@@ -1,5 +1,7 @@
 import { t } from './i18n.js';
 import { mountMemberControls } from './members.js';
+import { mountPeopleDirectory } from './people.js';
+document.querySelectorAll('[data-people-directory]').forEach(mountPeopleDirectory);
 
 mountMemberControls();
 
@@ -143,6 +145,7 @@ document.querySelectorAll('[data-settings-open]').forEach((card) => {
 });
 dialog?.querySelector('[data-settings-close]').addEventListener('click', closeCard);
 dialog?.addEventListener('cancel', (event) => {
+  if (event.target !== dialog) return;
   event.preventDefault();
   closeCard();
 });

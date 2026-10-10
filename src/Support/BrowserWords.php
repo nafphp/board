@@ -11,6 +11,10 @@ final class BrowserWords
 {
     private const array KEYS = [
         ': ausgeführt.',
+        ':count ausgewählt',
+        'Änderungen gelten für :count ausgewählte Konten.',
+        'Die Nutzerliste konnte nicht geladen werden. Bitte erneut versuchen.',
+        'Das Konto konnte nicht geladen werden. Bitte erneut versuchen.',
         ':email · bestätigt',
         ':email · nicht bestätigt',
         ':mode · :count von :total Werkzeugen',

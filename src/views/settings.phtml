@@ -9,6 +9,7 @@ use function Naf\Board\partial;
 use function Naf\Board\template;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
+use function Naf\request;
 use function Naf\View\s;
 
 $this->setLayout(template('layout'));
@@ -47,6 +48,7 @@ $viewData = [
     'availableRoles' => $availableRoles,
     'user'           => $user,
     'projects'       => $projects,
+    'usersQuery'     => request()->getQueryParams(),
 ];
 // A project shows what belongs to the project; the account shows what belongs
 // to the account. They used to be one list, so every project repeated the two

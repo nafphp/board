@@ -1263,3 +1263,9 @@ The same definition can opt into direct invoice drafts with `draftAdapter: YourA
 implementing `InvoiceDraftAdapterInterface`. `ExporterRegistry::forDrafts()` supplies the
 account selectors; central services own previews, credentials and booking claims. See
 [Invoice exports](Invoice-Exports.md#create-a-draft-directly-in-your-invoicing-tool).
+
+## Bulk-editable properties
+
+Mass editing is an explicit resource/property capability, with shared field types
+and domain handlers inside a single transaction. See [People and bulk properties](People-And-Bulk-Updates.md) for registration, handler contracts, authorization
+and concurrency requirements. Existing settings and ticket fields do not opt in automatically.

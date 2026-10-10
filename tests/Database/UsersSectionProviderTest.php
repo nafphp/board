@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Naf\Board\Tests\Database;
 
-use Naf\Board\Contracts\InvitationServiceInterface;
 use Naf\Board\Definition\SettingSection;
 use Naf\Board\Modules\Providers\UsersSectionProvider;
 use Naf\Board\Rbac\Grants;
@@ -13,11 +12,20 @@ use Naf\Board\Support\UiContext;
 use Naf\Board\Tests\Support\BoardTestCase;
 use Naf\Rbac\Scope;
 
+use function Naf\app;
 use function Naf\I18n\t;
 use function Naf\Rbac\rbac;
 
 final class UsersSectionProviderTest extends BoardTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $reader = rbac()->roles->create('directory-reader', 'Directory reader', '', ['users.view', 'settings.manage']);
+        rbac()->assignments->assign((int) $this->alice->getId(), [rbac()->roles->idOf('user'), $reader]);
+        rbac()->forget();
+    }
+
     public function testSummariesFollowBoardRenamesAndKeepArchivedBoardNames(): void
     {
         Grants::makeAdmin((int) $this->alice->getId());
@@ -61,7 +69,7 @@ final class UsersSectionProviderTest extends BoardTestCase
 
     private function rolesOf(int $user): array
     {
-        $provider = new UsersSectionProvider($this->createStub(InvitationServiceInterface::class));
+        $provider = app()->container()->make(UsersSectionProvider::class);
         $data     = $provider->data(
             new SettingSection('installation_users', 'application', 'Nutzer'),
             new UiContext((int) $this->alice->getId()),

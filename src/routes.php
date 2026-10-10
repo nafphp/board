@@ -14,6 +14,7 @@ use Naf\Board\Controllers\ProjectController;
 use Naf\Board\Controllers\SessionController;
 use Naf\Board\Controllers\SettingsApiController as S;
 use Naf\Board\Controllers\TicketController;
+use Naf\Board\Controllers\UserDirectoryController;
 use Naf\Board\Support\AttachmentStorage;
 use Naf\Database\Core\MigrationRunner;
 use Naf\Database\Support\MigrationRegistry;
@@ -42,6 +43,8 @@ route()->add(
     },
     'health.ready',
 );
+route()->add('GET', '/api/settings/application', [S::class, 'readApplication'], 'api.settings.application.read');
+route()->add('POST', '/api/settings/application', [S::class, 'writeApplication'], 'api.settings.application.write');
 route()->add('GET', '/api/settings/user', [S::class, 'readUser'], 'api.settings.user.read');
 route()->add('POST', '/api/settings/user', [S::class, 'writeUser'], 'api.settings.user.write');
 route()->add(
@@ -99,6 +102,9 @@ $routes = [
     ['POST', '/projects/{project}/invitations/{invitation}/revoke', [InvitationController::class, 'revoke'], 'project.invitations.revoke'],
 
     ['GET', '/settings', [InstallationController::class, 'settings'], 'installation.settings'],
+    ['GET', '/settings/users', [UserDirectoryController::class, 'index'], 'installation.users.index'],
+    ['GET', '/settings/users/{user}', [UserDirectoryController::class, 'show'], 'installation.users.show'],
+    ['POST', '/settings/users/bulk', [UserDirectoryController::class, 'update'], 'installation.users.bulk'],
     ['GET', '/settings/export', [ExportController::class, 'installation'], 'installation.export'],
     ['POST', '/settings/users', [InstallationController::class, 'createAccount'], 'installation.users.create'],
     ['GET', '/audit', [InstallationController::class, 'audit'], 'audit'],

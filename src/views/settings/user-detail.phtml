@@ -1,0 +1,9 @@
+<?php
+use function Naf\Board\partial;
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+?>
+<h3 data-person-title><?= s($person['name']) ?></h3>
+<p class="settings-user-email"><?= s($person['email']) ?> · <?= s(t((int) $person['active'] === 1 ? 'aktiv' : 'inaktiv')) ?></p>
+<?= partial('rbac/grants', ['user' => (int) $person['id'], 'name' => $person['name'], 'return' => '/settings#installation_users']) ?>
