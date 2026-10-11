@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Naf\Board\Tests\Http;
 
+use DOMDocument;
+use DOMXPath;
 use Naf\Board\Tests\Support\AcceptanceTestCase;
 use Naf\Board\Tests\Support\HttpClient;
 use PDO;
@@ -62,6 +64,21 @@ final class InvoiceDraftsOverHttpTest extends AcceptanceTestCase
         parse_str(parse_url(json_decode($answer['body'], true)['url'], PHP_URL_QUERY), $query);
 
         return $query['draft'];
+    }
+
+    public function testWorkspaceNavigationReachesInvoiceDraftsWithoutInstallationRights(): void
+    {
+        foreach ([$this->alice, $this->bob, $this->viewer] as $client) {
+            foreach (['/projects', '/exports/invoices'] as $path) {
+                $dom = new DOMDocument();
+                @$dom->loadHTML($this->page($client, $path));
+                $links = (new DOMXPath($dom))->query('//aside//a[@href="/exports/invoices"]');
+                self::assertSame(1, $links->length);
+                $link = $links->item(0);
+                self::assertStringContainsString('Rechnungsentwürfe', $link->textContent);
+                self::assertSame($path === '/exports/invoices', in_array('active', explode(' ', $link->getAttribute('class')), true));
+            }
+        }
     }
 
     public function testRealFormsRequireCsrfAndPreserveOwnerPrivacyAndImmutablePreview(): void

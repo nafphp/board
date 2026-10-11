@@ -7,6 +7,7 @@ namespace Naf\Board\Modules;
 use Naf\Board\Contracts\ExtensionProviderInterface;
 use Naf\Board\Definition\AssetDefinition;
 use Naf\Board\Definition\ExporterDefinition;
+use Naf\Board\Definition\NavigationItem;
 use Naf\Board\Definition\SettingSection;
 use Naf\Board\Definition\UiContribution;
 use Naf\Board\Export\CsvExporter;
@@ -38,6 +39,15 @@ final class CoreExport implements ExtensionProviderInterface
     public function register(ExtensionContext $context): void
     {
         $context->assets()->add(new AssetDefinition('core.invoice-drafts', '/assets/invoice-drafts.css', 'css', 105));
+        $context->navigation()->add(new NavigationItem(
+            id: 'core.invoice_drafts',
+            slot: 'sidebar.workspace',
+            label: 'Rechnungsentwürfe',
+            routeName: 'invoice.drafts',
+            icon: 'receipt_long',
+            activeRoutes: ['invoice.drafts'],
+            index: 300,
+        ));
         $context->settingSections()->add(new SettingSection(
             id: 'project_export',
             scope: 'project',

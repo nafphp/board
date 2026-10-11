@@ -52,9 +52,12 @@ Rates and tax treatment are never inferred from ticket metadata or a user's prev
 
 ## Create a draft directly in your invoicing tool
 
-Choose **Open invoice drafts** in the account modal or the installation's invoice
-settings. Add an account for Lexware Office, sevdesk, easybill or FastBill. Enter a
-company name and a company identifier to distinguish accounts. These are local labels;
+Choose **Invoice drafts** in the workspace sidebar. The account modal and the
+installation's invoice settings also offer **Open invoice drafts**. This entry is available
+to every signed-in account; company billing still requires the permissions below.
+
+Add an account for Lexware Office, sevdesk, easybill or FastBill. Enter a company name
+and a company identifier to distinguish accounts. These are local labels;
 the credentials select the actual issuer, whose address and tax details remain managed
 in the provider account. A customer ID identifies the recipient, a separate company.
 Multiple accounts per provider are supported. FastBill also requires the API account email.
