@@ -246,8 +246,11 @@ The last full run and its numbers are recorded in
 
 
 Inline field buttons expose the field label, current displayed value and edit action together.
-Rich descriptions remain readable document content with a separate edit button, so their links
-and headings are not flattened into one long button name.
+Clicking description text or its empty placeholder opens the inline editor directly, just like
+the title; links inside the description keep their normal navigation. Rich descriptions remain
+readable document content. A visually hidden edit button stays available through Tab and
+Enter or Space, with its focus outline shown around the description, so links and headings
+are not flattened into one long button name.
 
 A real version conflict keeps the current editor open. “Entwurf sichern” downloads that form's
 current values as JSON pairs (including repeated field names), without CSRF tokens or lock
