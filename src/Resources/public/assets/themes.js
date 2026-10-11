@@ -1,4 +1,5 @@
 import { t } from './i18n.js';
+import { mountIsolatedPreview } from './isolated-preview.js';
 import { enhanceChoices } from './choice.js';
 
 export function themeDraft(form) {
@@ -18,6 +19,7 @@ export function mountThemeManager(root) {
   const picker = root.querySelector('[name="edit_theme"]');
   const frame = root.querySelector('[data-theme-frame]');
   const status = root.querySelector('[data-theme-preview-status]');
+  const resize = mountIsolatedPreview(frame);
   let css = '';
   let sequence = 0;
   let timer;
@@ -33,6 +35,7 @@ export function mountThemeManager(root) {
     if (!document?.getElementById('theme-preview-style')) return;
     document.documentElement.dataset.theme = field('preview_mode').value;
     document.getElementById('theme-preview-style').textContent = css;
+    resize();
   }
 
   async function preview() {

@@ -10,6 +10,8 @@ use function Naf\I18n\t;
 final class BrowserWords
 {
     private const array KEYS = [
+        'Testmail wird versendet …',
+        'Die Testmail konnte nicht versendet werden. Bitte prüfe die E-Mail-Einstellungen.',
         'Die Vorschau konnte nicht aktualisiert werden.',
         'Vorschau aktualisiert. Änderungen gelten nach dem Speichern.',
         'Dieses Theme konnte nicht importiert werden.',

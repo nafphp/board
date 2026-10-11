@@ -110,6 +110,7 @@ $routes = [
     ['POST', '/projects/{project}/invitations/{invitation}/revoke', [InvitationController::class, 'revoke'], 'project.invitations.revoke'],
 
     ['POST', '/settings/email-design', [EmailDesignController::class, 'save'], 'email_design.save'],
+    ['POST', '/settings/email-design/test', [EmailDesignController::class, 'sendTest'], 'email_design.test'],
     ['POST', '/settings/email-design/preview', [EmailDesignController::class, 'preview'], 'email_design.preview'],
 
     ['GET', '/themes/{theme}/{version}.css', [ThemeController::class, 'css'], 'themes.css'],

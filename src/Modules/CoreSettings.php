@@ -315,6 +315,14 @@ final class CoreSettings implements ExtensionProviderInterface
         ));
 
         $context->settingSections()->add(new SettingSection(
+            'appearance',
+            'application',
+            'Design & Erscheinungsbild',
+            'settings/appearance',
+            index: 40,
+            icon: 'palette',
+        ));
+        $context->settingSections()->add(new SettingSection(
             'branding',
             'application',
             'Erscheinungsbild & Startseite',
@@ -323,6 +331,7 @@ final class CoreSettings implements ExtensionProviderInterface
             50,
             null,
             'tune',
+            parent: 'appearance',
         ));
         $context->settingSections()->add(new SettingSection(
             'themes',
@@ -333,6 +342,7 @@ final class CoreSettings implements ExtensionProviderInterface
             60,
             null,
             'palette',
+            parent: 'appearance',
         ));
         $context->settingSections()->add(new SettingSection(
             'email-design',
@@ -343,6 +353,7 @@ final class CoreSettings implements ExtensionProviderInterface
             70,
             null,
             'mail',
+            parent: 'appearance',
         ));
         $settings->add(new SettingDefinition(
             Design::KEY,

@@ -4,6 +4,7 @@ use Naf\Board\Support\Themes;
 
 use function Naf\app;
 use function Naf\Board\field;
+use function Naf\Board\partial;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
@@ -52,7 +53,7 @@ foreach ($catalog['items'] as $id => $theme) {
                     <strong><?= s(t('Vorschau')) ?></strong>
                     <?= field(['label' => 'Vorschau-Helligkeit', 'name' => 'preview_mode', 'id' => 'theme-preview-mode', 'type' => 'select', 'value' => 'light', 'options' => ['light' => 'Hell', 'dark' => 'Dunkel', 'system' => 'Wie mein Gerät']]) ?>
                 </div>
-                <iframe title="<?= s(t('Isolierte Theme-Vorschau')) ?>" src="<?= s(route('themes.sample')) ?>" sandbox="allow-same-origin" data-theme-frame></iframe>
+                <iframe title="<?= s(t('Isolierte Theme-Vorschau')) ?>" srcdoc="<?= s(partial('settings/theme-preview')) ?>" sandbox="allow-same-origin" tabindex="-1" data-theme-frame></iframe>
                 <p class="field-hint" data-theme-preview-status role="status"></p>
             </div>
             <?= field(['label' => 'Theme-Name', 'name' => 'name', 'value' => t('Mein Theme'), 'required' => true, 'attributes' => ['maxlength' => 80], 'id' => 'theme-name']) ?>

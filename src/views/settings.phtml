@@ -71,7 +71,7 @@ foreach ($scopes as $cardScope) {
         $definitions = extensions()->settings()->forSection($cardScope, $id);
         $advanced    = $cardScope === 'application' && $section->template === null && $definitions !== []
             && array_filter($definitions, fn($definition) => !$definition->advanced) === [];
-        $cards[] = [
+        $cards[$id] = [
             $id,
             t($section->label),
             (string) ($data['description'] ?? ''),
@@ -79,9 +79,17 @@ foreach ($scopes as $cardScope) {
             $section->template ?? 'settings/fields',
             [...$data, 'section' => $section, 'scope' => $scope ?? null],
             $advanced,
+            $section->parent,
         ];
     }
 }
+// Removing or hiding a parent must not make an authorized child disappear.
+foreach ($cards as &$card) {
+    if (!isset($cards[$card[7] ?? ''])) {
+        $card[7] = null;
+    }
+}
+unset($card);
 ?>
 <?php if ($projectId): ?>
     <?= partial('project/header', [
@@ -117,41 +125,11 @@ foreach ($scopes as $cardScope) {
         ]) ?>
     </div>
 <?php endif ?>
-<?php foreach ([false, true] as $advancedGroup): ?>
-    <?php $groupCards = array_filter($cards, fn($card) => $card[6] === $advancedGroup); ?>
-    <?php if ($advancedGroup && !$hasApplication): ?>
-        <?php continue; ?>
-    <?php endif ?>
-    <section <?= $advancedGroup ? 'id="settings-advanced" data-settings-advanced-group hidden' : '' ?>>
-        <?php if ($advancedGroup): ?>
-            <h2 class="settings-advanced-heading"><?= s(t('Erweiterte Einstellungen')) ?></h2>
-        <?php endif ?>
-        <div class="settings-tiles">
-        <?php foreach ($groupCards as [$id, $label, $description, $icon, $template, $extra]): ?>
-            <button
-                type="button"
-                class="settings-tile"
-                data-settings-open="<?= s($id) ?>"
-                aria-haspopup="dialog"
-                aria-controls="settings-detail"
-            >
-                <span class="settings-icon"><?= Icon::mark($icon, 'lg') ?></span>
-                <span class="settings-tile-text">
-                    <strong><?= s($label) ?></strong>
-                    <small data-settings-summary="<?= s($id) ?>"><?= s($description) ?></small>
-                </span>
-                <span class="settings-arrow"><?= Icon::mark('open_in_new', 'sm') ?></span>
-            </button>
-            <section
-                hidden
-                data-settings-content="<?= s($id) ?>"
-                data-title="<?= s($label) ?>"
-                data-description="<?= s($description) ?>"
-            >
-                <?= partial($template, [...$viewData, ...$extra]) ?>
-            </section>
-        <?php endforeach ?>
-        </div>
+<?= partial('settings/cards', ['cards' => $cards, 'parent' => null, 'hasApplication' => $hasApplication]) ?>
+<?php foreach ($cards as [$id, $label, $description, $icon, $cardTemplate, $extra, $advanced, $parent]): ?>
+    <section hidden data-settings-content="<?= s($id) ?>" data-parent="<?= s($parent ?? '') ?>" data-title="<?= s($label) ?>" data-description="<?= s($description) ?>">
+        <?= partial($cardTemplate, [...$viewData, ...$extra]) ?>
+        <?= partial('settings/cards', ['cards' => $cards, 'parent' => $id, 'hasApplication' => $hasApplication]) ?>
     </section>
 <?php endforeach ?>
 <?php if ($projectId): ?>
@@ -164,6 +142,7 @@ foreach ($scopes as $cardScope) {
 <?php endif ?>
 <dialog
     id="settings-detail"
+    data-settings-dialog
     class="settings-detail"
     aria-labelledby="settings-detail-title"
     aria-describedby="settings-detail-description"

@@ -134,10 +134,15 @@ final class Design
             throw new Failure(t('Diese E-Mail-Vorschau ist nicht verfügbar.'), 422);
         }
 
-        return Messages::html($template, [
+        return Messages::html($template, self::sampleData(), $design);
+    }
+
+    public static function sampleData(): array
+    {
+        return [
             'projectName' => t('Beispielprojekt'), 'url' => 'https://example.test/preview',
             'code'        => 'ABCD-EFGH-2345',
             'message'     => t('Das Passwort deines Kontos bei :name wurde geändert. Alle bisherigen Anmeldungen wurden beendet.', ['name' => Branding::name()]),
-        ], $design);
+        ];
     }
 }

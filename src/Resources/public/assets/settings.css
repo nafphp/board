@@ -229,7 +229,7 @@
   }
   .settings-detail {
     width: calc(100vw - 20px);
-    height: calc(100dvh - 24px);
+    height: calc(100dvh - 96px);
   }
   .settings-detail-heading {
     padding: var(--space-20);
@@ -1167,6 +1167,9 @@ summary.settings-role-heading {
 .theme-library {
   margin-top: var(--space-28);
 }
+.theme-default-form > .button {
+  align-self: flex-end;
+}
 .theme-default-form > label {
   flex: 1 1 240px;
   margin: 0;
@@ -1180,6 +1183,7 @@ summary.settings-role-heading {
   margin: var(--space-16) 0 var(--space-24);
 }
 .theme-import-label {
+  margin: 0;
   position: relative;
   overflow: hidden;
 }
@@ -1197,14 +1201,18 @@ summary.settings-role-heading {
 }
 [data-theme-editor] {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  column-gap: var(--space-24);
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.85fr);
+  gap: var(--space-20) var(--space-24);
+  align-items: start;
+}
+[data-theme-editor] > .field {
+  margin: 0;
 }
 [data-theme-editor] > * {
   grid-column: 1;
   min-width: 0;
 }
-.theme-preview-panel {
+[data-theme-editor] > .theme-preview-panel {
   grid-column: 2;
   grid-row: 1 / span 20;
   align-self: start;
@@ -1213,6 +1221,7 @@ summary.settings-role-heading {
   background: var(--surface);
 }
 .theme-preview-heading {
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: var(--space-12);
 }
@@ -1227,6 +1236,10 @@ summary.settings-role-heading {
   border: 1px solid var(--line);
   border-radius: var(--radius-12);
   background: var(--bg);
+  pointer-events: none;
+}
+[data-theme-editor] > .theme-token-group {
+  margin-top: 0;
 }
 .theme-token-group {
   margin-top: var(--space-24);
@@ -1282,9 +1295,13 @@ summary.settings-role-heading {
 }
 @media (max-width: 850px) {
   [data-theme-editor] {
-    display: block;
+    display: flex;
+    flex-direction: column;
   }
-  .theme-preview-panel {
+  [data-theme-editor] > * {
+    width: 100%;
+  }
+  [data-theme-editor] > .theme-preview-panel {
     position: static;
   }
   [data-theme-frame] {
@@ -1312,4 +1329,21 @@ summary.settings-role-heading {
 
 .email-design-preview > .theme-token-grid {
   margin-bottom: var(--space-16);
+}
+
+.settings-design-intro {
+  margin: 0 0 var(--space-24);
+  color: var(--muted);
+  line-height: 1.7;
+}
+.email-test-actions {
+  align-items: center;
+  margin-bottom: var(--space-16);
+}
+.email-test-actions > small {
+  flex: 1 1 220px;
+  margin: 0;
+}
+[data-email-test-status]:empty {
+  display: none;
 }

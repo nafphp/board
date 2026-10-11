@@ -19,105 +19,129 @@ try {
 } catch {}
 const advancedSettings = mountAdvancedSettings(document, settingsStorage);
 
-const dialog = document.querySelector('#settings-detail');
+const baseDialog = document.querySelector('#settings-detail');
+const shell = baseDialog?.cloneNode(true);
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-let activeCard;
-let activeContent;
-let placeholder;
-let closing = false;
-let cardOrigin;
+const cards = [];
+let serial = 0;
 
-function cardTransform() {
-  const from = activeCard.getBoundingClientRect();
-  const to = dialog.getBoundingClientRect();
-  return `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})`;
+function rememberHash() {
+  const id = cards.at(-1)?.id;
+  history.replaceState(history.state, '', id ? `#${id}` : location.pathname + location.search);
 }
 
-// The content follows the shell, avoiding scaled text during the card morph.
-const REVEAL = 160;
-function cardFrame() {
-  return {
-    transform: cardTransform(),
-    opacity: 1,
-    borderRadius:
-      getComputedStyle(document.documentElement).getPropertyValue('--radius-24').trim() || '0px',
-  };
+function restoreCard(item) {
+  if (!cards.includes(item)) return;
+  item.content.hidden = true;
+  item.placeholder.replaceWith(item.content);
+  item.card.classList.remove('is-open');
+  item.card.setAttribute('aria-expanded', 'false');
+  item.card.removeAttribute('aria-controls');
+  item.dialog.classList.remove('is-moving');
+  cards.splice(cards.indexOf(item), 1);
+  if (item.dialog !== baseDialog) item.dialog.remove();
+  document.documentElement.classList.toggle('settings-open', cards.length > 0);
+  rememberHash();
+}
+
+async function closeCard(item) {
+  if (item.closing || !cards.includes(item)) return;
+  item.closing = true;
+  // Only the outer card morph hides content. Children return as complete panels.
+  if (item.dialog === baseDialog) item.dialog.classList.add('is-moving');
+  await closeDialog(item.dialog, { to: item.origin });
+  restoreCard(item);
 }
 
 async function openCard(id, animate = true) {
-  if (!dialog || activeCard) return;
+  if (!baseDialog || cards.some((item) => item.id === id)) return;
   const card = document.querySelector(`[data-settings-open="${CSS.escape(id)}"]`);
   const content = document.querySelector(`[data-settings-content="${CSS.escape(id)}"]`);
   if (!card || !content) return;
+  // A deep link restores the same parent chain as clicking the cards.
+  if (content.dataset.parent) await openCard(content.dataset.parent, animate);
   if (card.closest('[data-settings-advanced-group]')) advancedSettings?.show();
-  activeCard = card;
-  activeContent = content;
-  placeholder = document.createComment('settings content');
-  content.replaceWith(placeholder);
-  dialog.querySelector('.settings-detail-body').append(content);
-  content.hidden = false;
-  document.querySelector('#settings-detail-title').textContent = content.dataset.title;
-  document.querySelector('#settings-detail-description').textContent = content.dataset.description;
+  const dialog = cards.length ? shell.cloneNode(true) : baseDialog;
+  const unique = ++serial;
+  if (dialog !== baseDialog) {
+    dialog.id = `settings-detail-${unique}`;
+    document.body.append(dialog);
+  }
+  const title = dialog.querySelector('h2');
+  const description = dialog.querySelector('.settings-detail-heading p');
+  title.id = `settings-title-${unique}`;
+  description.id = `settings-description-${unique}`;
+  dialog.setAttribute('aria-labelledby', title.id);
+  dialog.setAttribute('aria-describedby', description.id);
+  title.textContent = content.dataset.title;
+  description.textContent = content.dataset.description;
   dialog.querySelector('[data-settings-icon]').innerHTML =
     card.querySelector('.settings-icon').innerHTML;
+  const item = {
+    id,
+    card,
+    content,
+    dialog,
+    placeholder: document.createComment('settings content'),
+    closing: false,
+  };
+  content.replaceWith(item.placeholder);
+  dialog.querySelector('.settings-detail-body').append(content);
+  content.hidden = false;
+  cards.push(item);
   document.documentElement.classList.add('settings-open');
-  // Before showModal, so the dialog's first painted frame is already without
-  // contents. Set afterwards it would be one frame late, and the contents would
-  // be shown and taken away again.
-  if (animate) dialog.classList.add('is-moving');
-  const travel = openDialog(dialog, { from: () => (cardOrigin = cardFrame()), animate });
   card.classList.add('is-open');
   card.setAttribute('aria-expanded', 'true');
-  history.replaceState(history.state, '', `#${id}`);
-  if (animate) {
-    const reveal = setTimeout(
-      () => {
-        if (!closing) dialog.classList.remove('is-moving');
-      },
-      reducedMotion.matches ? 0 : REVEAL,
-    );
-    await travel;
-    clearTimeout(reveal);
-    if (!closing) dialog.classList.remove('is-moving');
-  }
-  if (!closing) dialog.querySelector('[data-settings-close]').focus({ preventScroll: true });
+  card.setAttribute('aria-controls', dialog.id);
+  dialog.querySelector('[data-settings-close]').onclick = () => closeCard(item);
+  dialog.oncancel = (event) => {
+    if (event.target !== dialog) return;
+    event.preventDefault();
+    closeCard(item);
+  };
+  dialog.addEventListener('close', () => restoreCard(item), { once: true });
+  const outer = dialog === baseDialog;
+  if (animate && outer) dialog.classList.add('is-moving');
+  const travel = openDialog(dialog, {
+    animate,
+    from: outer
+      ? () => {
+          const from = card.getBoundingClientRect();
+          const to = dialog.getBoundingClientRect();
+          return (item.origin = {
+            transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})`,
+            opacity: 1,
+            borderRadius:
+              getComputedStyle(document.documentElement).getPropertyValue('--radius-24').trim() ||
+              '0px',
+          });
+        }
+      : undefined,
+  });
+  rememberHash();
+  const reveal = setTimeout(
+    () => {
+      if (!item.closing) dialog.classList.remove('is-moving');
+    },
+    reducedMotion.matches ? 0 : 160,
+  );
+  await travel;
+  clearTimeout(reveal);
+  if (!item.closing) dialog.classList.remove('is-moving');
+  if (!item.closing && cards.at(-1) === item)
+    dialog.querySelector('[data-settings-close]').focus({ preventScroll: true });
 }
 
-async function closeCard() {
-  if (!activeCard || closing) return;
-  closing = true;
-  dialog.classList.add('is-moving');
-  await closeDialog(dialog, { to: cardOrigin || cardFrame() });
-  activeContent.hidden = true;
-  placeholder.replaceWith(activeContent);
-  activeCard.classList.remove('is-open');
-  activeCard.setAttribute('aria-expanded', 'false');
-  document.documentElement.classList.remove('settings-open');
-  dialog.classList.remove('is-moving');
-  activeCard.focus({ preventScroll: true });
-  activeCard = null;
-  activeContent = null;
-  cardOrigin = null;
-  closing = false;
-  history.replaceState(history.state, '', location.pathname + location.search);
-}
-
-document.querySelectorAll('[data-settings-open]').forEach((card) => {
-  card.addEventListener('click', () => openCard(card.dataset.settingsOpen));
+document.addEventListener('click', (event) => {
+  const card = event.target.closest?.('[data-settings-open]');
+  if (card) openCard(card.dataset.settingsOpen);
 });
-dialog?.querySelector('[data-settings-close]').addEventListener('click', closeCard);
-dialog?.addEventListener('cancel', (event) => {
-  if (event.target !== dialog) return;
-  event.preventDefault();
-  closeCard();
-});
-
 document
   .querySelector('[data-settings-project]')
   ?.addEventListener('change', (event) => location.assign(event.target.value));
-if (dialog && location.hash) openCard(decodeURIComponent(location.hash.slice(1)), false);
+if (baseDialog && location.hash) openCard(decodeURIComponent(location.hash.slice(1)), false);
 window.addEventListener('hashchange', () => {
-  if (!activeCard && location.hash) openCard(decodeURIComponent(location.hash.slice(1)));
+  if (location.hash) openCard(decodeURIComponent(location.hash.slice(1)));
 });
 
 // The assistant is configured per browser, so only the page itself knows its state.

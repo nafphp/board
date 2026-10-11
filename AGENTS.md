@@ -59,7 +59,13 @@ or a plugin metaframework.
 - Public identity comes from `Support\Branding`, including AI labels and mail subjects.
   Email producers use `Mail\Messages` and the shared `mail/layout` view. Its
   `data-email-layout` marker opts into global `Mail\Design` tokens and CSS inlining;
-  previews use that same renderer, sample data only, and never send mail.
+  previews use that same renderer and sample data only. Automatic previews never send
+  mail; the explicit administrator test action sends the current draft only to the
+  authenticated account’s current address, without saving it.
+- Open native dialogs through shared `assets/dialog.js` or `data-dialog` buttons.
+  Stacking, parent suspension, focus restoration and exit motion belong there; callers
+  do not implement them. A `SettingSection` can name a same-scope `parent`; the settings
+  renderer and dialog controller create the hierarchy and restore deep links automatically.
 - German is the complete base language of the product UI; English covers the main
   interface texts. Code, comments and documentation are English.
 

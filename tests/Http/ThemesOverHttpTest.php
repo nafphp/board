@@ -85,6 +85,8 @@ final class ThemesOverHttpTest extends AcceptanceTestCase
         self::assertMatchesRegularExpression("#Content-Security-Policy: default-src 'none'#i", $sample['headers']);
         $settingsPage = $this->page($this->alice, '/settings');
         self::assertStringContainsString('sandbox="allow-same-origin"', $settingsPage);
+        self::assertMatchesRegularExpression('/srcdoc="&lt;!doctype html&gt;.*?data-theme-frame/s', $settingsPage);
+        self::assertStringNotContainsString('src="/settings/themes/sample"', $settingsPage);
         self::assertSame(1, substr_count($settingsPage, 'id="theme-enabled"'));
         self::assertStringContainsString('for="theme-enabled"', $settingsPage);
         self::assertSame(403, $this->bob->request('/settings/themes/sample')['status']);

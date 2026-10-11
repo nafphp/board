@@ -1,4 +1,5 @@
 import { t } from './i18n.js';
+import { mountIsolatedPreview } from './isolated-preview.js';
 
 export function emailDraft(form) {
   const design = { common: {}, colors: {}, css: '' };
@@ -14,15 +15,36 @@ export function emailDraft(form) {
 export function mountEmailDesigner(form) {
   const frame = form.querySelector('[data-email-preview]');
   const status = form.querySelector('[data-email-preview-status]');
-  // The child allows no scripts. Reading its dimensions keeps the entire email
-  // visible while the settings dialog supplies the single scroll container.
-  function resize() {
-    const height = frame.contentDocument?.body?.getBoundingClientRect().height;
-    if (height > 0) frame.style.height = Math.min(1800, Math.max(360, Math.ceil(height))) + 'px';
-  }
-  frame.addEventListener('load', resize);
-  if (globalThis.ResizeObserver) new ResizeObserver(resize).observe(frame);
-  resize();
+  mountIsolatedPreview(frame);
+  const testButton = form.querySelector('[data-email-test]');
+  const testStatus = form.querySelector('[data-email-test-status]');
+  testButton?.addEventListener('click', async () => {
+    if (testButton.disabled) return;
+    testButton.disabled = true;
+    testStatus.textContent = t('Testmail wird versendet …');
+    try {
+      const draft = emailDraft(form);
+      const response = await fetch(form.dataset.testUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-CSRF-Token': draft._csrf,
+        },
+        body: JSON.stringify(draft),
+      });
+      const result = await response.json();
+      testStatus.textContent =
+        result.message ||
+        t('Die Testmail konnte nicht versendet werden. Bitte prüfe die E-Mail-Einstellungen.');
+    } catch {
+      testStatus.textContent = t(
+        'Die Verbindung ist unterbrochen. Deine Eingaben bleiben erhalten.',
+      );
+    } finally {
+      testButton.disabled = false;
+    }
+  });
   let sequence = 0;
   let timer;
   let controller;

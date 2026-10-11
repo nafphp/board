@@ -23,6 +23,7 @@ final readonly class SettingSection
      * @param int         $index      Sort value, ascending
      * @param string|null $permission Project action required, or null for none
      * @param string|null $icon       Material symbol name
+     * @param string|null $parent     Parent section in the same scope; opens as a stacked child
      */
     public function __construct(
         public string $id,
@@ -33,6 +34,7 @@ final readonly class SettingSection
         public int $index = 100,
         public ?string $permission = null,
         public ?string $icon = null,
+        public ?string $parent = null,
     ) {
         if (!in_array($scope, SettingDefinition::SCOPES, true)) {
             throw new InvalidArgumentException(

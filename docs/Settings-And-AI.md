@@ -38,6 +38,31 @@ writable project. Workspace pages and read-only project views omit the action; t
 cross-board creation picker. The top bar contains workspace search only. Extensions can
 replace the `core.topbar.workspace` search contribution or add controls to `topbar.tools`.
 
+## Design settings and dialog hierarchy
+
+**Global → Design & appearance** groups branding and landing page, interface themes,
+email design and advanced display settings. Each child opens over its parent; closing the
+uppermost dialog returns to the unchanged parent, including its scroll position and focus.
+Only the active dialog accepts input. Reduced motion skips the movement. Existing direct
+links such as `#themes` and `#email-design` restore their parent chain too.
+
+Theme previews use sandboxed inline HTML documents, so host headers that prohibit framing
+separate pages can stay enabled. Neither preview runs scripts or changes the parent theme.
+
+The email designer’s **Send a test email to me** action sends the current unsaved draft and
+selected sample through the configured mail transport to the signed-in account’s current
+email address. It cannot target another address. Saving and automatic preview updates do not
+send test mail. The server allows three test messages per account per minute and reports a
+transport failure without changing the draft.
+
+Extensions add nested settings by setting `parent: 'appearance'` (or another section id in
+the same scope) on `Naf\Board\Definition\SettingSection`. The renderer handles the hierarchy
+without extra JavaScript; a removed or hidden parent leaves authorized children at the root.
+Cycles are rejected. Generic dialog buttons using `data-dialog="dialog-id"`, and callers of
+`openDialog()` / `closeDialog()` from `assets/dialog.js`, share the automatic native stack.
+Keep specific close guards on the dialog’s cancel event; do not recreate stacking per feature.
+
+
 ## Switches
 
 On/off controls share the same switch appearance, including personal notifications,

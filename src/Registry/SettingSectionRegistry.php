@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Naf\Board\Registry;
 
+use LogicException;
 use Naf\Board\Definition\SettingSection;
 
 /**
@@ -28,6 +29,18 @@ final class SettingSectionRegistry extends DefinitionRegistry
      */
     public function forScope(string $scope): array
     {
-        return array_filter($this->all(), fn(SettingSection $section) => $section->scope === $scope);
+        $sections = array_filter($this->all(), fn(SettingSection $section) => $section->scope === $scope);
+        foreach ($sections as $section) {
+            $visited = [];
+            while ($section !== null) {
+                if (isset($visited[$section->id])) {
+                    throw new LogicException('Settings section parent cycle at "' . $section->id . '".');
+                }
+                $visited[$section->id] = true;
+                $section               = $sections[$section->parent ?? ''] ?? null;
+            }
+        }
+
+        return $sections;
     }
 }
