@@ -120,10 +120,7 @@
   display: flex;
   flex-direction: column;
 }
-.settings-detail::backdrop {
-  background: #17162c40;
-  backdrop-filter: blur(5px);
-}
+
 .settings-detail-heading {
   display: flex;
   gap: 17px;
@@ -871,10 +868,7 @@ body .rbac-grants {
   background: var(--surface);
   box-shadow: 0 24px 90px #15142e50;
 }
-.settings-subdialog::backdrop {
-  background: #17162c70;
-  backdrop-filter: blur(3px);
-}
+
 .settings-subdialog[open] {
   display: flex;
   flex-direction: column;

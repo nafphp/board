@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from './dialog.js';
 import { t } from './i18n.js';
 
 // Selection always means the explicit, visible rows. A new result page resets it.
@@ -63,7 +64,7 @@ export function mountPeopleDirectory(root) {
 
   const open = (dialog, trigger) => {
     dialog.addEventListener('close', () => trigger?.focus({ preventScroll: true }), { once: true });
-    dialog.showModal();
+    openDialog(dialog);
   };
 
   async function loadResults(url) {
@@ -133,7 +134,7 @@ export function mountPeopleDirectory(root) {
     }
     const close = event.target.closest('[data-people-close]');
     if (close) {
-      close.closest('dialog').close();
+      closeDialog(close.closest('dialog'));
       return;
     }
     const clear = event.target.closest('[data-bulk-clear]');

@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from './dialog.js';
 import { t } from './i18n.js';
 import { projectNotificationSettings } from './project-notifications.js';
 
@@ -5,7 +6,6 @@ const dialog = document.querySelector('#profile-dialog');
 
 if (dialog) {
   dialog.querySelectorAll('[data-project-notification]').forEach(projectNotificationSettings);
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const status = dialog.querySelector('[data-profile-status]');
   const content = dialog.querySelector('[data-profile-content]');
   const retry = dialog.querySelector('[data-profile-retry]');
@@ -95,17 +95,7 @@ if (dialog) {
     if (closing || busy || !dialog.open) return;
     closing = true;
     loadController?.abort();
-    if (!reducedMotion.matches) {
-      await dialog.animate(
-        [
-          { opacity: 1, transform: 'translateY(0) scale(1)' },
-          { opacity: 0, transform: 'translateY(8px) scale(.98)' },
-        ],
-        { duration: 150, easing: 'ease-in', fill: 'forwards' },
-      ).finished;
-    }
-    dialog.close();
-    dialog.getAnimations().forEach((animation) => animation.cancel());
+    await closeDialog(dialog);
     closing = false;
   }
 
@@ -113,18 +103,9 @@ if (dialog) {
     button.addEventListener('click', () => {
       if (dialog.open) return;
       opener = button;
-      dialog.showModal();
+      openDialog(dialog);
       triggers.forEach((trigger) => trigger.setAttribute('aria-expanded', 'true'));
       document.body.classList.add('profile-open');
-      if (!reducedMotion.matches) {
-        dialog.animate(
-          [
-            { opacity: 0, transform: 'translateY(12px) scale(.96)' },
-            { opacity: 1, transform: 'translateY(0) scale(1)' },
-          ],
-          { duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' },
-        );
-      }
       loadProfile();
     });
   });

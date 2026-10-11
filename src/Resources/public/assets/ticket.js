@@ -1,3 +1,4 @@
+import { closeDialog, openDialog } from './dialog.js';
 import { t } from './i18n.js';
 
 import { toast } from './app.js';
@@ -875,7 +876,7 @@ function mentionKeys(event) {
 function dirty(scope = document) {
   return [...scope.querySelectorAll('[data-ticket-form]')].some((form) => {
     // A confirmed close retains its pixels only for the exit animation.
-    if (form.closest('dialog:not([open])')) return false;
+    if (form.closest('dialog:not([open]), dialog[data-dialog-closing]')) return false;
     return form.hasAttribute('data-ticket-create')
       ? values(form) !== inlineState(form).baseline
       : form.dataset.dirty === 'true';
@@ -900,7 +901,7 @@ function confirmClose(drawer) {
     (inline.dataset.dirty === 'true' || saving.has(workspace))
   ) {
     flushInline(inline).then((saved) => {
-      if (saved && !dirty(drawer)) drawer.close();
+      if (saved && !dirty(drawer)) closeDialog(drawer);
       else if (drawer.open && dirty(drawer)) showDiscard();
     });
     return false;
@@ -917,7 +918,7 @@ function showDiscard() {
   const confirmation = document.querySelector('#ticket-discard');
   if (confirmation && !confirmation.open) {
     confirmation.returnValue = 'keep';
-    confirmation.showModal();
+    openDialog(confirmation);
   }
 }
 const ticketDrawer = document.querySelector('#ticket-drawer');
@@ -925,8 +926,9 @@ ticketDrawer?.addEventListener('nafinity:ticket-before-close', (event) => {
   if (!confirmClose(ticketDrawer)) event.preventDefault();
 });
 ticketDrawer?.addEventListener('cancel', (event) => {
-  if (!confirmClose(ticketDrawer)) event.preventDefault();
+  event.preventDefault();
+  if (confirmClose(ticketDrawer)) closeDialog(ticketDrawer);
 });
 document.querySelector('#ticket-discard')?.addEventListener('close', (event) => {
-  if (event.currentTarget.returnValue === 'discard') ticketDrawer?.close();
+  if (event.currentTarget.returnValue === 'discard') closeDialog(ticketDrawer);
 });

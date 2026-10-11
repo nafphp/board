@@ -52,10 +52,7 @@
   display: flex;
   flex-direction: column;
 }
-.profile-dialog::backdrop {
-  background: #090b1770;
-  backdrop-filter: blur(7px);
-}
+
 .profile-header {
   position: relative;
   flex: none;

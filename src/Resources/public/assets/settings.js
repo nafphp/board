@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from './dialog.js';
 import { t } from './i18n.js';
 import { mountAdvancedSettings } from './settings-configuration.js';
 import { mountMemberControls } from './members.js';
@@ -17,8 +18,8 @@ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 let activeCard;
 let activeContent;
 let placeholder;
-let animation;
 let closing = false;
+let cardOrigin;
 
 function cardTransform() {
   const from = activeCard.getBoundingClientRect();
@@ -26,67 +27,10 @@ function cardTransform() {
   return `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})`;
 }
 
-const DURATION = 360;
-// The contents come in behind the shell rather than after it has landed. The
-// shell eases hard out and is visually there long before it stops, so waiting
-// for it reads as two separate movements instead of one.
+// The content follows the shell, avoiding scaled text during the card morph.
 const REVEAL = 160;
-
-/** Resolve when the animation is done, or when it plainly never will be.
- *
- * A hidden tab freezes the timeline, and a dialog must not sit there with its
- * contents held back because its opening animation never got a frame.
- */
-function settled(run, duration) {
-  return Promise.race([
-    run.finished.catch(() => {}),
-    new Promise((done) => setTimeout(done, duration + 120)),
-  ]);
-}
-
-function animateCard(opening) {
-  animation?.cancel();
-  // Measured without a transform of its own, or an opening that is still
-  // running would be measured instead of the dialog.
-  dialog.style.transform = '';
-  const small = cardTransform();
-  const duration = reducedMotion.matches ? 0 : DURATION;
-
-  // The frame before the animation has one. An animation is only picked up on
-  // the next frame, so without this the dialog is painted once at full size and
-  // only then jumps back to the card to grow -- the flash that reads as the
-  // dialog opening, disappearing and coming back. Not without a duration: there
-  // the animation is over before that frame arrives, and the value would be all
-  // anyone saw.
-  const leads = opening && duration > 0;
-  if (leads) dialog.style.transform = small;
-
-  animation = dialog.animate(
-    opening
-      ? [
-          { transform: small, borderRadius: '24px' },
-          { transform: 'none', borderRadius: '20px' },
-        ]
-      : [
-          { transform: 'none', borderRadius: '20px' },
-          { transform: small, borderRadius: '24px' },
-        ],
-    { duration, easing: 'cubic-bezier(.22,1,.36,1)' },
-  );
-
-  // Once it is running the animation owns the transform, and the inline value
-  // has to go: this animation fills neither end, so when it finishes the
-  // element falls back to whatever style it finds -- and finding the card-sized
-  // transform there would shrink the open dialog back down.
-  if (leads) {
-    animation.ready
-      .catch(() => {})
-      .then(() => {
-        dialog.style.transform = '';
-      });
-  }
-
-  return settled(animation, duration);
+function cardFrame() {
+  return { transform: cardTransform(), opacity: 1, borderRadius: '24px' };
 }
 
 async function openCard(id, animate = true) {
@@ -110,12 +54,11 @@ async function openCard(id, animate = true) {
   // contents. Set afterwards it would be one frame late, and the contents would
   // be shown and taken away again.
   if (animate) dialog.classList.add('is-moving');
-  dialog.showModal();
+  const travel = openDialog(dialog, { from: () => (cardOrigin = cardFrame()), animate });
   card.classList.add('is-open');
   card.setAttribute('aria-expanded', 'true');
   history.replaceState(history.state, '', `#${id}`);
   if (animate) {
-    const travel = animateCard(true);
     const reveal = setTimeout(
       () => {
         if (!closing) dialog.classList.remove('is-moving');
@@ -133,8 +76,7 @@ async function closeCard() {
   if (!activeCard || closing) return;
   closing = true;
   dialog.classList.add('is-moving');
-  await animateCard(false);
-  dialog.close();
+  await closeDialog(dialog, { to: cardOrigin || cardFrame() });
   activeContent.hidden = true;
   placeholder.replaceWith(activeContent);
   activeCard.classList.remove('is-open');
@@ -144,6 +86,7 @@ async function closeCard() {
   activeCard.focus({ preventScroll: true });
   activeCard = null;
   activeContent = null;
+  cardOrigin = null;
   closing = false;
   history.replaceState(history.state, '', location.pathname + location.search);
 }
