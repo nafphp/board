@@ -78,16 +78,16 @@ final class CoreConfiguration implements ExtensionProviderInterface
                 continue;
             }
             $group   = str_contains($path, ':') ? explode(':', $path)[0] : 'app';
-            $section = $group === 'app' ? 'application' : 'configuration_' . $group;
+            $section = 'configuration_' . $group;
             if (!isset($groups[$group])) {
-                $labels = ['mail' => 'E-Mail', 'database' => 'Datenbank', 'session' => 'Sitzungen', 'app' => 'Anwendung', 'auth' => 'Authentifizierung', 'websocket' => 'Live-Aktualisierung', 'storage' => 'Dateispeicher', 'oauth' => 'OAuth', 'view' => 'Ansichten', 'queue' => 'Warteschlange', 'schedule' => 'Zeitplanung', 'nafinity' => Branding::name(), 'view' => 'Anzeige'];
+                $labels = ['mail' => 'E-Mail', 'database' => 'Datenbank', 'session' => 'Sitzungen', 'app' => 'Anwendung', 'auth' => 'Authentifizierung', 'websocket' => 'Live-Aktualisierung', 'storage' => 'Dateispeicher', 'oauth' => 'OAuth', 'queue' => 'Warteschlange', 'schedule' => 'Zeitplanung', 'nafinity' => Branding::name(), 'view' => 'Anzeige'];
                 $context->settingSections()->add(new SettingSection(
                     $section,
                     'application',
                     $labels[$group] ?? ConfigurationLabels::label($group),
                     index: 300,
                     icon: 'tune',
-                    parent: $group === 'view' ? 'appearance' : null,
+                    parent: $group === 'view' ? 'application' : null,
                 ));
                 $groups[$group] = true;
             }

@@ -745,9 +745,7 @@
   "E-Mail-Design zurücksetzen": "E-Mail-Design zurücksetzen",
   "Mobil": "Mobil",
   "Beispielprojekt": "Beispielprojekt",
-  "Design & Erscheinungsbild": "Design & Erscheinungsbild",
   "Anzeige": "Anzeige",
-  "Gestalte Name, Logo, Oberfläche und E-Mails an einem Ort. Öffne einen Bereich, um ihn anzupassen.": "Gestalte Name, Logo, Oberfläche und E-Mails an einem Ort. Öffne einen Bereich, um ihn anzupassen.",
   "Testmail an mich senden": "Testmail an mich senden",
   "Sendet den aktuellen Entwurf an :email, ohne ihn zu speichern.": "Sendet den aktuellen Entwurf an :email, ohne ihn zu speichern.",
   "Testmail wird versendet …": "Testmail wird versendet …",
@@ -756,5 +754,7 @@
   "Die Testmail konnte nicht versendet werden. Bitte prüfe die E-Mail-Einstellungen.": "Die Testmail konnte nicht versendet werden. Bitte prüfe die E-Mail-Einstellungen.",
   "Bitte warte eine Minute, bevor du weitere Testmails sendest.": "Bitte warte eine Minute, bevor du weitere Testmails sendest.",
   "Für dein Konto ist keine gültige E-Mail-Adresse hinterlegt.": "Für dein Konto ist keine gültige E-Mail-Adresse hinterlegt.",
-  "Die Vorschau verwendet Beispieldaten. Testmails werden nur auf Klick versendet.": "Die Vorschau verwendet Beispieldaten. Testmails werden nur auf Klick versendet."
+  "Die Vorschau verwendet Beispieldaten. Testmails werden nur auf Klick versendet.": "Die Vorschau verwendet Beispieldaten. Testmails werden nur auf Klick versendet.",
+  "Anwendung & Protokoll": "Anwendung & Protokoll",
+  "Aktivitätsprotokoll aufbewahren (Tage, 0 = unbegrenzt)": "Aktivitätsprotokoll aufbewahren (Tage, 0 = unbegrenzt)"
 }

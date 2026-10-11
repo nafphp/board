@@ -14,6 +14,9 @@ use function Naf\View\s;
 
 /** Registered fields share their renderer across every settings scope. */
 $definitions = extensions()->settings()->forSection($section->scope, $section->id);
+if ($definitions === []) {
+    return;
+}
 $application = $section->scope === 'application'
     ? app()->container()->get(ApplicationSettings::class) : null;
 $context = match ($section->scope) {

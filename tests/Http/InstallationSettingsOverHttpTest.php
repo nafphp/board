@@ -15,7 +15,7 @@ final class InstallationSettingsOverHttpTest extends AcceptanceTestCase
     public function testConfigurationUsesTheSharedRendererAndShowsItsSources(): void
     {
         $page = $this->page($this->alice, '/settings');
-        self::assertStringContainsString('data-settings-form="application"', $page);
+        self::assertStringContainsString('data-settings-form="configuration_app"', $page);
         self::assertStringContainsString('notifications@example.test', $page);
         self::assertStringContainsString('name="values[audit_retention_days]"', $page);
         self::assertStringContainsString('Quelle', $page);
@@ -37,6 +37,12 @@ final class InstallationSettingsOverHttpTest extends AcceptanceTestCase
             libxml_use_internal_errors($previous);
         }
         $xpath = new DOMXPath($document);
+        self::assertStringNotContainsString('data-settings-open="appearance"', $page);
+        foreach (['branding', 'themes', 'email-design', 'configuration_view'] as $child) {
+            self::assertSame(1, $xpath->query('//*[@data-settings-content="application"]//*[@data-settings-open="' . $child . '"]')->length);
+        }
+        self::assertSame(1, $xpath->query('//*[@data-settings-content="application"]//*[@data-settings-advanced-group and @hidden]//*[@data-settings-open="configuration_app"]')->length);
+        self::assertSame(1, $xpath->query('//fieldset[@data-settings-advanced-fields and @hidden and @disabled]//*[@data-setting-key="audit_retention_days"]')->length);
         self::assertSame(1, $xpath->query('//*[@data-settings-advanced-toggle and @role="switch" and not(@checked)]')->length);
         self::assertSame(1, $xpath->query('//*[@data-settings-advanced-group and @hidden]//*[@data-settings-open="configuration_custom_settings"]')->length);
         self::assertSame(1, $xpath->query('//fieldset[@data-settings-advanced-fields and @hidden and @disabled]//*[@data-setting-key="config.custom_settings:limit"]')->length);

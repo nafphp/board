@@ -309,18 +309,17 @@ final class CoreSettings implements ExtensionProviderInterface
             'application',
             'application',
             'Allgemein',
-            null,
-            null,
-            100,
-        ));
-
-        $context->settingSections()->add(new SettingSection(
-            'appearance',
-            'application',
-            'Design & Erscheinungsbild',
-            'settings/appearance',
+            'settings/fields',
             index: 40,
-            icon: 'palette',
+            icon: 'tune',
+        ));
+        $context->settingSections()->add(new SettingSection(
+            'configuration_app',
+            'application',
+            'Anwendung & Protokoll',
+            index: 300,
+            icon: 'tune',
+            parent: 'application',
         ));
         $context->settingSections()->add(new SettingSection(
             'branding',
@@ -331,7 +330,7 @@ final class CoreSettings implements ExtensionProviderInterface
             50,
             null,
             'tune',
-            parent: 'appearance',
+            parent: 'application',
         ));
         $context->settingSections()->add(new SettingSection(
             'themes',
@@ -342,7 +341,7 @@ final class CoreSettings implements ExtensionProviderInterface
             60,
             null,
             'palette',
-            parent: 'appearance',
+            parent: 'application',
         ));
         $context->settingSections()->add(new SettingSection(
             'email-design',
@@ -353,7 +352,7 @@ final class CoreSettings implements ExtensionProviderInterface
             70,
             null,
             'mail',
-            parent: 'appearance',
+            parent: 'application',
         ));
         $settings->add(new SettingDefinition(
             Design::KEY,
@@ -463,13 +462,14 @@ final class CoreSettings implements ExtensionProviderInterface
         $settings->add(new SettingDefinition(
             'audit_retention_days',
             'application',
-            'application',
-            'Protokoll aufbewahren (Tage, 0 = unbegrenzt)',
+            'configuration_app',
+            'Aktivitätsprotokoll aufbewahren (Tage, 0 = unbegrenzt)',
             'integer',
             0,
             400,
             ['min' => 0, 'max' => 3650],
             configKey: 'nafinity:audit_retention_days',
+            advanced: true,
         ));
         $settings->add(new SettingDefinition(
             'mail_enabled',
