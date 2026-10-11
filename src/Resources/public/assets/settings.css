@@ -1102,3 +1102,22 @@ summary.settings-role-heading {
 .invitation-notices {
   gap: 10px;
 }
+
+.branding-preview {
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  margin-bottom: 28px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.branding-preview .brand {
+  min-width: 0;
+  margin: 0;
+}
+.branding-reset {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}

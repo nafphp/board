@@ -1,6 +1,8 @@
 <?php
+use Naf\Board\Support\Branding;
 use Naf\Board\Support\Icon;
 
+use function Naf\Board\partial;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
 use function Naf\route;
@@ -12,9 +14,9 @@ use function Naf\View\s;
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>Anmelden · Nafinity</title>
+        <title><?= s(t('Anmelden')) ?> · <?= s(Branding::name()) ?></title>
         <script src="/assets/boot.js?v=2"></script>
-        <link rel="stylesheet" href="/assets/app.css?v=38" />
+        <link rel="stylesheet" href="/assets/app.css?v=42" />
         <!-- This page builds its own head rather than using the layout, so it has to
              ask for the icon font itself: without it a ligature like arrow_forward
              is shown as that word. -->
@@ -23,11 +25,7 @@ use function Naf\View\s;
     </head>
     <body class="login-body">
         <div class="login-art">
-            <a class="brand" href="/">
-                <span class="brand-symbol">∞</span>
-                nafinity
-                <span class="brand-dot"></span>
-            </a>
+            <?= partial('shell/brand') ?>
             <div class="login-message">
                 <span class="eyebrow"><?= s(t('PROJEKTVERWALTUNG')) ?></span>
                 <h1>

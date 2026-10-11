@@ -10,6 +10,8 @@ use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Mail\Settings;
 use Naf\Board\Rbac\Installation;
+use Naf\Board\Support\Branding;
+use Naf\Board\Support\BrandLogoStorage;
 use Naf\Board\Support\Settings\FileConfigurationStore;
 use Naf\Core\Config;
 use Naf\Database\Core\Database;
@@ -37,6 +39,7 @@ final class ApplicationSettings
         private FileConfigurationStore $store,
         private EntityManager $entityManager,
         private PDO $pdo,
+        private BrandLogoStorage $logos,
     ) {
     }
 
@@ -151,6 +154,13 @@ final class ApplicationSettings
 
     private function validateConfiguration(Config $configuration, array $paths): void
     {
+        if (in_array(Branding::LOGO_PATH, $paths, true)) {
+            $logo = $configuration->get(Branding::LOGO_PATH);
+            if ($logo !== null && (!is_string($logo) || !$this->logos->exists($logo))) {
+                throw new Failure(t('Dieses Logo ist nicht verfügbar.'), 422);
+            }
+        }
+
         // Do not save a database connection that has never connected successfully.
         $databaseChanged = false;
         foreach ($paths as $path) {

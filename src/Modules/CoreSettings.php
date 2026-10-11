@@ -10,12 +10,14 @@ use Naf\Board\Definition\SettingSection;
 use Naf\Board\Domain\Estimation;
 use Naf\Board\ExtensionContext;
 use Naf\Board\Modules\Providers\AiSectionProvider;
+use Naf\Board\Modules\Providers\BrandingSectionProvider;
 use Naf\Board\Modules\Providers\MembersSectionProvider;
 use Naf\Board\Modules\Providers\PersonalSectionProvider;
 use Naf\Board\Modules\Providers\ProjectSectionProvider;
 use Naf\Board\Modules\Providers\RolesSectionProvider;
 use Naf\Board\Modules\Providers\StructureSectionProvider;
 use Naf\Board\Modules\Providers\UsersSectionProvider;
+use Naf\Board\Support\Branding;
 use Naf\Board\Support\Locales;
 
 use function Naf\config;
@@ -310,6 +312,47 @@ final class CoreSettings implements ExtensionProviderInterface
             null,
             null,
             100,
+        ));
+
+        $context->settingSections()->add(new SettingSection(
+            'branding',
+            'application',
+            'Erscheinungsbild & Startseite',
+            'settings/branding',
+            BrandingSectionProvider::class,
+            50,
+            null,
+            'tune',
+        ));
+        $settings->add(new SettingDefinition(
+            Branding::NAME,
+            'application',
+            'branding',
+            'Name der Anwendung',
+            'text',
+            'Nafinity',
+            options: ['required' => true, 'max' => 120],
+            configKey: 'app:name',
+        ));
+        $settings->add(new SettingDefinition(
+            Branding::HOME,
+            'application',
+            'branding',
+            'Startseite beim Klick auf das Logo',
+            'integer',
+            0,
+            options: ['min' => 0, 'max' => 2147483647],
+            configKey: Branding::HOME_PATH,
+        ));
+        $settings->add(new SettingDefinition(
+            Branding::LOGO,
+            'application',
+            'branding',
+            'Logo',
+            'text',
+            null,
+            options: ['nullable' => true, 'max' => 69],
+            configKey: Branding::LOGO_PATH,
         ));
 
         /*

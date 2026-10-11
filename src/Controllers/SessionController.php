@@ -11,6 +11,7 @@ use Naf\Board\Contracts\BoardQueryInterface;
 use Naf\Board\Contracts\PageRendererInterface;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Services\RememberService;
+use Naf\Board\Support\Branding;
 use Naf\Board\Support\Input;
 use Naf\RateLimit\PdoLimiter;
 use Naf\Session\Core\Session;
@@ -123,17 +124,13 @@ final class SessionController
         return redirect(is_string($return) && preg_match('#^/invitations/[a-f0-9]{64}$#D', $return) === 1 ? $return : '/login', 303);
     }
 
-    /** The first board somebody belongs to, or the list to start one from. */
+    /** The configured landing page, with the overview as the permission-safe default. */
     public function home(): ResponseInterface
     {
         if (!$this->auth->check()) {
             return redirect('/login', 303);
         }
-        $projects = $this->query->projects();
-        if ($projects) {
-            return redirect('/projects/' . $projects[0]['id'], 303);
-        }
 
-        return $this->pages->render('projects', ['title' => 'Deine Projekte']);
+        return redirect(Branding::home($this->query->projects()), 303);
     }
 }

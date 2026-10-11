@@ -323,6 +323,18 @@ label > .sr-only:not([type='checkbox']) {
   color: var(--accent);
   font-weight: 650;
 }
+.brand-image {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  object-fit: contain;
+}
+.brand-word {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .brand-dot {
   width: 5px;
   height: 5px;
@@ -2512,6 +2524,11 @@ fieldset:disabled select {
   margin: 0;
   color: var(--login-brand);
 }
+.login-art .brand-image {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+}
 .login-art .brand-symbol {
   color: var(--login-symbol);
 }
@@ -2644,10 +2661,9 @@ fieldset:disabled select {
   padding: 30px;
   text-align: center;
 }
-.error-page > .brand-symbol {
-  display: block;
-  font-size: 90px;
-  margin-bottom: 30px;
+.error-page > .brand {
+  justify-content: center;
+  margin: 0 0 30px;
 }
 .error-page .eyebrow {
   display: block;

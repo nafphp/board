@@ -48,6 +48,35 @@ Personal settings, roles and invitations still take effect through their form's 
 button; project mute switches retain their immediate save behavior. Multiple-choice controls,
 such as ticket assignees, keep checkboxes.
 
+## Installation identity and start page
+
+**Global → Appearance & start page** controls the installation name, logo and the
+destination of the top-left brand link. The default destination is the project overview.
+Administrators may choose an active board instead. The choice also applies after sign-in,
+unless sign-in was requested for an invitation. Each request checks the person's current
+readable projects; an inaccessible, archived or deleted start board falls back to the
+overview without granting access.
+
+The shell, sign-in, invitation and password-reset pages share one brand component.
+Their page titles use the same application name. Names are plain text, limited to 120
+characters. A long name is truncated visually in the sidebar; the link retains its full
+accessible name. Upload a PNG, JPEG or WebP logo, at most 512 KiB and 2048 × 2048 pixels.
+It is public on account pages; private ticket attachments are unaffected. Without an
+uploaded logo the infinity symbol is used. **Remove logo** restores that symbol;
+**Restore server defaults** removes all three administration overrides.
+
+Branding reuses the existing typed configuration layer, administrator permission, CSRF
+protection and form revision. The friendly multipart form posts to `/settings/branding`;
+the existing configuration API retains `config.app:name` and adds `branding.home_project`
+(integer project id, `0` for overview) and `branding.logo` (a stored image key or null).
+The corresponding server configuration paths are `app:name`,
+`nafinity:branding:home_project` and `nafinity:branding:logo`. The API accepts only a
+previously uploaded, existing image key. Uploads live under `branding/` on the configured
+`attachments` disk, outside the document root and attachment cleanup directories; include
+that disk in backups. Replacing/removing a logo through the form deletes the previous
+file unless it is also the server default. Only the currently configured logo is served by `/branding/logo/{key}`.
+No schema migration is needed.
+
 ## Installation configuration
 
 Global settings use the same typed fields and cards as personal/project settings.
