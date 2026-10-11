@@ -1,3 +1,6 @@
+import { t } from './i18n.js';
+import { createSearchLoader } from './search-loader.js';
+
 // Reusable select. The native control inside stays the source of form values and the
 // no-JavaScript fallback; this only draws a searchable listbox over it.
 const choices = new WeakMap();
@@ -17,7 +20,11 @@ function markOf(item) {
 }
 
 function renderValue(state) {
-  const selected = state.items.filter((item) => item.selected());
+  const selected = state.source
+    ? state.select.value
+      ? [{ value: state.select.value, label: state.valueLabel }]
+      : []
+    : state.items.filter((item) => item.selected());
   const value = state.root.querySelector('[data-choice-value]');
   value.replaceChildren();
   // Only a multi-select treats the empty entry as "nothing chosen"; for a single
@@ -61,7 +68,7 @@ function highlight(state, item) {
 function filter(state) {
   const query = state.search.value.trim().toLocaleLowerCase();
   state.items.forEach((item) => {
-    item.option.hidden = !item.label.toLocaleLowerCase().includes(query);
+    item.option.hidden = !state.source && !item.label.toLocaleLowerCase().includes(query);
   });
   const visible = state.items.filter((item) => !item.option.hidden);
   state.root.querySelector('.choice-empty').hidden = visible.length > 0;
@@ -99,6 +106,7 @@ function close(state, focus = false, dismiss = false) {
   if (state.popup.hidden) return;
   if (state.popup.hidePopover && state.popup.isConnected && state.popup.matches(':popover-open'))
     state.popup.hidePopover();
+  state.loader?.cancel();
   state.popup.hidden = true;
   state.trigger.setAttribute('aria-expanded', 'false');
   state.search.setAttribute('aria-expanded', 'false');
@@ -116,7 +124,10 @@ function choose(state, item) {
       state.controls.forEach((control) => {
         control.checked = false;
       });
-  } else state.select.value = item.value;
+  } else {
+    state.select.value = item.value;
+    if (state.source) state.valueLabel = item.label;
+  }
   renderValue(state);
   if (!state.multiple) close(state, true);
   const control =
@@ -143,12 +154,17 @@ function buildItems(state) {
           selected: () => control.checked,
         })),
       ]
-    : [...state.select.options].map((option) => ({
-        value: option.value,
-        label: option.text,
-        mark: option.dataset.mark,
-        selected: () => option.selected,
-      }));
+    : state.source
+      ? state.remoteOptions.map((item) => ({
+          ...item,
+          selected: () => state.select.value === item.value,
+        }))
+      : [...state.select.options].map((option) => ({
+          value: option.value,
+          label: option.text,
+          mark: option.dataset.mark,
+          selected: () => option.selected,
+        }));
   state.items.forEach((item, index) => {
     const option = document.createElement('button');
     option.type = 'button';
@@ -186,7 +202,8 @@ function buildItems(state) {
 
 function applySearchability(state) {
   const threshold = Number(state.root.dataset.choiceSearch ?? 8);
-  state.searchable = Number.isFinite(threshold) && state.items.length >= threshold;
+  state.searchable =
+    Boolean(state.source) || (Number.isFinite(threshold) && state.items.length >= threshold);
   state.focusTarget = state.searchable ? state.search : state.popup;
   state.root.querySelector('.choice-search-wrap').hidden = !state.searchable;
   if (!state.searchable) {
@@ -208,16 +225,48 @@ export function enhanceChoices(scope = document) {
       popup: root.querySelector('[data-choice-popup]'),
       search: root.querySelector('[data-choice-search]'),
       list: root.querySelector('.choice-list'),
-      select: root.querySelector('select'),
+      select: root.querySelector('select, [data-choice-source-value]'),
+      source: root.dataset.choiceSource,
+      remoteOptions: [],
       controls: [...root.querySelectorAll('input[type=checkbox]')],
     };
+    state.valueLabel = root.dataset.choiceValueLabel ?? state.select?.value;
     state.multiple = !state.select;
     state.avatars = root.dataset.choiceAvatars !== undefined;
     state.fit = root.dataset.choiceWidth === 'fit';
+    if (state.source) {
+      state.search.maxLength = 120;
+      state.loader = createSearchLoader(
+        new URL(state.source, document.baseURI),
+        (data) => {
+          if (!root.isConnected || state.popup.hidden) return;
+          state.remoteOptions = data.state === 'ready' ? data.options : [];
+          buildItems(state);
+          renderValue(state);
+          highlight(state, state.items[0]);
+          const status = root.querySelector('.choice-empty');
+          status.textContent =
+            data.state === 'loading'
+              ? t('Suche läuft …')
+              : data.state === 'error'
+                ? t('Die Suche konnte nicht geladen werden. Bitte erneut versuchen.')
+                : t('Keine Treffer');
+          status.hidden = state.items.length > 0;
+          state.list.setAttribute('aria-busy', String(data.state === 'loading'));
+          position(state);
+        },
+        { minLength: 0 },
+      );
+      state.select.addEventListener('invalid', (event) => {
+        event.preventDefault();
+        openChoice(root);
+      });
+    }
     buildItems(state);
     state.search.addEventListener('input', (event) => {
       event.stopPropagation();
-      filter(state);
+      if (state.loader) state.loader.search(state.search.value);
+      else filter(state);
       position(state);
     });
     root.addEventListener('keydown', (event) => {
@@ -285,6 +334,7 @@ export function openChoice(root) {
   filter(state);
   position(state);
   state.focusTarget.focus({ preventScroll: true });
+  state.loader?.search('');
 }
 // Rebuild after something replaced the native control's options.
 export function refreshChoices(scope = document) {

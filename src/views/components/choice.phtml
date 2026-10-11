@@ -5,7 +5,8 @@
  *
  * The native control inside stays the source of the form value and the whole
  * fallback without JavaScript; `choice.js` only draws a searchable listbox over
- * it. Nothing here needs a new endpoint, and validation stays where it was.
+ * it. An optional source returns bounded {options: [{value, label}]} suggestions;
+ * its native input remains the fallback. Validation stays with the feature.
  *
  * @var string      $name        form field name
  * @var string      $label       accessible label, passed through t()
@@ -25,6 +26,8 @@
  * @var bool        $clearField  emit the multiselect's clear marker; shared names need only one
  * @var string      $class       extra classes on the wrapper
  * @var string      $width       'fit' keeps the open list as narrow as its entries
+ * @var string      $source      optional remote suggestions URL (single value only)
+ * @var string      $nativeType  input type for a remote choice without JavaScript
  * @var bool        $required
  * @var bool        $disabled    leaves the native control in place, unenhanced
  */
@@ -34,6 +37,8 @@ use Naf\Board\Support\Icon;
 use function Naf\I18n\t;
 use function Naf\View\s;
 
+$source ??= '';
+$nativeType ??= 'text';
 $multiple ??= ($type ?? '') === 'multiple';
 $value ??= $multiple ? [] : '';
 $options ??= [];
@@ -68,6 +73,7 @@ $loop     = 0;
     data-choice-search="<?= (int) $searchFrom ?>"
     <?= $width ? 'data-choice-width="' . s($width) . '"' : '' ?>
     <?= $avatars ? 'data-choice-avatars' : '' ?>
+    <?= $source ? 'data-choice-source="' . s($source) . '" data-choice-value-label="' . s($options[$value] ?? $value) . '"' : '' ?>
 >
     <div data-choice-native>
     <?php if ($multiple): ?>
@@ -84,6 +90,8 @@ $loop     = 0;
             <?php endforeach ?>
             <?php if (!$options): ?><span class="muted"><?= s(t('Keine Einträge vorhanden.')) ?></span><?php endif ?>
         </div>
+    <?php elseif ($source): ?>
+        <input id="<?= s($id) ?>" type="<?= s($nativeType) ?>" name="<?= s($name) ?>" value="<?= s($value) ?>" data-choice-source-value <?= $required ? 'required' : '' ?> <?= $disabled ? 'disabled' : '' ?><?= $native ?> />
     <?php else: ?>
         <select id="<?= s($id) ?>" name="<?= s($name) ?>"<?= $native ?> <?= $required ? 'required' : '' ?> <?= $disabled ? 'disabled' : '' ?>>
             <?php foreach ($options as $key => $text): ?>

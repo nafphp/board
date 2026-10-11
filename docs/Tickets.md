@@ -224,9 +224,18 @@ use the same 16 px content spacing; hidden error messages and reply context leav
 The composer belongs to the comments section but stays outside the refreshed thread, so
 loading updated comments preserves the current draft.
 
-**Link ticket** expects the number of another ticket in the same project, for example `42` for
-`NAF-42`. A link appears on both sides; duplicates and self-links are prevented. Removing one
-affects the relationship only.
+**Link ticket** uses the shared searchable choice: type a bare number, a full reference such as
+`NAF-42`, or part of the title. It suggests at most 12 tickets from the current board, with exact
+numbers first. The current ticket, archived tickets and existing links are excluded. Search
+is project-authorized and never cached. Without JavaScript, enter the number in the native field.
+
+Choose the relationship from this ticket's perspective: relates to, blocks / is blocked by,
+duplicates / is duplicated by, clones / is cloned by, or resolves / is resolved by. The other
+ticket displays the inverse automatically. One canonical pair stores one type and direction;
+the write API can replace these without adding another pair. Removing a link affects only the
+relationship. Existing pairs remain symmetric. The `M202610110002TicketLinkRelations`
+migration adds the type and direction without changing existing pairs. Writes retain CSRF,
+project permissions, ticket versions and the existing activity/live-update transaction.
 
 `@` in the comment field opens the list of active project members. Arrow keys navigate, Enter or
 Tab commits and Escape closes. Handles are derived from the existing display names

@@ -2,7 +2,9 @@
 
 use Naf\Board\Support\Format;
 use Naf\Board\Support\Icon;
+use Naf\Board\Support\TicketRelations;
 
+use function Naf\Board\choice;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
@@ -15,7 +17,10 @@ use function Naf\View\s;
     <h2><?= s(t('Verknüpfte Tickets')) ?><span class="count"><?= count($slot->links) ?></span></h2>
     <?php foreach ($slot->links as $linked): ?>
         <div class="ticket-link-row">
-            <a href="<?= s(route('ticket', ['project' => $slot->projectId(), 'ticket' => Format::ticket($slot->project['ticket_key'], $linked['number'])])) ?>"><span class="ticket-key"><?= s(Format::ticket($slot->project['ticket_key'], $linked['number'])) ?></span><span><?= s($linked['title']) ?></span><span class="muted"><?= $linked['status'] === 'closed' ? Icon::mark('check_circle', 'sm') : Icon::mark('radio_button_unchecked', 'sm') ?></span></a>
+            <div class="ticket-link-content">
+                <span class="ticket-link-relation muted"><?= s(TicketRelations::label($linked['relation'], (bool) $linked['inverse'])) ?></span>
+                <a href="<?= s(route('ticket', ['project' => $slot->projectId(), 'ticket' => Format::ticket($slot->project['ticket_key'], $linked['number'])])) ?>"><span class="ticket-key"><?= s(Format::ticket($slot->project['ticket_key'], $linked['number'])) ?></span><span><?= s($linked['title']) ?></span><span class="muted"><?= $linked['status'] === 'closed' ? Icon::mark('check_circle', 'sm') : Icon::mark('radio_button_unchecked', 'sm') ?></span></a>
+            </div>
             <?php if ($slot->editable): ?>
                 <form method="post" action="<?= s(route('ticket.links', $slot->params)) ?>" data-ticket-form data-refresh-section="links">
                     <input type="hidden" name="_csrf" value="<?= s($slot->token) ?>" /><input type="hidden" name="version" value="<?= (int) $slot->ticket['version'] ?>" /><input type="hidden" name="number" value="<?= (int) $linked['number'] ?>" /><input type="hidden" name="action" value="delete" />
@@ -29,7 +34,27 @@ use function Naf\View\s;
         <details class="ticket-link-add"><summary class="text-button"><?= s(t('Ticket verknüpfen')) ?></summary>
             <form method="post" action="<?= s(route('ticket.links', $slot->params)) ?>" data-ticket-form data-refresh-section="links">
                 <input type="hidden" name="_csrf" value="<?= s($slot->token) ?>" /><input type="hidden" name="version" value="<?= (int) $slot->ticket['version'] ?>" />
-                <label><?= s(t('Ticketnummer in diesem Projekt')) ?><span class="ticket-link-input"><span><?= s($slot->project['ticket_key']) ?>-</span><input type="number" name="number" min="1" required placeholder="42" /></span></label>
+                <p class="muted small"><?= s(t('Dieses Ticket …')) ?></p>
+                <div class="ticket-link-fields">
+                    <div class="ticket-link-field">
+                        <label for="link-relation-<?= (int) $slot->ticket['id'] ?>"><?= s(t('Beziehung')) ?></label>
+                        <?= choice([
+                            'name'   => 'relation', 'label' => 'Beziehung', 'options' => TicketRelations::options(),
+                            'value'  => 'relates', 'id' => 'link-relation-' . $slot->ticket['id'],
+                            'listId' => 'link-relations-' . $slot->ticket['id'], 'searchFrom' => 20,
+                        ]) ?>
+                    </div>
+                    <div class="ticket-link-field">
+                        <label for="link-ticket-<?= (int) $slot->ticket['id'] ?>"><?= s(t('Ticket')) ?></label>
+                        <?= choice([
+                            'name'        => 'number', 'label' => 'Ticket', 'empty' => 'Ticket suchen …',
+                            'searchLabel' => 'Ticketnummer oder Titel', 'placeholder' => 'Ticketnummer oder Titel eingeben …',
+                            'source'      => route('ticket.links.suggestions', $slot->params), 'nativeType' => 'number',
+                            'required'    => true, 'id' => 'link-ticket-' . $slot->ticket['id'],
+                            'listId'      => 'link-tickets-' . $slot->ticket['id'],
+                        ]) ?>
+                    </div>
+                </div>
                 <button class="button subtle"><?= s(t('Verknüpfen')) ?></button><div class="form-errors" role="alert"></div>
             </form>
         </details>

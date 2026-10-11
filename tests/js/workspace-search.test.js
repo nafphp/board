@@ -108,3 +108,31 @@ test('refused and redirected answers show an error and the next query can recove
   assert.equal(ui.states.at(-1).state, 'ready');
   assert.equal(ui.states.at(-1).count, 0);
 });
+
+test('shared choice searches can request recent entries and one-digit ticket numbers', async (context) => {
+  context.mock.timers.enable({ apis: ['setTimeout'] });
+  const requests = [];
+  const states = [];
+  const loader = createSearchLoader(
+    'https://board.example/tickets/NAF-1/links/suggestions',
+    (data) => states.push(data),
+    {
+      minLength: 0,
+      fetcher: async (url) => {
+        requests.push(url);
+        return {
+          ok: true,
+          redirected: false,
+          json: async () => ({ options: [{ value: '2', label: 'NAF-2 · Example' }] }),
+        };
+      },
+    },
+  );
+  for (const query of ['', '2']) {
+    loader.search(query);
+    context.mock.timers.tick(180);
+    await new Promise(setImmediate);
+    assert.equal(requests.at(-1).searchParams.get('q'), query);
+    assert.equal(states.at(-1).options[0].value, '2');
+  }
+});

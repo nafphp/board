@@ -203,6 +203,7 @@ $routes = [
         [TicketController::class, 'comment'],
         'ticket.comments',
     ],
+    ['GET', '/projects/{project}/tickets/{ticket}/links/suggestions', [TicketController::class, 'linkSuggestions'], 'ticket.links.suggestions'],
     ['POST', '/projects/{project}/tickets/{ticket}/links', [TicketController::class, 'link'], 'ticket.links'],
     ['POST', '/projects/{project}/tickets/{ticket}/timer', [TicketController::class, 'timer'], 'ticket.timer'],
 ];

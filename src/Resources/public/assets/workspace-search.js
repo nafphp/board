@@ -1,47 +1,7 @@
 import { t } from './i18n.js';
 
-// Cancel and invalidate together: a late answer must not repopulate a cleared or closed popup.
-export function createSearchLoader(endpoint, update, { fetcher = fetch, delay = 180 } = {}) {
-  let timer;
-  let request;
-  let generation = 0;
-  function cancel() {
-    clearTimeout(timer);
-    request?.abort();
-    generation++;
-  }
-  return {
-    cancel,
-    search(query) {
-      cancel();
-      query = query.trim();
-      if ([...query].length < 2) {
-        update({ state: 'short' });
-        return;
-      }
-      const current = generation;
-      update({ state: 'loading' });
-      timer = setTimeout(async () => {
-        request = new AbortController();
-        const url = new URL(endpoint);
-        url.searchParams.set('q', query);
-        try {
-          const response = await fetcher(url, {
-            headers: { Accept: 'application/json' },
-            credentials: 'same-origin',
-            cache: 'no-store',
-            signal: request.signal,
-          });
-          if (!response.ok || response.redirected) throw new Error('Workspace search failed');
-          const data = await response.json();
-          if (current === generation) update({ state: 'ready', ...data });
-        } catch (error) {
-          if (current === generation && error.name !== 'AbortError') update({ state: 'error' });
-        }
-      }, delay);
-    },
-  };
-}
+import { createSearchLoader } from './search-loader.js';
+export { createSearchLoader } from './search-loader.js';
 
 export function mountWorkspaceSearch(root, options = {}) {
   const document = root.ownerDocument;
