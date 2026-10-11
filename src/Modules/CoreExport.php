@@ -44,7 +44,7 @@ final class CoreExport implements ExtensionProviderInterface
             slot: 'sidebar.workspace',
             label: 'Rechnungsentwürfe',
             routeName: 'invoice.drafts',
-            icon: 'receipt_long',
+            icon: 'download',
             activeRoutes: ['invoice.drafts'],
             index: 300,
         ));
