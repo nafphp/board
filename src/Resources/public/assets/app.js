@@ -340,6 +340,7 @@ const drawer = document.querySelector('#ticket-drawer');
 let drawerAbort = null;
 let drawerCloseFromHistory = false;
 let drawerUrl = '';
+let drawerGeneration = 0;
 document.addEventListener('click', async (event) => {
   const link = event.target.closest('a[data-ticket-link]');
   if (
@@ -354,6 +355,7 @@ document.addEventListener('click', async (event) => {
   )
     return;
   event.preventDefault();
+  drawerGeneration += 1;
   drawerAbort?.abort();
   drawerAbort = new AbortController();
   const creating = link.hasAttribute('data-ticket-create-link');
@@ -402,7 +404,25 @@ drawer?.addEventListener('close', () => {
       detail: { node: drawer.querySelector('.drawer-content') },
     }),
   );
-  drawer.querySelector('.drawer-content').replaceChildren();
+  // Native close starts the CSS exit. Keep the rendered ticket until that slide
+  // finishes, but never let an old close clear a quickly reopened drawer.
+  const generation = drawerGeneration;
+  const clearContent = () => {
+    if (!drawer.open && drawerGeneration === generation)
+      drawer.querySelector('.drawer-content').replaceChildren();
+  };
+  const motion = drawer.getAnimations();
+  if (motion.length && !document.hidden) {
+    let timeout;
+    Promise.race([
+      Promise.allSettled(motion.map((animation) => animation.finished)),
+      // A background tab can freeze the timeline after close has already begun.
+      new Promise((done) => (timeout = setTimeout(done, 600))),
+    ]).then(() => {
+      clearTimeout(timeout);
+      clearContent();
+    });
+  } else clearContent();
   if (!drawerCloseFromHistory && history.state?.nafinityDrawer) history.back();
   drawerCloseFromHistory = false;
 });
