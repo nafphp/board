@@ -1,7 +1,9 @@
 <?php
+
+use Naf\Board\Mail\Messages;
+
 use function Naf\Board\field;
 use function Naf\Board\partial;
-use function Naf\config;
 use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
@@ -40,7 +42,7 @@ use function Naf\View\s;
         'choice'  => ['searchLabel' => 'Rollen suchen'],
     ]) ?>
     <div class="invitation-notices">
-        <?php if (config('nafinity:mail_enabled', false)): ?>
+        <?php if (Messages::enabled()): ?>
             <label class="invite-delivery">
                 <input type="checkbox" role="switch" name="send_email" value="1" checked />
                 <?= s(t('Einladung per E-Mail senden')) ?>

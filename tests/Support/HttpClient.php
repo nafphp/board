@@ -30,7 +30,8 @@ final class HttpClient
         private string $base,
         string $name = 'default',
     ) {
-        $this->jar = sys_get_temp_dir() . '/nafinity-test-cookies-' . $name . '.txt';
+        // Concurrent suites use separate databases but must not overwrite each other's cookies.
+        $this->jar = sys_get_temp_dir() . '/nafinity-test-cookies-' . getmypid() . '-' . $name . '.txt';
         $this->forgetSession();
     }
 

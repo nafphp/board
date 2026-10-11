@@ -14,3 +14,5 @@ __pycache__/
 # Assets published for an isolated browser acceptance.
 /tests/Fixtures/public/assets/
 /tests/Fixtures/public/plugins/
+/tests/Imap/server/certs/
+/composer.dev.*

@@ -307,3 +307,32 @@ are not flattened into one long button name.
 A real version conflict keeps the current editor open. “Entwurf sichern” downloads that form's
 current values as JSON pairs (including repeated field names), without CSRF tokens or lock
 versions. This is a manual recovery aid before reloading; it does not overwrite concurrent edits.
+
+## Replies from an IMAP mailbox
+
+Native Mail-to-Ticket is disabled until the host supplies `mail:imap` configuration.
+Set **Anfragende E-Mail-Adresse** on a ticket to associate its requester. With mail enabled,
+that authorized change generates a random **Vorgangsnummer** and queues a generic confirmation
+with the mailbox as Reply-To. It exposes no internal ticket key, title or description.
+
+Only mail with one known `Vorgangsnummer: V-…` (or `Ticket-Nr: V-…`) and exactly the stored
+requester address adds a plain-text comment. Incoming mail never creates tickets. A dedicated,
+active integration account needs current read/comment rights in the ticket's project. The
+comment names the original sender; internal comments are not automatically forwarded.
+
+Changing or clearing the requester revokes the previous reference, including while polling
+is disabled. References survive project transfers; import rechecks the destination's rights.
+Unknown, automatic, oversized or mismatched mail remains in the mailbox with its flags
+unchanged. Attachments remain there too. Imported comments and their deduplication receipts
+share one transaction; a retry after an IMAP flag failure cannot add a second comment.
+
+`nafinity:mail:check` checks the configured TLS connection, login, folder and integration
+account without importing. `nafinity:mail:poll` runs one batch; `--rescan` starts again at
+the beginning while retaining receipt deduplication. Normal scheduling polls once per minute,
+up to 50 UIDs per run. An IMAP UIDVALIDITY change resets the cursor. SMTP and IMAP share the host's `mail` sender and credentials, with protocol-specific overrides. The host owns the sending domain's SPF, DKIM and DMARC records.
+
+The sender address and public reference implement routing, rather than cryptographic sender
+verification. Receiving-provider spam and mail authentication controls remain relevant.
+OAuth accepts an externally refreshed access token; provider-specific consent and refresh
+flows are outside this integration. See the central documentation draft
+`drafts/nafinity-mail-to-ticket.md` for environment setup and all configuration keys.
