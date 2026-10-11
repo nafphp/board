@@ -92,7 +92,7 @@ final class BrowserWords
         'Formatierung entfernen',
         'Link kopiert.',
         'Bitte kopiere den markierten Link.',
-        'Kein Konto gefunden. Du kannst die Person unten einladen.',
+        'Kein Konto gefunden. Nutze „Neue Person einladen“.',
         'Die Kontosuche ist gerade nicht verfügbar. Du kannst die vollständige E-Mail-Adresse eingeben.',
         'Gespeichert',
         'Gespeichert · Bitte neu laden',

@@ -37,7 +37,7 @@ export function mountAccountSearch(input, { fetcher = fetch, delay = 250 } = {})
         }
         status.textContent = list.children.length
           ? ''
-          : t('Kein Konto gefunden. Du kannst die Person unten einladen.');
+          : t('Kein Konto gefunden. Nutze „Neue Person einladen“.');
       } catch (error) {
         if (current !== generation || error.name === 'AbortError') return;
         status.textContent = t(

@@ -189,7 +189,7 @@ export function mountPeopleDirectory(root) {
       const response = await fetch(person.dataset.personOpen, { headers: { Accept: 'text/html' } });
       if (!response.ok || response.redirected) throw new Error('Person unavailable');
       replacePerson(await response.text());
-      if (root.closest('#settings-detail')?.open) open(editor, person);
+      if (root.closest('dialog')?.open) open(editor, person);
     } catch {
       error.textContent = t('Das Konto konnte nicht geladen werden. Bitte erneut versuchen.');
     } finally {

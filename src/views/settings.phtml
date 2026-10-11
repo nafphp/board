@@ -1,6 +1,5 @@
 <?php
 use Naf\Board\Domain\ProjectPermissions;
-use Naf\Board\Support\Icon;
 use Naf\Board\Support\Resolver;
 
 use function Naf\app;
@@ -140,27 +139,6 @@ unset($card);
         )) ?>
     </p>
 <?php endif ?>
-<dialog
-    id="settings-detail"
-    data-settings-dialog
-    class="settings-detail"
-    aria-labelledby="settings-detail-title"
-    aria-describedby="settings-detail-description"
->
-    <header class="settings-detail-heading">
-        <div class="settings-icon" data-settings-icon></div>
-        <div>
-            <h2 id="settings-detail-title"></h2>
-            <p id="settings-detail-description"></p>
-        </div>
-        <button
-            type="button"
-            class="icon-button"
-            data-settings-close
-            aria-label="<?= s(t('Einstellungen schließen')) ?>"
-        >
-<?= Icon::mark('close') ?></button>
-    </header>
-    <div class="settings-detail-body"></div>
-</dialog>
+<?= partial('settings/dialog') ?>
+<template id="settings-editor-template"><?= partial('settings/dialog', ['editor' => true]) ?></template>
 <?php $this->endblock('content'); ?>

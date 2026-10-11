@@ -1,11 +1,12 @@
 import { mountEmailDesigner } from './email-design.js';
-import { openDialog, closeDialog } from './dialog.js';
+import { openDialog, closeDialog, mountDialogEditors } from './dialog.js';
 import { t } from './i18n.js';
 import { mountThemeManager } from './themes.js';
 import { mountBrandingPreview } from './branding-preview.js';
 import { mountAdvancedSettings } from './settings-configuration.js';
 import { mountMemberControls } from './members.js';
-import { mountPeopleDirectory } from './people.js?v=3';
+import { mountPeopleDirectory } from './people.js?v=4';
+mountDialogEditors(document);
 document.querySelectorAll('[data-people-directory]').forEach(mountPeopleDirectory);
 
 mountMemberControls();

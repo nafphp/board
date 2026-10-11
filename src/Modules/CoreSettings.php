@@ -446,7 +446,7 @@ final class CoreSettings implements ExtensionProviderInterface
             'installation_roles',
             'application',
             'Rollen & Rechte',
-            'rbac/roles',
+            'settings/installation-roles',
             null,
             200,
             null,

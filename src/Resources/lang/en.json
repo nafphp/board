@@ -877,7 +877,6 @@
   "Für diese E-Mail-Adresse gibt es bereits ein Konto. Verwende die Kontosuche.": "An account already exists for this email address. Use account search.",
   "Gib diesen Link an :email weiter.": "Share this link with :email.",
   "Gültig bis :date": "Valid until :date",
-  "Kein Konto gefunden. Du kannst die Person unten einladen.": "No account found. You can invite the person below.",
   "Konto anlegen und Board beitreten": "Create account and join board",
   "Lass dich zu einem bestehenden Projekt hinzufügen.": "Ask to be added to an existing project.",
   "Lege über diesen Link dein Konto an. Die Einladung gilt sieben Tage und kann nur einmal verwendet werden.": "Create your account through this link. The invitation is valid for seven days and can only be used once.",
@@ -1299,5 +1298,6 @@
   "Anwendung & Protokoll": "Application & activity log",
   "Aktivitätsprotokoll aufbewahren (Tage, 0 = unbegrenzt)": "Retain activity log (days, 0 = unlimited)",
   "Dialog": "Dialog",
-  ":name und darüberliegende Dialoge schließen": "Close :name and dialogs above it"
+  ":name und darüberliegende Dialoge schließen": "Close :name and dialogs above it",
+  "Kein Konto gefunden. Nutze „Neue Person einladen“.": "No account found. Use “Invite a new person”."
 }

@@ -1,5 +1,6 @@
 <?php
 use Naf\Board\Services\ApplicationSettings;
+use Naf\Board\Support\Icon;
 use Naf\Board\Support\Themes;
 
 use function Naf\app;
@@ -23,7 +24,7 @@ foreach ($catalog['items'] as $id => $theme) {
     $editOptions[$id] = $theme['name'];
 }
 ?>
-<div data-theme-manager>
+<div data-theme-manager data-dialog-editors=".theme-editor-section">
     <p class="field-hint"><?= s(t('Themes gelten global. Freigegebene Themes können alle Nutzer persönlich auswählen.')) ?></p>
     <a class="button subtle" href="<?= s(route('installation.settings') . '?appearance=default#themes') ?>"><?= s(t('Mit Standarddarstellung öffnen')) ?></a>
     <form method="post" data-enhanced action="<?= s(route('themes.save')) ?>" class="theme-default-form">
@@ -33,21 +34,21 @@ foreach ($catalog['items'] as $id => $theme) {
         <?= field(['label' => 'Installationsstandard', 'name' => 'id', 'type' => 'select', 'value' => $catalog['default'], 'options' => Themes::choices(false), 'id' => 'theme-default']) ?>
         <button class="button subtle"><?= s(t('Standard speichern')) ?></button>
     </form>
-    <section class="theme-editor-section">
-        <h3><?= s(t('Theme bearbeiten')) ?></h3>
+    <div class="theme-tools">
         <?= field(['label' => 'Theme auswählen', 'name' => 'edit_theme', 'type' => 'select', 'value' => 'new', 'options' => $editOptions]) ?>
-        <div class="theme-tools">
-            <button type="button" class="button subtle" data-theme-duplicate><?= s(t('Als neues Theme kopieren')) ?></button>
-            <label class="button subtle theme-import-label">
-                <?= s(t('Theme importieren')) ?>
-                <input type="file" accept="application/json,.json" data-theme-import />
-            </label>
-        </div>
+        <label class="button subtle theme-import-label">
+            <?= s(t('Theme importieren')) ?>
+            <input type="file" accept="application/json,.json" data-theme-import />
+        </label>
+    </div>
+    <details class="settings-row theme-editor-section" data-dialog-title="<?= s(t('Theme bearbeiten')) ?>">
+        <summary class="settings-row-head"><span class="settings-row-title"><?= s(t('Theme bearbeiten')) ?></span><?= Icon::mark('chevron_right', 'sm') ?></summary>
         <script type="application/json" data-theme-definitions><?= json_encode(['schema' => $schema, 'themes' => $definitions], JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
         <form method="post" data-enhanced data-theme-editor action="<?= s(route('themes.save')) ?>" data-preview-url="<?= s(route('themes.preview')) ?>">
             <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
             <input type="hidden" name="configurationRevision" value="<?= s($revision) ?>" />
             <input type="hidden" name="id" value="" />
+            <div class="theme-tools"><button type="button" class="button subtle" data-theme-duplicate><?= s(t('Als neues Theme kopieren')) ?></button></div>
             <div class="theme-preview-panel">
                 <div class="theme-preview-heading">
                     <strong><?= s(t('Vorschau')) ?></strong>
@@ -101,12 +102,13 @@ foreach ($catalog['items'] as $id => $theme) {
             <div class="form-errors" role="alert"></div>
             <div class="settings-actions"><button class="button primary"><?= s(t('Theme speichern')) ?></button></div>
         </form>
-    </section>
+    </details>
     <section class="theme-library">
         <h3><?= s(t('Gespeicherte Themes')) ?></h3>
         <?php foreach ($definitions as $id => $theme): ?>
             <div class="theme-library-row">
                 <div><strong><?= s(isset($schema['palettes'][$id]) ? t($theme['name']) : $theme['name']) ?></strong><small><?= s(t($theme['enabled'] ? 'Freigegeben' : 'Entwurf')) ?></small></div>
+                <button type="button" class="button subtle" data-theme-edit="<?= s($id) ?>"><?= s(isset($schema['palettes'][$id]) ? t(':name als Vorlage', ['name' => t($theme['name'])]) : t('Bearbeiten')) ?></button>
                 <a class="button subtle" href="<?= s(route('themes.export', ['theme' => $id])) ?>"><?= s(t('Exportieren')) ?></a>
                 <?php if (isset($catalog['items'][$id])): ?>
                     <form method="post" data-enhanced action="<?= s(route('themes.save')) ?>">

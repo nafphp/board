@@ -758,5 +758,6 @@
   "Anwendung & Protokoll": "Anwendung & Protokoll",
   "Aktivitätsprotokoll aufbewahren (Tage, 0 = unbegrenzt)": "Aktivitätsprotokoll aufbewahren (Tage, 0 = unbegrenzt)",
   "Dialog": "Dialog",
-  ":name und darüberliegende Dialoge schließen": ":name und darüberliegende Dialoge schließen"
+  ":name und darüberliegende Dialoge schließen": ":name und darüberliegende Dialoge schließen",
+  "Kein Konto gefunden. Nutze „Neue Person einladen“.": "Kein Konto gefunden. Nutze „Neue Person einladen“."
 }

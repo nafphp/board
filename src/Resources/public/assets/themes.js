@@ -1,4 +1,5 @@
 import { t } from './i18n.js';
+import { openDialogEditor } from './dialog.js';
 import { mountIsolatedPreview } from './isolated-preview.js';
 import { enhanceChoices } from './choice.js';
 
@@ -17,6 +18,7 @@ export function mountThemeManager(root) {
   const { schema, themes } = JSON.parse(root.querySelector('[data-theme-definitions]').textContent);
   const form = root.querySelector('[data-theme-editor]');
   const picker = root.querySelector('[name="edit_theme"]');
+  const editor = root.querySelector('.theme-editor-section');
   const frame = root.querySelector('[data-theme-frame]');
   const status = root.querySelector('[data-theme-preview-status]');
   const resize = mountIsolatedPreview(frame);
@@ -91,6 +93,7 @@ export function mountThemeManager(root) {
         if (input) input.value = theme[mode]?.[key] ?? value;
       }
     }
+    editor.dataset.dialogTitle = id ? t('Theme bearbeiten') + ' · ' + theme.name : t('Neues Theme');
     enhanceChoices(form);
     for (const color of form.querySelectorAll('.field-custom')) {
       color.dispatchEvent(new Event('input', { bubbles: true }));
@@ -105,6 +108,14 @@ export function mountThemeManager(root) {
       id === 'new' ? { name: t('Mein Theme'), base: 'classic', enabled: true } : themes[id],
       id.startsWith('theme-') ? id : '',
     );
+    openDialogEditor(editor);
+  });
+  root.querySelectorAll('[data-theme-edit]').forEach((button) => {
+    button.addEventListener('click', () => {
+      picker.value = button.dataset.themeEdit;
+      enhanceChoices(root);
+      picker.dispatchEvent(new Event('change', { bubbles: true }));
+    });
   });
   root.querySelector('[data-theme-duplicate]').addEventListener('click', () => {
     field('id').value = '';
@@ -142,9 +153,12 @@ export function mountThemeManager(root) {
       choose(imported.theme);
       css = result.css;
       render();
+      openDialogEditor(editor);
     } catch (error) {
-      if (current === importSequence)
+      if (current === importSequence) {
         status.textContent = error.message || t('Dieses Theme konnte nicht importiert werden.');
+        openDialogEditor(editor);
+      }
     } finally {
       event.target.value = '';
     }

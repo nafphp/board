@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Naf\Board\Tests\Http;
 
+use DOMDocument;
+use DOMXPath;
 use Naf\Board\Tests\Support\AcceptanceTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -15,6 +17,49 @@ use PHPUnit\Framework\Attributes\DataProvider;
  */
 final class SettingsSurfaceTest extends AcceptanceTestCase
 {
+    public function testBoardEditorsKeepOneNativeFormEachForTheNoScriptFallback(): void
+    {
+        $xpath = $this->settingsDocument('/projects/' . self::PROJECT . '/settings');
+        foreach (['/projects/' . self::PROJECT . '/members', '/invitations', '/projects/' . self::PROJECT . '/roles'] as $action) {
+            $forms = $xpath->query('//form[@action="' . $action . '"]');
+            self::assertCount(1, $forms, 'the original form was duplicated or lost');
+            $form = $forms->item(0);
+            self::assertSame(1, $xpath->query('ancestor::details/ancestor::*[@data-dialog-editors]', $form)->length);
+            self::assertSame(1, $xpath->query('.//input[@name="_csrf"]', $form)->length);
+        }
+    }
+
+    public function testInstallationEditorsKeepTheOriginalRoleFormsAndThemePreviewTogether(): void
+    {
+        $xpath = $this->settingsDocument('/settings');
+        $roles = $xpath->query('//form[@action="/admin/roles"]');
+        self::assertGreaterThan(1, $roles->length);
+        foreach ($roles as $role) {
+            self::assertSame(1, $xpath->query('ancestor::details/ancestor::*[@data-dialog-editors]', $role)->length);
+            self::assertSame(1, $xpath->query('.//input[@name="return" and @value="/settings#installation_roles"]', $role)->length);
+        }
+        $editors = $xpath->query('//form[@data-theme-editor]');
+        self::assertCount(1, $editors);
+        self::assertSame(1, $xpath->query('.//iframe[@data-theme-frame and @srcdoc]', $editors->item(0))->length);
+        self::assertSame(1, $xpath->query('ancestor::details/ancestor::*[@data-dialog-editors]', $editors->item(0))->length);
+        self::assertSame(1, $xpath->query('//template[@id="settings-editor-template"]/dialog')->length);
+    }
+
+    private function settingsDocument(string $path): DOMXPath
+    {
+        $document = new DOMDocument();
+        $previous = libxml_use_internal_errors(true);
+
+        try {
+            $document->loadHTML($this->page($this->alice, $path));
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+        }
+
+        return new DOMXPath($document);
+    }
+
     /** What a project is: everything that belongs to it, and nothing else. */
     private const array PROJECT_CARDS = [
         'general',

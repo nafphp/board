@@ -418,3 +418,17 @@ test('a native cancel handler can queue its close event before the cascade conti
   assert.equal(ui.dialog.open, false);
   assert.equal(ui.closed.length, 2);
 });
+
+test('a nested native modal stays accessible through its inert covered ancestor', async () => {
+  const ui = fixture({ reduced: true });
+  const child = ui.newDialog();
+  ui.dialog.contains = (dialog) => dialog === child;
+  await ui.open();
+  await ui.context.openDialog(child);
+  assert.equal(ui.dialog.inert, true);
+  assert.equal(ui.dialog.getAttribute('aria-hidden'), null);
+  assert.equal(child.inert, false);
+  await ui.context.closeDialog(child);
+  assert.equal(ui.dialog.inert, false);
+  assert.equal(ui.dialog.getAttribute('aria-hidden'), null);
+});

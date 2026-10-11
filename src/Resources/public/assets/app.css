@@ -1728,6 +1728,10 @@ details[data-sweeping] {
   color: var(--text);
   box-shadow: 0 25px 100px color-mix(in srgb, var(--shadow-color) 20%, transparent);
 }
+/* Native child dialogs escape an inert parent, including inherited hit testing. */
+dialog[open]:not([data-dialog-covered]) {
+  pointer-events: auto;
+}
 dialog::backdrop {
   background: var(--backdrop);
   backdrop-filter: blur(3px);
