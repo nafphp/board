@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 
 const source = await readFile(
-  new URL('../../src/Resources/public/assets/extensions.js', import.meta.url),
+  new URL('../../src/Resources/public/assets/extensions-v2.js', import.meta.url),
   'utf8',
 );
 // The real lifecycle module, with only its page-wide editor dependencies stubbed.

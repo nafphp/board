@@ -85,7 +85,7 @@ final class CoreAssets implements ExtensionProviderInterface
 
         $context->assets()->add(new AssetDefinition(
             'core.extensions',
-            '/assets/extensions.js',
+            '/assets/extensions-v2.js',
             'js',
             100,
             true,

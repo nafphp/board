@@ -4,29 +4,30 @@ use function Naf\I18n\t;
 use function Naf\View\s;
 
 $creating ??= false;
+$displayHidden = $creating && $editable ? 'hidden' : '';
 ?>
 <div class="ticket-field <?= s($class ?? '') ?>" data-inline-field="<?= s($name) ?>">
-    <?php if (!$creating): ?>
     <?php if ($type === 'rich'): ?>
-    <div class="ticket-prose" data-description-display><?= $display ?></div>
-    <div class="inline-display sr-only" <?= $editable ? 'role="button" tabindex="0" aria-expanded="false"' : 'hidden' ?>><?= s(t($label)) ?>: <?= s(t('Bearbeiten')) ?></div>
+    <div class="ticket-prose" data-description-display <?= $displayHidden ?>><?= $display ?></div>
+    <div class="inline-display sr-only" <?= $displayHidden ?> <?= $editable ? 'role="button" tabindex="0" aria-expanded="false"' : 'hidden' ?>><?= s(t($label)) ?>: <?= s(t('Bearbeiten')) ?></div>
     <?php else: ?>
-    <div class="inline-display" <?= $editable ? 'role="button" tabindex="0" aria-expanded="false"' : '' ?>>
+    <div class="inline-display" <?= $displayHidden ?> <?= $editable ? 'role="button" tabindex="0" aria-expanded="false"' : '' ?>>
         <span class="sr-only"><?= s(t($label)) ?>: </span>
         <?= $display ?>
         <?php if ($editable): ?><span class="sr-only"> — <?= s(t('Bearbeiten')) ?></span><?php endif ?>
     </div>
     <?php endif ?>
-    <?php endif ?>
     <?php if ($editable): ?>
         <?php if (!$creating): ?>
-        <form method="post" action="<?= s($action) ?>" data-ticket-form data-auto-save="<?= s(t('Änderungen werden automatisch gespeichert')) ?>" hidden>
+        <form method="post" action="<?= s($action) ?>" data-field-editor data-ticket-form data-auto-save="<?= s(t('Änderungen werden automatisch gespeichert')) ?>" hidden>
             <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
             <input type="hidden" name="version" value="<?= (int) $ticket['version'] ?>" />
             <input type="hidden" name="board_revision" value="<?= (int) $board['revision'] ?>" />
             <?php foreach ($hidden ?? [] as $key => $item): ?>
                 <input type="hidden" name="<?= s($key) ?>" value="<?= s($item) ?>" />
             <?php endforeach ?>
+        <?php else: ?>
+        <div data-field-editor>
         <?php endif ?>
             <label class="sr-only" for="edit-<?= s($name) ?>"><?= s(t($label)) ?></label>
             <?php if ($type === 'select' || in_array($name, ['column_id', 'assignee_ids'], true)): ?>
@@ -94,6 +95,8 @@ $creating ??= false;
         <?php if (!$creating): ?>
             <div class="form-errors" role="alert"></div>
         </form>
+        <?php else: ?>
+        </div>
         <?php endif ?>
     <?php endif ?>
 </div>

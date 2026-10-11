@@ -1046,23 +1046,7 @@
 .ticket-drawer.ticket-create-modal {
   box-shadow: -28px 0 100px #0004;
 }
-.ticket-creating .ticket-title textarea {
-  font-size: clamp(23px, 2.7vw, 32px);
-  padding: 10px 12px;
-}
-.ticket-creating .ticket-primary-meta select {
-  font-size: 14px;
-  font-weight: 600;
-}
-.ticket-creating .ticket-meta {
-  grid-template-columns: 75px minmax(0, 1fr);
-  gap: 15px 10px;
-  align-items: center;
-}
-.ticket-creating .ticket-options {
-  max-height: 138px;
-}
-.ticket-creating [data-rich-editor]:empty {
+[data-field-editor] [data-rich-editor]:empty {
   display: none;
 }
 .ticket-create-footer {
@@ -1088,22 +1072,6 @@
 .ticket-create-footer .form-errors.visible {
   margin: 0 0 12px;
 }
-@media (max-width: 800px) {
-  .ticket-creating .ticket-sidebar {
-    grid-template-columns: 1fr;
-  }
-  .ticket-creating .ticket-sidebar-group + .ticket-sidebar-group {
-    border-top: 1px solid var(--line);
-  }
-  .ticket-creating .ticket-meta {
-    grid-template-columns: 90px minmax(0, 1fr);
-    align-items: center;
-    gap: 15px 12px;
-  }
-  .ticket-creating .ticket-meta dt:not(:first-child) {
-    margin-top: 0;
-  }
-}
 @media (max-width: 480px) {
   .ticket-create-actions > span {
     width: 100%;
@@ -1114,6 +1082,13 @@
   bottom: -32px;
   padding: 18px 32px 24px;
   margin: 24px -32px -32px;
+}
+@media (max-width: 800px) {
+  .ticket-create-modal .ticket-create-footer {
+    bottom: -22px;
+    padding: 18px 18px 22px;
+    margin: 24px -18px -22px;
+  }
 }
 #ticket-discard h2 {
   margin: 0;
@@ -1132,13 +1107,13 @@
 }
 
 /* Inline editing uses the same text metrics as the reading view. */
-.ticket-field [data-auto-save] :is(input, select, textarea) {
+.ticket-field [data-field-editor] :is(input, select, textarea) {
   font: inherit;
   padding: 3px 5px;
   min-height: 27px;
   border-radius: 3px;
 }
-.ticket-title [data-auto-save] textarea,
+.ticket-title [data-field-editor] textarea,
 .ticket-title h1 {
   font-size: clamp(25px, 2.7vw, 35px);
   font-weight: 650;
@@ -1150,7 +1125,7 @@
   resize: none;
   overflow: hidden;
 }
-.ticket-title [data-auto-save] textarea {
+.ticket-title [data-field-editor] textarea {
   padding: 0;
   border: 0;
   background: transparent;
@@ -1158,7 +1133,7 @@
   outline: 1px solid var(--line);
   outline-offset: 4px;
 }
-.ticket-title [data-auto-save] textarea:focus {
+.ticket-title [data-field-editor] textarea:focus {
   outline-color: var(--accent);
 }
 .ticket-primary-meta [data-inline-field='column_id'] {
@@ -1168,22 +1143,22 @@
 .ticket-primary-meta [data-inline-field='assignee_ids'] {
   font-size: 12px;
 }
-.ticket-field [data-auto-save] input[type='checkbox'] {
+.ticket-field [data-field-editor] input[type='checkbox'] {
   padding: 0;
   min-height: 0;
 }
-.ticket-field [data-auto-save] input[type='color'] {
+.ticket-field [data-field-editor] input[type='color'] {
   height: 27px;
 }
-.ticket-field [data-auto-save] .ticket-options {
+.ticket-field [data-field-editor] .ticket-options {
   padding: 2px 5px;
   border-radius: 3px;
 }
-.ticket-description [data-auto-save] .ql-toolbar.ql-snow {
+.ticket-description [data-field-editor] .ql-toolbar.ql-snow {
   padding: 3px 4px;
   border-radius: 3px 3px 0 0;
 }
-.ticket-description [data-auto-save] .ql-container.ql-snow {
+.ticket-description [data-field-editor] .ql-container.ql-snow {
   border-radius: 0 0 3px 3px;
 }
 .ticket-workspace .ql-editor h1,

@@ -12,7 +12,7 @@ import { t } from './i18n.js';
 // affected by that, because they are not contributions.
 
 import { toast } from './app.js';
-import { refresh, saveTicket } from './ticket.js?v=1';
+import { refresh, saveTicket } from './ticket.js?v=3';
 
 const mounted = new WeakMap();
 

@@ -20,7 +20,7 @@ function values(form) {
 function inlineState(form) {
   if (!inlineEdits.has(form))
     inlineEdits.set(form, {
-      baseline: values(form),
+      baseline: form.matches('form') ? values(form) : null,
       savedForm: form.cloneNode(true),
       timer: null,
       composing: false,
@@ -73,8 +73,14 @@ async function flushInline(form) {
 }
 async function finishEdit(field, fromBlur = false) {
   if (!field?.classList.contains('is-editing')) return true;
-  const form = field.querySelector('form');
-  if (!(await flushInline(form))) return false;
+  const form = field.querySelector('[data-field-editor]');
+  if (fromBlur && form.contains(document.activeElement)) return false;
+  if (form.matches('form')) {
+    if (!(await flushInline(form))) return false;
+  } else {
+    renderDraftDisplay(field);
+    inlineState(form).savedForm = form.cloneNode(true);
+  }
   if (!field.classList.contains('is-editing')) return true;
   if (fromBlur && form.contains(document.activeElement)) return false;
   cancelEdit(field, !fromBlur && form.contains(document.activeElement));
@@ -140,7 +146,7 @@ function error(form, message, conflict = false) {
 }
 async function beginEdit(field) {
   const workspace = field.closest('.ticket-workspace');
-  if (!field.querySelector('form') || field.classList.contains('is-editing')) return;
+  if (!field.querySelector('[data-field-editor]') || field.classList.contains('is-editing')) return;
   const name = field.dataset.inlineField;
   const intent = Symbol();
   editIntents.set(workspace, intent);
@@ -150,10 +156,11 @@ async function beginEdit(field) {
   if (editIntents.get(workspace) !== intent || !workspace.isConnected) return;
   field = workspace.querySelector(`[data-inline-field="${attribute(name)}"]`);
   if (!field) return;
-  const form = field.querySelector('form');
+  const form = field.querySelector('[data-field-editor]');
   field.classList.add('is-editing');
   field.querySelector('.inline-display').setAttribute('aria-expanded', 'true');
   form.hidden = false;
+  if (!form.matches('form')) inlineEdits.delete(form);
   inlineStatus(form, form.dataset.autoSave);
   if (form.dataset.conflict) {
     error(form, t('Das Ticket wurde inzwischen geändert. Bitte lade den aktuellen Stand.'), true);
@@ -170,7 +177,9 @@ async function beginEdit(field) {
         editor?.focus();
       }
     } catch (exception) {
-      error(form, exception.message);
+      inlineState(form);
+      error(form.closest('form'), exception.message);
+      form.querySelector('textarea')?.focus();
     }
   } else {
     inlineState(form);
@@ -180,13 +189,14 @@ async function beginEdit(field) {
     if (input?.name === 'title') input.select();
   }
 }
-async function initializeEditor(form) {
+async function initializeEditor(container) {
+  const form = container.closest('form');
   if (editors.has(form)) return editors.get(form);
   const Quill = await loadQuill();
   if (!form.isConnected || saving.has(form.closest('.ticket-workspace'))) return;
   // Another caller may have awaited the same script load.
   if (editors.has(form)) return editors.get(form);
-  const editorNode = form.querySelector('[data-rich-editor]');
+  const editorNode = container.querySelector('[data-rich-editor]');
   const editor = new Quill(editorNode, {
     theme: 'snow',
     formats: [
@@ -211,13 +221,14 @@ async function initializeEditor(form) {
     },
     placeholder: t('Beschreibe das Ziel und die nächsten Schritte …'),
   });
-  const source = form.querySelector(
+  const source = container.querySelector(
     'textarea[name="description_html"], textarea[name="description"]',
   );
   if (source.name === 'description') editor.setText(source.value);
   else editor.clipboard.dangerouslyPasteHTML(source.value);
   source.name = 'description_html';
   source.hidden = true;
+  inlineEdits.delete(container);
   editor.history.clear();
   editor.root.setAttribute('aria-label', t('Beschreibung bearbeiten'));
   editor.root.setAttribute('role', 'textbox');
@@ -261,11 +272,67 @@ function resizeTitle(input) {
   input.style.height = 'auto';
   input.style.height = `${input.scrollHeight}px`;
 }
+// Draft fields use the same display, editor and keyboard flow. Only persistence
+// differs: all their native controls belong to the one creation form.
+function renderDraftDisplay(field) {
+  const container = field.querySelector('[data-field-editor]');
+  const display = field.querySelector('[data-description-display], .inline-display');
+  const rich = container.querySelector('[data-rich-editor]');
+  if (rich) {
+    const source = container.querySelector('textarea');
+    const editor = editors.get(container.closest('form'));
+    if (editor) {
+      source.value = editor.getSemanticHTML();
+      display.innerHTML = source.value;
+    } else display.textContent = source.value;
+    if (!(editor ? editor.getText() : source.value).trim()) {
+      display.replaceChildren();
+      const placeholder = document.createElement('p');
+      placeholder.className = 'muted';
+      placeholder.textContent = t('Beschreibung einfügen');
+      display.append(placeholder);
+    }
+    return;
+  }
+  const choice = container.querySelector('[data-choice-value]');
+  const input = container.querySelector('input:not([type=hidden]), select, textarea');
+  if (choice)
+    display.replaceChildren(...[...choice.childNodes].map((node) => node.cloneNode(true)));
+  else {
+    const value =
+      input?.type === 'checkbox'
+        ? [...container.querySelectorAll('input:checked')]
+            .map((item) => item.closest('label').textContent.trim())
+            .join(', ')
+        : input?.type === 'date' && input.value
+          ? input.value.split('-').reverse().join('.')
+          : input?.value;
+    if (input?.name === 'title') {
+      const heading = document.createElement('h1');
+      heading.textContent = value || t('Was soll erledigt werden?');
+      display.replaceChildren(heading);
+    } else display.textContent = value || t('Nicht festgelegt');
+    display.classList.toggle('muted', !value);
+  }
+  display.setAttribute(
+    'aria-label',
+    `${container.querySelector('label').textContent}: ${display.textContent}`,
+  );
+}
 function initializeCreation() {
   enhanceChoices();
   document.querySelectorAll('[data-ticket-create]').forEach((form) => {
-    resizeTitle(form.elements.title);
-    initializeEditor(form).catch((exception) => error(form, exception.message));
+    if (form.dataset.inlineReady) return;
+    form.dataset.inlineReady = 'true';
+    form.querySelectorAll('[data-inline-field]').forEach((field) => {
+      const editor = field.querySelector('[data-field-editor]');
+      if (!editor) return;
+      field.querySelector('.inline-display').hidden = false;
+      const prose = field.querySelector('[data-description-display]');
+      if (prose) prose.hidden = false;
+      editor.hidden = true;
+    });
+    beginEdit(form.elements.title.closest('[data-inline-field]'));
   });
 }
 window.addEventListener('resize', () => {
@@ -277,13 +344,15 @@ document.addEventListener('nafinity:ticket-opened', initializeCreation);
 initializeCreation();
 
 function cancelEdit(field, focus = true) {
-  const form = field.querySelector('form');
+  const form = field.querySelector('[data-field-editor]');
   if (saving.has(field.closest('.ticket-workspace'))) return;
   const state = inlineState(form);
   clearTimeout(state.timer);
-  for (const input of form.elements) {
+  const controls = (container) =>
+    container.elements || container.querySelectorAll('input, select, textarea');
+  for (const input of controls(form)) {
     if (!input.name || revisionFields.has(input.name)) continue;
-    const saved = [...state.savedForm.elements].find(
+    const saved = [...controls(state.savedForm)].find(
       (item) =>
         item.name === input.name && (input.type !== 'checkbox' || item.value === input.value),
     );
@@ -292,12 +361,13 @@ function cancelEdit(field, focus = true) {
     else input.value = saved.value;
   }
   delete form.dataset.dirty;
-  const editor = editors.get(form);
-  if (editor) {
-    editor.clipboard.dangerouslyPasteHTML(form.elements.description_html.value);
+  const editor = editors.get(form.closest('form'));
+  const source = form.querySelector('textarea[name="description_html"]');
+  if (editor && source) {
+    editor.clipboard.dangerouslyPasteHTML(source.value);
     editor.history.clear();
   }
-  state.baseline = values(form);
+  state.baseline = form.matches('form') ? values(form) : null;
   inlineStatus(
     form,
     form.dataset.conflict || field.closest('.ticket-workspace').dataset.needsReload
@@ -465,6 +535,14 @@ document.addEventListener('click', (event) => {
   syncAssignSelf();
 });
 document.addEventListener('change', (event) => {
+  const draft = event.target.closest('[data-ticket-create]');
+  if (draft) {
+    draft.dataset.dirty = 'true';
+    const field = event.target.closest('[data-inline-field]');
+    if (field && !field.classList.contains('is-editing')) renderDraftDisplay(field);
+    else if (field && event.target.tagName === 'SELECT') finishEdit(field);
+    return;
+  }
   const form = event.target.closest('[data-auto-save]');
   if (!form) return;
   if (event.target.tagName === 'SELECT') finishEdit(form.closest('[data-inline-field]'));
@@ -472,7 +550,7 @@ document.addEventListener('change', (event) => {
   else scheduleSave(form);
 });
 document.addEventListener('focusout', (event) => {
-  const form = event.target.closest('[data-auto-save]');
+  const form = event.target.closest('[data-field-editor]');
   if (!form) return;
   setTimeout(() => {
     if (form.isConnected && !form.contains(document.activeElement) && document.hasFocus())
@@ -531,6 +609,19 @@ document.addEventListener('keydown', (event) => {
   }
   if (event.target.matches('[data-comment-composer] textarea')) mentionKeys(event);
 });
+document.addEventListener(
+  'invalid',
+  (event) => {
+    const form = event.target.closest('[data-ticket-create]');
+    const field = event.target.closest('[data-inline-field]');
+    if (!form || !field || field.classList.contains('is-editing')) return;
+    event.preventDefault();
+    if (event.target !== form.querySelector('input:invalid, select:invalid, textarea:invalid'))
+      return;
+    beginEdit(field).then(() => event.target.reportValidity());
+  },
+  true,
+);
 document.addEventListener('submit', (event) => {
   const form = event.target;
   if (!form.matches('[data-ticket-form]')) return;
@@ -701,8 +792,6 @@ async function performSave(form, submitter) {
       changed(form)
     )
       scheduleSave(form);
-    if (form.isConnected && form.hasAttribute('data-ticket-create') && !editors.has(form))
-      initializeEditor(form).catch((exception) => error(form, exception.message));
     if (accepted && !workspace.dataset.needsReload && form.hasAttribute('data-comment-composer'))
       form.elements.body.focus();
   }
