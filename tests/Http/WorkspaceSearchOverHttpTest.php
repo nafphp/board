@@ -110,7 +110,7 @@ final class WorkspaceSearchOverHttpTest extends AcceptanceTestCase
         $dom = new DOMDocument();
         @$dom->loadHTML($board);
         $xpath = new DOMXPath($dom);
-        self::assertSame(1, $xpath->query('//section[@class="page-heading"]//a[@data-ticket-create-link]')->length);
+        self::assertSame(1, $xpath->query('//section[contains(concat(" ", normalize-space(@class), " "), " page-heading ")]//a[@data-ticket-create-link]')->length);
         self::assertSame(0, $xpath->query('//div[@class="topbar-tools"]//*[@data-ticket-create-link]')->length);
         self::assertStringContainsString('href="/projects/1/tickets/new"', $board);
         self::assertStringNotContainsString('data-ticket-create-link', $this->page($this->viewer, '/projects/1'));
