@@ -121,6 +121,21 @@ small,
 label > .sr-only:not([type='checkbox']) {
   width: 1px;
 }
+.skip-link {
+  position: fixed;
+  top: var(--space-10);
+  left: var(--space-10);
+  z-index: 100;
+  padding: var(--space-10) var(--space-18);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-7);
+  background: var(--surface);
+  color: var(--text);
+  transform: translateY(calc(-100% - var(--space-18)));
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
 .app-shell {
   display: grid;
   grid-template-columns: 244px minmax(0, 1fr);
@@ -2929,9 +2944,9 @@ label > .choice {
 .choice-trigger[aria-expanded='true'] {
   border-color: var(--accent);
 }
-.choice-popup:focus-visible {
+.choice-list:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
-  outline-offset: 3px;
+  outline-offset: -3px;
 }
 [data-choice-value] {
   display: flex;

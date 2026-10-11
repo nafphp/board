@@ -204,12 +204,11 @@ function applySearchability(state) {
   const threshold = Number(state.root.dataset.choiceSearch ?? 8);
   state.searchable =
     Boolean(state.source) || (Number.isFinite(threshold) && state.items.length >= threshold);
-  state.focusTarget = state.searchable ? state.search : state.popup;
+  state.focusTarget = state.searchable ? state.search : state.list;
   state.root.querySelector('.choice-search-wrap').hidden = !state.searchable;
-  if (!state.searchable) {
-    state.popup.tabIndex = -1;
-    state.popup.setAttribute('aria-controls', state.list.id);
-  }
+  state.list.tabIndex = -1;
+  state.search.removeAttribute('aria-activedescendant');
+  state.list.removeAttribute('aria-activedescendant');
 }
 
 export function enhanceChoices(scope = document) {
@@ -282,13 +281,18 @@ export function enhanceChoices(scope = document) {
         event.preventDefault();
         event.stopPropagation();
         close(state, true, true);
-      } else if (['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key)) {
+      } else if (
+        ['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key) ||
+        (!state.searchable && ['Home', 'End', ' '].includes(event.key))
+      ) {
         event.preventDefault();
         event.stopPropagation();
         const visible = state.items.filter((item) => !item.option.hidden);
         const index = visible.findIndex((item) => item.option.classList.contains('is-active'));
-        if (event.key === 'Enter') {
+        if (event.key === 'Enter' || event.key === ' ') {
           if (visible[index]) choose(state, visible[index]);
+        } else if (event.key === 'Home' || event.key === 'End') {
+          highlight(state, event.key === 'Home' ? visible[0] : visible.at(-1));
         } else if (visible.length)
           highlight(
             state,
@@ -308,7 +312,7 @@ export function enhanceChoices(scope = document) {
     );
     // A search box over a handful of options is noise, so it only appears once a
     // list is long enough to be worth filtering. Keyboard handling stays on the
-    // root, and focus then lands on the popup instead of the hidden input.
+    // root, and focus then lands on the labelled listbox instead of the hidden input.
     applySearchability(state);
 
     choices.set(root, state);

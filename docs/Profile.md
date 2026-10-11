@@ -12,9 +12,9 @@ Archived memberships stay listed, while administrative access without a membersh
 a project to this personal list.
 
 The native HTML dialog holds keyboard focus. The X, Escape and a click on the backdrop close it
-and return focus to the trigger. Opening and closing animate over 260 and 150 ms;
-`prefers-reduced-motion` turns the movement off. Mobile widths, both brightness modes in
-both palettes and forced system colours are handled in CSS. Password and code are cleared from the fields on submit and on
+and return focus to the trigger. Opening and closing use the shared dialog controller and its
+central motion tokens; `prefers-reduced-motion` turns the movement off. Mobile widths, both
+brightness modes in both palettes and forced system colours are handled in CSS. Password and code are cleared from the fields on submit and on
 close; the application never puts them in LocalStorage or IndexedDB.
 
 ## Inviting people and assigning boards
@@ -106,6 +106,23 @@ is signed out; other sessions are discarded on their next request. Business requ
 flight are not retroactively terminated. The login page confirms the change through a NAF
 session flash and asks for the new password.
 
+## Recovering a local password
+
+An authorized administrator opens the person in installation settings and chooses **Create
+reset link**. The link can be copied privately or sent through configured mail. It is valid
+for 30 minutes and can be used once; issuing another link replaces it. Only the SHA-256 token
+hash is stored. Issuing the link does not change the password or revoke sessions.
+
+The recipient chooses a new password using the same rule as a normal password change. Before
+accepting it, the service rechecks expiry, the account's activation, bound email and security
+version, and the issuing administrator's current rights under locks. Success consumes the
+link, discards pending email changes, increases the security version and queues a security
+notice. The recipient then signs in normally; recovery does not create a session. Both link
+pages use `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer`.
+
+Externally managed accounts recover credentials through their provider. There is no public
+self-service reset request form. See [Settings](Settings-And-AI.md) for account administration.
+
 ## Changing the email address
 
 1. Enter the new address and the current password.
@@ -186,12 +203,14 @@ only. SMTP port 1025 stays inside the Compose network. Mailpit forwards nothing 
 Messages live in the local container and can be lost when it is recreated. The test mailbox is
 reachable by every user of this local machine.
 
-The delivery path is NAF `MailTransport` → PHP `mail()` → msmtp → Mailpit.
-In the skeleton, `docker/rootfs/etc/msmtprc` holds the local SMTP configuration and
-`docker/rootfs/etc/php85/conf.d/99-nafinity.ini` the sendmail call. The sender comes from
-`ENV:NAFINITY_MAIL_FROM` with a default in Compose. Real SMTP requires a private msmtp
-configuration with authentication and TLS; credentials belong neither in the repository nor in
-an image. Project notifications stay disabled by default.
+The delivery path is NAF `MailTransport` → `SmtpTransport` → Mailpit. The skeleton's
+`app/src/config.php` selects the transport and supplies the shared `mail` configuration.
+`NAFINITY_MAIL_FROM` sets the sender; the local SMTP host is `mailpit:1025`. No PHP
+sendmail or msmtp configuration is involved. See [Sending mail](https://nafphp.github.io/docs/mail/#send-through-smtp)
+for the published transport and the skeleton's `docker/mail/smtp.env.example` for external
+SMTP settings. Provider credentials belong in the private environment, with certificate
+verification enabled. Ordinary project notifications stay disabled by default; account-security
+mail uses the same sender independently of that switch.
 
 The confirmation code is sent synchronously. A delivery failure rolls the pending change back and
 returns HTTP 503. SMTP and SQL share no atomic transaction: if SMTP accepts and the commit then
@@ -212,8 +231,8 @@ addresses are not modified by these tests; `composer test` runs all of them.
 `M202609150002AccountProfile` adds two user fields and `account_email_changes`. Schema
 identifier: `202609150002`.
 
-Not included: forgotten-password recovery, MFA and synchronisation of external LDAP or OIDC
-credentials. Those are their own account-recovery and identity flows.
+Not included: MFA, public self-service reset requests and synchronisation of external LDAP
+or OIDC credentials. Administrator-issued recovery links are described above.
 
 Security flows follow the primary OWASP guidance on
 [email verification](https://cheatsheetseries.owasp.org/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.html),
@@ -221,7 +240,7 @@ Security flows follow the primary OWASP guidance on
 and [session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html).
 The local delivery options follow the official documentation of
 [Mailpit](https://mailpit.axllent.org/docs/install/docker/) and
-[msmtp](https://marlam.de/msmtp/msmtp.html).
+[NAF SMTP](https://nafphp.github.io/docs/mail/#send-through-smtp).
 
 ## Invoice-position export
 

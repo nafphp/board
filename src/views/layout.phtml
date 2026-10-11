@@ -103,6 +103,7 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
         <?= partial('shell/theme-head', ['preferences' => $preferences]) ?>
     </head>
     <body>
+        <a class="skip-link" href="#main-content"><?= s(t('Zum Inhalt springen')) ?></a>
         <div class="app-shell">
             <aside class="sidebar" id="sidebar">
                 <?= partial('shell/brand') ?>
@@ -176,7 +177,7 @@ $presence = $current === null || !LiveConnection::seen() ? null : json_encode([
                         <?= slot('topbar.actions', $uiContext) ?>
                     </div>
                 </header>
-                <main id="main-content"><?= $this->renderBlock('content') ?></main>
+                <main id="main-content" tabindex="-1"><?= $this->renderBlock('content') ?></main>
             </div>
         </div>
         <?php

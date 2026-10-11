@@ -22,7 +22,7 @@
  *                               a `mark` is drawn as a symbol in front of the entry
  * @var array       $nativeData  ['name' => 'value'] rendered as data-* on the native control
  * @var string      $id          id of the native control
- * @var string      $listId      unique listbox id, useful for controls sharing a name
+ * @var string      $listId      listbox id, derived from the unique native control id
  * @var bool        $clearField  emit the multiselect's clear marker; shared names need only one
  * @var string      $class       extra classes on the wrapper
  * @var string      $width       'fit' keeps the open list as narrow as its entries
@@ -61,7 +61,7 @@ $required ??= false;
 $disabled ??= false;
 $clearField ??= true;
 
-$listId ??= 'choice-list-' . preg_replace('/[^A-Za-z0-9_-]/', '-', $name);
+$listId ??= 'choice-list-' . preg_replace('/[^A-Za-z0-9_-]/', '-', $id);
 $selected = $multiple ? array_map('strval', (array) $value) : [];
 $loop     = 0;
 ?>

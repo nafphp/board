@@ -38,6 +38,13 @@ writable project. Workspace pages and read-only project views omit the action; t
 cross-board creation picker. The top bar contains workspace search only. Extensions can
 replace the `core.topbar.workspace` search contribution or add controls to `topbar.tools`.
 
+Keyboard navigation starts with **Skip to content**, which bypasses the sidebar and header.
+Shared choice controls derive their listbox IDs from the unique native control ID. Short lists
+focus the labelled listbox; Arrow keys move between options, Home/End reach the boundaries,
+and Enter or Space selects. Searchable lists focus the combobox and retain normal text editing.
+Escape closes the list and returns focus to its trigger. Native controls remain the fallback
+without JavaScript.
+
 ## Design settings and dialog hierarchy
 
 **Global → General** groups branding and landing page, interface themes,
