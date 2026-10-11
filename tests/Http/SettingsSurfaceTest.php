@@ -29,6 +29,24 @@ final class SettingsSurfaceTest extends AcceptanceTestCase
         }
     }
 
+    public function testStructureEditorsPreserveNativeFormsAndReorderTargets(): void
+    {
+        $xpath = $this->settingsDocument('/projects/' . self::PROJECT . '/settings');
+        foreach (['column', 'swimlane', 'label'] as $kind) {
+            $groups = $xpath->query('//*[@data-kind="' . $kind . '" and @data-dialog-editors]');
+            self::assertCount(1, $groups);
+            $rows = $xpath->query('./details', $groups->item(0));
+            self::assertGreaterThan(1, $rows->length);
+            foreach ($rows as $row) {
+                self::assertSame(1, $xpath->query('./summary/*[@data-dialog-title]', $row)->length);
+                self::assertSame(1, $xpath->query('./form[.//input[@name="kind" and @value="' . $kind . '"] and .//input[@name="_csrf"]]', $row)->length);
+                foreach ($xpath->query('./summary//button[@form]', $row) as $nudge) {
+                    self::assertSame(1, $xpath->query('./form[@id="' . $nudge->getAttribute('form') . '"]', $row)->length);
+                }
+            }
+        }
+    }
+
     public function testInstallationEditorsKeepTheOriginalRoleFormsAndThemePreviewTogether(): void
     {
         $xpath = $this->settingsDocument('/settings');
@@ -197,7 +215,7 @@ final class SettingsSurfaceTest extends AcceptanceTestCase
 
         foreach (['Offen', 'In Arbeit', 'Review', 'Erledigt'] as $column) {
             $this->assertStringContainsString(
-                '<span class="settings-row-title">' . $column . '</span>',
+                '<span class="settings-row-title" data-dialog-title>' . $column . '</span>',
                 $settings,
                 sprintf('the column "%s" is missing from the card that edits columns', $column),
             );

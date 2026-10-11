@@ -166,7 +166,8 @@
  * the movement the eye follows instead of the dialog. Clipped until it lands;
  * the scroll position is untouched, so nothing jumps when it comes back.
  */
-.settings-detail.is-moving .settings-detail-body {
+.settings-detail.is-moving .settings-detail-body,
+.settings-detail[data-dialog-covered] > .settings-detail-body {
   overflow: hidden;
 }
 .settings-detail fieldset {

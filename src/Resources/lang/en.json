@@ -1299,5 +1299,6 @@
   "Aktivitätsprotokoll aufbewahren (Tage, 0 = unbegrenzt)": "Retain activity log (days, 0 = unlimited)",
   "Dialog": "Dialog",
   ":name und darüberliegende Dialoge schließen": "Close :name and dialogs above it",
-  "Kein Konto gefunden. Nutze „Neue Person einladen“.": "No account found. Use “Invite a new person”."
+  "Kein Konto gefunden. Nutze „Neue Person einladen“.": "No account found. Use “Invite a new person”.",
+  "Zurück zu :name": "Back to :name"
 }
