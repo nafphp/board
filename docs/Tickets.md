@@ -2,8 +2,9 @@
 
 The ticket view shows the key at the top, then title and description. Below that come linked
 tickets, attachments, the collapsible history and finally the comments. The input for a new
-comment stays visible at the bottom edge. On the desktop the metadata bar sits on the right; on
-small screens it follows the description.
+comment follows the discussion in the normal document flow, so it cannot cover attachments,
+history or existing comments. On the desktop the metadata bar sits on the right; on small
+screens it follows the description.
 
 The same view works on the ticket's own URL and in the board drawer. The whole ticket card opens
 the ticket, description and empty space included. The card menu stays independently operable,
@@ -180,6 +181,14 @@ replaced nor removed through the registries — `TicketFieldRegistry::FIXED_AREA
 See [Extensibility](Extensibility.md) for the full API, the slot list and the negative cases.
 
 ## Links and comments
+
+Ticket sections share a 32 px vertical separation, with a separate heading-to-content gap.
+The comment composer has 20 px inner padding (16 px on phones), a 96 px minimum writing
+area and a separated footer whose hint and send action can wrap. Comment text, bylines,
+reply/edit actions and expanded edit forms have their own gaps. Linking and upload forms
+use the same 16 px content spacing; hidden error messages and reply context leave no gap.
+The composer belongs to the comments section but stays outside the refreshed thread, so
+loading updated comments preserves the current draft.
 
 **Link ticket** expects the number of another ticket in the same project, for example `42` for
 `NAF-42`. A link appears on both sides; duplicates and self-links are prevented. Removing one

@@ -1,4 +1,6 @@
 .ticket-workspace {
+  --ticket-section-gap: 32px;
+  --ticket-content-gap: 16px;
   max-width: 1280px;
 }
 .ticket-workspace .detail-topline {
@@ -78,17 +80,17 @@
   padding: 7px;
 }
 .ticket-workspace .detail-section {
-  margin-top: 27px;
-  padding-top: 25px;
+  margin-top: var(--ticket-section-gap);
+  padding-top: 28px;
   border-top: 1px solid var(--line);
 }
 .ticket-workspace .detail-section h2 {
   font-size: 13px;
   font-weight: 650;
-  margin: 0 0 16px;
+  margin: 0 0 20px;
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 12px;
 }
 .ticket-workspace .count {
   font-size: 10px;
@@ -147,8 +149,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  margin-top: 10px;
+  gap: var(--ticket-content-gap);
+  margin-top: var(--ticket-content-gap);
 }
 .inline-actions .button {
   padding: 6px 10px;
@@ -416,14 +418,14 @@
    that reports how much of the body has actually gone out. */
 .upload-form {
   display: grid;
-  gap: 10px;
-  margin-top: 14px;
+  gap: var(--ticket-content-gap);
+  margin-top: 20px;
 }
 .dropzone {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 15px 16px;
+  gap: 16px;
+  padding: 20px;
   border: 1px dashed var(--line);
   border-radius: 12px;
   cursor: pointer;
@@ -456,7 +458,8 @@
 }
 .dropzone-words {
   display: grid;
-  gap: 2px;
+  gap: 6px;
+  line-height: 1.5;
   min-width: 0;
 }
 .dropzone-words strong {
@@ -646,22 +649,31 @@
   color: var(--accent);
 }
 .ticket-link-add {
-  margin-top: 14px;
-  font-size: 11px;
+  margin-top: 20px;
+  font-size: 12px;
 }
 .ticket-link-add form {
-  margin-top: 12px;
+  display: grid;
+  justify-items: start;
+  gap: var(--ticket-content-gap);
+  margin-top: var(--ticket-content-gap);
+}
+.ticket-link-add label {
+  margin: 0;
 }
 .ticket-link-input {
   display: flex;
   align-items: center;
-  gap: 8px;
-  max-width: 210px;
+  gap: 12px;
+  margin-top: 8px;
+  max-width: 260px;
 }
 .ticket-link-input input {
   min-width: 0;
+  margin-top: 0;
 }
 .ticket-history > summary {
+  padding: 4px 0;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -673,10 +685,10 @@
   margin-top: 20px;
 }
 .ticket-workspace .ticket-comment {
-  gap: 12px;
-  margin-top: 22px;
+  gap: 16px;
+  margin-top: 24px;
   margin-bottom: 0;
-  padding-bottom: 20px;
+  padding-bottom: 24px;
   border-bottom: 1px solid var(--line);
 }
 .ticket-comment.is-reply {
@@ -687,28 +699,33 @@
 .comment-byline {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px 12px;
+  gap: 8px 12px;
   align-items: baseline;
+}
+.ticket-comment .comment-byline strong {
+  font-size: 12px;
 }
 .ticket-comment .comment-byline time {
   margin: 0;
-  font-size: 9px;
+  font-size: 11px;
 }
 .ticket-comment .comment-body {
   line-height: 1.8;
-  font-size: 12px;
+  font-size: 13px;
   overflow-wrap: anywhere;
-  margin-top: 8px;
+  margin: 12px 0 0;
 }
 .comment-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 18px;
-  font-size: 10px;
+  gap: 12px 24px;
+  margin-top: var(--ticket-content-gap);
+  font-size: 12px;
 }
 .comment-actions button,
 .comment-actions summary {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
   cursor: pointer;
 }
@@ -717,10 +734,17 @@
   min-width: 0;
 }
 .comment-actions details[open] {
-  padding-top: 5px;
+  flex-basis: 100%;
 }
-.comment-actions textarea {
-  margin-top: 9px;
+.comment-actions details form {
+  display: grid;
+  gap: var(--ticket-content-gap);
+  margin-top: var(--ticket-content-gap);
+}
+.comment-actions textarea,
+.comment-actions .inline-actions,
+.comment-actions .form-errors.visible {
+  margin: 0;
 }
 .mention {
   color: var(--accent);
@@ -729,15 +753,18 @@
   border-radius: 4px;
 }
 .comment-composer {
-  position: sticky;
-  bottom: 12px;
-  z-index: 3;
+  position: relative;
+  display: grid;
+  gap: var(--ticket-content-gap);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 13px;
-  margin-top: 24px;
+  margin-top: var(--ticket-section-gap);
   box-shadow: 0 8px 30px #00000010;
-  padding: 14px;
+  padding: 20px;
+}
+.comment-composer .form-errors.visible {
+  margin: 0;
 }
 .comment-composer:focus-within {
   border-color: var(--accent);
@@ -746,14 +773,15 @@
     0 8px 30px #00000010;
 }
 .comment-composer textarea {
+  display: block;
   border: 0;
   box-shadow: none;
   background: transparent;
   resize: vertical;
   max-height: 220px;
-  min-height: 60px;
+  min-height: 96px;
   padding: 4px;
-  font-size: 12px;
+  font-size: 13px;
 }
 .comment-composer textarea:focus {
   outline: none;
@@ -761,30 +789,40 @@
 }
 .composer-footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-top: 8px;
+  gap: 12px 20px;
+  padding-top: var(--ticket-content-gap);
+  border-top: 1px solid var(--line);
 }
 .composer-footer .small {
-  font-size: 9px;
+  font-size: 11px;
 }
 .composer-footer .button {
-  padding: 7px 14px;
-  font-size: 11px;
+  min-height: 40px;
+  padding: 10px 16px;
+  margin-left: auto;
+  font-size: 12px;
+}
+.reply-context [data-cancel-reply] {
+  flex-shrink: 0;
+  padding: 8px;
 }
 .reply-context {
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--line);
-  padding-bottom: 9px;
-  margin-bottom: 8px;
+  gap: 16px;
+  padding-bottom: var(--ticket-content-gap);
+  overflow-wrap: anywhere;
   font-size: 11px;
   color: var(--accent);
 }
 .mention-list {
   position: absolute;
+  z-index: 4;
   bottom: calc(100% + 7px);
   left: 0;
   right: 0;
@@ -935,8 +973,7 @@
     padding: 20px 16px;
   }
   .comment-composer {
-    bottom: 8px;
-    padding: 11px;
+    padding: 16px;
   }
   .ticket-comment.is-reply {
     margin-left: 14px;
@@ -969,9 +1006,6 @@
   }
   .ticket-workspace .ticket-sidebar {
     order: 2;
-  }
-  .ticket-main > .comment-composer {
-    order: 4;
   }
 }
 

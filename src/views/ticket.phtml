@@ -232,7 +232,6 @@ $panelData = [
                     <?php } ?>
                     <?php if (!$comments): ?><p class="muted small"><?= s(t('Noch keine Kommentare.')) ?></p><?php endif ?>
                 </div>
-            </section>
             <?php if ($scope->allows('comment')): ?>
                 <form class="comment-composer" method="post" action="<?= s(route('ticket.comments', $params)) ?>" data-ticket-form data-comment-composer data-refresh-section="comments">
                     <input type="hidden" name="_csrf" value="<?= s($token) ?>" /><input type="hidden" name="parent_id" value="" />
@@ -245,6 +244,7 @@ $panelData = [
                     <template data-mention-members><?php foreach ($members as $member): ?><span data-handle="<?= s($member['handle']) ?>" data-name="<?= s($member['name']) ?>"></span><?php endforeach ?></template>
                 </form>
             <?php endif ?>
+            </section>
             <?php endif ?>
         </div>
         <aside class="ticket-context ticket-sidebar" aria-label="<?= s(t('Ticketdetails')) ?>">

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Naf\Board\Tests\Http;
 
+use DOMDocument;
+use DOMXPath;
 use Naf\Board\Tests\Support\AcceptanceTestCase;
 
 /**
@@ -112,6 +114,20 @@ final class TicketDetailOverHttpTest extends AcceptanceTestCase
         $this->assertStringContainsString('ticket-workspace', $fragment);
         $this->assertStringContainsString('data-comment-composer', $fragment);
         $this->assertStringNotContainsString('<html', $fragment, 'the fragment carried a whole page');
+    }
+
+    public function testCommentDraftStaysWithTheDiscussionOutsideTheRefreshedThread(): void
+    {
+        foreach (['', '?fragment=1'] as $suffix) {
+            $dom = new DOMDocument();
+            @$dom->loadHTML('<?xml encoding="UTF-8">' . $this->page($this->alice, $this->url . $suffix));
+            $xpath = new DOMXPath($dom);
+
+            $this->assertSame(1, $xpath->query('//*[@id="comments"]/*[@data-ticket-section="comments"]')->length);
+            $this->assertSame(1, $xpath->query('//*[@id="comments"]/form[@data-comment-composer]')->length);
+            $this->assertSame(0, $xpath->query('//*[@data-ticket-section]//form[@data-comment-composer]')->length, 'Refreshing a section would replace the unsent draft.');
+            $this->assertSame(1, $xpath->query('//*[@id="comments"]//textarea[@id="new-comment"]')->length);
+        }
     }
 
     /**
