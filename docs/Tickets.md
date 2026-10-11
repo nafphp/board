@@ -180,6 +180,24 @@ replaced nor removed through the registries — `TicketFieldRegistry::FIXED_AREA
 
 See [Extensibility](Extensibility.md) for the full API, the slot list and the negative cases.
 
+## Personal sidebar
+
+Choose **Deine Ticketansicht anpassen** at the bottom of a ticket's sidebar to open
+**Deine Ticketansicht** in that board's settings. Each person can show or hide registered
+attributes for that board, including contributed metadata. Groups and field order stay
+as defined by the registry. Newly installed attributes are visible by default;
+**Standard wiederherstellen** removes the personal override.
+
+This is a `project_user` setting named `ticket_fields`, stored through the existing
+settings service. It changes presentation only: ticket values, versions, permissions,
+exports and other people's views stay intact. Viewers can configure their own display.
+Creation forms retain their fields, empty groups disappear, and ticket actions and the
+customization link remain reachable even when every attribute is hidden. Hiding tracked
+time also hides its timer control, without stopping any running timer.
+
+Labels and values share their first text baseline, including inline editors, badges and
+read-only information. This keeps their alignment when values wrap or an editor opens.
+
 ## Links and comments
 
 Ticket sections share a 32 px vertical separation, with a separate heading-to-content gap.

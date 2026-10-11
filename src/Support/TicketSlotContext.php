@@ -7,6 +7,8 @@ namespace Naf\Board\Support;
 use Naf\Board\Definition\TicketFieldDefinition;
 use Naf\Board\Domain\ProjectScope;
 
+use function Naf\Board\extensions;
+
 /**
  * One ticket, as a contribution to it sees it.
  *
@@ -42,6 +44,7 @@ final readonly class TicketSlotContext implements SlotContextInterface
      * @param array                              $preferences The actor's own preferences
      * @param string                             $creator    Name of whoever created it
      * @param InlineFieldRenderer                $field      The existing inline field editor
+     * @param array<string, bool>                $fieldVisibility Personal display choices in this board
      */
     public function __construct(
         private UiContext $ui,
@@ -66,6 +69,7 @@ final readonly class TicketSlotContext implements SlotContextInterface
         public array $preferences,
         public string $creator,
         public InlineFieldRenderer $field,
+        public array $fieldVisibility = [],
     ) {
     }
 
@@ -99,6 +103,31 @@ final readonly class TicketSlotContext implements SlotContextInterface
         return $this->fields[$key]->default ?? $default;
     }
 
+    /** Personal display choices never change the ticket or its creation form. */
+    public function shows(string $key): bool
+    {
+        $definition = extensions()->ticketFields()->get($key);
+
+        return $definition !== null && $this->scope->allows($definition->readPermission)
+            && ($this->isNew || ($this->fieldVisibility[$key] ?? true));
+    }
+
+    /** Whether a group contains a visible field that exists on this ticket. */
+    public function showsGroup(string $group, array $unavailable = []): bool
+    {
+        foreach (extensions()->ticketFields()->forGroup($group) as $key => $definition) {
+            if (in_array($key, $unavailable, true) || !$this->shows($key)) {
+                continue;
+            }
+
+            if (!$definition->isMetadata() || isset($this->fields[$key])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * The readable contributed fields of one sidebar group
      *
@@ -110,7 +139,7 @@ final readonly class TicketSlotContext implements SlotContextInterface
     {
         return array_filter(
             $this->fields,
-            static fn(TicketFieldDefinition $field) => $field->group === $group,
+            fn(TicketFieldDefinition $field) => $field->group === $group && $this->shows($field->key),
         );
     }
 }

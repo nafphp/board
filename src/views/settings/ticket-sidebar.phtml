@@ -1,0 +1,35 @@
+<?php
+
+use function Naf\Board\extensions;
+use function Naf\Board\partial;
+use function Naf\Board\settings;
+use function Naf\Form\csrf;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$fields = array_filter(
+    extensions()->ticketFields()->all(),
+    static fn($field) => $scope->allows($field->readPermission),
+);
+?>
+<form method="post" data-enhanced data-settings-form="ticket_sidebar" action="<?= s(route('api.settings.project_user.write', ['project' => $projectId])) ?>">
+    <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
+    <?= partial('components/notice', ['severity' => 'info', 'message' => t('Wähle die Ticketattribute für deine Ansicht in diesem Board. Neue Attribute werden automatisch angezeigt. Ticketwerte und die Ansicht anderer bleiben unverändert.')]) ?>
+    <?= partial('fields/ticket_fields', [
+        'name'     => 'values[ticket_fields]',
+        'fields'   => $fields,
+        'value'    => settings()->forProjectUser((int) $projectId)->get('ticket_fields', []),
+        'disabled' => false,
+    ]) ?>
+    <div class="form-errors" role="alert"></div>
+    <div class="settings-actions">
+        <button class="button primary"><?= s(t('Einstellungen speichern')) ?></button>
+    </div>
+</form>
+<form class="ticket-sidebar-reset" method="post" data-enhanced action="<?= s(route('api.settings.project_user.write', ['project' => $projectId])) ?>">
+    <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
+    <input type="hidden" name="resetKeys[]" value="ticket_fields" />
+    <div class="form-errors" role="alert"></div>
+    <button class="button subtle"><?= s(t('Standard wiederherstellen')) ?></button>
+</form>

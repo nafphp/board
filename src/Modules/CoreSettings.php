@@ -107,6 +107,17 @@ final class CoreSettings implements ExtensionProviderInterface
             'group',
         ));
 
+        $sections->add(new SettingSection(
+            'ticket_sidebar',
+            'project_user',
+            'Deine Ticketansicht',
+            'settings/ticket-sidebar',
+            null,
+            100,
+            null,
+            'tune',
+        ));
+
         $index = 600;
 
         foreach (
@@ -222,6 +233,15 @@ final class CoreSettings implements ExtensionProviderInterface
             false,
             500,
             ['legacy' => ['store' => 'user_preferences', 'column' => 'notify_mail']],
+        ));
+
+        $settings->add(new SettingDefinition(
+            'ticket_fields',
+            'project_user',
+            'ticket_sidebar',
+            'Sichtbare Ticketattribute',
+            'ticket_fields',
+            [],
         ));
 
         // The account modal and notifications page use this per-person value.

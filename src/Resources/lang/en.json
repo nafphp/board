@@ -1153,5 +1153,16 @@
   "Warnung": "Warning",
   "Fehler": "Error",
   "Rollen bearbeiten": "Edit roles",
-  "Rollen speichern": "Save roles"
+  "Rollen speichern": "Save roles",
+  "Deine Ticketansicht": "Your ticket view",
+  "Deine Ticketansicht anpassen": "Customize your ticket view",
+  "Sichtbare Ticketattribute": "Visible ticket attributes",
+  "Bitte wähle die sichtbaren Ticketattribute.": "Please choose the visible ticket attributes.",
+  "Dieses Ticketattribut gibt es nicht.": "This ticket attribute does not exist.",
+  "Weitere Attribute": "Additional attributes",
+  "Wähle die Ticketattribute für deine Ansicht in diesem Board. Neue Attribute werden automatisch angezeigt. Ticketwerte und die Ansicht anderer bleiben unverändert.": "Choose the ticket attributes for your view in this board. New attributes appear automatically. Ticket values and other people’s views remain unchanged.",
+  "Standard wiederherstellen": "Restore defaults",
+  "Erfasste Zeit": "Logged time",
+  "Start": "Start",
+  "Version": "Version"
 }

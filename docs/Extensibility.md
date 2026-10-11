@@ -596,6 +596,17 @@ history, memory and prompts are not transferred to the server.
 
 ## Ticket metadata
 
+Personal sidebar visibility uses the existing ticket field keys and the `project_user`
+setting `ticket_fields`; a missing key is visible. New registered fields need no separate
+preference definition. `TicketSlotContext::fieldsIn($group)` already filters contributed
+fields by the actor's display choice as well as their read permission. Custom panels that
+render individual fields can use `$slot->shows($key)` and skip an empty group with
+`$slot->showsGroup($group)`. Its optional second argument lists fields unavailable on the
+current ticket. Creation mode ignores display choices; field permissions still apply.
+Unregistering a field leaves stored preference keys harmless. This presentation preference
+never grants access to metadata or alters the metadata writer or export contracts.
+
+
 ```php
 $context->ticketFields()->add(new TicketFieldDefinition(
     key: 'example.external_id',

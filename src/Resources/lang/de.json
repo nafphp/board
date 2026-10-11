@@ -605,5 +605,16 @@
   "Warnung": "Warnung",
   "Fehler": "Fehler",
   "Rollen bearbeiten": "Rollen bearbeiten",
-  "Rollen speichern": "Rollen speichern"
+  "Rollen speichern": "Rollen speichern",
+  "Deine Ticketansicht": "Deine Ticketansicht",
+  "Deine Ticketansicht anpassen": "Deine Ticketansicht anpassen",
+  "Sichtbare Ticketattribute": "Sichtbare Ticketattribute",
+  "Bitte wähle die sichtbaren Ticketattribute.": "Bitte wähle die sichtbaren Ticketattribute.",
+  "Dieses Ticketattribut gibt es nicht.": "Dieses Ticketattribut gibt es nicht.",
+  "Weitere Attribute": "Weitere Attribute",
+  "Wähle die Ticketattribute für deine Ansicht in diesem Board. Neue Attribute werden automatisch angezeigt. Ticketwerte und die Ansicht anderer bleiben unverändert.": "Wähle die Ticketattribute für deine Ansicht in diesem Board. Neue Attribute werden automatisch angezeigt. Ticketwerte und die Ansicht anderer bleiben unverändert.",
+  "Standard wiederherstellen": "Standard wiederherstellen",
+  "Erfasste Zeit": "Erfasste Zeit",
+  "Start": "Start",
+  "Version": "Version"
 }

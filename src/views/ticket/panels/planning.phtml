@@ -15,13 +15,23 @@ use function Naf\View\s;
  * in the order the registry gives them.
  */
 ?>
+<?php if (!$slot->showsGroup('planning', $estimating ? [] : ['estimate_points'])) {
+    return;
+} ?>
 <section class="ticket-sidebar-group">
     <h2><?= s(t('Planung & Zeit')) ?></h2>
     <dl class="ticket-meta">
-        <?php if ($estimating): ?><dt><?= s(t(Estimation::label($scale))) ?></dt><dd><?= $slot->field->render('estimate_points', Estimation::label($scale), 'select', $points, $pointDisplay, $pointOptions) ?></dd><?php endif ?>
+        <?php if ($estimating && $slot->shows('estimate_points')): ?><dt><?= s(t(Estimation::label($scale))) ?></dt><dd><?= $slot->field->render('estimate_points', Estimation::label($scale), 'select', $points, $pointDisplay, $pointOptions) ?></dd><?php endif ?>
+        <?php if ($slot->shows('start_date')): ?>
         <dt><?= s(t('Startdatum')) ?></dt><dd><?= $slot->field->render('start_date', 'Startdatum', 'date', $slot->ticket['start_date'], $slot->ticket['start_date'] ? s(date('d.m.Y', strtotime($slot->ticket['start_date']))) : $empty) ?></dd>
+        <?php endif ?>
+        <?php if ($slot->shows('due_date')): ?>
         <dt><?= s(t('Fällig am')) ?></dt><dd><?= $slot->field->render('due_date', 'Fällig am', 'date', $slot->ticket['due_date'], $slot->ticket['due_date'] ? s(date('d.m.Y', strtotime($slot->ticket['due_date']))) : $empty) ?></dd>
+        <?php endif ?>
+        <?php if ($slot->shows('estimate_minutes')): ?>
         <dt><?= s(t('Geschätzt')) ?></dt><dd><?= $slot->field->render('estimate_minutes', 'Geschätzt', 'duration', $slot->ticket['estimate_minutes'] === null ? '' : Duration::format((int) $slot->ticket['estimate_minutes']), s($duration($slot->ticket['estimate_minutes'] === null ? null : (int) $slot->ticket['estimate_minutes']))) ?></dd>
+        <?php endif ?>
+        <?php if ($slot->shows('spent_minutes')): ?>
         <dt><?= s(t('Erfasst')) ?></dt>
         <dd class="ticket-spent">
             <?= $slot->field->render('spent_minutes', 'Erfasst', 'duration', Duration::format((int) $slot->ticket['spent_minutes']), s($duration((int) $slot->ticket['spent_minutes']))) ?>
@@ -66,6 +76,7 @@ use function Naf\View\s;
                 </div>
             <?php endif ?>
         </dd>
+        <?php endif ?>
     <?php foreach ($slot->fieldsIn('planning') as $metaKey => $metaField): ?>
         <?= partial('ticket/metadata', [
             'definition' => $metaField,
@@ -76,6 +87,6 @@ use function Naf\View\s;
     <?php endforeach ?>
     </dl>
     <div data-ticket-readonly="progress" class="ticket-time-progress">
-        <?php if ((int) $slot->ticket['estimate_minutes'] > 0): ?><progress value="<?= min((int) $slot->ticket['spent_minutes'], (int) $slot->ticket['estimate_minutes']) ?>" max="<?= (int) $slot->ticket['estimate_minutes'] ?>" aria-label="<?= s(t('Erfasster Zeitaufwand')) ?>"></progress><span class="muted small"><?= s($duration(abs((int) $slot->ticket['estimate_minutes'] - (int) $slot->ticket['spent_minutes']))) ?> <?= s(t((int) $slot->ticket['spent_minutes'] > (int) $slot->ticket['estimate_minutes'] ? 'über Schätzung' : 'verbleibend')) ?></span><?php endif ?>
+        <?php if ($slot->shows('estimate_minutes') && $slot->shows('spent_minutes') && (int) $slot->ticket['estimate_minutes'] > 0): ?><progress value="<?= min((int) $slot->ticket['spent_minutes'], (int) $slot->ticket['estimate_minutes']) ?>" max="<?= (int) $slot->ticket['estimate_minutes'] ?>" aria-label="<?= s(t('Erfasster Zeitaufwand')) ?>"></progress><span class="muted small"><?= s($duration(abs((int) $slot->ticket['estimate_minutes'] - (int) $slot->ticket['spent_minutes']))) ?> <?= s(t((int) $slot->ticket['spent_minutes'] > (int) $slot->ticket['estimate_minutes'] ? 'über Schätzung' : 'verbleibend')) ?></span><?php endif ?>
     </div>
 </section>

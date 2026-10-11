@@ -94,10 +94,14 @@ use function Naf\View\s;
             </div>
         </details>
     <?php endif ?>
+    <?php if ($slot->shows('column_id')): ?>
     <div class="meta-caption"><?= s(t('Status')) ?></div>
     <?= $slot->field->render('column_id', 'Spalte', 'select', $slot->ticket['column_id'], '<span class="column-value">' . s(array_column($slot->columns, 'name', 'id')[$slot->ticket['column_id']]) . '' . Icon::mark('expand_more', 'sm') . '</span>', array_column($slot->columns, 'name', 'id'), ['action' => route('ticket.move', $slot->params), 'hidden' => ['swimlane_id' => $slot->ticket['swimlane_id']]]) ?>
+    <?php endif ?>
+    <?php if ($slot->shows('assignee_ids')): ?>
     <div class="meta-caption"><?= s(t('Verantwortliche')) ?></div>
     <?= $slot->field->render('assignee_ids', 'Verantwortliche', 'multiple', $selected_assignees, $assigneeDisplay ?: '<span class="muted">' . s(t('Nicht zugewiesen')) . '</span>', $memberNames) ?>
+    <?php endif ?>
     <?php
     /*
      * The assignment people make most often, as one click.
@@ -113,7 +117,7 @@ use function Naf\View\s;
     $me = (int) $slot->scope->userId;
 $mine   = in_array($me, array_map('intval', $selected_assignees), true);
 ?>
-    <?php if ($slot->editable && !$mine && isset($memberNames[$me])): ?>
+    <?php if ($slot->shows('assignee_ids') && $slot->editable && !$mine && isset($memberNames[$me])): ?>
         <button type="button" class="text-button assign-self" data-assign-self="<?= $me ?>">
             <?= Icon::mark('person_add', 'sm') ?> <?= s(t('Mir zuweisen')) ?>
         </button>
