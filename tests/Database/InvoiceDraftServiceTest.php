@@ -107,6 +107,28 @@ final class InvoiceDraftServiceTest extends BoardTestCase
         $this->assertSame(4, (int) $this->scalar('SELECT COUNT(*) FROM invoice_booking_claims'));
     }
 
+    public function testReferencesUseTheBrandAtCreationAndSurviveRenamingAndLegacySnapshots(): void
+    {
+        $settings                = app()->container()->get(Config::class)->all();
+        $settings['app']['name'] = 'Studio North';
+        app()->container()->set(Config::class, new Config($settings));
+        $this->booking();
+        $id    = $this->drafts->prepare($this->input($this->connection()));
+        $draft = $this->drafts->get($id);
+        self::assertSame('Studio North ' . $id, $draft['reference']);
+        self::assertSame($draft['reference'], $draft['snapshot']['payload']['external_id']);
+        $settings['app']['name'] = 'Renamed Studio';
+        app()->container()->set(Config::class, new Config($settings));
+        self::assertSame($draft['reference'], $this->drafts->get($id)['reference']);
+        // Old drafts did not carry an explicit reference; read their immutable provider payload.
+        $snapshot = $draft['snapshot'];
+        unset($snapshot['reference']);
+        $snapshot['payload']['external_id'] = 'Nafinity ' . $id;
+        $this->pdo->prepare('UPDATE invoice_drafts SET snapshot=? WHERE id=?')->execute([json_encode($snapshot), $id]);
+        self::assertSame('Nafinity ' . $id, $this->drafts->get($id)['reference']);
+        self::assertSame('Nafinity ' . $id, $this->drafts->send($id)['reference']);
+    }
+
     public function testCompanyNeedsInstallationAndBoardRightsAndHasASeparateBillingPurpose(): void
     {
         $personal = $this->connection();

@@ -9,6 +9,7 @@ use Naf\Board\Definition\SettingDefinition;
 use Naf\Board\Definition\SettingSection;
 use Naf\Board\Domain\Estimation;
 use Naf\Board\ExtensionContext;
+use Naf\Board\Mail\Design;
 use Naf\Board\Modules\Providers\AiSectionProvider;
 use Naf\Board\Modules\Providers\BrandingSectionProvider;
 use Naf\Board\Modules\Providers\MembersSectionProvider;
@@ -22,6 +23,7 @@ use Naf\Board\Support\Locales;
 use Naf\Board\Support\Themes;
 
 use function Naf\config;
+use function Naf\I18n\t;
 
 /**
  * The settings cards and values Nafinity already had.
@@ -218,7 +220,7 @@ final class CoreSettings implements ExtensionProviderInterface
             'notify_in_app',
             'user',
             'personal',
-            'Benachrichtigungen in Nafinity',
+            t('Benachrichtigungen in :name', ['name' => Branding::name()]),
             'boolean',
             true,
             400,
@@ -331,6 +333,26 @@ final class CoreSettings implements ExtensionProviderInterface
             60,
             null,
             'palette',
+        ));
+        $context->settingSections()->add(new SettingSection(
+            'email-design',
+            'application',
+            'E-Mail-Design',
+            'settings/email-design',
+            null,
+            70,
+            null,
+            'mail',
+        ));
+        $settings->add(new SettingDefinition(
+            Design::KEY,
+            'application',
+            'email-design',
+            'E-Mail-Design',
+            'configuration_json',
+            Design::DEFAULTS,
+            options: ['shape' => 'array', 'maxBytes' => 65536],
+            configKey: Design::PATH,
         ));
         $settings->add(new SettingDefinition(
             Themes::KEY,

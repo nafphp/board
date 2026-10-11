@@ -6,6 +6,7 @@ namespace Naf\Board\Mail;
 
 use Naf\Mail\Core\Mailer;
 use Naf\Mail\Models\Mail;
+use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
 
 use function Naf\config;
 use function Naf\View\view;
@@ -25,9 +26,21 @@ final class Messages
             // Existing installations keep working until their configuration is consolidated.
             $mail->setFrom((string) config('nafinity:mail_from', ''));
         }
-        $html = view('mail/' . $template, $data);
+        $html = self::html($template, $data);
 
         return $mail->setContent($html)->setTextContent(self::plainText($html));
+    }
+
+    public static function html(string $template, array $data = [], ?array $design = null): string
+    {
+        $html = view('mail/' . $template, $data);
+        // Owner-provided native view overrides may deliberately use their own layout.
+        if (!str_contains($html, 'data-email-layout')) {
+            return $html;
+        }
+        $design = Design::normalize($design ?? Design::current());
+
+        return (new CssToInlineStyles())->convert($html, Design::css($design));
     }
 
     private static function plainText(string $html): string

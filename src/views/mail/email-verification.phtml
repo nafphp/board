@@ -1,0 +1,14 @@
+<?php
+
+use function Naf\View\view;
+
+?>
+<?= view('mail/layout', [
+    'category'       => 'Dein Konto',
+    'title'          => 'Deine neue E-Mail-Adresse.',
+    'intro'          => 'Noch ein Schritt: Gib diesen Code im Profil ein, um deine neue E-Mail-Adresse zu bestätigen.',
+    'highlightLabel' => 'Bestätigungscode',
+    'highlight'      => $code,
+    'paragraphs'     => ['Der Code gilt 15 Minuten und kann nur einmal verwendet werden. Deine bisherige Adresse bleibt bis zur Bestätigung gültig.'],
+    'footer'         => 'Falls du keine Änderung angefordert hast, kannst du diese Nachricht ignorieren. Teile den Code mit niemandem.',
+]) ?>

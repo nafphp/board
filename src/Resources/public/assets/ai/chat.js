@@ -301,7 +301,9 @@ function initChat(root) {
     if (!expanded && stale()) {
       await ask(configFor(root));
       if (reachable !== true) {
-        toast(t('Nafinity AI ist nicht erreichbar. Läuft Ollama noch?'));
+        toast(
+          t(':name AI ist nicht erreichbar. Läuft Ollama noch?', { name: root.dataset.appName }),
+        );
 
         return;
       }

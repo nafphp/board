@@ -159,7 +159,10 @@ export function initSettings(form) {
   form
     .querySelector('[data-ai-test]')
     .addEventListener('click', () =>
-      test('Antworte kurz auf Deutsch: Die lokale Verbindung zu Nafinity funktioniert.', output),
+      test(
+        'Antworte kurz auf Deutsch: Die lokale Verbindung zum Assistenten funktioniert.',
+        output,
+      ),
     );
   form.querySelector('[data-ai-review]').addEventListener('click', () => {
     const items = read(keys.feedback, []);

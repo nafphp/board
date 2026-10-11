@@ -56,6 +56,10 @@ or a plugin metaframework.
   only through the application via `Naf\Storage\storage('attachments')`. The allowlist and
   MIME check are not a virus scanner.
 - A board query answers with at most 300 cards plus the total count.
+- Public identity comes from `Support\Branding`, including AI labels and mail subjects.
+  Email producers use `Mail\Messages` and the shared `mail/layout` view. Its
+  `data-email-layout` marker opts into global `Mail\Design` tokens and CSS inlining;
+  previews use that same renderer, sample data only, and never send mail.
 - German is the complete base language of the product UI; English covers the main
   interface texts. Code, comments and documentation are English.
 

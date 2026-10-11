@@ -5,6 +5,7 @@ use Naf\Board\Controllers\AiController;
 use Naf\Board\Controllers\AttachmentController;
 use Naf\Board\Controllers\BoardController;
 use Naf\Board\Controllers\BrandingController;
+use Naf\Board\Controllers\EmailDesignController;
 use Naf\Board\Controllers\ExportController;
 use Naf\Board\Controllers\InstallationController;
 use Naf\Board\Controllers\InvitationController;
@@ -107,6 +108,9 @@ $routes = [
     ['POST', '/invitations/{token}', [InvitationController::class, 'accept'], 'invitations.accept'],
     ['GET', '/projects/{project}/accounts', [InvitationController::class, 'search'], 'project.accounts'],
     ['POST', '/projects/{project}/invitations/{invitation}/revoke', [InvitationController::class, 'revoke'], 'project.invitations.revoke'],
+
+    ['POST', '/settings/email-design', [EmailDesignController::class, 'save'], 'email_design.save'],
+    ['POST', '/settings/email-design/preview', [EmailDesignController::class, 'preview'], 'email_design.preview'],
 
     ['GET', '/themes/{theme}/{version}.css', [ThemeController::class, 'css'], 'themes.css'],
     ['POST', '/settings/themes', [ThemeController::class, 'save'], 'themes.save'],

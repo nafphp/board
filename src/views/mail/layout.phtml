@@ -1,0 +1,51 @@
+<?php
+use Naf\Board\Support\Branding;
+
+// Queue workers render outside HTTP guards. Escape in every runtime.
+$escape    = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$logo      = Branding::logoUrl(true);
+$actionUrl = $actionUrl ?? '';
+$hasAction = filter_var($actionUrl, FILTER_VALIDATE_URL) && in_array(parse_url($actionUrl, PHP_URL_SCHEME), ['http', 'https'], true);
+?>
+<!doctype html>
+<html lang="de">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?= $escape(Branding::subject($title)) ?></title>
+</head>
+<body data-email-layout>
+<table class="email-page" role="presentation" width="100%" cellspacing="0" cellpadding="0">
+    <tr><td class="email-outer" align="center">
+        <table class="email-card" role="presentation" width="600" cellspacing="0" cellpadding="0">
+            <tr><td class="email-header">
+                <?php if ($logo !== null): ?><img class="email-logo" src="<?= $escape($logo) ?>" width="40" height="40" alt="">
+                <?php else: ?><span class="email-symbol" aria-hidden="true">∞</span><?php endif ?>
+                <span class="email-brand-name"><?= $escape(Branding::name()) ?></span>
+                <span class="email-category"><?= $escape($category) ?></span>
+            </td></tr>
+            <tr><td class="email-content">
+                <h1 class="email-title"><?= $escape($title) ?></h1>
+                <p class="email-intro"><?= $escape($intro) ?></p>
+                <?php if (isset($highlight)): ?>
+                <table class="email-highlight" role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                    <tr><td><strong class="email-highlight-label"><?= $escape($highlightLabel) ?>:</strong> <span class="email-code"><?= $escape($highlight) ?></span></td></tr>
+                </table>
+                <?php endif ?>
+                <?php foreach ($paragraphs ?? [] as $paragraph): ?>
+                <p class="email-paragraph"><?= $escape($paragraph) ?></p>
+                <?php endforeach ?>
+                <?php if ($hasAction): ?>
+                <table class="email-action" role="presentation" cellspacing="0" cellpadding="0">
+                    <tr><td><a class="email-button" href="<?= $escape($actionUrl) ?>"><?= $escape($actionLabel) ?></a></td></tr>
+                </table>
+                <p class="email-fallback">Falls der Button nicht funktioniert:<br><a class="email-link" href="<?= $escape($actionUrl) ?>"><?= $escape($actionUrl) ?></a></p>
+                <?php endif ?>
+            </td></tr>
+            <tr><td class="email-footer"><p><?= $escape($footer) ?></p></td></tr>
+        </table>
+        <p class="email-signature"><?= $escape(Branding::name()) ?></p>
+    </td></tr>
+</table>
+</body>
+</html>

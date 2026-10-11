@@ -9,13 +9,15 @@ use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\NotificationServiceInterface;
 use Naf\Board\Domain\Change;
 use Naf\Board\Jobs\DeliverNotificationJob;
+use Naf\Board\Mail\Messages;
+use Naf\Board\Support\Branding;
 use Naf\Mail\Core\Mailer;
-use Naf\Mail\Models\Mail;
 use PDO;
 use RuntimeException;
 use Throwable;
 
 use function Naf\config;
+use function Naf\I18n\t;
 use function Naf\Queue\queue;
 
 /** @internal */
@@ -189,16 +191,9 @@ final class NotificationService implements NotificationServiceInterface
                 )
                 ->execute([$id]);
             // Generic text limits exposure if access is revoked while an external service is sending.
-            $mail = (new Mail())
-                ->setFrom(config('nafinity:mail_from'))
+            $mail = Messages::create($mailer, 'notification', ['url' => rtrim((string) config('app:url'), '/') . '/notifications'])
                 ->addTo($notification['email'])
-                ->setSubject('Neuigkeiten in Nafinity')
-                ->setContent(
-                    'In deinem Workspace gibt es ein Update. Öffne Nafinity: '
-                        . config('app:url')
-                        . '/notifications',
-                    false,
-                );
+                ->setSubject(Branding::subject(t('Neuigkeiten')));
             if (!$mailer->send($mail)) {
                 throw new RuntimeException('Mail transport rejected delivery.');
             }

@@ -114,7 +114,7 @@ abstract class AccountTestCase extends DatabaseTestCase
     {
         $messages = $transport->getMessages();
         $this->assertNotEmpty($messages, 'no verification mail was sent');
-        $content = $messages[array_key_last($messages)]->getContent();
+        $content = $messages[array_key_last($messages)]->getTextContent();
 
         $this->assertSame(
             1,

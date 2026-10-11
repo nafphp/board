@@ -14,12 +14,13 @@ use Naf\Board\Contracts\ProjectServiceInterface;
 use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Domain\ProjectScope;
+use Naf\Board\Mail\Messages;
 use Naf\Board\Rbac\Grants;
+use Naf\Board\Support\Branding;
 use Naf\Board\Support\Input;
 use Naf\Board\Support\MembershipRole;
 use Naf\Board\Support\PasswordRule;
 use Naf\Mail\Core\Mailer;
-use Naf\Mail\Models\Mail;
 use Naf\ORM\Core\EntityManager;
 use Naf\RateLimit\PdoLimiter;
 use PDO;
@@ -81,9 +82,9 @@ final class InvitationService implements InvitationServiceInterface
                 VALUES(?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE invited_by=VALUES(invited_by),role=VALUES(role),token_hash=VALUES(token_hash),expires_at=VALUES(expires_at),created_at=VALUES(created_at)')
                 ->execute([$project, $this->access->actor(), $email, $role, hash('sha256', $token), $expires, gmdate('Y-m-d H:i:s')]);
             if ($send) {
-                $mail = (new Mail())->setFrom(config('nafinity:mail_from'))->addTo($email)
-                    ->setSubject(t('Nafinity · Einladung zu :name', ['name' => $scope->project['name']]))
-                    ->setContent(t('Du wurdest zum Projekt :name eingeladen.', ['name' => $scope->project['name']]) . "\n\n" . $url . "\n\n" . t('Lege über diesen Link dein Konto an. Die Einladung gilt sieben Tage und kann nur einmal verwendet werden.') . "\n", false);
+                $mail = Messages::create($this->mailer, 'invitation', ['projectName' => $scope->project['name'], 'url' => $url])
+                    ->addTo($email)
+                    ->setSubject(Branding::subject(t('Einladung zu :name', ['name' => $scope->project['name']])));
 
                 try {
                     if (!$this->mailer->send($mail)) {

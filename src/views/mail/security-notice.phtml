@@ -1,0 +1,12 @@
+<?php
+
+use function Naf\View\view;
+
+?>
+<?= view('mail/layout', [
+    'category'   => 'Kontosicherheit',
+    'title'      => 'Änderung an deinem Konto.',
+    'intro'      => $message,
+    'paragraphs' => ['Falls du das nicht selbst warst, kontaktiere bitte deine Administration.'],
+    'footer'     => 'Sicherheitshinweise werden auch dann zugestellt, wenn du normale Projektbenachrichtigungen deaktiviert hast.',
+]) ?>

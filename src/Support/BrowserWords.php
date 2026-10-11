@@ -103,7 +103,7 @@ final class BrowserWords
         'Leerer Embedding-Vektor.',
         'Löschen',
         'Modelle werden geprüft …',
-        'Nafinity AI ist nicht erreichbar. Läuft Ollama noch?',
+        ':name AI ist nicht erreichbar. Läuft Ollama noch?',
         'Neues Ticket',
         'Nicht gespeichert',
         'Nicht gespeichert · Bitte aktuellen Stand laden',

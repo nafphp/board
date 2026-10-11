@@ -96,33 +96,33 @@
     transparent 75%
   );
 }
-.ai-header-mark {
-  display: grid;
-  place-items: center;
-  flex: none;
+.ai-brand-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+.ai-brand-title .brand {
+  min-width: 0;
+  gap: var(--space-8);
+}
+.ai-brand-title .brand-image,
+.ai-brand-title .brand-symbol {
   width: 34px;
   height: 34px;
-  border-radius: var(--radius-11);
-  color: var(--accent);
-  background: var(--accent-soft);
+  flex: none;
 }
-.ai-header-mark svg {
-  width: 22px;
-  height: 22px;
-}
-.ai-heading {
-  min-width: 0;
-}
-.ai-heading strong {
+.ai-brand-title .brand-word {
   font-size: var(--font-14);
-  font-weight: 650;
-  letter-spacing: -0.3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.ai-heading strong span {
-  margin-left: var(--space-3);
+.ai-brand-badge {
   color: var(--accent);
   font-size: var(--font-11);
   font-weight: 550;
+}
+.ai-heading {
+  min-width: 0;
 }
 .ai-heading small {
   display: block;
@@ -553,7 +553,6 @@
   .ai-launcher,
   .ai-send,
   .ai-icon-button,
-  .ai-header-mark,
   .ai-welcome-mark {
     border: 1px solid ButtonText;
   }

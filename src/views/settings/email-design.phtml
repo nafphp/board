@@ -1,0 +1,61 @@
+<?php
+use Naf\Board\Mail\Design;
+use Naf\Board\Services\ApplicationSettings;
+use Naf\Board\Support\Themes;
+
+use function Naf\app;
+use function Naf\Board\field;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$design   = Design::current();
+$revision = app()->container()->get(ApplicationSettings::class)->revision();
+?>
+<form method="post" data-enhanced data-email-design action="<?= s(route('email_design.save')) ?>" data-preview-url="<?= s(route('email_design.preview')) ?>">
+    <input type="hidden" name="_csrf" value="<?= s($token) ?>">
+    <input type="hidden" name="configurationRevision" value="<?= s($revision) ?>">
+    <p class="field-hint"><?= s(t('Dieses Design gilt global für alle E-Mails. Name und Logo stammen aus dem Erscheinungsbild. Persönliche Oberflächen-Themes ändern den E-Mail-Versand nicht.')) ?></p>
+    <div class="email-design-preview">
+        <div class="theme-token-grid">
+            <?= field(['label' => 'E-Mail-Typ in der Vorschau', 'name' => 'sample', 'type' => 'select', 'value' => 'invitation', 'options' => Design::SAMPLES]) ?>
+            <?= field(['label' => 'Vorschau-Breite', 'name' => 'preview_size', 'type' => 'select', 'value' => 'desktop', 'options' => ['desktop' => 'Desktop', 'mobile' => 'Mobil']]) ?>
+        </div>
+        <iframe title="<?= s(t('E-Mail-Vorschau')) ?>" sandbox="allow-same-origin" tabindex="-1" data-email-preview srcdoc="<?= s(Design::sample('invitation', $design)) ?>"></iframe>
+        <p class="field-hint" data-email-preview-status role="status"><?= s(t('Beispieldaten · Es wird keine E-Mail versendet.')) ?></p>
+    </div>
+    <details class="theme-token-group" open>
+        <summary><?= s(t('Farben')) ?></summary>
+        <div class="theme-token-grid">
+            <?php foreach ($design['colors'] as $key => $value): ?>
+                <?= field(['label' => Themes::schema()['labels'][$key], 'name' => 'design[colors][' . $key . ']', 'type' => 'color', 'value' => $value]) ?>
+            <?php endforeach ?>
+        </div>
+    </details>
+    <details class="theme-token-group">
+        <summary><?= s(t('Schrift, Rundungen & Abstände')) ?></summary>
+        <div class="theme-token-grid">
+            <?php foreach (Themes::schema()['common'] as $key => $definition): ?>
+                <?= field([
+                    'label'      => $definition['label'], 'name' => 'design[common][' . $key . ']',
+                    'type'       => $definition['type'] === 'font' ? 'select' : 'number', 'value' => $design['common'][$key],
+                    'options'    => ['system' => 'Systemschrift', 'serif' => 'Serif', 'mono' => 'Monospace'],
+                    'attributes' => $definition['type'] === 'font' ? [] : ['min' => $definition['min'], 'max' => $definition['max'], 'step' => $key === 'density' ? '0.05' : '1'],
+                ]) ?>
+            <?php endforeach ?>
+        </div>
+    </details>
+    <details class="theme-token-group">
+        <summary><?= s(t('Eigenes CSS')) ?></summary>
+        <?= field(['label' => 'E-Mail-CSS überschreiben', 'name' => 'design[css]', 'type' => 'textarea', 'value' => $design['css'], 'attributes' => ['rows' => 10, 'maxlength' => 32768, 'spellcheck' => 'false'], 'hint' => 'Nutze .email-header, .email-title, .email-content, .email-button und .email-footer sowie --accent, --surface, --text und --space-16. Die Variablen werden aufgelöst und Stile inline eingebettet. Keine Imports oder Ressourcen-URLs; maximal 32 KB.']) ?>
+        <p class="field-hint"><?= s(t('Mailprogramme unterstützen CSS unterschiedlich. Die Vorschau zeigt den tatsächlichen Versand-HTML-Code; für wichtige Layouts bitte zusätzlich im gewünschten Mailprogramm prüfen.')) ?></p>
+    </details>
+    <div class="form-errors" role="alert"></div>
+    <div class="form-actions"><button class="button primary" type="submit"><?= s(t('E-Mail-Design speichern')) ?></button></div>
+</form>
+<form method="post" data-enhanced action="<?= s(route('email_design.save')) ?>" class="branding-reset">
+    <input type="hidden" name="_csrf" value="<?= s($token) ?>">
+    <input type="hidden" name="configurationRevision" value="<?= s($revision) ?>">
+    <input type="hidden" name="action" value="reset">
+    <button class="button subtle" type="submit"><?= s(t('E-Mail-Design zurücksetzen')) ?></button>
+</form>
