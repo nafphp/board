@@ -44,9 +44,10 @@ replace the `core.topbar.workspace` search contribution or add controls to `topb
 email design and advanced display settings. **Application & activity log**, including
 activity-log retention, is available with advanced settings enabled. Each child opens over its
 parent; closing the uppermost dialog returns to the unchanged parent, including its scroll position and focus.
-Covered dialogs expose a named close header through the active dialog. Closing a middle
-header closes that dialog and all descendants, newest first; the oldest header closes the
-whole stack. Each close request follows the normal cancel path and stops if a dirty or busy
+Covered dialogs expose named navigation headers through the active dialog. Clicking a
+header's title returns to that dialog by closing only its descendants, newest first.
+Its separate close button also closes the selected dialog; the oldest close button closes
+the whole stack. Each close request follows the normal cancel path and stops if a dirty or busy
 guard blocks it. Background forms remain inert. Deep stacks keep all named headers in a
 scrollable strip while bounding the visible offset. Reduced motion skips the movement.
 Existing direct links such as `#themes` and `#email-design` restore their parent chain too.
@@ -68,6 +69,8 @@ Cycles are rejected. Generic dialog buttons using `data-dialog="dialog-id"`, and
 Keep specific close guards on the dialog’s cancel event; do not recreate stacking per feature.
 
 Project and installation roles open their existing edit/create forms above the role list.
+Columns, swimlanes and labels use the same editor dialogs for existing entries and additions;
+the original reorder buttons remain available in the parent list.
 Board members keep their list and pending invitations in the parent, with separate children
 for adding an existing account and inviting a new person. Themes keep the library and
 installation default in the parent; choosing a theme opens its editor and live preview together.

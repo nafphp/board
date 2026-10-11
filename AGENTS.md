@@ -64,8 +64,9 @@ or a plugin metaframework.
   authenticated account’s current address, without saving it.
 - Open native dialogs through shared `assets/dialog.js` or `data-dialog` buttons.
   Stacking, parent suspension, focus restoration and exit motion belong there; callers
-  do not implement them. Named ancestor headers request cancel from newest to the chosen
-  ancestor and stop at existing close guards; keep those guards on `cancel`. A `SettingSection`
+  do not implement them. An ancestor header's title returns to that dialog; its separate
+  close button includes the selected ancestor. Both request cancel newest first and stop
+  at existing close guards; keep those guards on `cancel`. A `SettingSection`
   can name a same-scope `parent`; the settings renderer and dialog controller create the
   hierarchy and restore deep links automatically. Editor lists opt into
   `data-dialog-editors="<details selector>"` and use the shared `settings/dialog` shell.

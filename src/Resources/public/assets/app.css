@@ -1756,7 +1756,8 @@ dialog[data-dialog-covered] > * {
   inset: auto;
   margin: 0;
   padding: 0;
-  max-height: calc(var(--space-40) * var(--dialog-stack-count));
+  /* Include both borders so one to three rows never overflow by two pixels. */
+  max-height: calc(var(--space-40) * var(--dialog-stack-count) + 2px);
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius-17) var(--radius-17) 0 0;
@@ -1768,13 +1769,19 @@ dialog[data-dialog-covered] > * {
   background: transparent;
   pointer-events: none;
 }
+.dialog-stack-row {
+  display: flex;
+  height: var(--space-40);
+}
+.dialog-stack-row + .dialog-stack-row {
+  border-top: 1px solid var(--line);
+}
 .dialog-stack-controls button {
   display: flex;
   align-items: center;
   gap: var(--space-16);
   width: 100%;
-  height: var(--space-40);
-  min-height: var(--space-40);
+  height: 100%;
   margin: 0;
   padding: 0 var(--space-24);
   border: 0;
@@ -1784,21 +1791,28 @@ dialog[data-dialog-covered] > * {
   text-align: left;
   font-size: var(--font-12);
 }
-.dialog-stack-controls button + button {
-  border-top: 1px solid var(--line);
-}
 .dialog-stack-controls button:is(:hover, :focus-visible) {
   background: var(--accent-soft);
   color: var(--accent);
 }
-.dialog-stack-controls button span:first-child {
+.dialog-stack-back {
+  flex: 1;
+  min-width: 0;
+}
+.dialog-stack-controls .dialog-stack-close {
+  flex: 0 0 auto;
+  width: var(--space-64);
+  padding: 0;
+  justify-content: center;
+}
+.dialog-stack-back span {
   flex: 1;
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.dialog-stack-controls button span:last-child {
+.dialog-stack-close span {
   font-size: var(--font-24);
   line-height: 1;
 }

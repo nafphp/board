@@ -58,7 +58,9 @@ function fixture({ reduced = false, hidden = false, drawer = false } = {}) {
         return { height: this.children.length * 40 };
       },
       querySelectorAll() {
-        return this.children.filter((child) => child.tag === 'button');
+        return this.children.flatMap((child) =>
+          child.tag === 'button' ? [child] : child.querySelectorAll(),
+        );
       },
     };
   }
@@ -324,13 +326,13 @@ test('named middle controls close their dialog and descendants while retaining o
   await ui.context.openDialog(middle);
   await ui.context.openDialog(child);
   await settle();
-  const buttons = ui.controls().children;
+  const buttons = ui.controls().children.map((row) => row.children[1]);
   assert.equal(buttons.length, 2);
   assert.equal(
     buttons[0].getAttribute('aria-label'),
     'Dialog 1 und darüberliegende Dialoge schließen',
   );
-  assert.equal(buttons[1].children[0].textContent, 'Dialog 2');
+  assert.equal(ui.controls().children[1].children[0].children[0].textContent, 'Dialog 2');
   await buttons[1].onclick();
   await settle();
   assert.equal(child.open, false);
@@ -346,7 +348,7 @@ test('the oldest header closes an arbitrarily deep stack and every header remain
   for (const dialog of dialogs) await ui.context.openDialog(dialog);
   await settle();
   assert.equal(ui.controls().children.length, 6);
-  await ui.controls().children[0].onclick();
+  await ui.controls().children[0].children[1].onclick();
   await settle();
   assert.equal(ui.closed.length, 7);
   assert.equal(
@@ -366,12 +368,12 @@ test('a blocked child cancel stops a parent close request and can be retried', a
   await ui.open();
   await ui.context.openDialog(child);
   await settle();
-  await ui.controls().children[0].onclick();
+  await ui.controls().children[0].children[1].onclick();
   assert.equal(ui.dialog.open, true);
   assert.equal(child.open, true);
-  assert.equal(ui.controls().children[0].disabled, false);
+  assert.equal(ui.controls().children[0].children[1].disabled, false);
   blocked = false;
-  await ui.controls().children[0].onclick();
+  await ui.controls().children[0].children[1].onclick();
   assert.equal(child.open, false);
   assert.equal(ui.dialog.open, false);
 });
@@ -383,7 +385,7 @@ test('stack requests await normal exit animations and ignore repeated clicks', a
   await ui.context.openDialog(child, { animate: false });
   ui.animations.forEach((animation) => animation.finish());
   await settle();
-  const button = ui.controls().children[0];
+  const button = ui.controls().children[0].children[1];
   const first = button.onclick();
   await button.onclick();
   assert.equal(button.disabled, true);
@@ -410,7 +412,7 @@ test('a native cancel handler can queue its close event before the cascade conti
   await ui.open();
   await ui.context.openDialog(child);
   await settle();
-  const closing = ui.controls().children[0].onclick();
+  const closing = ui.controls().children[0].children[1].onclick();
   assert.equal(child.open, false);
   assert.equal(ui.dialog.open, true);
   closedEvent();
@@ -431,4 +433,55 @@ test('a nested native modal stays accessible through its inert covered ancestor'
   await ui.context.closeDialog(child);
   assert.equal(ui.dialog.inert, false);
   assert.equal(ui.dialog.getAttribute('aria-hidden'), null);
+});
+
+test('returning to a middle header closes only its descendants and retains its own dialog', async () => {
+  const ui = fixture({ reduced: true });
+  const middle = ui.newDialog();
+  const children = [ui.newDialog(), ui.newDialog()];
+  for (const dialog of [ui.dialog, middle, ...children]) await ui.context.openDialog(dialog);
+  await settle();
+  const back = ui.controls().children[1].children[0];
+  assert.equal(back.getAttribute('aria-label'), 'Zurück zu Dialog 2');
+  await back.onclick();
+  await settle();
+  assert.equal(ui.closed.length, 2);
+  assert.equal(
+    children.every((dialog) => !dialog.open),
+    true,
+  );
+  assert.equal(middle.open, true);
+  assert.equal(middle.inert, false);
+  assert.equal(ui.dialog.open, true);
+  assert.equal(ui.dialog.inert, true);
+  assert.equal(ui.controls().children.length, 1);
+});
+
+test('returning to the oldest header respects a descendant guard and can resume an arbitrary stack', async () => {
+  const ui = fixture({ reduced: true });
+  const dialogs = [ui.dialog, ...Array.from({ length: 6 }, ui.newDialog)];
+  let blocked = true;
+  dialogs[3].addEventListener('cancel', (event) => {
+    if (blocked) event.preventDefault();
+  });
+  for (const dialog of dialogs) await ui.context.openDialog(dialog);
+  await settle();
+  await ui.controls().children[0].children[0].onclick();
+  await settle();
+  assert.equal(ui.closed.length, 3);
+  assert.equal(dialogs[3].open, true);
+  assert.equal(
+    ui
+      .controls()
+      .querySelectorAll('button')
+      .every((button) => !button.disabled),
+    true,
+  );
+  blocked = false;
+  await ui.controls().children[0].children[0].onclick();
+  await settle();
+  assert.equal(ui.closed.length, 6);
+  assert.equal(ui.dialog.open, true);
+  assert.equal(ui.dialog.inert, false);
+  assert.equal(ui.controls(), undefined);
 });

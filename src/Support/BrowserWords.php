@@ -12,6 +12,7 @@ final class BrowserWords
     private const array KEYS = [
         'Dialog',
         ':name und darüberliegende Dialoge schließen',
+        'Zurück zu :name',
         'Testmail wird versendet …',
         'Die Testmail konnte nicht versendet werden. Bitte prüfe die E-Mail-Einstellungen.',
         'Die Vorschau konnte nicht aktualisiert werden.',

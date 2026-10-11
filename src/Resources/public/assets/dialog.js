@@ -94,12 +94,13 @@ function dialogTitle(dialog) {
 
 // Ask each dialog through its normal cancel path. A dirty/busy guard stops the
 // cascade, so these controls never bypass a feature's existing close decision.
-async function requestStackClose(target) {
+// Returning to an ancestor keeps that dialog; its separate close action includes it.
+async function requestStackClose(target, includeTarget = true) {
   if (requesting || !stack.includes(target)) return;
   requesting = true;
   controls?.querySelectorAll('button').forEach((button) => (button.disabled = true));
   try {
-    while (stack.includes(target)) {
+    while (stack.includes(target) && (includeTarget || stack.at(-1) !== target)) {
       const current = stack.at(-1);
       current.dispatchEvent(new Event('cancel', { cancelable: true }));
       if (!current.open) {
@@ -127,22 +128,34 @@ function showControls() {
   panel.setAttribute('popover', 'manual');
   for (const parent of stack.slice(0, -1)) {
     const title = dialogTitle(parent);
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.disabled = requesting;
-    button.setAttribute(
+    const row = document.createElement('div');
+    row.className = 'dialog-stack-row';
+    const back = document.createElement('button');
+    back.type = 'button';
+    back.className = 'dialog-stack-back';
+    back.disabled = requesting;
+    back.setAttribute('aria-label', t('Zurück zu :name', { name: title }));
+    back.title = back.getAttribute('aria-label');
+    const name = document.createElement('span');
+    name.textContent = title;
+    back.append(name);
+    back.onclick = () => requestStackClose(parent, false);
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'dialog-stack-close';
+    close.disabled = requesting;
+    close.setAttribute(
       'aria-label',
       t(':name und darüberliegende Dialoge schließen', { name: title }),
     );
-    button.title = button.getAttribute('aria-label');
-    const name = document.createElement('span');
-    name.textContent = title;
-    const close = document.createElement('span');
-    close.textContent = '×';
-    close.setAttribute('aria-hidden', 'true');
-    button.append(name, close);
-    button.onclick = () => requestStackClose(parent);
-    panel.append(button);
+    close.title = close.getAttribute('aria-label');
+    const icon = document.createElement('span');
+    icon.textContent = '×';
+    icon.setAttribute('aria-hidden', 'true');
+    close.append(icon);
+    close.onclick = () => requestStackClose(parent);
+    row.append(back, close);
+    panel.append(row);
   }
   // A popover inside the active dialog escapes clipping while staying within
   // the native modal's interactive subtree. Background forms remain inert.
