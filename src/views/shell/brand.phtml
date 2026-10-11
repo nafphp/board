@@ -8,11 +8,8 @@ $name = Branding::name();
 $logo = Branding::logoUrl();
 $tag  = ($linked ?? true) ? 'a' : 'div';
 ?>
-<<?= $tag ?> class="brand"<?= $tag === 'a' ? ' href="' . s(route('home')) . '"' : '' ?> title="<?= s($name) ?>">
-    <?php if ($logo !== null): ?>
-        <img class="brand-image" src="<?= s($logo) ?>" alt="" width="36" height="36" />
-    <?php else: ?>
-        <span class="brand-symbol" aria-hidden="true">∞</span>
-    <?php endif ?>
+<<?= $tag ?> class="brand" data-brand-font="<?= s(Branding::font()) ?>"<?= Branding::color() !== null ? ' style="--brand-color: ' . s(Branding::color()) . '"' : '' ?><?= $tag === 'a' ? ' href="' . s(route('home')) . '"' : '' ?> title="<?= s($name) ?>">
+    <img class="brand-image"<?= $logo !== null ? ' src="' . s($logo) . '"' : ' hidden' ?> alt="" width="36" height="36" />
+    <span class="brand-symbol" aria-hidden="true"<?= $logo !== null ? ' hidden' : '' ?>>∞</span>
     <span class="brand-word"><?= s($name) ?></span>
 </<?= $tag ?>>

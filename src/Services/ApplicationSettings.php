@@ -161,6 +161,13 @@ final class ApplicationSettings
             }
         }
 
+        if (in_array(Branding::COLOR_PATH, $paths, true)) {
+            $color = $configuration->get(Branding::COLOR_PATH);
+            if ($color !== null && (!is_string($color) || preg_match('/^#[0-9a-f]{6}$/iD', $color) !== 1)) {
+                throw new Failure(t('Bitte wähle eine gültige Schriftfarbe.'), 422);
+            }
+        }
+
         // Do not save a database connection that has never connected successfully.
         $databaseChanged = false;
         foreach ($paths as $path) {

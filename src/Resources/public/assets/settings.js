@@ -1,11 +1,13 @@
 import { openDialog, closeDialog } from './dialog.js';
 import { t } from './i18n.js';
+import { mountBrandingPreview } from './branding-preview.js';
 import { mountAdvancedSettings } from './settings-configuration.js';
 import { mountMemberControls } from './members.js';
 import { mountPeopleDirectory } from './people.js?v=3';
 document.querySelectorAll('[data-people-directory]').forEach(mountPeopleDirectory);
 
 mountMemberControls();
+document.querySelectorAll('[data-branding-form]').forEach((form) => mountBrandingPreview(form));
 
 let settingsStorage;
 try {
@@ -140,7 +142,9 @@ document.addEventListener('click', (event) => {
   const swatch = event.target.closest?.('.field-pick');
   if (swatch) {
     const palette = swatch.closest('.field-palette');
-    palette.querySelector('.field-custom').value = swatch.dataset.color;
+    const input = palette.querySelector('.field-custom');
+    input.value = swatch.dataset.color;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
     for (const pick of palette.querySelectorAll('.field-pick')) {
       pick.setAttribute('aria-pressed', String(pick === swatch));
     }

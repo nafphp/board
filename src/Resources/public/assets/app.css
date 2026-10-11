@@ -329,7 +329,22 @@ label > .sr-only:not([type='checkbox']) {
   flex: 0 0 36px;
   object-fit: contain;
 }
+.brand [hidden] {
+  display: none;
+}
+.brand[data-brand-font='serif'] {
+  --brand-font: Georgia, 'Times New Roman', serif;
+}
+.brand[data-brand-font='mono'] {
+  --brand-font: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+}
+.brand[data-brand-font='serif'] .brand-word,
+.brand[data-brand-font='mono'] .brand-word {
+  letter-spacing: -0.03em;
+}
 .brand-word {
+  color: var(--brand-color, inherit);
+  font-family: var(--brand-font, inherit);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

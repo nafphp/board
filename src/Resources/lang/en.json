@@ -1186,5 +1186,19 @@
   "Bitte lade die Einstellungen neu.": "Reload the settings.",
   "Bitte wähle die Projektübersicht oder ein verfügbares Board.": "Select the project overview or an available board.",
   "Bitte wähle entweder ein neues Logo oder „Logo entfernen“.": "Choose either a new logo or “Remove logo”.",
-  "Bitte lade genau ein Logo hoch.": "Upload exactly one logo."
+  "Bitte lade genau ein Logo hoch.": "Upload exactly one logo.",
+  "Die Vorschau aktualisiert sich sofort. Änderungen gelten nach dem Speichern.": "The preview updates immediately. Changes take effect after saving.",
+  "PNG, JPG oder WebP · höchstens 512 KB und 2048 × 2048 Pixel. Das Logo erscheint auch auf der Anmeldung und als Favicon im Browser-Tab.": "PNG, JPG or WebP · up to 512 KB and 2048 × 2048 pixels. The logo also appears on sign-in pages and as the browser tab favicon.",
+  "Schriftart des Namens": "Name font",
+  "Schriftfarbe des Namens": "Name text color",
+  "Systemschrift": "System font",
+  "Serif": "Serif",
+  "Monospace": "Monospace",
+  "Automatisch zur Farbwelt": "Match the color theme",
+  "Eigene Schriftfarbe": "Custom text color",
+  "Gilt für den Namen in Navigation und Anmeldung. Bitte achte auf ausreichenden Kontrast.": "Applies to the name in navigation and sign-in pages. Please choose a color with sufficient contrast.",
+  "Name, Logo, Schrift und Startseite können gemeinsam auf die Servervorgaben zurückgesetzt werden.": "Name, logo, typography and start page can be restored to the server defaults together.",
+  "Bitte wähle eine gültige Schriftfarbe.": "Please choose a valid text color.",
+  "Das Logo wird geprüft.": "Checking the logo.",
+  "Bitte wähle ein PNG-, JPG- oder WebP-Bild mit höchstens 512 KB und 2048 × 2048 Pixeln.": "Please choose a PNG, JPG or WebP image up to 512 KB and 2048 × 2048 pixels."
 }

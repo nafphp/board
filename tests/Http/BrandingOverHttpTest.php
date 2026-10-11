@@ -15,7 +15,7 @@ final class BrandingOverHttpTest extends AcceptanceTestCase
 
     protected function tearDown(): void
     {
-        $this->post($this->alice, '/api/settings/application', ['resetKeys' => [Branding::NAME, Branding::HOME, Branding::LOGO]]);
+        $this->post($this->alice, '/api/settings/application', ['resetKeys' => [Branding::NAME, Branding::HOME, Branding::LOGO, Branding::COLOR, Branding::FONT]]);
         parent::tearDown();
     }
 
@@ -90,6 +90,15 @@ final class BrandingOverHttpTest extends AcceptanceTestCase
             $url   = $this->firstMatch('#src="(/branding/logo/[^"]+)"#', $page, 'public logo');
             $image = $this->guest('branding-raster')->request($url);
             self::assertSame(200, $image['status']);
+            foreach ([
+                $this->page($this->alice, '/projects'),
+                $page,
+                $this->guest('branding-icon-invitation')->request('/invitations/' . str_repeat('a', 64))['body'],
+                $this->guest('branding-icon-password')->request('/password-reset/' . str_repeat('a', 64))['body'],
+                $this->alice->request('/projects/999999')['body'],
+            ] as $surface) {
+                self::assertStringContainsString('<link rel="icon" href="' . $url . '" type="image/png"', $surface);
+            }
             self::assertSame(base64_decode(self::PNG), $image['body']);
             self::assertMatchesRegularExpression('#Content-Type: image/png#i', $image['headers']);
             self::assertMatchesRegularExpression('#X-Content-Type-Options: nosniff#i', $image['headers']);
@@ -98,7 +107,8 @@ final class BrandingOverHttpTest extends AcceptanceTestCase
             $response = $this->save(['name' => 'Nafinity', 'home_project' => '0', 'remove_logo' => '1']);
             self::assertSame(200, $response['status'], $response['body']);
             self::assertSame(404, $this->guest('branding-old')->request($url)['status']);
-            self::assertStringNotContainsString('class="brand-image"', $this->page($this->alice, '/projects'));
+            self::assertStringContainsString('class="brand-image" hidden', $this->page($this->alice, '/projects'));
+            self::assertStringContainsString('href="/assets/favicon.svg"', $this->page($this->guest('branding-default-icon'), '/login'));
         } finally {
             $this->save(['reset' => '1']);
         }
@@ -115,6 +125,7 @@ final class BrandingOverHttpTest extends AcceptanceTestCase
             self::assertSame(200, $this->upload(base64_decode(self::PNG))['status']);
             $second = $this->firstMatch('#src="(/branding/logo/[^"]+)"#', $this->page($this->alice, '/projects'), 'replacement logo');
             self::assertNotSame($first, $second);
+            self::assertStringContainsString('<link rel="icon" href="' . $second . '"', $this->page($this->alice, '/projects'));
             self::assertSame(404, $this->guest('branding-replaced')->request($first)['status']);
             self::assertSame(200, $this->guest('branding-replacement')->request($second)['status']);
             self::assertSame(count($before) + 1, count(glob(BASE_PATH . '/storage/attachments/branding/*') ?: []));
@@ -164,6 +175,47 @@ final class BrandingOverHttpTest extends AcceptanceTestCase
         self::assertMatchesRegularExpression('#Location: /settings\#branding#i', $response['headers']);
         self::assertMatchesRegularExpression('#Location: /projects\r#i', $this->alice->request('/')['headers']);
         self::assertStringContainsString('<span class="brand-word">Nafinity</span>', $this->page($this->alice, '/projects'));
+    }
+
+    public function testBrandTypographyIsSharedAndInvalidValuesDoNotPartiallySave(): void
+    {
+        self::assertSame(200, $this->save([
+            'name' => 'Studio North', 'home_project' => '0',
+            'font' => 'serif', 'color_mode' => 'custom', 'color' => '#B2A4FF',
+        ])['status']);
+        foreach ([
+            $this->page($this->alice, '/projects'),
+            $this->page($this->guest('branding-type-login'), '/login'),
+            $this->guest('branding-type-invitation')->request('/invitations/' . str_repeat('a', 64))['body'],
+            $this->guest('branding-type-password')->request('/password-reset/' . str_repeat('a', 64))['body'],
+        ] as $page) {
+            self::assertStringContainsString('data-brand-font="serif" style="--brand-color: #b2a4ff"', $page);
+        }
+        foreach ([
+            ['color_mode' => 'custom', 'color' => '#fff'],
+            ['color_mode' => 'custom', 'color' => 'red;url'],
+            ['color_mode' => 'custom'],
+            ['color_mode' => ['custom']],
+            ['font' => 'url(https://example.test/font)'],
+        ] as $invalid) {
+            self::assertSame(422, $this->save($invalid + ['name' => 'Must not save', 'home_project' => '0'])['status']);
+        }
+        self::assertSame(422, $this->post($this->alice, '/api/settings/application', [
+            'values' => [Branding::COLOR => '#nope00', Branding::NAME => 'Must not save'],
+        ])['status']);
+        $page = $this->page($this->alice, '/projects');
+        self::assertStringContainsString('Studio North', $page);
+        self::assertStringNotContainsString('Must not save', $page);
+        self::assertStringContainsString('data-brand-font="serif" style="--brand-color: #b2a4ff"', $page);
+        // Older clients omitting the new fields keep the saved typography.
+        self::assertSame(200, $this->save(['name' => 'Renamed', 'home_project' => '0'])['status']);
+        self::assertStringContainsString('data-brand-font="serif" style="--brand-color: #b2a4ff"', $this->page($this->alice, '/projects'));
+        self::assertSame(200, $this->save(['name' => 'Renamed', 'home_project' => '0', 'color_mode' => 'auto', 'font' => 'mono'])['status']);
+        self::assertStringNotContainsString('style="--brand-color:', $this->page($this->alice, '/projects'));
+        self::assertSame(200, $this->save(['reset' => '1'])['status']);
+        $page = $this->page($this->alice, '/projects');
+        self::assertStringContainsString('data-brand-font="system"', $page);
+        self::assertStringNotContainsString('style="--brand-color:', $page);
     }
 
     private function revision(string $page): string

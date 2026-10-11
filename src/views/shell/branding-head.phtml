@@ -1,0 +1,9 @@
+<?php
+use Naf\Board\Support\Branding;
+use Naf\Board\Support\BrandLogoStorage;
+
+use function Naf\View\s;
+
+$logo = Branding::logoKey();
+?>
+<link rel="icon" href="<?= s(Branding::logoUrl() ?? '/assets/favicon.svg') ?>" type="<?= s($logo !== null ? BrandLogoStorage::contentType($logo) : 'image/svg+xml') ?>" />

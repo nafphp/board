@@ -355,6 +355,27 @@ final class CoreSettings implements ExtensionProviderInterface
             configKey: Branding::LOGO_PATH,
         ));
 
+        $settings->add(new SettingDefinition(
+            Branding::COLOR,
+            'application',
+            'branding',
+            'Schriftfarbe des Namens',
+            'text',
+            null,
+            options: ['nullable' => true, 'max' => 7],
+            configKey: Branding::COLOR_PATH,
+        ));
+        $settings->add(new SettingDefinition(
+            Branding::FONT,
+            'application',
+            'branding',
+            'Schriftart des Namens',
+            'select',
+            'system',
+            options: ['choices' => Branding::FONTS],
+            configKey: Branding::FONT_PATH,
+        ));
+
         /*
          * The role editor the rbac package ships, as a card like any other.
          * Its id is not "roles" because the project card already has that one
