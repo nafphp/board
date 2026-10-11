@@ -370,8 +370,8 @@ document.addEventListener('click', async (event) => {
       return;
     }
     drawer.querySelector('.drawer-content').innerHTML = await response.text();
-    drawerUrl = link.href;
-    history.pushState({ nafinityDrawer: true }, '', link.href);
+    drawerUrl = creating ? location.href : link.href;
+    history.pushState({ nafinityDrawer: true }, '', drawerUrl);
     document.dispatchEvent(new CustomEvent('nafinity:ticket-opened'));
     document.dispatchEvent(
       new CustomEvent('nafinity:fragment-updated', {
@@ -409,10 +409,13 @@ drawer?.addEventListener('close', () => {
 window.addEventListener('popstate', () => {
   if (drawer?.open) {
     if (!drawer.dispatchEvent(new Event('nafinity:ticket-before-close', { cancelable: true }))) {
+      const workspace = drawer.querySelector('.ticket-workspace');
       history.pushState(
         { nafinityDrawer: true },
         '',
-        drawer.querySelector('.ticket-workspace')?.dataset.ticketUrl || drawerUrl,
+        workspace?.dataset.mode === 'create' && !workspace.dataset.needsReload
+          ? drawerUrl
+          : workspace?.dataset.ticketUrl || drawerUrl,
       );
       return;
     }
