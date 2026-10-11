@@ -638,5 +638,20 @@
   "Bitte lade die Einstellungen neu.": "Bitte lade die Einstellungen neu.",
   "Bitte wähle die Projektübersicht oder ein verfügbares Board.": "Bitte wähle die Projektübersicht oder ein verfügbares Board.",
   "Bitte wähle entweder ein neues Logo oder „Logo entfernen“.": "Bitte wähle entweder ein neues Logo oder „Logo entfernen“.",
-  "Bitte lade genau ein Logo hoch.": "Bitte lade genau ein Logo hoch."
+  "Bitte lade genau ein Logo hoch.": "Bitte lade genau ein Logo hoch.",
+  "Die Vorschau aktualisiert sich sofort. Änderungen gelten nach dem Speichern.": "Die Vorschau aktualisiert sich sofort. Änderungen gelten nach dem Speichern.",
+  "PNG, JPG oder WebP · höchstens 512 KB und 2048 × 2048 Pixel. Das Logo erscheint auch auf der Anmeldung und als Favicon im Browser-Tab.": "PNG, JPG oder WebP · höchstens 512 KB und 2048 × 2048 Pixel. Das Logo erscheint auch auf der Anmeldung und als Favicon im Browser-Tab.",
+  "Schriftart des Namens": "Schriftart des Namens",
+  "Schriftfarbe des Namens": "Schriftfarbe des Namens",
+  "Systemschrift": "Systemschrift",
+  "Serif": "Serif",
+  "Monospace": "Monospace",
+  "Automatisch zur Farbwelt": "Automatisch zur Farbwelt",
+  "Eigene Farbe": "Eigene Farbe",
+  "Eigene Schriftfarbe": "Eigene Schriftfarbe",
+  "Gilt für den Namen in Navigation und Anmeldung. Bitte achte auf ausreichenden Kontrast.": "Gilt für den Namen in Navigation und Anmeldung. Bitte achte auf ausreichenden Kontrast.",
+  "Name, Logo, Schrift und Startseite können gemeinsam auf die Servervorgaben zurückgesetzt werden.": "Name, Logo, Schrift und Startseite können gemeinsam auf die Servervorgaben zurückgesetzt werden.",
+  "Bitte wähle eine gültige Schriftfarbe.": "Bitte wähle eine gültige Schriftfarbe.",
+  "Das Logo wird geprüft.": "Das Logo wird geprüft.",
+  "Bitte wähle ein PNG-, JPG- oder WebP-Bild mit höchstens 512 KB und 2048 × 2048 Pixeln.": "Bitte wähle ein PNG-, JPG- oder WebP-Bild mit höchstens 512 KB und 2048 × 2048 Pixeln."
 }

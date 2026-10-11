@@ -62,15 +62,30 @@ Their page titles use the same application name. Names are plain text, limited t
 characters. A long name is truncated visually in the sidebar; the link retains its full
 accessible name. Upload a PNG, JPEG or WebP logo, at most 512 KiB and 2048 × 2048 pixels.
 It is public on account pages; private ticket attachments are unaffected. Without an
-uploaded logo the infinity symbol is used. **Remove logo** restores that symbol;
-**Restore server defaults** removes all three administration overrides.
+uploaded logo the infinity symbol is used. **Remove logo** restores that symbol.
+The same image becomes the favicon in the shell, account pages and Board error pages.
+Replacing it changes its URL so the browser can load the new icon. Removing it restores
+the default infinity favicon. **Restore server defaults** removes all five administration
+overrides.
+
+The preview updates while typing a name, selecting a local image or changing typography.
+It reads the bounded image locally; no upload or global setting change happens until
+**Save settings**. Invalid images keep the saved preview and block submission.
+Choose system, serif (Georgia) or monospace for the brand name, and either an automatic
+theme-aware text color or a custom six-digit hex color. These options affect only the
+brand name in navigation and account pages; the rest of the interface keeps its existing
+typography. Fonts use installed system families without third-party font requests.
+Custom colors apply in both light and dark mode, so check their contrast in both.
 
 Branding reuses the existing typed configuration layer, administrator permission, CSRF
 protection and form revision. The friendly multipart form posts to `/settings/branding`;
-the existing configuration API retains `config.app:name` and adds `branding.home_project`
+the existing configuration API retains `config.app:name` and adds `branding.color`
+(six-digit hex or null for automatic), `branding.font`
+(`system`, `serif` or `mono`), `branding.home_project`
 (integer project id, `0` for overview) and `branding.logo` (a stored image key or null).
 The corresponding server configuration paths are `app:name`,
-`nafinity:branding:home_project` and `nafinity:branding:logo`. The API accepts only a
+`nafinity:branding:home_project`, `nafinity:branding:logo`,
+`nafinity:branding:color` and `nafinity:branding:font`. The API accepts only a
 previously uploaded, existing image key. Uploads live under `branding/` on the configured
 `attachments` disk, outside the document root and attachment cleanup directories; include
 that disk in backups. Replacing/removing a logo through the form deletes the previous

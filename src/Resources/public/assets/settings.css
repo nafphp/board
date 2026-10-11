@@ -1103,11 +1103,20 @@ summary.settings-role-heading {
   gap: 10px;
 }
 
+/* Cover the scroll body's top padding as fields move behind the preview. */
+.branding-preview-frame {
+  --preview-inset: 28px;
+  position: sticky;
+  top: calc(-1 * var(--preview-inset));
+  z-index: 2;
+  margin-top: calc(-1 * var(--preview-inset));
+  padding: var(--preview-inset) 0 12px;
+  background: var(--surface);
+}
 .branding-preview {
   display: flex;
   align-items: center;
   padding: 24px;
-  margin-bottom: 28px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface);
@@ -1120,4 +1129,26 @@ summary.settings-role-heading {
   margin-top: 32px;
   padding-top: 24px;
   border-top: 1px solid var(--line);
+}
+
+.branding-preview-hint {
+  margin-bottom: 28px;
+}
+.branding-typography {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 20px;
+}
+[data-branding-color][hidden],
+[data-branding-preview-error][hidden] {
+  display: none;
+}
+[data-branding-preview-error]:not([hidden]) {
+  color: var(--danger);
+}
+
+@media (max-width: 650px) {
+  .branding-preview-frame {
+    --preview-inset: 20px;
+  }
 }

@@ -25,24 +25,35 @@ if (!isset($options[$home])) {
 }
 $source = $settings->describe(extensions()->settings()->find('application', Branding::NAME));
 ?>
-<form method="post" enctype="multipart/form-data" data-enhanced data-settings-form="branding" action="<?= s(route('branding.save')) ?>">
+<form method="post" enctype="multipart/form-data" data-enhanced data-settings-form="branding" data-branding-form action="<?= s(route('branding.save')) ?>">
     <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
     <input type="hidden" name="configurationRevision" value="<?= s($revision) ?>" />
-    <div class="branding-preview" aria-label="<?= s(t('Aktuelles Erscheinungsbild')) ?>">
-        <?= partial('shell/brand', ['linked' => false]) ?>
+    <div class="branding-preview-frame">
+        <div class="branding-preview" aria-label="<?= s(t('Vorschau')) ?>">
+            <?= partial('shell/brand', ['linked' => false]) ?>
+        </div>
     </div>
+    <p class="field-hint branding-preview-hint"><?= s(t('Die Vorschau aktualisiert sich sofort. Änderungen gelten nach dem Speichern.')) ?></p>
     <?= field(['label' => 'Name der Anwendung', 'name' => 'name', 'value' => Branding::name(), 'required' => true, 'attributes' => ['maxlength' => 120]]) ?>
     <p class="field-hint"><?= s(t('Quelle')) ?>: <?= s(t($source['source'] === 'administration' ? 'Administration' : 'Serverkonfiguration')) ?></p>
     <?= field([
         'label'      => 'Logo hochladen',
         'name'       => 'logo',
         'type'       => 'file',
-        'hint'       => 'PNG, JPG oder WebP · höchstens 512 KB und 2048 × 2048 Pixel. Das Logo ist auch auf der Anmeldung sichtbar.',
+        'hint'       => 'PNG, JPG oder WebP · höchstens 512 KB und 2048 × 2048 Pixel. Das Logo erscheint auch auf der Anmeldung und als Favicon im Browser-Tab.',
         'attributes' => ['accept' => 'image/png,image/jpeg,image/webp'],
     ]) ?>
     <?php if (Branding::logoKey() !== null): ?>
         <?= field(['label' => 'Logo entfernen und Standardsymbol verwenden', 'name' => 'remove_logo', 'type' => 'checkbox']) ?>
     <?php endif ?>
+    <p class="field-hint" data-branding-preview-error role="alert" hidden></p>
+    <div class="branding-typography">
+        <?= field(['label' => 'Schriftart des Namens', 'name' => 'font', 'type' => 'select', 'value' => Branding::font(), 'options' => Branding::FONTS]) ?>
+        <?= field(['label' => 'Schriftfarbe des Namens', 'name' => 'color_mode', 'type' => 'select', 'value' => Branding::color() === null ? 'auto' : 'custom', 'options' => ['auto' => 'Automatisch zur Farbwelt', 'custom' => 'Eigene Farbe']]) ?>
+    </div>
+    <div data-branding-color>
+        <?= field(['label' => 'Eigene Schriftfarbe', 'name' => 'color', 'type' => 'color', 'value' => Branding::color() ?? '#6366f1', 'hint' => 'Gilt für den Namen in Navigation und Anmeldung. Bitte achte auf ausreichenden Kontrast.']) ?>
+    </div>
     <?= field([
         'label'   => 'Startseite beim Klick auf das Logo',
         'name'    => 'home_project',
@@ -58,7 +69,7 @@ $source = $settings->describe(extensions()->settings()->find('application', Bran
     <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
     <input type="hidden" name="configurationRevision" value="<?= s($revision) ?>" />
     <input type="hidden" name="reset" value="1" />
-    <p class="field-hint"><?= s(t('Name, Logo und Startseite können gemeinsam auf die Servervorgaben zurückgesetzt werden.')) ?></p>
+    <p class="field-hint"><?= s(t('Name, Logo, Schrift und Startseite können gemeinsam auf die Servervorgaben zurückgesetzt werden.')) ?></p>
     <div class="form-errors" role="alert"></div>
     <button class="button subtle"><?= s(t('Servervorgaben wiederherstellen')) ?></button>
 </form>

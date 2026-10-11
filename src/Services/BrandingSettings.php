@@ -38,7 +38,7 @@ final class BrandingSettings
         $previous   = Branding::logoKey();
         $serverLogo = (new Config($this->configuration->base()))->get(Branding::LOGO_PATH);
         if (($data['reset'] ?? '') === '1') {
-            $this->settings->save([], [Branding::NAME, Branding::HOME, Branding::LOGO], $revision);
+            $this->settings->save([], [Branding::NAME, Branding::HOME, Branding::LOGO, Branding::COLOR, Branding::FONT], $revision);
         } else {
             $home      = $data['home_project'] ?? '0';
             $available = ['0'];
@@ -50,7 +50,16 @@ final class BrandingSettings
             if ((!is_string($home) && !is_int($home)) || !in_array((string) $home, $available, true)) {
                 throw new Failure(t('Bitte wähle die Projektübersicht oder ein verfügbares Board.'), 422);
             }
-            $values    = [Branding::NAME => $data['name'] ?? null, Branding::HOME => $home];
+            $values = [Branding::NAME => $data['name'] ?? null, Branding::HOME => $home];
+            if (array_key_exists('color_mode', $data)) {
+                if (!in_array($data['color_mode'], ['auto', 'custom'], true)) {
+                    throw new Failure(t('Bitte wähle eine gültige Schriftfarbe.'), 422);
+                }
+                $values[Branding::COLOR] = $data['color_mode'] === 'auto' ? null : ($data['color'] ?? '');
+            }
+            if (array_key_exists('font', $data)) {
+                $values[Branding::FONT] = $data['font'];
+            }
             $remove    = ($data['remove_logo'] ?? '') === '1';
             $hasUpload = $upload !== null && $upload->getError() !== UPLOAD_ERR_NO_FILE;
             if ($remove && $hasUpload) {

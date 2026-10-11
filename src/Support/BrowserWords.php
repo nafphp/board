@@ -10,6 +10,9 @@ use function Naf\I18n\t;
 final class BrowserWords
 {
     private const array KEYS = [
+        'Name der Anwendung',
+        'Das Logo wird geprüft.',
+        'Bitte wähle ein PNG-, JPG- oder WebP-Bild mit höchstens 512 KB und 2048 × 2048 Pixeln.',
         'Suche läuft …',
         'Die Suche konnte nicht geladen werden. Bitte erneut versuchen.',
         ':count Vorschläge',
