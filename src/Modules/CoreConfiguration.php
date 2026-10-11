@@ -8,6 +8,7 @@ use Naf\Board\Contracts\ExtensionProviderInterface;
 use Naf\Board\Definition\SettingDefinition;
 use Naf\Board\Definition\SettingSection;
 use Naf\Board\ExtensionContext;
+use Naf\Board\Support\Branding;
 use Naf\Board\Support\Fields\ConfigurationJsonType;
 use Naf\Board\Support\Fields\SecretType;
 use Naf\Board\Support\Settings\ConfigurationLabels;
@@ -79,7 +80,7 @@ final class CoreConfiguration implements ExtensionProviderInterface
             $group   = str_contains($path, ':') ? explode(':', $path)[0] : 'app';
             $section = $group === 'app' ? 'application' : 'configuration_' . $group;
             if (!isset($groups[$group])) {
-                $labels = ['mail' => 'E-Mail', 'database' => 'Datenbank', 'session' => 'Sitzungen', 'app' => 'Anwendung', 'auth' => 'Authentifizierung', 'websocket' => 'Live-Aktualisierung', 'storage' => 'Dateispeicher', 'oauth' => 'OAuth', 'view' => 'Ansichten', 'queue' => 'Warteschlange', 'schedule' => 'Zeitplanung', 'nafinity' => 'Nafinity'];
+                $labels = ['mail' => 'E-Mail', 'database' => 'Datenbank', 'session' => 'Sitzungen', 'app' => 'Anwendung', 'auth' => 'Authentifizierung', 'websocket' => 'Live-Aktualisierung', 'storage' => 'Dateispeicher', 'oauth' => 'OAuth', 'view' => 'Ansichten', 'queue' => 'Warteschlange', 'schedule' => 'Zeitplanung', 'nafinity' => Branding::name()];
                 $context->settingSections()->add(new SettingSection(
                     $section,
                     'application',

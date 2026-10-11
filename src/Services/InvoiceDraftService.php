@@ -9,6 +9,7 @@ use Naf\Board\Domain\Failure;
 use Naf\Board\Export\ExportLine;
 use Naf\Board\Export\InvoiceExportOptions;
 use Naf\Board\Export\TimeExportOptions;
+use Naf\Board\Support\Branding;
 use Naf\Board\Support\Input;
 use Naf\ORM\Core\EntityManager;
 use PDO;
@@ -77,11 +78,13 @@ final class InvoiceDraftService
         } finally {
             fclose($file['stream']);
         }
-        $payload  = $adapter->payload($positions, [...$input, ...$fields], 'Nafinity ' . $id);
-        $customer = $adapter->customer($fields['customer_id'], $this->connections->credentials((int) $connection['id']));
-        $snapshot = json_encode([
-            'input'    => $fields, 'rows' => $previewRows, 'booking_ids' => $bookingIds, 'payload' => $payload,
-            'customer' => $customer, 'format' => $connection['provider'], 'company_name' => $connection['company_name'], 'company_reference' => $connection['company_reference'],
+        $reference = Branding::name() . ' ' . $id;
+        $payload   = $adapter->payload($positions, [...$input, ...$fields], $reference);
+        $customer  = $adapter->customer($fields['customer_id'], $this->connections->credentials((int) $connection['id']));
+        $snapshot  = json_encode([
+            'reference' => $reference,
+            'input'     => $fields, 'rows' => $previewRows, 'booking_ids' => $bookingIds, 'payload' => $payload,
+            'customer'  => $customer, 'format' => $connection['provider'], 'company_name' => $connection['company_name'], 'company_reference' => $connection['company_reference'],
         ], JSON_THROW_ON_ERROR);
         if (strlen($snapshot) > 4000000) {
             throw new Failure(t('Bitte grenze den Export auf höchstens 300 Positionen und 5000 Buchungen ein.'), 422);
@@ -106,7 +109,15 @@ final class InvoiceDraftService
         }
         $this->connections->owner((int) $row['owner_id'] === 0);
         $this->access->project((int) $row['project_id'], (int) $row['owner_id'] === 0 ? 'export' : 'read');
-        $row['snapshot'] = json_decode($row['snapshot'], true, 64, JSON_THROW_ON_ERROR);
+        $row['snapshot']  = json_decode($row['snapshot'], true, 64, JSON_THROW_ON_ERROR);
+        $payload          = $row['snapshot']['payload'];
+        $row['reference'] = $row['snapshot']['reference'] ?? match ($row['snapshot']['format']) {
+            'invoice.easybill' => $payload['external_id'] ?? $id,
+            'invoice.lexware'  => $payload['remark'] ?? $id,
+            'invoice.sevdesk'  => $payload['invoice']['headText'] ?? $id,
+            'invoice.fastbill' => $payload['DATA']['INTROTEXT'] ?? $id,
+            default            => $id,
+        };
 
         return $row;
     }

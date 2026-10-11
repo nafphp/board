@@ -47,6 +47,19 @@ final class BrandingOverHttpTest extends AcceptanceTestCase
         }
     }
 
+    public function testAssistantAndPreferenceLabelsShareTheEscapedNameAndLogo(): void
+    {
+        self::assertSame(200, $this->upload(base64_decode(self::PNG), ['name' => 'Studio <North>'])['status']);
+        $page = $this->page($this->alice, '/preferences');
+        self::assertStringContainsString('data-app-name="Studio &lt;North&gt;"', $page);
+        self::assertStringContainsString('Studio &lt;North&gt; AI öffnen', $page);
+        self::assertStringContainsString('Nachricht an Studio &lt;North&gt; AI', $page);
+        self::assertStringContainsString('Benachrichtigungen in Studio &lt;North&gt;', $page);
+        $url = $this->firstMatch('#src="(/branding/logo/[^\"]+)"#', $page, 'logo');
+        self::assertMatchesRegularExpression('#id="ai-title".*?class="brand".*?src="' . preg_quote($url, '#') . '"#s', $page);
+        self::assertStringNotContainsString('Nafinity AI', $page);
+    }
+
     public function testTheSelectedBoardDoesNotGrantAccessAndArchivedBoardsFallBack(): void
     {
         $response = $this->save(['name' => 'Nafinity', 'home_project' => (string) self::OTHER_PROJECT]);

@@ -13,13 +13,14 @@ use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Events\SignIn;
 use Naf\Board\Jobs\AccountSecurityNoticeJob;
+use Naf\Board\Mail\Messages;
 use Naf\Board\Models\User;
 use Naf\Board\Rbac\Grants;
 use Naf\Board\Rbac\Installation;
+use Naf\Board\Support\Branding;
 use Naf\Board\Support\Input;
 use Naf\Board\Support\PasswordRule;
 use Naf\Mail\Core\Mailer;
-use Naf\Mail\Models\Mail;
 use Naf\ORM\Core\EntityManager;
 use Naf\Queue\Core\Queue;
 use Naf\RateLimit\PdoLimiter;
@@ -28,7 +29,6 @@ use PDOException;
 use SensitiveParameter;
 use Throwable;
 
-use function Naf\config;
 use function Naf\event;
 use function Naf\I18n\t;
 use function Naf\Rbac\rbac;
@@ -230,11 +230,9 @@ final class AccountService implements AccountServiceInterface
                 VALUES(?, ?, ?, ?, ?, ?)');
             $statement->execute([$id, $requestId, $email, hash('sha256', $requestId . ':' . $code), $user['security_version'], $expires]);
             $displayCode = implode('-', str_split($code, 4));
-            $mail        = (new Mail())
-                ->setFrom(config('nafinity:mail_from'))
+            $mail        = Messages::create($this->mailer, 'email-verification', ['code' => $displayCode])
                 ->addTo($email)
-                ->setSubject('Nafinity · Neue E-Mail-Adresse bestätigen')
-                ->setContent("Dein Bestätigungscode: $displayCode\n\nGib diesen Code im Profil von Nafinity ein. Er gilt 15 Minuten und kann nur einmal verwendet werden.\n\nFalls du keine Änderung angefordert hast, kannst du diese Nachricht ignorieren.\n", false);
+                ->setSubject(Branding::subject(t('Neue E-Mail-Adresse bestätigen')));
 
             try {
                 if (!$this->mailer->send($mail)) {

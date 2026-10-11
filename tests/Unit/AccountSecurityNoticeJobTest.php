@@ -10,11 +10,13 @@ use Naf\Mail\Core\Mailer;
 use Naf\Mail\Core\Transport\DummyTransport;
 use PHPUnit\Framework\TestCase;
 
+use function Naf\I18n\t;
+
 /**
  * The notice that an account's address has changed goes to the *old* address --
  * the one the person still reads if somebody else made the change. It is
- * therefore not a notification anyone can switch off, and it is plain text: a
- * security notice should not depend on a mail client rendering HTML.
+ * therefore not a notification anyone can switch off. Its plain-text alternative
+ * carries the notice even when the mail client does not render HTML.
  */
 final class AccountSecurityNoticeJobTest extends TestCase
 {
@@ -27,6 +29,8 @@ final class AccountSecurityNoticeJobTest extends TestCase
 
         $message = $transport->getMessages()[0];
         $this->assertSame(['old-address@example.test'], $message->getRecipients());
-        $this->assertFalse($message->isHtml(), 'a security notice was sent as HTML');
+        $this->assertTrue($message->isHtml());
+        $this->assertStringContainsString(t('Die E-Mail-Adresse deines Kontos bei :name wurde geändert. Alle bisherigen Anmeldungen wurden beendet.', ['name' => 'Nafinity']), $message->getTextContent());
+        $this->assertStringNotContainsString('<table', $message->getTextContent());
     }
 }

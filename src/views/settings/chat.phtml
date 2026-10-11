@@ -1,6 +1,8 @@
 <?php
+use Naf\Board\Support\Branding;
 use Naf\Board\Support\Icon;
 
+use function Naf\Board\partial;
 use function Naf\I18n\t;
 use function Naf\View\s;
 
@@ -17,6 +19,7 @@ $suggestions = $projectId ? [
 <aside
     class="ai-widget"
     data-ai-chat
+    data-app-name="<?= s(Branding::name()) ?>"
     data-user="<?= s($user->getIdentifier()) ?>"
     data-project="<?= (int) ($projectId ?? 0) ?>"
     hidden
@@ -25,11 +28,11 @@ $suggestions = $projectId ? [
         type="button"
         class="ai-launcher"
         data-ai-toggle
-        aria-label="<?= s(t('Nafinity AI öffnen')) ?>"
+        aria-label="<?= s(t(':name AI öffnen', ['name' => Branding::name()])) ?>"
         aria-controls="ai-panel"
         aria-haspopup="dialog"
         aria-expanded="false"
-        title="<?= s(t('Nafinity AI öffnen')) ?>"
+        title="<?= s(t(':name AI öffnen', ['name' => Branding::name()])) ?>"
     >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="m12 3 2.7 6.3L21 12l-6.3 2.7L12 21l-2.7-6.3L3 12l6.3-2.7L12 3Z" />
@@ -47,13 +50,8 @@ $suggestions = $projectId ? [
     >
         <div class="ai-panel-content" data-ai-panel-content>
             <header class="ai-header">
-                <span class="ai-header-mark" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m12 3 2.7 6.3L21 12l-6.3 2.7L12 21l-2.7-6.3L3 12l6.3-2.7L12 3Z" />
-                    </svg>
-                </span>
                 <div class="ai-heading">
-                    <strong id="ai-title">Nafinity <span>AI</span></strong>
+                    <div id="ai-title" class="ai-brand-title"><?= partial('shell/brand', ['linked' => false]) ?><span class="ai-brand-badge">AI</span></div>
                     <small><?= s(t($projectId ? 'Fragen und Aufgaben zum Board' : 'Fragen zu deinen Projekten')) ?></small>
                 </div>
                 <nav class="ai-toolbar" aria-label="<?= s(t('Chat-Aktionen')) ?>">
@@ -88,7 +86,7 @@ $suggestions = $projectId ? [
             <div data-ai-confirmation class="ai-confirmation" hidden></div>
             <form class="ai-composer" data-ai-form>
                 <div class="ai-input-wrap">
-                    <label for="ai-input" class="sr-only"><?= s(t('Nachricht an Nafinity AI')) ?></label>
+                    <label for="ai-input" class="sr-only"><?= s(t('Nachricht an :name AI', ['name' => Branding::name()])) ?></label>
                     <textarea id="ai-input" rows="1" maxlength="12000" placeholder="<?= s(t('Frag einfach …')) ?>" required></textarea>
                     <button type="submit" class="ai-send" data-ai-send aria-label="<?= s(t('Nachricht senden')) ?>" title="<?= s(t('Senden · Enter')) ?>" disabled>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6" /></svg>

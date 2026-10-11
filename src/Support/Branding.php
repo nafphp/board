@@ -25,7 +25,7 @@ final class Branding
     {
         $name = config('app:name', 'Nafinity');
 
-        return is_string($name) && trim($name) !== '' ? trim($name) : 'Nafinity';
+        return is_string($name) && trim($name) !== '' ? preg_replace('/[\r\n]+/', ' ', trim($name)) : 'Nafinity';
     }
 
     public static function logoKey(): ?string
@@ -35,11 +35,26 @@ final class Branding
         return is_string($key) && BrandLogoStorage::validKey($key) ? $key : null;
     }
 
-    public static function logoUrl(): ?string
+    public static function logoUrl(bool $absolute = false): ?string
     {
         $key = self::logoKey();
 
-        return $key === null ? null : route('branding.logo', ['logo' => $key]);
+        if ($key === null) {
+            return null;
+        }
+        $url = route('branding.logo', ['logo' => $key]);
+        if (!$absolute) {
+            return $url;
+        }
+        $base = rtrim((string) config('app:url', ''), '/');
+
+        return filter_var($base, FILTER_VALIDATE_URL) && in_array(parse_url($base, PHP_URL_SCHEME), ['http', 'https'], true)
+            ? $base . '/' . ltrim($url, '/') : null;
+    }
+
+    public static function subject(string $subject): string
+    {
+        return self::name() . ' · ' . $subject;
     }
 
     public static function color(): ?string

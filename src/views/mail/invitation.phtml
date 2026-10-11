@@ -1,0 +1,14 @@
+<?php
+
+use function Naf\View\view;
+
+?>
+<?= view('mail/layout', [
+    'category'    => 'Einladung',
+    'title'       => 'Gemeinsam geht mehr.',
+    'intro'       => 'Du wurdest zum Projekt ' . $projectName . ' eingeladen.',
+    'paragraphs'  => ['Öffne die Einladung, um dem Projekt beizutreten. Sie gilt sieben Tage und kann nur einmal verwendet werden.'],
+    'actionUrl'   => $url,
+    'actionLabel' => 'Einladung annehmen',
+    'footer'      => 'Diese Einladung ist für deine E-Mail-Adresse bestimmt. Falls du sie nicht erwartet hast, kannst du diese Nachricht ignorieren.',
+]) ?>

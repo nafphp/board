@@ -133,7 +133,7 @@ $states = ['prepared' => 'Vorschau', 'sending' => 'Übergabe wird geprüft', 'un
             <?= partial('components/notice', ['severity' => 'info', 'message' => t('Prüfe und vervollständige den Entwurf im Rechnungstool. Dort kannst du ihn später abschließen und bei Bedarf an DATEV übergeben.')]) ?>
         <?php elseif (in_array($draft['state'], ['sending', 'uncertain'], true)): ?>
             <?php if ($draft['message'] !== null): ?><?= partial('components/notice', ['severity' => 'warning', 'message' => $draft['message']]) ?><?php endif ?>
-            <?= partial('components/notice', ['severity' => 'warning', 'message' => t('Die Übergabe ist nicht eindeutig bestätigt. Es erfolgt kein automatischer zweiter Versuch. Prüfe im Rechnungstool die Referenz Nafinity :id.', ['id' => $draft['id']])]) ?>
+            <?= partial('components/notice', ['severity' => 'warning', 'message' => t('Die Übergabe ist nicht eindeutig bestätigt. Es erfolgt kein automatischer zweiter Versuch. Prüfe im Rechnungstool die Referenz :reference.', ['reference' => $draft['reference']])]) ?>
             <?php if ((int) $draft['attempted_at'] < time() - 60): ?>
             <form method="post" action="<?= s(route('invoice.drafts.resolve')) ?>">
                 <input type="hidden" name="_csrf" value="<?= s($token) ?>">

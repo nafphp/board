@@ -7,6 +7,7 @@ use Naf\Board\Domain\Placement;
  * @var object $user
  */
 
+use Naf\Board\Support\Branding;
 use Naf\Board\Support\Locales;
 use Naf\Board\Support\Themes;
 
@@ -62,7 +63,7 @@ $logins = (array) config('auth:logins', []);
     ]) ?>
     <div class="switch-list">
         <?= field([
-            'label' => 'Benachrichtigungen in Nafinity',
+            'label' => t('Benachrichtigungen in :name', ['name' => Branding::name()]),
             'name'  => 'notify_in_app',
             'type'  => 'switch',
             'value' => (int) $preferences['notify_in_app'],

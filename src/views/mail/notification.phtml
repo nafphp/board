@@ -1,0 +1,13 @@
+<?php
+
+use function Naf\View\view;
+
+?>
+<?= view('mail/layout', [
+    'category'    => 'Dein Workspace',
+    'title'       => 'Es gibt Neuigkeiten.',
+    'intro'       => 'In deinem Workspace gibt es ein Update. Alle Details findest du in deinen Benachrichtigungen.',
+    'actionUrl'   => $url,
+    'actionLabel' => 'Benachrichtigungen öffnen',
+    'footer'      => 'Diese Nachricht enthält bewusst keine internen Ticketinhalte. Deine Benachrichtigungseinstellungen findest du in deinem Profil.',
+]) ?>

@@ -1,3 +1,4 @@
+import { mountEmailDesigner } from './email-design.js';
 import { openDialog, closeDialog } from './dialog.js';
 import { t } from './i18n.js';
 import { mountThemeManager } from './themes.js';
@@ -8,6 +9,7 @@ import { mountPeopleDirectory } from './people.js?v=3';
 document.querySelectorAll('[data-people-directory]').forEach(mountPeopleDirectory);
 
 mountMemberControls();
+document.querySelectorAll('[data-email-design]').forEach(mountEmailDesigner);
 document.querySelectorAll('[data-theme-manager]').forEach(mountThemeManager);
 document.querySelectorAll('[data-branding-form]').forEach((form) => mountBrandingPreview(form));
 

@@ -12,6 +12,7 @@ use Naf\Board\Domain\Failure;
 use Naf\Board\Jobs\AccountSecurityNoticeJob;
 use Naf\Board\Mail\Messages;
 use Naf\Board\Models\User;
+use Naf\Board\Support\Branding;
 use Naf\Board\Support\Input;
 use Naf\Board\Support\PasswordRule;
 use Naf\Mail\Core\Mailer;
@@ -352,7 +353,7 @@ final class UserAdministration
 
     private function sendReset(string $email, #[SensitiveParameter] string $url): void
     {
-        $mail = Messages::create($this->mailer, 'password-reset', ['url' => $url])->addTo($email)->setSubject(t('Nafinity · Passwort zurücksetzen'))
+        $mail = Messages::create($this->mailer, 'password-reset', ['url' => $url])->addTo($email)->setSubject(Branding::subject(t('Passwort zurücksetzen')))
             ->setTextContent(t('Deine Administration hat einen Passwort-Reset angefordert. Dieser Link gilt 30 Minuten und kann einmal verwendet werden.') . "\n\n" . $url);
 
         try {

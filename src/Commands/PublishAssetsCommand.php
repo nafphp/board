@@ -34,7 +34,7 @@ final class PublishAssetsCommand extends AssetCommand
 
         if ($result['conflicts'] !== []) {
             $output->writeLine(
-                'Nothing was written: these files were not published by Nafinity.',
+                'Nothing was written: these files were not published by this application.',
                 'error',
             );
 

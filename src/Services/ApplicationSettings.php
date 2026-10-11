@@ -8,6 +8,7 @@ use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Definition\SettingDefinition;
 use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Failure;
+use Naf\Board\Mail\Design;
 use Naf\Board\Mail\Settings;
 use Naf\Board\Rbac\Installation;
 use Naf\Board\Support\Branding;
@@ -171,6 +172,10 @@ final class ApplicationSettings
 
         if (in_array(Themes::PATH, $paths, true)) {
             Themes::validate($configuration->get(Themes::PATH, Themes::DEFAULTS));
+        }
+
+        if (in_array(Design::PATH, $paths, true)) {
+            Design::normalize($configuration->get(Design::PATH, Design::DEFAULTS));
         }
 
         // Do not save a database connection that has never connected successfully.

@@ -10,6 +10,8 @@
  * @var int|null $projectId
  */
 
+use Naf\Board\Support\Branding;
+
 use function Naf\Board\field;
 use function Naf\Board\partial;
 use function Naf\I18n\t;
@@ -146,7 +148,7 @@ use function Naf\View\s;
     </details>
     <details class="ai-advanced">
         <summary><?= s(t('Verbindung einrichten')) ?></summary>
-        <?= partial('components/notice', ['severity' => 'info', 'message' => t('Starte Ollama lokal. Für den Zugriff von Nafinity muss Ollama die Herkunft') . ' https://localhost ' . t('erlauben') . ' (OLLAMA_ORIGINS=https://localhost). ' . t('Starte Ollama nach der Änderung neu.')]) ?>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t('Starte Ollama lokal. Für den Zugriff von :name muss Ollama die Herkunft', ['name' => Branding::name()]) . ' https://localhost ' . t('erlauben') . ' (OLLAMA_ORIGINS=https://localhost). ' . t('Starte Ollama nach der Änderung neu.')]) ?>
         <?= partial('components/notice', ['severity' => 'info', 'message' => t(
             'Dein Browser kann zusätzlich nach Zugriff auf das lokale Netzwerk fragen. Für '
             . 'den Chat wird kein Cloud-Konto und kein API-Schlüssel benötigt.',
