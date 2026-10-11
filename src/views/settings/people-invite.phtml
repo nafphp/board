@@ -1,0 +1,12 @@
+<?php
+use function Naf\Board\partial;
+use function Naf\Form\csrf;
+use function Naf\I18n\t;
+
+?>
+<div class="settings-invitation">
+    <?= partial('components/notice', ['severity' => 'info', 'message' => t('Wähle das erste Board. Die Person legt ihr Konto selbst an und erhält nur dort Zugang. Weitere Boards kannst du später über die Kontosuche zuweisen.')]) ?>
+    <?php if ($inviteTargets): ?>
+        <?= partial('settings/invite-form', ['projectId' => null, 'token' => csrf()->token(), 'inviteTargets' => $inviteTargets, 'inviteRoles' => ['member' => 'Member', 'viewer' => 'Viewer']]) ?>
+    <?php else: ?><?= partial('components/notice', ['severity' => 'warning', 'message' => t('Du kannst derzeit für kein aktives Board Mitglieder verwalten.')]) ?><?php endif ?>
+</div>

@@ -72,7 +72,9 @@ or a plugin metaframework.
   `data-dialog-editors="<details selector>"` and use the shared `settings/dialog` shell.
   `mountDialogEditors()` moves the original disclosure content into a child dialog;
   `openDialogEditor(details)` opens it programmatically. Keep forms and delegated feature
-  listeners in their original root so closing and reopening preserves drafts.
+  listeners in their original root so closing and reopening preserves drafts. Static or
+  asynchronously loaded editors render the same shell with `editor: true`, `title` and
+  trusted, pre-rendered `content`; use the central open and close paths without fixed IDs.
 - German is the complete base language of the product UI; English covers the main
   interface texts. Code, comments and documentation are English.
 

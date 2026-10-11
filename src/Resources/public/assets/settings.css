@@ -859,41 +859,6 @@ body .rbac-grants {
 .settings-table-pages span {
   margin-right: auto;
 }
-.settings-subdialog {
-  width: min(760px, calc(100vw - 40px));
-  max-width: none;
-  max-height: calc(100dvh - 56px);
-  padding: 0;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-16);
-  color: var(--text);
-  background: var(--surface);
-  box-shadow: 0 24px 90px color-mix(in srgb, var(--shadow-color) 31.37%, transparent);
-}
-
-.settings-subdialog[open] {
-  display: flex;
-  flex-direction: column;
-}
-.settings-subdialog > header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-16);
-  padding: var(--space-20) var(--space-24);
-  border-bottom: 1px solid var(--line);
-}
-.settings-subdialog h2 {
-  margin: 0;
-  font-size: var(--font-18);
-}
-.settings-subdialog > header .icon-button {
-  margin-left: auto;
-}
-.settings-subdialog-body {
-  overflow: auto;
-  overscroll-behavior: contain;
-  padding: var(--space-24);
-}
 .settings-bulk-property {
   margin-top: var(--space-20);
   padding-top: var(--space-16);
@@ -1026,9 +991,6 @@ summary.settings-role-heading {
   }
   .settings-people-table {
     min-width: 600px;
-  }
-  .settings-subdialog-body {
-    padding: var(--space-18);
   }
   .settings-person-meta {
     grid-template-columns: 1fr;
