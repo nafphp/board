@@ -888,6 +888,7 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
+  min-width: 0;
 }
 .project-heading-title h1 {
   min-width: 0;
