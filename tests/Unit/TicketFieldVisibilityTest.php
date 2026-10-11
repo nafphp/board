@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Naf\Board\Tests\Unit;
 
+use DOMDocument;
+use DOMXPath;
 use Naf\Board\Definition\TicketFieldDefinition;
 use Naf\Board\Domain\ProjectScope;
 use Naf\Board\Support\Fields\TicketFieldVisibilityType;
@@ -38,6 +40,27 @@ final class TicketFieldVisibilityTest extends TestCase
         $this->assertStringContainsString('Extra &lt;field&gt;', $markup);
         $this->assertStringContainsString('name="values[ticket_fields][test.visible]" value="0"', $markup);
         $this->assertMatchesRegularExpression('/role="switch"[^>]+name="values\[ticket_fields\]\[test.visible\]"[^>]+checked/', $markup);
+    }
+
+    public function testDistinctFieldKeysKeepDistinctLabelTargets(): void
+    {
+        $markup = partial('fields/ticket_fields', [
+            'name'   => 'values[ticket_fields]',
+            'fields' => [
+                new TicketFieldDefinition('test.example', 'First field', 'text'),
+                new TicketFieldDefinition('test-example', 'Second field', 'text'),
+            ],
+            'value' => [], 'disabled' => false,
+        ]);
+        $dom = new DOMDocument();
+        @$dom->loadHTML($markup);
+        $xpath    = new DOMXPath($dom);
+        $switches = $xpath->query('//input[@role="switch"]');
+        $ids      = array_map(static fn($node) => $node->getAttribute('id'), iterator_to_array($switches));
+        $this->assertCount(2, array_unique($ids));
+        foreach ($switches as $switch) {
+            $this->assertSame($switch->getAttribute('id'), $switch->parentNode->getAttribute('for'));
+        }
     }
 
     public function testMalformedValuesAndFixedTicketAreasAreRefused(): void

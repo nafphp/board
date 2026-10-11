@@ -22,6 +22,7 @@ $groups = array_filter(array_replace(array_fill_keys(array_keys(CoreTicket::PANE
                     <input type="hidden" name="<?= s($name . '[' . $definition->key . ']') ?>" value="0" <?= $disabled ? 'disabled' : '' ?> />
                     <?= field([
                         'type'     => 'switch',
+                        'id'       => 'ticket-visible-' . bin2hex($definition->key),
                         'name'     => $name . '[' . $definition->key . ']',
                         'label'    => $definition->label,
                         'value'    => (int) ($value[$definition->key] ?? true),
