@@ -19,6 +19,7 @@ use Naf\Board\Support\Input;
 use Naf\Board\Support\RichText;
 use Naf\Board\Support\Settings\PreferenceStore;
 use Naf\Board\Support\Ticket\CellPositions;
+use Naf\Board\Support\TicketRelations;
 use Naf\ORM\Core\EntityManager;
 use PDO;
 use Throwable;
@@ -439,15 +440,15 @@ final class TicketService implements TicketServiceInterface
             if ($remove) {
                 $this->pdo->prepare('DELETE FROM ticket_links WHERE project_id=? AND ticket_id=? AND related_id=?')->execute($pair);
             } else {
-                $statement = $this->pdo->prepare('SELECT COUNT(*) FROM ticket_links WHERE project_id=? AND ticket_id=? AND related_id=?');
-                $statement->execute($pair);
-                if (!(int) $statement->fetchColumn()) {
-                    $this->pdo->prepare('INSERT INTO ticket_links(project_id,ticket_id,related_id) VALUES(?,?,?)')->execute($pair);
-                }
+                [$relation, $inverse] = TicketRelations::parse($data['relation'] ?? 'relates');
+                // The pair stays canonical; direction is relative to its lower id.
+                $reversed = $inverse !== ($id > $related);
+                $this->pdo->prepare('INSERT INTO ticket_links(project_id,ticket_id,related_id,relation,reversed) VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE relation=VALUES(relation),reversed=VALUES(reversed)')
+                    ->execute([...$pair, $relation, (int) $reversed]);
             }
             $this->pdo->prepare('UPDATE tickets SET version=version+1,updated_at=? WHERE project_id=? AND id IN (?,?)')
                 ->execute([gmdate('Y-m-d H:i:s'), $project, $id, $related]);
-            $this->changed($project, $id, $remove ? 'ticket.unlinked' : 'ticket.linked', ['number' => $number]);
+            $this->changed($project, $id, $remove ? 'ticket.unlinked' : 'ticket.linked', ['number' => $number] + ($remove ? [] : ['relation' => $relation, 'inverse' => $inverse]));
         });
     }
 

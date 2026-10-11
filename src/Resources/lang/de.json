@@ -760,5 +760,20 @@
   "Dialog": "Dialog",
   ":name und darüberliegende Dialoge schließen": ":name und darüberliegende Dialoge schließen",
   "Kein Konto gefunden. Nutze „Neue Person einladen“.": "Kein Konto gefunden. Nutze „Neue Person einladen“.",
-  "Zurück zu :name": "Zurück zu :name"
+  "Zurück zu :name": "Zurück zu :name",
+  "Beziehung": "Beziehung",
+  "Dieses Ticket …": "Dieses Ticket …",
+  "Ticket suchen …": "Ticket suchen …",
+  "Ticketnummer oder Titel": "Ticketnummer oder Titel",
+  "Ticketnummer oder Titel eingeben …": "Ticketnummer oder Titel eingeben …",
+  "Bitte wähle eine gültige Beziehung.": "Bitte wähle eine gültige Beziehung.",
+  "steht in Beziehung zu": "steht in Beziehung zu",
+  "blockiert": "blockiert",
+  "wird blockiert von": "wird blockiert von",
+  "dupliziert": "dupliziert",
+  "wird dupliziert von": "wird dupliziert von",
+  "klont": "klont",
+  "wird geklont von": "wird geklont von",
+  "löst": "löst",
+  "wird gelöst von": "wird gelöst von"
 }

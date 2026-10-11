@@ -1300,5 +1300,20 @@
   "Dialog": "Dialog",
   ":name und darüberliegende Dialoge schließen": "Close :name and dialogs above it",
   "Kein Konto gefunden. Nutze „Neue Person einladen“.": "No account found. Use “Invite a new person”.",
-  "Zurück zu :name": "Back to :name"
+  "Zurück zu :name": "Back to :name",
+  "Beziehung": "Relationship",
+  "Dieses Ticket …": "This ticket …",
+  "Ticket suchen …": "Search for a ticket …",
+  "Ticketnummer oder Titel": "Ticket number or title",
+  "Ticketnummer oder Titel eingeben …": "Enter ticket number or title …",
+  "Bitte wähle eine gültige Beziehung.": "Please select a valid relationship.",
+  "steht in Beziehung zu": "relates to",
+  "blockiert": "blocks",
+  "wird blockiert von": "is blocked by",
+  "dupliziert": "duplicates",
+  "wird dupliziert von": "is duplicated by",
+  "klont": "clones",
+  "wird geklont von": "is cloned by",
+  "löst": "resolves",
+  "wird gelöst von": "is resolved by"
 }

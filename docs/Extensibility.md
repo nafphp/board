@@ -753,6 +753,8 @@ existing script that reads `form.elements.x.value` or `selectedOptions[0]` keeps
 | `avatars` | Draw an initial in front of every entry, as the people picker does |
 | `optionData` | `value => ['name' => 'value']`, rendered as `data-*` on that option |
 | `nativeData` | `data-*` on the native control, for an existing script hook |
+| `source` | Optional authorized URL returning `{options: [{value, label}]}` for a single choice |
+| `nativeType` | Remote choice fallback input type, default `text`; ticket numbers use `number` |
 | `disabled` | Leaves the native control in place, unenhanced |
 | `id`, `listId` | Unique native-control and listbox ids when several controls share a name |
 | `clearField` | Emit the multiselect clear marker, default `true` |
@@ -804,6 +806,15 @@ and exports `enhanceChoices(scope)`, `openChoice(root)`, `closeChoices(scope)` a
 model lists — calls `refreshChoices(form)` afterwards so the drawn list is rebuilt from the
 native options. The component also enhances controls within `nafinity:fragment-updated`
 containers and closes their popovers on `nafinity:fragment-removing`.
+
+A single choice can set `source` to an application endpoint for large, changing lists.
+The shared loader sends `q` with a short debounce, cancels older requests, ignores late
+responses after close/removal and displays loading/error states. Empty queries can return
+recent suggestions; one-character queries support ticket numbers. Return bounded string
+`value` / `label` pairs, authorize the project on every read and send `Cache-Control: private,
+no-store`. Labels render as text. The native input owns the submitted value; searching
+never replaces a selected value. `options[value]` supplies a preselected value's label.
+The endpoint is a read; saving and validation stay with the feature's existing form.
 
 ## Views
 

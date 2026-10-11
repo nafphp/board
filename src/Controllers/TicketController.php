@@ -10,11 +10,13 @@ use Naf\Board\Contracts\CommentServiceInterface;
 use Naf\Board\Contracts\PageRendererInterface;
 use Naf\Board\Contracts\TicketServiceInterface;
 use Naf\Board\Contracts\TimerServiceInterface;
+use Naf\Board\Services\TicketLinkSearch;
 use Naf\Board\Support\Input;
 use Psr\Http\Message\ResponseInterface;
 
 use function Naf\Board\extensions;
 use function Naf\Board\settings;
+use function Naf\json;
 use function Naf\request;
 use function Naf\route;
 
@@ -35,6 +37,7 @@ final class TicketController
         private CommentServiceInterface $comments,
         private AccessInterface $access,
         private PageRendererInterface $pages,
+        private TicketLinkSearch $linkSearch,
     ) {
     }
 
@@ -104,6 +107,21 @@ final class TicketController
 
             return ['url' => '/projects/' . $project . '/tickets/' . $ticket];
         });
+    }
+
+    public function linkSuggestions(string $project, string $ticket): ResponseInterface
+    {
+        return Respond::read(function () use ($project, $ticket): ResponseInterface {
+            $projectId = Input::id($project);
+            // Authorize before resolving a reference, including malformed requests.
+            $this->access->project($projectId);
+
+            return json(['options' => $this->linkSearch->find(
+                $projectId,
+                $this->tickets->resolve($projectId, $ticket),
+                request()->getQueryParams()['q'] ?? '',
+            )]);
+        })->withHeader('Cache-Control', 'private, no-store');
     }
 
     public function link(string $project, string $ticket): ResponseInterface

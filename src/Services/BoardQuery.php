@@ -291,7 +291,9 @@ final class BoardQuery implements BoardQueryInterface
                 SELECT t.id,
                        t.number,
                        t.title,
-                       t.status
+                       t.status,
+                       l.relation,
+                       CASE WHEN l.ticket_id = ? THEN l.reversed ELSE 1-l.reversed END AS inverse
                 FROM ticket_links l
                 JOIN tickets t ON t.project_id = l.project_id
                     AND t.id = CASE WHEN l.ticket_id = ? THEN l.related_id ELSE l.ticket_id END
@@ -299,7 +301,7 @@ final class BoardQuery implements BoardQueryInterface
                     AND (l.ticket_id = ? OR l.related_id = ?)
                 ORDER BY t.number
                 SQL,
-                [$ticket, $project, $ticket, $ticket],
+                [$ticket, $ticket, $project, $ticket, $ticket],
             ),
             'comments' => $this->rows(
                 <<<'SQL'

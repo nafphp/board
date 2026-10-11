@@ -37,12 +37,28 @@ final class TicketLinkOverHttpTest extends AcceptanceTestCase
         $added = $this->post(
             $this->alice,
             $this->url . '/links',
-            ['number' => $this->otherNumber] + $this->ticketState($this->url),
+            ['number' => $this->otherNumber, 'relation' => 'clones_by'] + $this->ticketState($this->url),
         );
 
         $this->assertSame(200, $added['status']);
+        $this->assertStringContainsString('wird geklont von', $this->page($this->alice, $this->url));
+        $this->assertStringContainsString('klont', $this->page($this->alice, $this->other));
         $this->assertStringContainsString('Linked HTTP ticket', $this->page($this->alice, $this->url));
         $this->assertStringContainsString('Inline HTTPS title', $this->page($this->alice, $this->other));
+    }
+
+    public function testSuggestionsSearchByNumberAndTitleAndStayPrivate(): void
+    {
+        foreach ([(string) $this->otherNumber, 'Linked HTTP ticket'] as $query) {
+            $response = $this->alice->request($this->url . '/links/suggestions?q=' . rawurlencode($query));
+            $this->assertSame(200, $response['status']);
+            $this->assertStringContainsString('private, no-store', $response['headers']);
+            $options = json_decode($response['body'], true)['options'];
+            $this->assertContains((string) $this->otherNumber, array_column($options, 'value'));
+        }
+        $this->assertSame(404, $this->bob->request($this->url . '/links/suggestions?q=Linked')['status']);
+        $this->assertSame(422, $this->alice->request($this->url . '/links/suggestions?q[]=bad')['status']);
+        $this->assertSame(303, $this->guest('link-search-guest')->request($this->url . '/links/suggestions?q=Linked')['status']);
     }
 
     public function testALinkCanBeRemovedAgain(): void
