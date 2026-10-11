@@ -180,11 +180,11 @@ $panelData = [
             <header class="ticket-heading">
                 <?php if ($isNew): ?><div class="ticket-kicker"><span class="ticket-key"><?= s(t('Neues Ticket')) ?></span></div><?php else: ?>
                 <div class="ticket-kicker"><span class="ticket-key"><?= s(Format::ticket($key, $ticket['number'])) ?></span><span class="ticket-status" data-ticket-readonly="status"><?= s($ticket['archived_at'] ? t('Archiviert') : ($ticket['status'] === 'closed' ? t('Geschlossen') : t('Offen'))) ?></span></div><?php endif ?>
-                <?= $field('title', 'Titel', 'text', $ticket['title'], '<h1>' . s($ticket['title']) . '</h1>', [], ['class' => 'ticket-title']) ?>
+                <?= $field('title', 'Titel', 'text', $ticket['title'], '<h1' . ($isNew ? ' class="muted"' : '') . '>' . s($isNew ? t('Was soll erledigt werden?') : $ticket['title']) . '</h1>', [], ['class' => 'ticket-title']) ?>
             </header>
             <section class="ticket-description detail-section">
                 <h2><?= s(t('Beschreibung')) ?></h2>
-                <?= $field('description', 'Beschreibung', 'rich', RichText::description($ticket), $ticket['description'] === '' ? '<p class="muted">' . s(t('Noch keine Beschreibung.')) . '</p>' : RichText::description($ticket)) ?>
+                <?= $field('description', 'Beschreibung', 'rich', RichText::description($ticket), $ticket['description'] === '' ? '<p class="muted">' . s(t($isNew ? 'Beschreibung einfügen' : 'Noch keine Beschreibung.')) . '</p>' : RichText::description($ticket)) ?>
             </section>
             <?php if (!$isNew): ?>
             <div data-widget-slot="ticket.main.widgets">

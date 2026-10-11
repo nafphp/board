@@ -27,6 +27,14 @@ description on the left, column, assignees and the remaining metadata on the rig
 due date, estimate, logged minutes, labels and colour are all available at creation time. On
 small screens the sidebar follows the description.
 
+The title opens for typing immediately. Description and metadata first show their value or a
+muted placeholder; **Beschreibung einfügen** opens the description editor on demand. The same
+field component and open/close/keyboard flow serve both the draft and the saved ticket, in the
+drawer and on a standalone page. Leaving a draft field updates its displayed value locally;
+Escape restores that field to its value when opened, leaving the other draft fields intact.
+Required fields are opened when native form validation needs them. Quill loads once, on the
+first description edit, through the one `core.extensions` browser entry point.
+
 The inputs form one shared draft — the column choice, too, is only stored on **Create ticket**.
 The action stays reachable at the bottom edge of the modal. On success the modal shows the saved
 ticket with its own URL and inline editing, and comments, attachments and links become

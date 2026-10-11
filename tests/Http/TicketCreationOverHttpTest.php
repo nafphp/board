@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Naf\Board\Tests\Http;
 
+use DOMDocument;
+use DOMXPath;
 use Naf\Board\Tests\Support\AcceptanceTestCase;
 use Naf\Board\Tests\Support\FormMarkup;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -70,6 +72,24 @@ final class TicketCreationOverHttpTest extends AcceptanceTestCase
     public function testEveryDraftFieldIsOnTheForm(string $name): void
     {
         $this->assertNotNull($this->form->control($name), $name . ' is missing from the draft');
+    }
+
+    public function testDraftAndDetailUseTheSameFieldDisplayAndEditorContract(): void
+    {
+        foreach ([self::NEW, self::NEW . '?fragment=1', '/projects/1/tickets/NAF-2', '/projects/1/tickets/NAF-2?fragment=1'] as $url) {
+            $dom = new DOMDocument();
+            @$dom->loadHTML($this->page($this->alice, $url));
+            $xpath = new DOMXPath($dom);
+            foreach ($xpath->query('//*[@data-inline-field][*[@role="button"]]') as $field) {
+                $this->assertSame(1, $xpath->query('./*[contains(concat(" ", normalize-space(@class), " "), " inline-display ")]', $field)->length);
+                $this->assertSame(1, $xpath->query('./*[@data-field-editor]', $field)->length);
+            }
+            foreach ($xpath->query('//*[@data-inline-field][not(*[@data-field-editor])]') as $field) {
+                $this->assertSame(0, $xpath->query('./*[contains(@class, "inline-display")][@hidden]', $field)->length, 'read-only values disappeared from the shared view');
+            }
+            $this->assertSame(1, $xpath->query('//*[@data-rich-editor]')->length);
+        }
+        $this->assertStringContainsString('Beschreibung einfügen', $this->page($this->alice, self::NEW . '?fragment=1'));
     }
 
     /** Without JavaScript the description is still typed as plain text. */
