@@ -42,7 +42,12 @@ async function requestStackClose(target) {
     while (stack.includes(target)) {
       const current = stack.at(-1);
       current.dispatchEvent(new Event('cancel', { cancelable: true }));
-      if (!current.open) continue;
+      if (!current.open) {
+        // Native close() queues its close event; let it release the stack entry.
+        if (stack.includes(current))
+          await new Promise((done) => current.addEventListener('close', done, { once: true }));
+        continue;
+      }
       const closing = movement.get(current);
       if (!closing?.closing) break;
       await closing.finished;

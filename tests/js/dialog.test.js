@@ -396,3 +396,25 @@ test('stack requests await normal exit animations and ignore repeated clicks', a
   await first;
   assert.equal(ui.closed.length, 2);
 });
+
+test('a native cancel handler can queue its close event before the cascade continues', async () => {
+  const ui = fixture({ reduced: true });
+  const child = ui.newDialog();
+  let closedEvent;
+  child.close = (value) => {
+    child.open = false;
+    ui.closed.push(value);
+    closedEvent = () => child.fire('close');
+  };
+  child.addEventListener('cancel', () => child.close());
+  await ui.open();
+  await ui.context.openDialog(child);
+  await settle();
+  const closing = ui.controls().children[0].onclick();
+  assert.equal(child.open, false);
+  assert.equal(ui.dialog.open, true);
+  closedEvent();
+  await closing;
+  assert.equal(ui.dialog.open, false);
+  assert.equal(ui.closed.length, 2);
+});
