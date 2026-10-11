@@ -32,19 +32,22 @@ $views    = [
     'settings' => [t('Einstellungen'), 'settings', route('project.settings', ['project' => $projectId])],
 ];
 ?>
-<section class="page-heading">
-    <div>
-        <div class="heading-kicker">
-            <span class="project-symbol large" style="--project-color: <?= s($project['color']) ?>">
-                <?= s($project['icon']) ?>
-            </span>
-            <span><?= s(t('PROJEKTWORKSPACE')) ?></span>
-            <?php if ($project['archived_at']): ?>
-                <span class="pill"><?= s(t('Archiviert')) ?></span>
+<section class="page-heading project-heading">
+    <div class="project-identity">
+        <span class="project-symbol large" style="--project-color: <?= s($project['color']) ?>" aria-hidden="true">
+            <?= s($project['icon']) ?>
+        </span>
+        <div class="project-heading-copy">
+            <div class="project-heading-title">
+                <h1><?= s($project['name']) ?></h1>
+                <?php if ($project['archived_at']): ?>
+                    <span class="pill"><?= s(t('Archiviert')) ?></span>
+                <?php endif ?>
+            </div>
+            <?php if (trim($project['description']) !== ''): ?>
+                <p><?= s($project['description']) ?></p>
             <?php endif ?>
         </div>
-        <h1><?= s($project['name']) ?></h1>
-        <p><?= s($project['description']) ?></p>
     </div>
     <div class="heading-actions">
         <?= $actions ?>
