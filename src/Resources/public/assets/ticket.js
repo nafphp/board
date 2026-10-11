@@ -873,11 +873,13 @@ function mentionKeys(event) {
   }
 }
 function dirty(scope = document) {
-  return [...scope.querySelectorAll('[data-ticket-form]')].some((form) =>
-    form.hasAttribute('data-ticket-create')
+  return [...scope.querySelectorAll('[data-ticket-form]')].some((form) => {
+    // A confirmed close retains its pixels only for the exit animation.
+    if (form.closest('dialog:not([open])')) return false;
+    return form.hasAttribute('data-ticket-create')
       ? values(form) !== inlineState(form).baseline
-      : form.dataset.dirty === 'true',
-  );
+      : form.dataset.dirty === 'true';
+  });
 }
 window.addEventListener('beforeunload', (event) => {
   if (dirty()) {
