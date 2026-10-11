@@ -1,22 +1,22 @@
 .ticket-workspace {
-  --ticket-section-gap: 32px;
-  --ticket-content-gap: 16px;
+  --ticket-section-gap: var(--space-32);
+  --ticket-content-gap: var(--space-16);
   max-width: 1280px;
 }
 .ticket-workspace .detail-topline {
-  margin-bottom: 26px;
-  gap: 16px;
+  margin-bottom: var(--space-26);
+  gap: var(--space-16);
 }
 /* The arrow sits on the text rather than beside it, so the two read as one control. */
 .back-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 9px 4px 6px;
-  margin-left: -6px;
-  border-radius: 8px;
+  gap: var(--space-6);
+  padding: var(--space-4) var(--space-9) var(--space-4) var(--space-6);
+  margin-left: calc(-1 * var(--space-6));
+  border-radius: var(--radius-8);
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--font-13);
   font-weight: 550;
   transition:
     color 0.18s,
@@ -39,7 +39,7 @@
 }
 .ticket-workspace .ticket-detail-grid {
   grid-template-columns: minmax(0, 1fr) 310px;
-  gap: clamp(24px, 4vw, 64px);
+  gap: clamp(var(--space-24), 4vw, var(--space-64));
   align-items: start;
 }
 .ticket-main {
@@ -47,25 +47,25 @@
 }
 .ticket-kicker {
   display: flex;
-  gap: 12px;
+  gap: var(--space-12);
   align-items: center;
-  margin: 0 0 12px;
+  margin: 0 0 var(--space-12);
 }
 .ticket-key {
-  font-size: 12px;
+  font-size: var(--font-12);
   font-weight: 650;
   letter-spacing: 0.06em;
   color: var(--accent);
   white-space: nowrap;
 }
 .ticket-status {
-  font-size: 10px;
+  font-size: var(--font-10);
   color: var(--muted);
   border-left: 1px solid var(--line);
-  padding-left: 12px;
+  padding-left: var(--space-12);
 }
 .ticket-title h1 {
-  font-size: clamp(25px, 2.7vw, 35px);
+  font-size: clamp(var(--font-25), 2.7vw, var(--font-35));
   line-height: 1.25;
   letter-spacing: -0.035em;
   margin: 0;
@@ -73,36 +73,36 @@
   overflow-wrap: anywhere;
 }
 .ticket-title textarea {
-  font-size: clamp(25px, 2.7vw, 35px);
+  font-size: clamp(var(--font-25), 2.7vw, var(--font-35));
   line-height: 1.25;
   font-weight: 650;
   letter-spacing: -0.035em;
-  padding: 7px;
+  padding: var(--space-7);
 }
 .ticket-workspace .detail-section {
   margin-top: var(--ticket-section-gap);
-  padding-top: 28px;
+  padding-top: var(--space-28);
   border-top: 1px solid var(--line);
 }
 .ticket-workspace .detail-section h2 {
-  font-size: 13px;
+  font-size: var(--font-13);
   font-weight: 650;
-  margin: 0 0 20px;
+  margin: 0 0 var(--space-20);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-12);
 }
 .ticket-workspace .count {
-  font-size: 10px;
+  font-size: var(--font-10);
 }
 .ticket-field {
   min-width: 0;
 }
 .inline-display {
-  border-radius: 7px;
+  border-radius: var(--radius-7);
   min-height: 31px;
-  padding: 5px 7px;
-  margin: -5px -7px;
+  padding: var(--space-5) var(--space-7);
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-7));
   overflow-wrap: anywhere;
 }
 .inline-display[role='button'],
@@ -121,9 +121,9 @@
   background: var(--hover);
 }
 [data-description-display]:has(+ .inline-display[role='button']) {
-  border-radius: 7px;
-  padding: 5px 7px;
-  margin: -5px -7px;
+  border-radius: var(--radius-7);
+  padding: var(--space-5) var(--space-7);
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-7));
 }
 .ticket-field.is-editing > .inline-display {
   display: none;
@@ -139,10 +139,10 @@
 .ticket-field textarea {
   width: 100%;
   min-width: 0;
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 .ticket-field input[type='color'] {
-  padding: 3px;
+  padding: var(--space-3);
   height: 36px;
 }
 .inline-actions {
@@ -153,24 +153,24 @@
   margin-top: var(--ticket-content-gap);
 }
 .inline-actions .button {
-  padding: 6px 10px;
-  font-size: 11px;
+  padding: var(--space-6) var(--space-10);
+  font-size: var(--font-11);
 }
 .inline-actions .text-button {
-  font-size: 11px;
+  font-size: var(--font-11);
 }
 .ticket-save-state {
-  font-size: 11px;
+  font-size: var(--font-11);
   color: var(--muted);
   margin-left: auto;
 }
 .ticket-prose {
   line-height: 1.85;
-  font-size: 14px;
+  font-size: var(--font-14);
   min-height: 75px;
 }
 .ticket-prose p {
-  margin: 0 0 12px;
+  margin: 0 0 var(--space-12);
 }
 .ticket-prose p:last-child {
   margin-bottom: 0;
@@ -183,13 +183,13 @@
   letter-spacing: -0.02em;
 }
 .ticket-prose h1 {
-  font-size: 24px !important;
+  font-size: var(--font-24) !important;
 }
 .ticket-prose h2 {
-  font-size: 20px !important;
+  font-size: var(--font-20) !important;
 }
 .ticket-prose h3 {
-  font-size: 16px !important;
+  font-size: var(--font-16) !important;
 }
 .ticket-prose a {
   color: var(--accent);
@@ -197,35 +197,35 @@
 }
 .ticket-prose blockquote {
   border-left: 3px solid var(--accent);
-  padding: 6px 16px;
-  margin: 12px 0;
+  padding: var(--space-6) var(--space-16);
+  margin: var(--space-12) 0;
   color: var(--muted);
 }
 .ticket-prose pre,
 .ticket-prose code {
   background: var(--hover);
-  border-radius: 5px;
+  border-radius: var(--radius-5);
   font-size: 0.9em;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 .ticket-prose pre {
-  padding: 15px;
+  padding: var(--space-15);
 }
 .ticket-prose ul,
 .ticket-prose ol {
-  padding-left: 24px;
+  padding-left: var(--space-24);
 }
 .ticket-workspace .ticket-sidebar {
   gap: 0;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius-6);
   background: var(--surface);
   overflow: visible;
   box-shadow: var(--card-shadow);
 }
 .ticket-sidebar-group {
-  padding: 21px 22px;
+  padding: var(--space-21) var(--space-22);
 }
 .ticket-sidebar-group + .ticket-sidebar-group {
   border-top: 1px solid var(--line);
@@ -234,24 +234,24 @@
 .meta-caption {
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  font-size: 9px;
+  font-size: var(--font-9);
   font-weight: 650;
   color: var(--muted);
-  margin: 0 0 18px;
+  margin: 0 0 var(--space-18);
 }
 .ticket-primary-meta {
   background: linear-gradient(150deg, var(--accent-soft), transparent 75%);
-  border-radius: 6px 6px 0 0;
+  border-radius: var(--radius-6) var(--radius-6) 0 0;
 }
 .ticket-sidebar-settings {
-  padding: 18px 22px;
+  padding: var(--space-18) var(--space-22);
   border-top: 1px solid var(--line);
-  font-size: 11px;
+  font-size: var(--font-11);
 }
 .ticket-sidebar-settings a {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-10);
   color: var(--muted);
 }
 .ticket-sidebar-settings a:hover {
@@ -259,41 +259,41 @@
 }
 .ticket-field-visibility {
   display: grid;
-  gap: 24px;
-  margin-top: 20px;
+  gap: var(--space-24);
+  margin-top: var(--space-20);
 }
 .ticket-field-visibility .switch-list {
-  gap: 12px;
-  padding: 16px;
+  gap: var(--space-12);
+  padding: var(--space-16);
 }
 .ticket-field-visibility legend {
-  margin-bottom: 12px;
-  font-size: 12px;
+  margin-bottom: var(--space-12);
+  font-size: var(--font-12);
   font-weight: 650;
 }
 .ticket-sidebar-reset {
-  margin-top: 16px;
+  margin-top: var(--space-16);
 }
 .ticket-primary-meta .meta-caption {
-  margin-bottom: 10px;
+  margin-bottom: var(--space-10);
 }
 .ticket-primary-meta .ticket-field + .meta-caption {
-  margin-top: 25px;
+  margin-top: var(--space-25);
 }
 .column-value {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  font-size: 16px;
+  gap: var(--space-12);
+  font-size: var(--font-16);
   font-weight: 650;
   color: var(--accent);
 }
 .ticket-person {
   display: flex;
   align-items: center;
-  gap: 9px;
-  font-size: 12px;
-  margin-bottom: 7px;
+  gap: var(--space-9);
+  font-size: var(--font-12);
+  margin-bottom: var(--space-7);
 }
 .ticket-person:last-child {
   margin-bottom: 0;
@@ -301,10 +301,10 @@
 .ticket-meta {
   display: grid;
   grid-template-columns: 88px minmax(0, 1fr);
-  gap: 19px 12px;
+  gap: var(--space-19) var(--space-12);
   align-items: baseline;
   margin: 0;
-  font-size: 11px;
+  font-size: var(--font-11);
 }
 .ticket-meta dt {
   color: var(--muted);
@@ -329,7 +329,7 @@
   place-items: center;
   width: 26px;
   height: 26px;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   cursor: pointer;
   list-style: none;
   color: var(--muted);
@@ -351,11 +351,11 @@
   right: 0;
   z-index: 5;
   min-width: 212px;
-  padding: 5px;
+  padding: var(--space-5);
   border: 1px solid var(--line);
-  border-radius: 11px;
+  border-radius: var(--radius-11);
   background: var(--surface);
-  box-shadow: 0 18px 44px -18px #00000059;
+  box-shadow: 0 18px 44px -18px color-mix(in srgb, var(--shadow-color) 34.9%, transparent);
   animation: menu-drop 0.16s cubic-bezier(0.22, 0.7, 0.26, 1);
 }
 @keyframes menu-drop {
@@ -368,14 +368,14 @@
 .menu-sheet summary {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: var(--space-9);
   width: 100%;
-  padding: 8px 10px;
+  padding: var(--space-8) var(--space-10);
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--radius-7);
   background: none;
   color: var(--text);
-  font-size: 13px;
+  font-size: var(--font-13);
   text-align: left;
   cursor: pointer;
   transition: background 0.14s;
@@ -402,22 +402,22 @@
 }
 .menu-move form {
   display: grid;
-  gap: 8px;
-  padding: 8px 10px 4px;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-10) var(--space-4);
 }
 .menu-move label {
   display: grid;
-  gap: 4px;
+  gap: var(--space-4);
 }
 .menu-move select {
   width: 100%;
-  padding: 7px 8px;
+  padding: var(--space-7) var(--space-8);
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: var(--radius-7);
   background: var(--surface);
   color: var(--text);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--font-13);
 }
 .menu-move p {
   margin: 0;
@@ -426,7 +426,7 @@
 .menu-move button {
   justify-content: center;
   width: auto;
-  padding: 7px 14px;
+  padding: var(--space-7) var(--space-14);
   border: 1px solid var(--line);
   font-weight: 600;
   text-align: center;
@@ -449,15 +449,15 @@
 .upload-form {
   display: grid;
   gap: var(--ticket-content-gap);
-  margin-top: 20px;
+  margin-top: var(--space-20);
 }
 .dropzone {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 20px;
+  gap: var(--space-16);
+  padding: var(--space-20);
   border: 1px dashed var(--line);
-  border-radius: 12px;
+  border-radius: var(--radius-12);
   cursor: pointer;
   background: color-mix(in srgb, var(--surface) 35%, transparent);
   transition:
@@ -482,31 +482,31 @@
   width: 38px;
   height: 38px;
   flex: none;
-  border-radius: 11px;
+  border-radius: var(--radius-11);
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 .dropzone-words {
   display: grid;
-  gap: 6px;
+  gap: var(--space-6);
   line-height: 1.5;
   min-width: 0;
 }
 .dropzone-words strong {
-  font-size: 13px;
+  font-size: var(--font-13);
   font-weight: 600;
 }
 .upload-chosen {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 10px 12px;
+  gap: var(--space-9);
+  padding: var(--space-10) var(--space-12);
   border: 1px solid var(--line);
-  border-radius: 11px;
+  border-radius: var(--radius-11);
   background: var(--surface);
 }
 .upload-name {
-  font-size: 13px;
+  font-size: var(--font-13);
   font-weight: 550;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -523,12 +523,12 @@
 .upload-progress {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-10);
 }
 .upload-track {
   flex: 1;
   height: 6px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: var(--line);
   overflow: hidden;
 }
@@ -557,7 +557,7 @@
 }
 .attachment-row.just-added {
   animation: attachment-arrived 1.3s ease-out;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
 }
 @media (prefers-reduced-motion: reduce) {
   .dropzone,
@@ -572,7 +572,7 @@
 .ticket-sidebar-group > summary {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
   cursor: pointer;
   list-style: none;
   color: var(--muted);
@@ -587,7 +587,7 @@
 .ticket-sidebar-group > summary:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-4);
 }
 .ticket-sidebar-group > summary h2 {
   margin: 0;
@@ -597,8 +597,8 @@
 }
 .ticket-audit .ticket-meta {
   margin-top: var(--ticket-content-gap);
-  font-size: 10px;
-  gap: 15px 12px;
+  font-size: var(--font-10);
+  gap: var(--space-15) var(--space-12);
 }
 .ticket-color {
   display: inline-block;
@@ -606,8 +606,8 @@
   height: 13px;
   width: 13px;
   border-radius: 50%;
-  margin-right: 7px;
-  border: 1px solid #8884;
+  margin-right: var(--space-7);
+  border: 1px solid var(--line);
 }
 .priority-urgent,
 .priority-high {
@@ -619,18 +619,18 @@
 .ticket-options {
   max-height: 220px;
   overflow-y: auto;
-  padding: 5px;
+  padding: var(--space-5);
   background: var(--input);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
 }
 .ticket-options label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
   margin: 0;
-  padding: 6px 2px;
-  font-size: 11px;
+  padding: var(--space-6) var(--space-2);
+  font-size: var(--font-11);
 }
 .ticket-options input {
   width: 15px;
@@ -640,8 +640,8 @@
 }
 .ticket-time-progress {
   display: grid;
-  gap: 5px;
-  margin-top: 15px;
+  gap: var(--space-5);
+  margin-top: var(--space-15);
 }
 .ticket-time-progress:empty {
   display: none;
@@ -652,25 +652,25 @@
   accent-color: var(--accent);
 }
 .ticket-archive {
-  padding: 0 22px 20px;
+  padding: 0 var(--space-22) var(--space-20);
 }
 .ticket-archive button {
-  font-size: 10px;
+  font-size: var(--font-10);
 }
 .ticket-link-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 0;
+  gap: var(--space-12);
+  padding: var(--space-10) 0;
   border-bottom: 1px solid var(--line);
 }
 .ticket-link-row > a {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-12);
   flex: 1;
   min-width: 0;
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 .ticket-link-row > a span:nth-child(2) {
   flex: 1;
@@ -680,8 +680,8 @@
   color: var(--accent);
 }
 .ticket-link-add {
-  margin-top: 20px;
-  font-size: 12px;
+  margin-top: var(--space-20);
+  font-size: var(--font-12);
 }
 .ticket-link-add form {
   display: grid;
@@ -695,8 +695,8 @@
 .ticket-link-input {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 8px;
+  gap: var(--space-12);
+  margin-top: var(--space-8);
   max-width: 260px;
 }
 .ticket-link-input input {
@@ -704,59 +704,59 @@
   margin-top: 0;
 }
 .ticket-history > summary {
-  padding: 4px 0;
-  font-size: 12px;
+  padding: var(--space-4) 0;
+  font-size: var(--font-12);
   font-weight: 600;
   cursor: pointer;
 }
 .ticket-history .count {
-  margin-left: 8px;
+  margin-left: var(--space-8);
 }
 .ticket-history .activity-list {
-  margin-top: 20px;
+  margin-top: var(--space-20);
 }
 .ticket-workspace .ticket-comment {
-  gap: 16px;
-  margin-top: 24px;
+  gap: var(--space-16);
+  margin-top: var(--space-24);
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: var(--space-24);
   border-bottom: 1px solid var(--line);
 }
 .ticket-comment.is-reply {
-  margin-left: calc(min(var(--reply-depth), 3) * 23px);
-  padding-left: 12px;
+  margin-left: calc(min(var(--reply-depth), 3) * var(--space-23));
+  padding-left: var(--space-12);
   border-left: 2px solid var(--line);
 }
 .comment-byline {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 12px;
+  gap: var(--space-8) var(--space-12);
   align-items: baseline;
 }
 .ticket-comment .comment-byline strong {
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 .ticket-comment .comment-byline time {
   margin: 0;
-  font-size: 11px;
+  font-size: var(--font-11);
 }
 .ticket-comment .comment-body {
   line-height: 1.8;
-  font-size: 13px;
+  font-size: var(--font-13);
   overflow-wrap: anywhere;
-  margin: 12px 0 0;
+  margin: var(--space-12) 0 0;
 }
 .comment-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 12px 24px;
+  gap: var(--space-12) var(--space-24);
   margin-top: var(--ticket-content-gap);
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 .comment-actions button,
 .comment-actions summary {
-  font-size: 12px;
+  font-size: var(--font-12);
   color: var(--muted);
   cursor: pointer;
 }
@@ -780,8 +780,8 @@
 .mention {
   color: var(--accent);
   background: var(--accent-soft);
-  padding: 1px 4px;
-  border-radius: 4px;
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-4);
 }
 .comment-composer {
   position: relative;
@@ -789,10 +789,10 @@
   gap: var(--ticket-content-gap);
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 13px;
+  border-radius: var(--radius-13);
   margin-top: var(--ticket-section-gap);
-  box-shadow: 0 8px 30px #00000010;
-  padding: 20px;
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--shadow-color) 6.27%, transparent);
+  padding: var(--space-20);
 }
 .comment-composer .form-errors.visible {
   margin: 0;
@@ -801,7 +801,7 @@
   border-color: var(--accent);
   box-shadow:
     0 0 0 3px var(--accent-soft),
-    0 8px 30px #00000010;
+    0 8px 30px color-mix(in srgb, var(--shadow-color) 6.27%, transparent);
 }
 .comment-composer textarea {
   display: block;
@@ -811,8 +811,8 @@
   resize: vertical;
   max-height: 220px;
   min-height: 96px;
-  padding: 4px;
-  font-size: 13px;
+  padding: var(--space-4);
+  font-size: var(--font-13);
 }
 .comment-composer textarea:focus {
   outline: none;
@@ -823,32 +823,32 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px 20px;
+  gap: var(--space-12) var(--space-20);
   padding-top: var(--ticket-content-gap);
   border-top: 1px solid var(--line);
 }
 .composer-footer .small {
-  font-size: 11px;
+  font-size: var(--font-11);
 }
 .composer-footer .button {
   min-height: 40px;
-  padding: 10px 16px;
+  padding: var(--space-10) var(--space-16);
   margin-left: auto;
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 .reply-context [data-cancel-reply] {
   flex-shrink: 0;
-  padding: 8px;
+  padding: var(--space-8);
 }
 .reply-context {
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--line);
-  gap: 16px;
+  gap: var(--space-16);
   padding-bottom: var(--ticket-content-gap);
   overflow-wrap: anywhere;
-  font-size: 11px;
+  font-size: var(--font-11);
   color: var(--accent);
 }
 .mention-list {
@@ -859,22 +859,22 @@
   right: 0;
   max-height: 245px;
   overflow-y: auto;
-  border-radius: 10px;
+  border-radius: var(--radius-10);
   border: 1px solid var(--line);
-  padding: 5px;
+  padding: var(--space-5);
   background: var(--surface);
-  box-shadow: 0 8px 28px #0002;
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--shadow-color) 13.33%, transparent);
 }
 .mention-list button {
   display: block;
   width: 100%;
   text-align: left;
-  padding: 9px 12px;
+  padding: var(--space-9) var(--space-12);
   border: 0;
   background: transparent;
   color: var(--text);
-  border-radius: 5px;
-  font-size: 12px;
+  border-radius: var(--radius-5);
+  font-size: var(--font-12);
 }
 .mention-list button[aria-selected='true'],
 .mention-list button:hover {
@@ -882,26 +882,26 @@
   color: var(--accent);
 }
 .ticket-workspace .form-errors {
-  font-size: 11px;
-  margin-top: 8px;
+  font-size: var(--font-11);
+  margin-top: var(--space-8);
 }
 .ticket-workspace .ql-toolbar.ql-snow {
   border-color: var(--line);
-  border-radius: 9px 9px 0 0;
+  border-radius: var(--radius-9) var(--radius-9) 0 0;
   background: var(--surface);
-  padding: 8px;
+  padding: var(--space-8);
 }
 .ticket-workspace .ql-container.ql-snow {
   border-color: var(--line);
-  border-radius: 0 0 9px 9px;
+  border-radius: 0 0 var(--radius-9) var(--radius-9);
   font: inherit;
   background: var(--input);
 }
 .ticket-workspace .ql-editor {
   min-height: 75px;
   max-height: 65vh;
-  padding: 5px 7px;
-  font-size: 14px;
+  padding: var(--space-5) var(--space-7);
+  font-size: var(--font-14);
   line-height: 1.85;
   color: var(--text);
 }
@@ -919,7 +919,7 @@
   background: var(--surface);
   border-color: var(--line);
   color: var(--text);
-  box-shadow: 0 5px 20px #0002;
+  box-shadow: 0 5px 20px color-mix(in srgb, var(--shadow-color) 13.33%, transparent);
 }
 .ticket-workspace .ql-snow .ql-tooltip {
   left: 0 !important;
@@ -938,20 +938,20 @@
 }
 .ticket-drawer .ticket-workspace .ticket-detail-grid {
   grid-template-columns: minmax(0, 1fr) 285px;
-  gap: 30px;
+  gap: var(--space-30);
 }
 @media (max-width: 1050px) {
   .ticket-workspace .ticket-detail-grid,
   .ticket-drawer .ticket-workspace .ticket-detail-grid {
     grid-template-columns: minmax(0, 1fr) 270px;
-    gap: 26px;
+    gap: var(--space-26);
   }
   .ticket-sidebar-group {
-    padding: 18px;
+    padding: var(--space-18);
   }
   .ticket-meta {
     grid-template-columns: 75px minmax(0, 1fr);
-    gap: 17px 10px;
+    gap: var(--space-17) var(--space-10);
   }
 }
 @media (max-width: 800px) {
@@ -970,7 +970,7 @@
     width: 100%;
   }
   .ticket-primary-meta {
-    border-radius: 6px 0 0 0;
+    border-radius: var(--radius-6) 0 0 0;
   }
   .ticket-sidebar-group + .ticket-sidebar-group {
     border-top: 0;
@@ -994,24 +994,24 @@
     border-top: 1px solid var(--line);
   }
   .ticket-primary-meta {
-    border-radius: 6px 6px 0 0;
+    border-radius: var(--radius-6) var(--radius-6) 0 0;
   }
   .ticket-meta {
     grid-template-columns: 90px minmax(0, 1fr);
   }
   .ticket-workspace .ticket-detail-grid {
-    gap: 28px;
+    gap: var(--space-28);
   }
   .ticket-drawer:has(.ticket-workspace) {
     max-width: 100vw;
-    padding: 20px 16px;
+    padding: var(--space-20) var(--space-16);
   }
   .comment-composer {
-    padding: 16px;
+    padding: var(--space-16);
   }
   .ticket-comment.is-reply {
-    margin-left: 14px;
-    padding-left: 8px;
+    margin-left: var(--space-14);
+    padding-left: var(--space-8);
   }
   .composer-footer .small {
     max-width: 135px;
@@ -1044,7 +1044,7 @@
 }
 
 .ticket-drawer.ticket-create-modal {
-  box-shadow: -28px 0 100px #0004;
+  box-shadow: -28px 0 100px color-mix(in srgb, var(--shadow-color) 26.67%, transparent);
 }
 [data-field-editor] [data-rich-editor]:empty {
   display: none;
@@ -1055,22 +1055,22 @@
   z-index: 4;
   background: var(--bg);
   border-top: 1px solid var(--line);
-  padding: 18px 0 4px;
-  margin-top: 24px;
+  padding: var(--space-18) 0 var(--space-4);
+  margin-top: var(--space-24);
 }
 .ticket-create-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
+  gap: var(--space-12);
 }
 .ticket-create-actions > span {
   margin-right: auto;
-  font-size: 11px;
+  font-size: var(--font-11);
 }
 .ticket-create-footer .form-errors.visible {
-  margin: 0 0 12px;
+  margin: 0 0 var(--space-12);
 }
 @media (max-width: 480px) {
   .ticket-create-actions > span {
@@ -1080,42 +1080,42 @@
 
 .ticket-create-modal .ticket-create-footer {
   bottom: -32px;
-  padding: 18px 32px 24px;
-  margin: 24px -32px -32px;
+  padding: var(--space-18) var(--space-32) var(--space-24);
+  margin: var(--space-24) calc(-1 * var(--space-32)) calc(-1 * var(--space-32));
 }
 @media (max-width: 800px) {
   .ticket-create-modal .ticket-create-footer {
     bottom: -22px;
-    padding: 18px 18px 22px;
-    margin: 24px -18px -22px;
+    padding: var(--space-18) var(--space-18) var(--space-22);
+    margin: var(--space-24) calc(-1 * var(--space-18)) calc(-1 * var(--space-22));
   }
 }
 #ticket-discard h2 {
   margin: 0;
-  font-size: 22px;
+  font-size: var(--font-22);
 }
 #ticket-discard p {
-  margin: 0 0 6px;
+  margin: 0 0 var(--space-6);
   line-height: 1.7;
 }
 @media (max-width: 480px) {
   .ticket-create-modal .ticket-create-footer {
     bottom: -20px;
-    padding: 14px 16px 20px;
-    margin: 24px -16px -20px;
+    padding: var(--space-14) var(--space-16) var(--space-20);
+    margin: var(--space-24) calc(-1 * var(--space-16)) calc(-1 * var(--space-20));
   }
 }
 
 /* Inline editing uses the same text metrics as the reading view. */
 .ticket-field [data-field-editor] :is(input, select, textarea) {
   font: inherit;
-  padding: 3px 5px;
+  padding: var(--space-3) var(--space-5);
   min-height: 27px;
-  border-radius: 3px;
+  border-radius: var(--radius-3);
 }
 .ticket-title [data-field-editor] textarea,
 .ticket-title h1 {
-  font-size: clamp(25px, 2.7vw, 35px);
+  font-size: clamp(var(--font-25), 2.7vw, var(--font-35));
   font-weight: 650;
   line-height: 1.25;
   letter-spacing: -0.035em;
@@ -1137,11 +1137,11 @@
   outline-color: var(--accent);
 }
 .ticket-primary-meta [data-inline-field='column_id'] {
-  font-size: 16px;
+  font-size: var(--font-16);
   font-weight: 650;
 }
 .ticket-primary-meta [data-inline-field='assignee_ids'] {
-  font-size: 13px;
+  font-size: var(--font-13);
 }
 .ticket-field [data-field-editor] input[type='checkbox'] {
   padding: 0;
@@ -1151,15 +1151,15 @@
   height: 27px;
 }
 .ticket-field [data-field-editor] .ticket-options {
-  padding: 2px 5px;
-  border-radius: 3px;
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-3);
 }
 .ticket-description [data-field-editor] .ql-toolbar.ql-snow {
-  padding: 3px 4px;
-  border-radius: 3px 3px 0 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-3) var(--radius-3) 0 0;
 }
 .ticket-description [data-field-editor] .ql-container.ql-snow {
-  border-radius: 0 0 3px 3px;
+  border-radius: 0 0 var(--radius-3) var(--radius-3);
 }
 .ticket-workspace .ql-editor h1,
 .ticket-workspace .ql-editor h2,
@@ -1169,16 +1169,16 @@
   letter-spacing: -0.02em;
 }
 .ticket-workspace .ql-editor h1 {
-  font-size: 24px;
+  font-size: var(--font-24);
 }
 .ticket-workspace .ql-editor h2 {
-  font-size: 20px;
+  font-size: var(--font-20);
 }
 .ticket-workspace .ql-editor h3 {
-  font-size: 16px;
+  font-size: var(--font-16);
 }
 .ticket-workspace .ql-editor p {
-  margin: 0 0 12px;
+  margin: 0 0 var(--space-12);
 }
 .ticket-workspace .ql-editor p:last-child {
   margin-bottom: 0;
@@ -1188,12 +1188,12 @@
    in an ordinary form, and the column picker carries the ticket's accent. */
 .ticket-field .choice-trigger {
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--radius-4);
   background: transparent;
-  padding: 5px 7px;
-  margin: -5px -7px;
+  padding: var(--space-5) var(--space-7);
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-7));
   box-sizing: content-box;
-  font-size: 12px;
+  font-size: var(--font-12);
   min-height: 24px;
 }
 .ticket-field .choice-trigger:hover,
@@ -1202,7 +1202,7 @@
 }
 .ticket-field [data-choice='column_id'] .choice-trigger {
   color: var(--accent);
-  font-size: 16px;
+  font-size: var(--font-16);
   font-weight: 650;
 }
 .ticket-field [data-choice-value] {
@@ -1217,16 +1217,16 @@
 .ticket-primary-meta [data-choice='assignee_ids'] .choice-trigger {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-10);
   width: 100%;
   min-height: 48px;
   box-sizing: border-box;
-  padding: 9px 12px;
+  padding: var(--space-9) var(--space-12);
   margin: 0;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   background: var(--input);
-  font-size: 13px;
+  font-size: var(--font-13);
   line-height: 1.45;
 }
 .ticket-primary-meta [data-inline-field='assignee_ids'] > .inline-display[role='button']::after {
@@ -1261,8 +1261,8 @@
 .ticket-field .choice-search-wrap input {
   border: 0;
   background: transparent;
-  font-size: 12px;
-  padding: 4px 0;
+  font-size: var(--font-12);
+  padding: var(--space-4) 0;
   box-shadow: none;
   outline: none;
   min-height: 26px;

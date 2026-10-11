@@ -13,6 +13,7 @@ use Naf\Board\Rbac\Installation;
 use Naf\Board\Support\Branding;
 use Naf\Board\Support\BrandLogoStorage;
 use Naf\Board\Support\Settings\FileConfigurationStore;
+use Naf\Board\Support\Themes;
 use Naf\Core\Config;
 use Naf\Database\Core\Database;
 use Naf\Mail\Core\Transport\SmtpSettings;
@@ -166,6 +167,10 @@ final class ApplicationSettings
             if ($color !== null && (!is_string($color) || preg_match('/^#[0-9a-f]{6}$/iD', $color) !== 1)) {
                 throw new Failure(t('Bitte wähle eine gültige Schriftfarbe.'), 422);
             }
+        }
+
+        if (in_array(Themes::PATH, $paths, true)) {
+            Themes::validate($configuration->get(Themes::PATH, Themes::DEFAULTS));
         }
 
         // Do not save a database connection that has never connected successfully.

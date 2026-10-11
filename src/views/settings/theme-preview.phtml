@@ -1,0 +1,30 @@
+<?php
+use function Naf\Board\partial;
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+?>
+<!doctype html>
+<html lang="<?= s(\Naf\I18n\lang()) ?>" data-theme="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title><?= s(t('Theme-Vorschau')) ?></title>
+    <link rel="stylesheet" href="/assets/tokens.css?v=1" />
+    <link rel="stylesheet" href="/assets/app.css?v=44" />
+    <link rel="stylesheet" href="/assets/settings.css?v=29" />
+    <style id="theme-preview-style"></style>
+</head>
+<body class="theme-sample">
+    <?= partial('shell/brand', ['linked' => false]) ?>
+    <main>
+        <h1><?= s(t('Eine gute Idee umsetzen')) ?></h1>
+        <p><?= s(t('Farben, Schrift und Abstände in einer gemeinsamen Oberfläche.')) ?></p>
+        <section class="theme-sample-card">
+            <label><?= s(t('Titel')) ?><input placeholder="<?= s(t('Was soll erledigt werden?')) ?>" /></label>
+            <div class="settings-actions"><button class="button primary"><?= s(t('Ticket erstellen')) ?></button><button class="button subtle"><?= s(t('Abbrechen')) ?></button></div>
+        </section>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t('Die Vorschau verändert keine gespeicherten Einstellungen.')]) ?>
+    </main>
+</body>
+</html>

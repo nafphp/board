@@ -10,6 +10,11 @@ use function Naf\I18n\t;
 final class BrowserWords
 {
     private const array KEYS = [
+        'Die Vorschau konnte nicht aktualisiert werden.',
+        'Vorschau aktualisiert. Änderungen gelten nach dem Speichern.',
+        'Dieses Theme konnte nicht importiert werden.',
+        'Mein Theme',
+        'Kopie',
         'Name der Anwendung',
         'Das Logo wird geprüft.',
         'Bitte wähle ein PNG-, JPG- oder WebP-Bild mit höchstens 512 KB und 2048 × 2048 Pixeln.',

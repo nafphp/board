@@ -25,7 +25,7 @@ final class ConfigurationJsonType extends AbstractFieldType
     {
         try {
             $normalized = $this->normalize($value, $options);
-            if (strlen(json_encode($normalized, JSON_THROW_ON_ERROR)) > 16384) {
+            if (strlen(json_encode($normalized, JSON_THROW_ON_ERROR)) > ($options['maxBytes'] ?? 16384)) {
                 return [t('Wert zu groß.')];
             }
             if (isset($options['shape']) && get_debug_type($normalized) !== $options['shape']) {

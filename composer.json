@@ -29,6 +29,7 @@
         "naf/rbac": "^0.1.3",
         "naf/auth-ldap": "^0.1.0",
         "naf/mcp": "^0.2.1",
+        "sabberworm/php-css-parser": "^9.5",
         "symfony/html-sanitizer": "^7.4",
         "ext-dom": "*"
     },

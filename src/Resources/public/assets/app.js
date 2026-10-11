@@ -55,7 +55,6 @@ function showError(form, message, errors = {}, conflict = false) {
 function rememberAppearance() {
   try {
     localStorage.setItem('nafinity.theme', root.dataset.theme);
-    localStorage.setItem('nafinity.palette', root.dataset.palette);
   } catch {
     // The signed-in preference is still stored on the server.
   }

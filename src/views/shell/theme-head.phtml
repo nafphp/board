@@ -1,0 +1,9 @@
+<?php
+use Naf\Board\Support\Themes;
+
+use function Naf\View\s;
+
+?>
+<?php if (!Themes::safe()): ?>
+<link rel="stylesheet" href="<?= s(Themes::url(Themes::selected($preferences['palette'] ?? 'inherit'))) ?>" data-theme-stylesheet />
+<?php endif ?>

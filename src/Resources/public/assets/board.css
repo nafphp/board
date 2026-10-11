@@ -106,13 +106,13 @@
   top: 0;
   right: 7px;
   display: flex;
-  padding-left: 5px;
+  padding-left: var(--space-5);
   transform: translateY(-52%);
   z-index: 2;
   cursor: default;
 }
 .card-watchers .avatar {
-  margin-left: -5px;
+  margin-left: calc(-1 * var(--space-5));
   box-shadow: 0 0 0 2px var(--ok);
 }
 .card-watchers .avatar.unknown {
@@ -124,7 +124,7 @@
   transform: translateY(-3px);
   box-shadow:
     0 12px 26px -12px color-mix(in srgb, var(--accent) 45%, transparent),
-    0 3px 8px #20243810;
+    0 3px 8px color-mix(in srgb, var(--shadow-color) 6.27%, transparent);
 }
 .ticket-card:hover .card-title {
   color: var(--accent);
@@ -161,7 +161,7 @@
 /* Both slots share the carried card's size; the reserved origin stays quiet. */
 .card-slot {
   flex: none;
-  border-radius: 10px;
+  border-radius: var(--radius-10);
   border: 1px dashed var(--line);
   background: color-mix(in srgb, var(--muted) 4%, transparent);
 }
@@ -181,8 +181,8 @@
   will-change: transform;
   border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
   box-shadow:
-    0 24px 48px -18px #2024383d,
-    0 6px 16px -8px #20243830,
+    0 24px 48px -18px color-mix(in srgb, var(--shadow-color) 23.92%, transparent),
+    0 6px 16px -8px color-mix(in srgb, var(--shadow-color) 18.82%, transparent),
     0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 .ticket-ghost::after {
@@ -224,15 +224,15 @@ html.board-dragging .empty-cell {
 .board-cell.is-target.is-closing > .card-slot.is-active {
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, #2fbf8f 14%, transparent),
-    color-mix(in srgb, #ffd267 12%, transparent)
+    color-mix(in srgb, var(--ok) 14%, transparent),
+    color-mix(in srgb, var(--warning) 12%, transparent)
   );
-  border-color: color-mix(in srgb, #2fbf8f 65%, var(--line));
+  border-color: color-mix(in srgb, var(--ok) 65%, var(--line));
   animation: closing-glow 1.3s ease-in-out infinite;
 }
 @keyframes closing-glow {
   50% {
-    border-color: color-mix(in srgb, #ffd267 70%, var(--line));
+    border-color: color-mix(in srgb, var(--warning) 70%, var(--line));
   }
 }
 
@@ -286,10 +286,10 @@ html.board-dragging .empty-cell {
 }
 .ticket-card.celebrating {
   animation: card-celebrate 0.72s cubic-bezier(0.2, 1.1, 0.3, 1);
-  border-color: color-mix(in srgb, #2fbf8f 70%, var(--line));
+  border-color: color-mix(in srgb, var(--ok) 70%, var(--line));
   box-shadow:
-    0 0 0 4px color-mix(in srgb, #2fbf8f 22%, transparent),
-    0 14px 34px -14px color-mix(in srgb, #2fbf8f 60%, transparent);
+    0 0 0 4px color-mix(in srgb, var(--ok) 22%, transparent),
+    0 14px 34px -14px color-mix(in srgb, var(--ok) 60%, transparent);
   transition: box-shadow 0.8s 0.5s ease-out;
 }
 .ticket-card.celebrating::before {
@@ -297,7 +297,7 @@ html.board-dragging .empty-cell {
   position: absolute;
   top: -12px;
   right: -8px;
-  font-size: 19px;
+  font-size: var(--font-19);
   z-index: 1;
   animation: stamp 1s cubic-bezier(0.2, 1.4, 0.3, 1);
   pointer-events: none;

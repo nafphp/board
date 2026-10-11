@@ -35,13 +35,13 @@
 /* Sizes are named rather than set per place, so icons stay in step with one another. */
 .mi-sm,
 .settings-detail .rbac-role-caret::before {
-  font-size: 16px;
+  font-size: var(--font-16);
 }
 .mi-md {
-  font-size: 19px;
+  font-size: var(--font-19);
 }
 .mi-lg {
-  font-size: 22px;
+  font-size: var(--font-22);
 }
 
 /* A chevron that states whether its section is open, and turns rather than jumps. */

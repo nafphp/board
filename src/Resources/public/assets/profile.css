@@ -34,10 +34,10 @@
   max-height: calc(100% - 48px);
   padding: 0;
   border: 1px solid var(--line);
-  border-radius: 24px;
+  border-radius: var(--radius-24);
   color: var(--text);
   background: var(--surface);
-  box-shadow: 0 32px 120px #0a081855;
+  box-shadow: 0 32px 120px color-mix(in srgb, var(--shadow-color) 33.33%, transparent);
   overflow: hidden;
 }
 /*
@@ -56,7 +56,7 @@
 .profile-header {
   position: relative;
   flex: none;
-  padding: 30px 30px 30px;
+  padding: var(--space-30) var(--space-30) var(--space-30);
   background:
     radial-gradient(
       ellipse at 100% 0,
@@ -77,11 +77,11 @@
   position: absolute;
   right: 20px;
   top: 20px;
-  font-size: 23px;
+  font-size: var(--font-23);
 }
 .profile-identity {
   display: flex;
-  gap: 18px;
+  gap: var(--space-18);
   align-items: center;
   min-width: 0;
 }
@@ -89,18 +89,18 @@
   min-width: 0;
 }
 .profile-identity .eyebrow {
-  font-size: 9px;
+  font-size: var(--font-9);
   letter-spacing: 1.8px;
 }
 .profile-identity h2 {
-  font-size: 28px;
+  font-size: var(--font-28);
   font-weight: 660;
   line-height: 1.2;
-  margin: 6px 0;
+  margin: var(--space-6) 0;
   overflow-wrap: anywhere;
 }
 .profile-identity p {
-  font-size: 13px;
+  font-size: var(--font-13);
   color: var(--muted);
   margin: 0;
   overflow-wrap: anywhere;
@@ -108,14 +108,14 @@
 .profile-avatar {
   width: 68px;
   height: 68px;
-  border-radius: 22px;
-  font-size: 28px;
+  border-radius: var(--radius-22);
+  font-size: var(--font-28);
   border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
   box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 9%, transparent);
 }
 .profile-body {
   flex: 1;
-  padding: 24px 28px 28px;
+  padding: var(--space-24) var(--space-28) var(--space-28);
   overflow: auto;
   /* What scrolls here stays here: reaching the end of the list must not start
      scrolling the board behind the dialog. */
@@ -123,15 +123,15 @@
 }
 .profile-intro {
   color: var(--muted);
-  font-size: 13px;
-  margin: 0 0 22px;
+  font-size: var(--font-13);
+  margin: 0 0 var(--space-22);
 }
 .profile-memberships {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-16);
 }
 .profile-memberships h3 {
-  margin: 0 0 7px;
-  font-size: 12px;
+  margin: 0 0 var(--space-7);
+  font-size: var(--font-12);
   font-weight: 600;
 }
 .profile-memberships ul {
@@ -141,7 +141,7 @@
   max-height: 150px;
   overflow: auto;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--radius-12);
 }
 .profile-memberships li + li {
   border-top: 1px solid var(--line);
@@ -156,9 +156,9 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 16px;
-  padding: 9px 13px;
-  font-size: 12px;
+  gap: var(--space-16);
+  padding: var(--space-9) var(--space-13);
+  font-size: var(--font-12);
   transition: background 0.18s;
 }
 .profile-memberships a:hover {
@@ -173,7 +173,7 @@
   overflow-wrap: anywhere;
   text-align: right;
   color: var(--accent);
-  font-size: 11px;
+  font-size: var(--font-11);
   font-weight: 550;
 }
 /* A quiet mark under the address, the way a badge sits beside a name. It states
@@ -181,28 +181,28 @@
    border a thumb would read as a target. */
 .profile-account-kind {
   display: inline-block;
-  margin-top: 7px;
-  padding: 3px 9px;
-  border-radius: 999px;
+  margin-top: var(--space-7);
+  padding: var(--space-3) var(--space-9);
+  border-radius: var(--radius-full);
   /* Translucent rather than a flat fill: the header behind it is a gradient, and
      a solid surface colour sits on it as a patch in one theme or disappears into
      it in the other. */
   background: color-mix(in srgb, var(--surface) 72%, transparent);
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--font-11);
   letter-spacing: 0.2px;
 }
 .profile-section {
   border: 1px solid var(--line);
-  border-radius: 14px;
-  margin-top: 12px;
+  border-radius: var(--radius-14);
+  margin-top: var(--space-12);
   overflow: clip;
 }
 .profile-section summary {
   display: flex;
   align-items: center;
-  gap: 13px;
-  padding: 19px 17px;
+  gap: var(--space-13);
+  padding: var(--space-19) var(--space-17);
   list-style: none;
   cursor: var(--cursor-pointer, pointer);
   transition: background 0.18s;
@@ -215,14 +215,14 @@
 }
 .profile-section summary strong {
   display: block;
-  font-size: 13px;
+  font-size: var(--font-13);
   font-weight: 600;
 }
 .profile-section summary small {
   display: block;
-  font-size: 11px;
+  font-size: var(--font-11);
   color: var(--muted);
-  margin-top: 3px;
+  margin-top: var(--space-3);
   overflow-wrap: anywhere;
 }
 /* An address still waiting for its code, or one that was never confirmed, is worth seeing. */
@@ -237,7 +237,7 @@
   place-items: center;
   width: 38px;
   height: 38px;
-  border-radius: 11px;
+  border-radius: var(--radius-11);
   color: var(--accent);
   background: var(--accent-soft);
   flex: none;
@@ -248,7 +248,7 @@
 }
 .profile-chevron {
   margin-left: auto;
-  font-size: 18px;
+  font-size: var(--font-18);
   color: var(--muted);
   transition: transform 0.2s;
 }
@@ -259,13 +259,13 @@
   border-bottom: 1px solid var(--line);
 }
 .profile-form {
-  padding: 20px 17px;
+  padding: var(--space-20) var(--space-17);
 }
 .profile-form label {
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 .profile-form .form-grid {
-  gap: 12px;
+  gap: var(--space-12);
 }
 .profile-form .button {
   width: 100%;
@@ -273,11 +273,11 @@
 }
 .project-notifications {
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--radius-12);
   overflow: hidden;
 }
 .project-notification {
-  padding: 14px 16px;
+  padding: var(--space-14) var(--space-16);
 }
 .project-notification + .project-notification {
   border-top: 1px solid var(--line);
@@ -286,7 +286,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-20);
   margin: 0;
   cursor: var(--cursor-pointer, pointer);
 }
@@ -296,63 +296,63 @@
 }
 .project-notification strong {
   display: block;
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 .project-notification small,
 .project-notification-feedback {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--font-11);
 }
 .project-notification-feedback {
-  margin: 5px 0 0;
+  margin: var(--space-5) 0 0;
   min-height: 1.4em;
 }
 .profile-help,
 .profile-external {
-  font-size: 11px;
+  font-size: var(--font-11);
   line-height: 1.7;
   color: var(--muted);
-  margin: 0 0 18px;
+  margin: 0 0 var(--space-18);
 }
 .profile-error {
-  font-size: 12px;
+  font-size: var(--font-12);
   color: var(--danger);
-  padding: 12px;
+  padding: var(--space-12);
   background: color-mix(in srgb, var(--danger) 7%, transparent);
-  border-radius: 9px;
+  border-radius: var(--radius-9);
 }
 .profile-notice {
-  font-size: 12px;
+  font-size: var(--font-12);
   color: var(--muted);
 }
 .profile-verification {
-  margin: 18px 17px 0;
-  padding: 15px;
-  border-radius: 10px;
+  margin: var(--space-18) var(--space-17) 0;
+  padding: var(--space-15);
+  border-radius: var(--radius-10);
   background: var(--accent-soft);
 }
 .profile-step {
   color: var(--accent);
-  font-size: 9px;
+  font-size: var(--font-9);
   font-weight: 650;
   letter-spacing: 1.4px;
 }
 .profile-verification p {
-  margin: 9px 0;
-  font-size: 12px;
+  margin: var(--space-9) 0;
+  font-size: var(--font-12);
   overflow-wrap: anywhere;
 }
 .profile-verification small {
-  font-size: 11px;
+  font-size: var(--font-11);
   color: var(--muted);
 }
 .profile-code {
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   letter-spacing: 2px;
   text-transform: uppercase;
 }
 .profile-cancel-form {
-  padding: 0 17px 20px;
+  padding: 0 var(--space-17) var(--space-20);
   text-align: center;
 }
 .profile-text-button {
@@ -360,7 +360,7 @@
   padding: 0;
   background: none;
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--font-11);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -372,24 +372,24 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
-  padding: 18px 28px;
+  gap: var(--space-12);
+  padding: var(--space-18) var(--space-28);
   border-top: 1px solid var(--line);
   background: color-mix(in srgb, var(--bg) 60%, var(--surface));
 }
 .profile-footer > span {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--font-11);
 }
 .profile-presence {
-  background: #65b393;
+  background: var(--ok);
 }
 .profile-logout {
-  font-size: 12px;
-  gap: 7px;
+  font-size: var(--font-12);
+  gap: var(--space-7);
 }
 .profile-logout:hover {
   color: var(--danger);
@@ -407,28 +407,28 @@
        stop it. */
     height: min(800px, calc(100% - 24px));
     max-height: calc(100% - 24px);
-    border-radius: 18px;
+    border-radius: var(--radius-18);
   }
   .profile-header {
-    padding: 24px 20px;
+    padding: var(--space-24) var(--space-20);
   }
   .profile-body {
-    padding: 22px 18px;
+    padding: var(--space-22) var(--space-18);
   }
   .profile-footer {
-    padding: 16px 18px;
+    padding: var(--space-16) var(--space-18);
   }
   .profile-form .form-grid {
     grid-template-columns: 1fr;
     gap: 0;
   }
   .profile-identity h2 {
-    font-size: 24px;
+    font-size: var(--font-24);
   }
   .profile-avatar {
     width: 56px;
     height: 56px;
-    border-radius: 18px;
+    border-radius: var(--radius-18);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -447,12 +447,12 @@
 /* The settings cards inside the modal: they bring their own labels and spacing,
    so this only gives them room and keeps the modal's rhythm. */
 .profile-settings {
-  padding: 4px 18px 20px;
+  padding: var(--space-4) var(--space-18) var(--space-20);
 }
 .profile-settings .settings-actions {
-  margin-top: 14px;
+  margin-top: var(--space-14);
 }
 .profile-settings .settings-note,
 .profile-settings .ui-notice {
-  font-size: 12px;
+  font-size: var(--font-12);
 }
