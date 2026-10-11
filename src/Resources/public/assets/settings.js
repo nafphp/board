@@ -1,5 +1,6 @@
 import { openDialog, closeDialog } from './dialog.js';
 import { t } from './i18n.js';
+import { mountThemeManager } from './themes.js';
 import { mountBrandingPreview } from './branding-preview.js';
 import { mountAdvancedSettings } from './settings-configuration.js';
 import { mountMemberControls } from './members.js';
@@ -7,6 +8,7 @@ import { mountPeopleDirectory } from './people.js?v=3';
 document.querySelectorAll('[data-people-directory]').forEach(mountPeopleDirectory);
 
 mountMemberControls();
+document.querySelectorAll('[data-theme-manager]').forEach(mountThemeManager);
 document.querySelectorAll('[data-branding-form]').forEach((form) => mountBrandingPreview(form));
 
 let settingsStorage;
@@ -32,7 +34,12 @@ function cardTransform() {
 // The content follows the shell, avoiding scaled text during the card morph.
 const REVEAL = 160;
 function cardFrame() {
-  return { transform: cardTransform(), opacity: 1, borderRadius: '24px' };
+  return {
+    transform: cardTransform(),
+    opacity: 1,
+    borderRadius:
+      getComputedStyle(document.documentElement).getPropertyValue('--radius-24').trim() || '0px',
+  };
 }
 
 async function openCard(id, animate = true) {

@@ -14,7 +14,9 @@ use function Naf\View\s;
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <title><?= (int) $status ?> · <?= s(Branding::name()) ?></title>
         <?= partial('shell/branding-head') ?>
-        <link rel="stylesheet" href="/assets/app.css?v=43" />
+        <link rel="stylesheet" href="/assets/tokens.css?v=1" />
+        <link rel="stylesheet" href="/assets/app.css?v=44" />
+        <?= partial('shell/theme-head') ?>
     </head>
     <body>
         <main class="error-page">

@@ -8,6 +8,7 @@ use Naf\Board\Domain\Placement;
  */
 
 use Naf\Board\Support\Locales;
+use Naf\Board\Support\Themes;
 
 use function Naf\Board\field;
 use function Naf\Board\partial;
@@ -30,11 +31,11 @@ $logins = (array) config('auth:logins', []);
 <form method="post" data-enhanced action="<?= s(route('preferences.save')) ?>">
     <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
     <?= field([
-        'label'   => 'Farbwelt',
+        'label'   => 'Theme',
         'name'    => 'palette',
         'type'    => 'select',
-        'value'   => $preferences['palette'] ?? 'classic',
-        'options' => ['classic' => t('Klassisch'), 'anthracite' => t('Anthrazit')],
+        'value'   => isset(Themes::choices()[$preferences['palette'] ?? 'inherit']) ? ($preferences['palette'] ?? 'inherit') : 'inherit',
+        'options' => Themes::choices(),
     ]) ?>
     <?= field([
         'label'   => 'Helligkeit',

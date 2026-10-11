@@ -19,6 +19,7 @@ use Naf\Board\Modules\Providers\StructureSectionProvider;
 use Naf\Board\Modules\Providers\UsersSectionProvider;
 use Naf\Board\Support\Branding;
 use Naf\Board\Support\Locales;
+use Naf\Board\Support\Themes;
 
 use function Naf\config;
 
@@ -161,16 +162,13 @@ final class CoreSettings implements ExtensionProviderInterface
             'palette',
             'user',
             'personal',
-            'Farbwelt',
+            'Theme',
             'select',
-            'classic',
+            'inherit',
             90,
             [
-                'choices' => [
-                    'classic'    => 'Klassisch',
-                    'anthracite' => 'Anthrazit',
-                ],
-                'legacy' => ['store' => 'user_preferences', 'column' => 'palette'],
+                'choices' => Themes::choices(),
+                'legacy'  => ['store' => 'user_preferences', 'column' => 'palette'],
             ],
         ));
         $settings->add(new SettingDefinition(
@@ -323,6 +321,26 @@ final class CoreSettings implements ExtensionProviderInterface
             50,
             null,
             'tune',
+        ));
+        $context->settingSections()->add(new SettingSection(
+            'themes',
+            'application',
+            'Themes',
+            'settings/themes',
+            null,
+            60,
+            null,
+            'palette',
+        ));
+        $settings->add(new SettingDefinition(
+            Themes::KEY,
+            'application',
+            'themes',
+            'Themes',
+            'configuration_json',
+            Themes::DEFAULTS,
+            options: ['shape' => 'array', 'maxBytes' => 786432],
+            configKey: Themes::PATH,
         ));
         $settings->add(new SettingDefinition(
             Branding::NAME,

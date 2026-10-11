@@ -8,9 +8,6 @@ try {
   // before CSS paints; signed-in pages take their values from the server.
   if (document.documentElement.dataset.appearanceSource === 'local') {
     const theme = localStorage.getItem('nafinity.theme');
-    const palette = localStorage.getItem('nafinity.palette');
     if (['system', 'light', 'dark'].includes(theme)) document.documentElement.dataset.theme = theme;
-    if (['classic', 'anthracite'].includes(palette))
-      document.documentElement.dataset.palette = palette;
   }
 } catch {}

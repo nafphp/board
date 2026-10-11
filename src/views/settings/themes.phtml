@@ -1,0 +1,131 @@
+<?php
+use Naf\Board\Services\ApplicationSettings;
+use Naf\Board\Support\Themes;
+
+use function Naf\app;
+use function Naf\Board\field;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$catalog     = Themes::catalog();
+$schema      = Themes::schema();
+$revision    = app()->container()->get(ApplicationSettings::class)->revision();
+$editOptions = ['new' => t('Neues Theme')];
+$definitions = [];
+foreach ($schema['palettes'] as $id => $palette) {
+    $definitions[$id] = Themes::definition($id);
+    $editOptions[$id] = t(':name als Vorlage', ['name' => t($palette['name'])]);
+}
+foreach ($catalog['items'] as $id => $theme) {
+    $definitions[$id] = $theme;
+    $editOptions[$id] = $theme['name'];
+}
+?>
+<div data-theme-manager>
+    <p class="field-hint"><?= s(t('Themes gelten global. Freigegebene Themes können alle Nutzer persönlich auswählen.')) ?></p>
+    <a class="button subtle" href="<?= s(route('installation.settings') . '?appearance=default#themes') ?>"><?= s(t('Mit Standarddarstellung öffnen')) ?></a>
+    <form method="post" data-enhanced action="<?= s(route('themes.save')) ?>" class="theme-default-form">
+        <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+        <input type="hidden" name="configurationRevision" value="<?= s($revision) ?>" />
+        <input type="hidden" name="action" value="default" />
+        <?= field(['label' => 'Installationsstandard', 'name' => 'id', 'type' => 'select', 'value' => $catalog['default'], 'options' => Themes::choices(false), 'id' => 'theme-default']) ?>
+        <button class="button subtle"><?= s(t('Standard speichern')) ?></button>
+    </form>
+    <section class="theme-editor-section">
+        <h3><?= s(t('Theme bearbeiten')) ?></h3>
+        <?= field(['label' => 'Theme auswählen', 'name' => 'edit_theme', 'type' => 'select', 'value' => 'new', 'options' => $editOptions]) ?>
+        <div class="theme-tools">
+            <button type="button" class="button subtle" data-theme-duplicate><?= s(t('Als neues Theme kopieren')) ?></button>
+            <label class="button subtle theme-import-label">
+                <?= s(t('Theme importieren')) ?>
+                <input type="file" accept="application/json,.json" data-theme-import />
+            </label>
+        </div>
+        <script type="application/json" data-theme-definitions><?= json_encode(['schema' => $schema, 'themes' => $definitions], JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
+        <form method="post" data-enhanced data-theme-editor action="<?= s(route('themes.save')) ?>" data-preview-url="<?= s(route('themes.preview')) ?>">
+            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+            <input type="hidden" name="configurationRevision" value="<?= s($revision) ?>" />
+            <input type="hidden" name="id" value="" />
+            <div class="theme-preview-panel">
+                <div class="theme-preview-heading">
+                    <strong><?= s(t('Vorschau')) ?></strong>
+                    <?= field(['label' => 'Vorschau-Helligkeit', 'name' => 'preview_mode', 'id' => 'theme-preview-mode', 'type' => 'select', 'value' => 'light', 'options' => ['light' => 'Hell', 'dark' => 'Dunkel', 'system' => 'Wie mein Gerät']]) ?>
+                </div>
+                <iframe title="<?= s(t('Isolierte Theme-Vorschau')) ?>" src="<?= s(route('themes.sample')) ?>" sandbox="allow-same-origin" data-theme-frame></iframe>
+                <p class="field-hint" data-theme-preview-status role="status"></p>
+            </div>
+            <?= field(['label' => 'Theme-Name', 'name' => 'name', 'value' => t('Mein Theme'), 'required' => true, 'attributes' => ['maxlength' => 80], 'id' => 'theme-name']) ?>
+            <?= field(['label' => 'Basis', 'name' => 'base', 'id' => 'theme-base', 'type' => 'select', 'value' => 'classic', 'options' => ['classic' => 'Klassisch', 'anthracite' => 'Anthrazit']]) ?>
+            <?= field(['label' => 'Für alle Nutzer freigeben', 'name' => 'enabled', 'id' => 'theme-enabled', 'type' => 'switch', 'value' => true]) ?>
+            <details open class="theme-token-group">
+                <summary><?= s(t('Schrift, Rundungen & Abstände')) ?></summary>
+                <div class="theme-token-grid">
+                    <?php foreach ($schema['common'] as $key => $definition): ?>
+                        <?= field([
+                            'label'      => $definition['label'],
+                            'name'       => 'common[' . $key . ']',
+                            'type'       => $definition['type'] === 'font' ? 'select' : 'number',
+                            'value'      => $definition['default'],
+                            'options'    => ['system' => 'Systemschrift', 'serif' => 'Serif', 'mono' => 'Monospace'],
+                            'attributes' => $definition['type'] === 'font' ? [] : ['min' => $definition['min'], 'max' => $definition['max'], 'step' => $key === 'density' ? '0.05' : '1'],
+                        ]) ?>
+                    <?php endforeach ?>
+                </div>
+            </details>
+            <?php foreach (['light' => 'Helle Farben', 'dark' => 'Dunkle Farben'] as $mode => $label): ?>
+                <details class="theme-token-group">
+                    <summary><?= s(t($label)) ?></summary>
+                    <div class="theme-token-grid">
+                        <?php foreach ($schema['labels'] as $key => $label): ?>
+                            <?= field(['label' => $label, 'name' => $mode . '[' . $key . ']', 'type' => 'color', 'value' => $schema['palettes']['classic'][$mode][$key]]) ?>
+                        <?php endforeach ?>
+                    </div>
+                    <details class="theme-advanced-colors">
+                        <summary><?= s(t('Weitere Farbvariablen')) ?></summary>
+                        <div class="theme-token-grid">
+                            <?php foreach ($schema['palettes']['classic'][$mode] as $key => $value): ?>
+                                <?php if (str_starts_with($value, '#') && !isset($schema['labels'][$key])): ?>
+                                    <?= field(['label' => '--' . $key, 'name' => $mode . '[' . $key . ']', 'type' => strlen($value) === 7 ? 'color' : 'text', 'value' => $value]) ?>
+                                <?php endif ?>
+                            <?php endforeach ?>
+                        </div>
+                    </details>
+                </details>
+            <?php endforeach ?>
+            <details class="theme-token-group">
+                <summary><?= s(t('Eigenes CSS')) ?></summary>
+                <?= field(['label' => 'CSS überschreiben', 'name' => 'css', 'type' => 'textarea', 'attributes' => ['rows' => 10, 'maxlength' => 32768, 'spellcheck' => 'false'], 'hint' => 'Wird nach den Basisstilen geladen. Nutze gemeinsame Variablen wie --accent, --surface und --space-16. Keine Imports oder Ressourcen-URLs; maximal 32 KB.']) ?>
+            </details>
+            <div class="form-errors" role="alert"></div>
+            <div class="settings-actions"><button class="button primary"><?= s(t('Theme speichern')) ?></button></div>
+        </form>
+    </section>
+    <section class="theme-library">
+        <h3><?= s(t('Gespeicherte Themes')) ?></h3>
+        <?php foreach ($definitions as $id => $theme): ?>
+            <div class="theme-library-row">
+                <div><strong><?= s(isset($schema['palettes'][$id]) ? t($theme['name']) : $theme['name']) ?></strong><small><?= s(t($theme['enabled'] ? 'Freigegeben' : 'Entwurf')) ?></small></div>
+                <a class="button subtle" href="<?= s(route('themes.export', ['theme' => $id])) ?>"><?= s(t('Exportieren')) ?></a>
+                <?php if (isset($catalog['items'][$id])): ?>
+                    <form method="post" data-enhanced action="<?= s(route('themes.save')) ?>">
+                        <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                        <input type="hidden" name="configurationRevision" value="<?= s($revision) ?>" />
+                        <input type="hidden" name="action" value="delete" />
+                        <input type="hidden" name="id" value="<?= s($id) ?>" />
+                        <button class="button subtle"<?= $catalog['default'] === $id ? ' disabled' : '' ?>><?= s(t('Löschen')) ?></button>
+                        <div class="form-errors" role="alert"></div>
+                    </form>
+                <?php endif ?>
+            </div>
+        <?php endforeach ?>
+    </section>
+    <form method="post" data-enhanced action="<?= s(route('themes.save')) ?>" class="branding-reset">
+        <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+        <input type="hidden" name="configurationRevision" value="<?= s($revision) ?>" />
+        <input type="hidden" name="action" value="reset" />
+        <p class="field-hint"><?= s(t('Theme-Verwaltung auf Servervorgaben zurücksetzen. Persönliche Auswahlen bleiben gespeichert; fehlende Themes verwenden den Installationsstandard.')) ?></p>
+        <button class="button subtle"><?= s(t('Servervorgaben wiederherstellen')) ?></button>
+        <div class="form-errors" role="alert"></div>
+    </form>
+</div>

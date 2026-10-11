@@ -16,6 +16,7 @@ use Naf\Board\Controllers\ProjectController;
 use Naf\Board\Controllers\SearchController;
 use Naf\Board\Controllers\SessionController;
 use Naf\Board\Controllers\SettingsApiController as S;
+use Naf\Board\Controllers\ThemeController;
 use Naf\Board\Controllers\TicketController;
 use Naf\Board\Controllers\UserAccountController;
 use Naf\Board\Controllers\UserDirectoryController;
@@ -107,6 +108,11 @@ $routes = [
     ['GET', '/projects/{project}/accounts', [InvitationController::class, 'search'], 'project.accounts'],
     ['POST', '/projects/{project}/invitations/{invitation}/revoke', [InvitationController::class, 'revoke'], 'project.invitations.revoke'],
 
+    ['GET', '/themes/{theme}/{version}.css', [ThemeController::class, 'css'], 'themes.css'],
+    ['POST', '/settings/themes', [ThemeController::class, 'save'], 'themes.save'],
+    ['POST', '/settings/themes/preview', [ThemeController::class, 'preview'], 'themes.preview'],
+    ['GET', '/settings/themes/sample', [ThemeController::class, 'sample'], 'themes.sample'],
+    ['GET', '/settings/themes/{theme}/export', [ThemeController::class, 'export'], 'themes.export'],
     ['GET', '/branding/logo/{logo}', [BrandingController::class, 'logo'], 'branding.logo'],
     ['POST', '/settings/branding', [BrandingController::class, 'save'], 'branding.save'],
     ['GET', '/settings', [InstallationController::class, 'settings'], 'installation.settings'],

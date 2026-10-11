@@ -11,6 +11,7 @@ use Naf\Board\Domain\Failure;
 use Naf\Board\Domain\Placement;
 use Naf\Board\Support\Locales;
 use Naf\Board\Support\Settings\PreferenceStore;
+use Naf\Board\Support\Themes;
 
 use function Naf\I18n\t;
 
@@ -25,12 +26,12 @@ final class PreferenceService implements PreferenceServiceInterface
     {
         $user    = $this->access->actor();
         $theme   = $data['theme'] ?? 'system';
-        $palette = $data['palette'] ?? 'classic';
+        $palette = $data['palette'] ?? 'inherit';
         $locale  = $data['locale'] ?? 'de';
         $zone    = $data['timezone'] ?? 'Europe/Berlin';
         if (
             !in_array($theme, ['light', 'dark', 'system'], true)
-            || !in_array($palette, ['classic', 'anthracite'], true)
+            || (!is_string($palette) || !isset(Themes::choices()[$palette]))
             || !Locales::supports($locale)
             || !is_string($zone)
             || !in_array($zone, DateTimeZone::listIdentifiers(), true)

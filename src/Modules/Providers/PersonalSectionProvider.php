@@ -7,6 +7,7 @@ namespace Naf\Board\Modules\Providers;
 use Naf\Board\Contracts\SettingSectionProviderInterface;
 use Naf\Board\Definition\SettingSection;
 use Naf\Board\Support\Locales;
+use Naf\Board\Support\Themes;
 use Naf\Board\Support\UiContext;
 
 use function Naf\I18n\t;
@@ -24,14 +25,11 @@ final class PersonalSectionProvider implements SettingSectionProviderInterface
             'light'  => t('Hell'),
             'dark'   => t('Dunkel'),
         ];
-        $palettes = [
-            'classic'    => t('Klassisch'),
-            'anthracite' => t('Anthrazit'),
-        ];
+        $palettes = Themes::choices();
 
         return [
             'description' => implode(' · ', [
-                $palettes[$preferences['palette'] ?? 'classic'] ?? ($preferences['palette'] ?? ''),
+                $palettes[Themes::selected($preferences['palette'] ?? 'inherit')],
                 $themes[$preferences['theme'] ?? 'system'] ?? ($preferences['theme'] ?? ''),
                 Locales::name($preferences['locale'] ?? 'de'),
                 $preferences['timezone'] ?? '',

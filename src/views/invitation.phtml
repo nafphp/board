@@ -16,8 +16,10 @@ use function Naf\View\s;
         <meta name="referrer" content="no-referrer" />
         <title><?= s(t('Einladung')) ?> · <?= s(Branding::name()) ?></title>
         <?= partial('shell/branding-head') ?>
-        <script src="/assets/boot.js?v=2"></script>
-        <link rel="stylesheet" href="/assets/app.css?v=43" />
+        <script src="/assets/boot.js?v=3"></script>
+        <link rel="stylesheet" href="/assets/tokens.css?v=1" />
+        <link rel="stylesheet" href="/assets/app.css?v=44" />
+        <?= partial('shell/theme-head') ?>
     </head>
     <body class="login-body">
         <div class="login-art">

@@ -1,51 +1,51 @@
 .settings-heading {
-  margin-bottom: 30px;
+  margin-bottom: var(--space-30);
 }
 .settings-context {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 22px 26px;
+  gap: var(--space-24);
+  padding: var(--space-22) var(--space-26);
   border: 1px solid var(--line);
   background: var(--surface);
-  border-radius: 16px;
-  margin-bottom: 28px;
+  border-radius: var(--radius-16);
+  margin-bottom: var(--space-28);
 }
 .settings-context > div {
   display: grid;
-  gap: 6px;
+  gap: var(--space-6);
 }
 .settings-context span,
 .settings-context label {
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 .settings-context label {
   margin: 0;
   min-width: 220px;
 }
 .settings-context select {
-  margin-top: 5px;
+  margin-top: var(--space-5);
 }
 .settings-tiles {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-  gap: 16px;
+  gap: var(--space-16);
 }
 .settings-tile {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-16);
   min-height: 110px;
-  padding: 23px;
+  padding: var(--space-23);
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: var(--radius-16);
   background: var(--surface);
   color: var(--text);
   text-align: left;
   cursor: var(--cursor-pointer, pointer);
-  box-shadow: 0 3px 12px #17223b03;
+  box-shadow: 0 3px 12px color-mix(in srgb, var(--shadow-color) 1.18%, transparent);
   transition:
     transform 0.22s,
     border-color 0.22s,
@@ -69,23 +69,23 @@
   width: 46px;
   height: 46px;
   flex: none;
-  border-radius: 13px;
+  border-radius: var(--radius-13);
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 9%, transparent);
 }
 .settings-icon .mi {
-  font-size: 24px;
+  font-size: var(--font-24);
 }
 .settings-tile-text {
   display: grid;
-  gap: 7px;
+  gap: var(--space-7);
 }
 .settings-tile strong {
-  font-size: 14px;
+  font-size: var(--font-14);
   font-weight: 650;
 }
 .settings-tile small {
-  font-size: 11px;
+  font-size: var(--font-11);
   color: var(--muted);
   line-height: 1.6;
 }
@@ -96,8 +96,8 @@
 }
 .settings-footnote {
   color: var(--muted);
-  font-size: 12px;
-  margin-top: 26px;
+  font-size: var(--font-12);
+  margin-top: var(--space-26);
 }
 .settings-open {
   overflow: hidden;
@@ -109,10 +109,10 @@
   max-height: none;
   padding: 0;
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: var(--radius-20);
   background: var(--surface);
   color: var(--text);
-  box-shadow: 0 32px 110px #15142e35;
+  box-shadow: 0 32px 110px color-mix(in srgb, var(--shadow-color) 20.78%, transparent);
   transform-origin: top left;
   overflow: hidden;
 }
@@ -123,27 +123,27 @@
 
 .settings-detail-heading {
   display: flex;
-  gap: 17px;
+  gap: var(--space-17);
   align-items: center;
-  padding: 25px 30px;
+  padding: var(--space-25) var(--space-30);
   border-bottom: 1px solid var(--line);
   flex-shrink: 0;
 }
 .settings-detail-heading h2 {
-  margin: 0 0 5px;
-  font-size: 21px;
+  margin: 0 0 var(--space-5);
+  font-size: var(--font-21);
 }
 .settings-detail-heading p {
   margin: 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 .settings-detail-heading .icon-button {
   margin-left: auto;
-  font-size: 28px;
+  font-size: var(--font-28);
 }
 .settings-detail-body {
-  padding: 28px 32px;
+  padding: var(--space-28) var(--space-32);
   overflow: auto;
   overscroll-behavior: contain;
 }
@@ -175,23 +175,23 @@
   min-width: 0;
 }
 .settings-note {
-  padding: 15px 18px;
+  padding: var(--space-15) var(--space-18);
   background: color-mix(in srgb, var(--accent) 6%, transparent);
-  border-radius: 12px;
-  font-size: 13px;
+  border-radius: var(--radius-12);
+  font-size: var(--font-13);
   line-height: 1.7;
-  margin-bottom: 22px;
+  margin-bottom: var(--space-22);
 }
 .role-defaults {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 28px;
+  gap: var(--space-12);
+  margin-bottom: var(--space-28);
 }
 .role-defaults details {
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 16px 20px;
+  border-radius: var(--radius-12);
+  padding: var(--space-16) var(--space-20);
 }
 /* The cards keep their grid; their heads read like every other row. */
 .role-defaults .settings-row-head {
@@ -202,24 +202,24 @@
 }
 .role-defaults p,
 .role-defaults li {
-  font-size: 12px;
+  font-size: var(--font-12);
   line-height: 1.8;
 }
 .permission-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 20px 0;
+  gap: var(--space-10);
+  margin: var(--space-20) 0;
 }
 .permission-grid label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-10);
   margin: 0;
-  padding: 14px;
+  padding: var(--space-14);
   background: var(--bg);
-  border-radius: 10px;
-  font-size: 12px;
+  border-radius: var(--radius-10);
+  font-size: var(--font-12);
   line-height: 1.5;
 }
 @media (max-width: 650px) {
@@ -232,10 +232,10 @@
     height: calc(100dvh - 24px);
   }
   .settings-detail-heading {
-    padding: 20px;
+    padding: var(--space-20);
   }
   .settings-detail-body {
-    padding: 20px;
+    padding: var(--space-20);
   }
   .role-defaults,
   .permission-grid {
@@ -258,10 +258,10 @@
 
 /* Board structure: one row per entry, and opening a row is the edit. */
 .settings-row-empty {
-  margin: 0 0 6px;
-  padding: 18px 2px;
+  margin: 0 0 var(--space-6);
+  padding: var(--space-18) var(--space-2);
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--font-13);
 }
 .settings-row,
 .settings-detail .rbac-role {
@@ -275,10 +275,10 @@
 .settings-detail .rbac-role-head {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 12px;
+  gap: var(--space-12);
+  padding: var(--space-14) var(--space-12);
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: var(--radius-10);
   list-style: none;
   transition: background 0.15s;
 }
@@ -293,7 +293,7 @@
 .structure-swatch {
   width: 6px;
   height: 26px;
-  border-radius: 3px;
+  border-radius: var(--radius-3);
   /* Fallback so a row without a usable colour still shows a bar rather than a gap. */
   background: var(--swatch, var(--line));
   flex-shrink: 0;
@@ -304,14 +304,14 @@
   justify-content: center;
   width: 22px;
   height: 22px;
-  border-radius: 7px;
+  border-radius: var(--radius-7);
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   flex-shrink: 0;
 }
 .settings-row-title,
 .settings-detail .rbac-role-name {
-  font-size: 14px;
+  font-size: var(--font-14);
   font-weight: 500;
 }
 .settings-row.is-add .settings-row-title {
@@ -319,48 +319,48 @@
 }
 .settings-row-marks {
   display: flex;
-  gap: 6px;
+  gap: var(--space-6);
   margin-left: auto;
 }
 .settings-row-mark {
-  padding: 3px 9px;
-  border-radius: 999px;
+  padding: var(--space-3) var(--space-9);
+  border-radius: var(--radius-full);
   border: 1px solid var(--line);
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--font-10);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 .settings-row-mark.is-closing {
   border-color: transparent;
-  color: #10b981;
-  background: #10b98118;
+  color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 9%, transparent);
 }
 /* Account summaries keep the place readable and the role secondary. */
 .settings-user-info {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
   min-width: 0;
   overflow-wrap: anywhere;
 }
 .settings-user-roles {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-6);
   align-items: center;
 }
 .settings-user-role {
   display: inline-flex;
   align-items: baseline;
-  gap: 7px;
+  gap: var(--space-7);
   max-width: 100%;
-  padding: 5px 8px;
-  border-radius: 7px;
+  padding: var(--space-5) var(--space-8);
+  border-radius: var(--radius-7);
   background: color-mix(in srgb, var(--muted) 8%, transparent);
-  font-size: 12px;
+  font-size: var(--font-12);
   line-height: 1.5;
 }
 .settings-user-place {
@@ -369,10 +369,10 @@
 }
 .settings-user-role-name {
   min-width: 0;
-  padding-left: 7px;
+  padding-left: var(--space-7);
   border-left: 1px solid var(--line);
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--font-11);
 }
 .settings-user-role.is-global {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
@@ -386,16 +386,16 @@
 }
 .settings-user-state {
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 .settings-user-email {
-  margin: 0 0 20px;
-  padding: 12px 14px;
+  margin: 0 0 var(--space-20);
+  padding: var(--space-12) var(--space-14);
   overflow-wrap: anywhere;
 }
 .structure-order {
   display: flex;
-  gap: 2px;
+  gap: var(--space-2);
   flex-shrink: 0;
 }
 .structure-nudge {
@@ -406,7 +406,7 @@
   height: 26px;
   padding: 0;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--radius-7);
   background: transparent;
   color: var(--muted);
   cursor: pointer;
@@ -436,13 +436,13 @@
 }
 .settings-row-body,
 .settings-detail .rbac-grants .rbac-group {
-  padding: 16px 12px 24px;
+  padding: var(--space-16) var(--space-12) var(--space-24);
 }
 /* The label carries its own bottom margin, so the grid only spaces columns. */
 .settings-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 0 20px;
+  gap: 0 var(--space-20);
   align-items: start;
 }
 
@@ -451,9 +451,9 @@
    the same, so a card does not read differently for the sake of its controls. */
 .field {
   display: block;
-  margin: 0 0 16px;
+  margin: 0 0 var(--space-16);
   color: var(--text);
-  font-size: 11px;
+  font-size: var(--font-11);
   font-weight: 550;
 }
 .field-label {
@@ -462,25 +462,25 @@
 .field-hint,
 label > small {
   display: block;
-  margin-top: 6px;
+  margin-top: var(--space-6);
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--font-11);
   font-weight: 400;
   line-height: 1.5;
 }
 .field-palette {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: var(--space-5);
   align-items: center;
-  margin-top: 7px;
+  margin-top: var(--space-7);
 }
 .field-pick {
   width: 22px;
   height: 22px;
   padding: 0;
   border: 2px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   background: var(--swatch);
   cursor: pointer;
   transition:
@@ -505,9 +505,9 @@ label > small {
   width: 22px;
   min-width: 0;
   height: 22px;
-  padding: 2px;
+  padding: var(--space-2);
   border: 1px dashed var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   background: transparent;
   cursor: pointer;
 }
@@ -516,25 +516,25 @@ label > small {
 /* A second block inside one card: a rule instead of the <hr /> two templates
    used to draw by hand. */
 .settings-section {
-  margin-top: 30px;
-  padding-top: 26px;
+  margin-top: var(--space-30);
+  padding-top: var(--space-26);
   border-top: 1px solid var(--line);
 }
 .settings-section h3 {
-  margin: 0 0 14px;
-  font-size: 14px;
+  margin: 0 0 var(--space-14);
+  font-size: var(--font-14);
 }
 .project-management-note {
   margin: 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--font-13);
   line-height: 1.6;
 }
 .project-archive {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px 20px;
+  gap: var(--space-12) var(--space-20);
 }
 .project-archive .project-management-note {
   flex: 1 1 280px;
@@ -543,12 +543,12 @@ label > small {
   flex-basis: 100%;
 }
 .project-delete {
-  margin-top: 20px;
+  margin-top: var(--space-20);
 }
 .project-delete summary {
   width: fit-content;
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--font-13);
   cursor: pointer;
 }
 .project-delete summary:hover,
@@ -557,21 +557,21 @@ label > small {
 }
 .project-delete form {
   max-width: 480px;
-  margin-top: 16px;
+  margin-top: var(--space-16);
 }
 .project-delete .project-management-note {
-  margin-bottom: 18px;
+  margin-bottom: var(--space-18);
 }
 .settings-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--space-10);
   align-items: center;
-  margin: 18px 0 0;
+  margin: var(--space-18) 0 0;
 }
 .settings-actions [role='status'] {
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 @media (prefers-reduced-motion: reduce) {
   .field-pick,
@@ -589,7 +589,7 @@ body .rbac-grants {
   --rbac-line: var(--line);
   --rbac-muted: var(--muted);
   --rbac-accent: var(--accent);
-  --rbac-danger: var(--danger, #e05260);
+  --rbac-danger: var(--danger);
   --rbac-surface: var(--input);
   --rbac-radius: 10px;
   --rbac-switch-thumb: var(--surface);
@@ -612,7 +612,7 @@ body .rbac-grants {
 .invite-delivery {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-10);
 }
 .pending-invitations {
   padding: 0;
@@ -623,19 +623,19 @@ body .rbac-grants {
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 14px;
-  padding: 14px 0;
+  gap: var(--space-14);
+  padding: var(--space-14) 0;
   border-bottom: 1px solid var(--line);
 }
 .pending-invitations small {
   display: block;
-  margin-top: 4px;
+  margin-top: var(--space-4);
   color: var(--muted);
 }
 .invitation-result {
   max-width: 760px;
   margin: 0 auto;
-  padding: 32px;
+  padding: var(--space-32);
 }
 
 /* Actions sit above the content; account editors are fetched only when opened. */
@@ -645,16 +645,16 @@ body .rbac-grants {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-12);
 }
 .settings-toolbar {
   justify-content: flex-end;
-  padding-bottom: 18px;
+  padding-bottom: var(--space-18);
   border-bottom: 1px solid var(--line);
 }
 .settings-toolbar form {
   display: flex;
-  gap: 8px;
+  gap: var(--space-8);
   margin: 0 auto 0 0;
   flex: 1 1 260px;
   max-width: 420px;
@@ -669,12 +669,12 @@ body .rbac-grants {
   position: sticky;
   top: -28px;
   z-index: 2;
-  margin-top: 16px;
-  padding: 12px 16px;
+  margin-top: var(--space-16);
+  padding: var(--space-12) var(--space-16);
   background: var(--surface);
   border: 1px solid var(--accent);
-  border-radius: 10px;
-  font-size: 12px;
+  border-radius: var(--radius-10);
+  font-size: var(--font-12);
 }
 .settings-bulk-bar[hidden] {
   display: none;
@@ -684,23 +684,23 @@ body .rbac-grants {
 }
 .settings-table-scroll {
   overflow-x: auto;
-  margin-top: 18px;
+  margin-top: var(--space-18);
 }
 .settings-people-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 .settings-people-table th,
 .settings-people-table td {
-  padding: 12px 10px;
+  padding: var(--space-12) var(--space-10);
   border-bottom: 1px solid var(--line);
   vertical-align: middle;
 }
 .settings-people-table th {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--font-11);
   font-weight: 550;
 }
 .settings-people-table tbody tr {
@@ -724,7 +724,7 @@ body .rbac-grants {
   padding: 0;
   margin: 0;
   border: 1px solid color-mix(in srgb, var(--muted) 70%, var(--surface));
-  border-radius: 4px;
+  border-radius: var(--radius-4);
   background: var(--input);
   color: var(--on-accent);
   cursor: var(--cursor-pointer, pointer);
@@ -767,7 +767,7 @@ body .rbac-grants {
   width: 7px;
   height: 2px;
   border: 0;
-  border-radius: 1px;
+  border-radius: var(--radius-1);
   background: currentColor;
   transform: translate(-50%, -50%);
 }
@@ -786,7 +786,7 @@ body .rbac-grants {
   width: 7px;
   height: 5px;
   border: 1px solid currentColor;
-  border-radius: 1px;
+  border-radius: var(--radius-1);
   background: none;
   transform: translate(-50%, 0);
 }
@@ -800,7 +800,7 @@ body .rbac-grants {
   height: 4px;
   border: 1px solid currentColor;
   border-bottom: 0;
-  border-radius: 3px 3px 0 0;
+  border-radius: var(--radius-3) var(--radius-3) 0 0;
   transform: translateX(-50%);
 }
 @media (forced-colors: active) {
@@ -814,7 +814,7 @@ body .rbac-grants {
 }
 .settings-person-open {
   display: grid;
-  gap: 5px;
+  gap: var(--space-5);
   width: 100%;
   padding: 0;
   border: 0;
@@ -825,12 +825,12 @@ body .rbac-grants {
   overflow-wrap: anywhere;
 }
 .settings-person-open strong {
-  font-size: 13px;
+  font-size: var(--font-13);
   font-weight: 550;
 }
 .settings-person-open small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--font-11);
 }
 .settings-person-state {
   color: var(--muted);
@@ -841,18 +841,18 @@ body .rbac-grants {
   display: inline-block;
   width: 6px;
   height: 6px;
-  margin-right: 6px;
+  margin-right: var(--space-6);
   border-radius: 50%;
   background: var(--accent);
 }
 .settings-people-table .settings-user-role {
-  padding: 3px 6px;
-  font-size: 11px;
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--font-11);
 }
 .settings-table-pages {
-  margin-top: 18px;
+  margin-top: var(--space-18);
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 .settings-table-pages span {
   margin-right: auto;
@@ -863,10 +863,10 @@ body .rbac-grants {
   max-height: calc(100dvh - 56px);
   padding: 0;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: var(--radius-16);
   color: var(--text);
   background: var(--surface);
-  box-shadow: 0 24px 90px #15142e50;
+  box-shadow: 0 24px 90px color-mix(in srgb, var(--shadow-color) 31.37%, transparent);
 }
 
 .settings-subdialog[open] {
@@ -876,13 +876,13 @@ body .rbac-grants {
 .settings-subdialog > header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 20px 24px;
+  gap: var(--space-16);
+  padding: var(--space-20) var(--space-24);
   border-bottom: 1px solid var(--line);
 }
 .settings-subdialog h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: var(--font-18);
 }
 .settings-subdialog > header .icon-button {
   margin-left: auto;
@@ -890,17 +890,17 @@ body .rbac-grants {
 .settings-subdialog-body {
   overflow: auto;
   overscroll-behavior: contain;
-  padding: 24px;
+  padding: var(--space-24);
 }
 .settings-bulk-property {
-  margin-top: 20px;
-  padding-top: 16px;
+  margin-top: var(--space-20);
+  padding-top: var(--space-16);
   border-top: 1px solid var(--line);
 }
 .settings-bulk-property > label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 .settings-bulk-property fieldset:disabled {
   opacity: 0.45;
@@ -909,50 +909,50 @@ body .rbac-grants {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-16);
 }
 .settings-person-heading h3 {
   margin: 0;
 }
 .settings-person-section {
-  margin-top: 24px;
-  padding-top: 20px;
+  margin-top: var(--space-24);
+  padding-top: var(--space-20);
   border-top: 1px solid var(--line);
 }
 [data-person-status]:empty {
   display: none;
 }
 .settings-person-section h4 {
-  margin: 0 0 18px;
-  font-size: 14px;
+  margin: 0 0 var(--space-18);
+  font-size: var(--font-14);
 }
 .settings-person-meta {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin: 24px 0 0;
-  font-size: 11px;
+  gap: var(--space-16);
+  margin: var(--space-24) 0 0;
+  font-size: var(--font-11);
 }
 .settings-person-meta dt {
   color: var(--muted);
 }
 .settings-person-meta dd {
-  margin: 5px 0 0;
+  margin: var(--space-5) 0 0;
   overflow-wrap: anywhere;
 }
 .settings-person-roles > summary {
-  padding-bottom: 12px;
+  padding-bottom: var(--space-12);
   cursor: var(--cursor-pointer, pointer);
-  font-size: 14px;
+  font-size: var(--font-14);
   font-weight: 600;
 }
 .settings-role-group {
-  margin-top: 20px;
+  margin-top: var(--space-20);
 }
 .settings-person-roles .settings-role-group h4 {
-  margin-bottom: 6px;
+  margin-bottom: var(--space-6);
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--font-11);
   font-weight: 550;
 }
 .settings-role-row {
@@ -963,13 +963,13 @@ body .rbac-grants {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) 28px;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-14);
 }
 .settings-role-heading {
   min-height: 44px;
-  padding: 8px 0;
+  padding: var(--space-8) 0;
   list-style: none;
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 summary.settings-role-heading {
   cursor: var(--cursor-pointer, pointer);
@@ -980,7 +980,7 @@ summary.settings-role-heading {
 .settings-role-heading:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: var(--radius-6);
 }
 .settings-role-scope,
 .settings-role-current {
@@ -995,7 +995,7 @@ summary.settings-role-heading {
   place-items: center;
   width: 28px;
   height: 28px;
-  border-radius: 7px;
+  border-radius: var(--radius-7);
   color: var(--muted);
   background: color-mix(in srgb, var(--muted) 8%, transparent);
 }
@@ -1005,7 +1005,7 @@ summary.settings-role-heading {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 .settings-role-control {
-  padding-bottom: 14px;
+  padding-bottom: var(--space-14);
 }
 .settings-role-control > .choice {
   grid-column: 2 / -1;
@@ -1013,10 +1013,10 @@ summary.settings-role-heading {
 }
 .settings-role-control .choice-trigger {
   min-height: 36px;
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 [data-reset-result] {
-  margin-top: 20px;
+  margin-top: var(--space-20);
 }
 @media (max-width: 650px) {
   .settings-toolbar > button {
@@ -1026,14 +1026,14 @@ summary.settings-role-heading {
     min-width: 600px;
   }
   .settings-subdialog-body {
-    padding: 18px;
+    padding: var(--space-18);
   }
   .settings-person-meta {
     grid-template-columns: 1fr;
   }
   .settings-role-heading,
   .settings-role-control {
-    gap: 10px;
+    gap: var(--space-10);
   }
   .settings-role-control > .choice {
     grid-column: 1 / -1;
@@ -1041,17 +1041,17 @@ summary.settings-role-heading {
 }
 
 .settings-configuration-field {
-  padding: 20px 0;
+  padding: var(--space-20) 0;
   border-bottom: 1px solid var(--line);
 }
 .settings-configuration-meta {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: 10px 0 16px;
+  gap: var(--space-10);
+  margin: var(--space-10) 0 var(--space-16);
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-12);
   overflow-wrap: anywhere;
 }
 .settings-configuration-source {
@@ -1059,23 +1059,23 @@ summary.settings-role-heading {
 }
 
 .settings-advanced-toggle {
-  margin: 0 0 28px;
+  margin: 0 0 var(--space-28);
 }
 .settings-advanced-toggle label {
   margin: 0;
 }
 .settings-advanced-heading {
-  margin: 32px 0 18px;
-  font-size: 18px;
+  margin: var(--space-32) 0 var(--space-18);
+  font-size: var(--font-18);
 }
 .settings-detail .settings-advanced-fields {
-  margin-top: 28px;
-  padding-top: 24px;
+  margin-top: var(--space-28);
+  padding-top: var(--space-24);
   border-top: 1px solid var(--line);
 }
 .settings-advanced-fields > legend {
-  padding: 0 12px 0 0;
-  font-size: 15px;
+  padding: 0 var(--space-12) 0 0;
+  font-size: var(--font-15);
   font-weight: 650;
 }
 [data-settings-advanced-group][hidden],
@@ -1085,12 +1085,12 @@ summary.settings-role-heading {
 
 /* Invitation hints and fields share a deliberate vertical rhythm. */
 .settings-invitation > .ui-notice {
-  margin: 0 0 22px;
+  margin: 0 0 var(--space-22);
 }
 .invitation-form,
 .invitation-notices {
   display: grid;
-  gap: 20px;
+  gap: var(--space-20);
 }
 .invitation-form > label,
 .invitation-form > .settings-actions,
@@ -1100,7 +1100,7 @@ summary.settings-role-heading {
   margin: 0;
 }
 .invitation-notices {
-  gap: 10px;
+  gap: var(--space-10);
 }
 
 /* Cover the scroll body's top padding as fields move behind the preview. */
@@ -1110,15 +1110,15 @@ summary.settings-role-heading {
   top: calc(-1 * var(--preview-inset));
   z-index: 2;
   margin-top: calc(-1 * var(--preview-inset));
-  padding: var(--preview-inset) 0 12px;
+  padding: var(--preview-inset) 0 var(--space-12);
   background: var(--surface);
 }
 .branding-preview {
   display: flex;
   align-items: center;
-  padding: 24px;
+  padding: var(--space-24);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--radius-14);
   background: var(--surface);
 }
 .branding-preview .brand {
@@ -1126,18 +1126,18 @@ summary.settings-role-heading {
   margin: 0;
 }
 .branding-reset {
-  margin-top: 32px;
-  padding-top: 24px;
+  margin-top: var(--space-32);
+  padding-top: var(--space-24);
   border-top: 1px solid var(--line);
 }
 
 .branding-preview-hint {
-  margin-bottom: 28px;
+  margin-bottom: var(--space-28);
 }
 .branding-typography {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-  gap: 20px;
+  gap: var(--space-20);
 }
 [data-branding-color][hidden],
 [data-branding-preview-error][hidden] {
@@ -1150,5 +1150,144 @@ summary.settings-role-heading {
 @media (max-width: 650px) {
   .branding-preview-frame {
     --preview-inset: 20px;
+  }
+}
+
+.theme-default-form,
+.theme-tools,
+.theme-library-row,
+.theme-preview-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+}
+.theme-default-form,
+.theme-editor-section,
+.theme-library {
+  margin-top: var(--space-28);
+}
+.theme-default-form > label {
+  flex: 1 1 240px;
+  margin: 0;
+}
+.theme-editor-section,
+.theme-library {
+  padding-top: var(--space-24);
+  border-top: 1px solid var(--line);
+}
+.theme-tools {
+  margin: var(--space-16) 0 var(--space-24);
+}
+.theme-import-label {
+  position: relative;
+  overflow: hidden;
+}
+.theme-import-label input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  cursor: pointer;
+  margin: 0;
+}
+.theme-import-label:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+[data-theme-editor] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  column-gap: var(--space-24);
+}
+[data-theme-editor] > * {
+  grid-column: 1;
+  min-width: 0;
+}
+.theme-preview-panel {
+  grid-column: 2;
+  grid-row: 1 / span 20;
+  align-self: start;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+}
+.theme-preview-heading {
+  justify-content: space-between;
+  margin-bottom: var(--space-12);
+}
+.theme-preview-heading > label {
+  width: 190px;
+  margin: 0;
+}
+[data-theme-frame] {
+  display: block;
+  width: 100%;
+  height: 430px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-12);
+  background: var(--bg);
+}
+.theme-token-group {
+  margin-top: var(--space-24);
+  padding: var(--space-20) 0;
+  border-top: 1px solid var(--line);
+}
+.theme-token-group > summary,
+.theme-advanced-colors > summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+.theme-token-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: var(--space-20);
+  margin-top: var(--space-20);
+}
+.theme-token-grid > label,
+.theme-token-grid > .field {
+  margin: 0;
+}
+.theme-token-group textarea {
+  font-family: var(--font-mono);
+}
+.theme-library-row {
+  padding: var(--space-16) 0;
+  border-bottom: 1px solid var(--line);
+}
+.theme-library-row > div:first-child {
+  flex: 1;
+}
+.theme-library-row small {
+  display: block;
+  color: var(--muted);
+}
+.theme-sample {
+  padding: var(--space-24);
+}
+.theme-sample .brand {
+  margin: 0 0 var(--space-24);
+}
+.theme-sample h1 {
+  font-size: var(--font-24);
+  margin: var(--space-8) 0;
+}
+.theme-sample-card {
+  margin: var(--space-20) 0;
+  padding: var(--space-20);
+  border-radius: var(--radius-12);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--card-shadow);
+}
+@media (max-width: 850px) {
+  [data-theme-editor] {
+    display: block;
+  }
+  .theme-preview-panel {
+    position: static;
+  }
+  [data-theme-frame] {
+    height: 360px;
   }
 }
