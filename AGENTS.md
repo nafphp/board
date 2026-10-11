@@ -64,8 +64,10 @@ or a plugin metaframework.
   authenticated account’s current address, without saving it.
 - Open native dialogs through shared `assets/dialog.js` or `data-dialog` buttons.
   Stacking, parent suspension, focus restoration and exit motion belong there; callers
-  do not implement them. A `SettingSection` can name a same-scope `parent`; the settings
-  renderer and dialog controller create the hierarchy and restore deep links automatically.
+  do not implement them. Named ancestor headers request cancel from newest to the chosen
+  ancestor and stop at existing close guards; keep those guards on `cancel`. A `SettingSection`
+  can name a same-scope `parent`; the settings renderer and dialog controller create the
+  hierarchy and restore deep links automatically.
 - German is the complete base language of the product UI; English covers the main
   interface texts. Code, comments and documentation are English.
 

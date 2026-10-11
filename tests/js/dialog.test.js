@@ -15,6 +15,8 @@ function fixture({ reduced = false, hidden = false, drawer = false } = {}) {
   const closed = [];
   let opens = 0;
   const style = {
+    translate: 'none',
+    height: '400px',
     transform: 'none',
     opacity: '1',
     borderRadius: '20px',
@@ -30,11 +32,48 @@ function fixture({ reduced = false, hidden = false, drawer = false } = {}) {
     },
   };
   const dialogs = [];
+  function element(tag) {
+    const attributes = new Map();
+    return {
+      tag,
+      children: [],
+      style: {},
+      setAttribute: (key, value) => attributes.set(key, value),
+      getAttribute: (key) => attributes.get(key) ?? null,
+      append(...children) {
+        for (const child of children) {
+          this.children.push(child);
+          child.parent = this;
+        }
+      },
+      remove() {
+        if (this.parent)
+          this.parent.children = this.parent.children.filter((child) => child !== this);
+        this.parent = null;
+      },
+      showPopover() {
+        this.shown = true;
+      },
+      getBoundingClientRect() {
+        return { height: this.children.length * 40 };
+      },
+      querySelectorAll() {
+        return this.children.filter((child) => child.tag === 'button');
+      },
+    };
+  }
   function newDialog() {
     const attributes = new Map();
     const listeners = new Map();
     const properties = new Map();
     const dialog = {
+      ...element('dialog'),
+      querySelector: () => ({ textContent: `Dialog ${dialogs.indexOf(dialog) + 1}` }),
+      getBoundingClientRect: () => ({ left: 100, top: 160, width: 600, height: 400 }),
+      dispatchEvent(event) {
+        this.fire(event.type, event);
+        return !event.defaultPrevented;
+      },
       open: false,
       inert: false,
       dataset: {},
@@ -109,7 +148,10 @@ function fixture({ reduced = false, hidden = false, drawer = false } = {}) {
           : style.transform,
     }),
     matchMedia: () => ({ matches: reduced }),
-    document: { hidden },
+    document: { hidden, createElement: element, getElementById: () => null },
+    window: { addEventListener() {} },
+    Event,
+    t: (message, values = {}) => message.replace(':name', values.name || ''),
     requestAnimationFrame: (callback) => callback(),
     setTimeout: (callback) => {
       timers.add(callback);
@@ -117,10 +159,17 @@ function fixture({ reduced = false, hidden = false, drawer = false } = {}) {
     },
     clearTimeout: (callback) => timers.delete(callback),
   };
-  runInNewContext(source.replaceAll('export function', 'function'), context);
+  runInNewContext(
+    source.replace(/^import .*;\n/gm, '').replaceAll('export function', 'function'),
+    context,
+  );
   return {
     dialog,
     newDialog,
+    controls: () =>
+      dialogs
+        .flatMap((item) => item.children)
+        .find((item) => item.className === 'dialog-stack-controls'),
     style,
     animations,
     closed,
@@ -265,4 +314,107 @@ test('a dynamically added dialog gets animated Escape and respects an existing c
   guarded.fire('cancel', cancel);
   assert.equal(guarded.open, true);
   await ui.context.closeDialog(guarded);
+});
+
+test('named middle controls close their dialog and descendants while retaining older parents', async () => {
+  const ui = fixture({ reduced: true });
+  const middle = ui.newDialog();
+  const child = ui.newDialog();
+  await ui.open();
+  await ui.context.openDialog(middle);
+  await ui.context.openDialog(child);
+  await settle();
+  const buttons = ui.controls().children;
+  assert.equal(buttons.length, 2);
+  assert.equal(
+    buttons[0].getAttribute('aria-label'),
+    'Dialog 1 und darüberliegende Dialoge schließen',
+  );
+  assert.equal(buttons[1].children[0].textContent, 'Dialog 2');
+  await buttons[1].onclick();
+  await settle();
+  assert.equal(child.open, false);
+  assert.equal(middle.open, false);
+  assert.equal(ui.dialog.open, true);
+  assert.equal(ui.dialog.inert, false);
+  assert.equal(ui.controls(), undefined);
+});
+
+test('the oldest header closes an arbitrarily deep stack and every header remains available', async () => {
+  const ui = fixture({ reduced: true });
+  const dialogs = [ui.dialog, ...Array.from({ length: 6 }, ui.newDialog)];
+  for (const dialog of dialogs) await ui.context.openDialog(dialog);
+  await settle();
+  assert.equal(ui.controls().children.length, 6);
+  await ui.controls().children[0].onclick();
+  await settle();
+  assert.equal(ui.closed.length, 7);
+  assert.equal(
+    dialogs.every((dialog) => !dialog.open),
+    true,
+  );
+  assert.equal(ui.controls(), undefined);
+});
+
+test('a blocked child cancel stops a parent close request and can be retried', async () => {
+  const ui = fixture({ reduced: true });
+  const child = ui.newDialog();
+  let blocked = true;
+  child.addEventListener('cancel', (event) => {
+    if (blocked) event.preventDefault();
+  });
+  await ui.open();
+  await ui.context.openDialog(child);
+  await settle();
+  await ui.controls().children[0].onclick();
+  assert.equal(ui.dialog.open, true);
+  assert.equal(child.open, true);
+  assert.equal(ui.controls().children[0].disabled, false);
+  blocked = false;
+  await ui.controls().children[0].onclick();
+  assert.equal(child.open, false);
+  assert.equal(ui.dialog.open, false);
+});
+
+test('stack requests await normal exit animations and ignore repeated clicks', async () => {
+  const ui = fixture();
+  const child = ui.newDialog();
+  await ui.open({ animate: false });
+  await ui.context.openDialog(child, { animate: false });
+  ui.animations.forEach((animation) => animation.finish());
+  await settle();
+  const button = ui.controls().children[0];
+  const first = button.onclick();
+  await button.onclick();
+  assert.equal(button.disabled, true);
+  assert.equal(child.open, true);
+  ui.animations.at(-1).finish();
+  await settle();
+  assert.equal(child.open, false);
+  assert.equal(ui.dialog.open, true);
+  ui.animations.at(-1).finish();
+  await first;
+  assert.equal(ui.closed.length, 2);
+});
+
+test('a native cancel handler can queue its close event before the cascade continues', async () => {
+  const ui = fixture({ reduced: true });
+  const child = ui.newDialog();
+  let closedEvent;
+  child.close = (value) => {
+    child.open = false;
+    ui.closed.push(value);
+    closedEvent = () => child.fire('close');
+  };
+  child.addEventListener('cancel', () => child.close());
+  await ui.open();
+  await ui.context.openDialog(child);
+  await settle();
+  const closing = ui.controls().children[0].onclick();
+  assert.equal(child.open, false);
+  assert.equal(ui.dialog.open, true);
+  closedEvent();
+  await closing;
+  assert.equal(ui.dialog.open, false);
+  assert.equal(ui.closed.length, 2);
 });
