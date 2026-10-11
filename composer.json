@@ -31,6 +31,7 @@
         "naf/mcp": "^0.2.1",
         "sabberworm/php-css-parser": "^9.5",
         "symfony/html-sanitizer": "^7.4",
+        "webklex/php-imap": "^6.2",
         "ext-dom": "*",
         "tijsverkoyen/css-to-inline-styles": "^2.4"
     },
@@ -58,6 +59,10 @@
     },
     "scripts": {
         "test": "phpunit --colors=always",
+        "test:imap": [
+            "docker compose -f tests/Imap/compose.yaml up -d --build --wait",
+            "phpunit -c phpunit.imap.xml"
+        ],
         "test:js": "node --test tests/js/*.test.js",
         "style:check": "@php vendor/bin/php-cs-fixer fix --dry-run --diff",
         "style:fix": "@php vendor/bin/php-cs-fixer fix"

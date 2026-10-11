@@ -1,0 +1,11 @@
+name: naf-board-imap-test
+services:
+  imap:
+    build: server
+    ports: ["127.0.0.1:3993:993", "127.0.0.1:3143:143"]
+    volumes: ["./server/certs:/certs"]
+    healthcheck:
+      test: ["CMD", "doveadm", "auth", "test", "support", "test-mail-password"]
+      interval: 1s
+      timeout: 3s
+      retries: 60

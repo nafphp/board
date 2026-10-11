@@ -1,0 +1,14 @@
+<?php
+
+use function Naf\View\view;
+
+?>
+<?= view('mail/layout', [
+    'category'       => 'Ihr Anliegen',
+    'title'          => 'Wir kümmern uns darum.',
+    'intro'          => 'Ihr Anliegen wurde aufgenommen. Unter dieser Vorgangsnummer können Sie uns weitere Angaben senden.',
+    'highlightLabel' => 'Vorgangsnummer',
+    'highlight'      => $reference,
+    'paragraphs'     => ['Antworten Sie einfach auf diese E-Mail. Bitte behalten Sie die Vorgangsnummer bei und verwenden Sie dieselbe E-Mail-Adresse.'],
+    'footer'         => 'Diese Nachricht bestätigt die Zuordnung Ihres Anliegens. Interne Ticketdaten werden nicht per E-Mail übermittelt.',
+]) ?>

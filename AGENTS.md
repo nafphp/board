@@ -55,6 +55,13 @@ or a plugin metaframework.
 - Attachments are private: 10 MiB per file, 30 MiB per ticket, 200 MiB per project, reached
   only through the application via `Naf\Storage\storage('attachments')`. The allowlist and
   MIME check are not a virus scanner.
+- Native Mail-to-Ticket polls an existing IMAP mailbox only when configured. It never
+  creates tickets from mail. One random public reference and the current requester address
+  must match; imports use an active integration account's current project comment rights.
+  Comment and receipt commit together, and IMAP flags change only after that commit.
+  SMTP and IMAP share the host's `mail` configuration; protocol overrides remain optional.
+  Every Board email uses `Mail\Messages` and native `view('mail/...')`, with a text
+  alternative. Keep escaping inside mail views because queue workers have no HTTP guards.
 - A board query answers with at most 300 cards plus the total count.
 - Public identity comes from `Support\Branding`, including AI labels and mail subjects.
   Email producers use `Mail\Messages` and the shared `mail/layout` view. Its
@@ -153,6 +160,7 @@ The suite runs from this repository, with PHP 8.3 or newer and Docker for the da
 composer install && npm ci
 composer test          # Unit, Database, Worker and Http, against tests/compose.yaml
 composer style:check   # php-cs-fixer; style:fix applies it
+composer test:imap     # optional local Dovecot: certificate-verified SSL and STARTTLS
 npm test               # the browser modules, with node's own runner
 npm run style:check    # Prettier for the JavaScript and CSS
 ```

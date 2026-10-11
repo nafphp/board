@@ -71,7 +71,7 @@ final class NotificationService implements NotificationServiceInterface
                 gmdate('Y-m-d H:i:s'),
             ]);
             $id = (int) $this->pdo->lastInsertId();
-            if ((int) $recipient['mail'] && config('nafinity:mail_enabled', false)) {
+            if ((int) $recipient['mail'] && Messages::enabled()) {
                 $this->pdo
                     ->prepare(
                         "INSERT INTO notification_deliveries(notification_id,channel,state) VALUES(?,'mail','pending')",
@@ -125,7 +125,7 @@ final class NotificationService implements NotificationServiceInterface
     /** At-least-once mail: the ledger avoids normal duplicates, but SMTP cannot be made atomic with PDO. */
     public function deliver(int $id, Mailer $mailer): void
     {
-        if (!config('nafinity:mail_enabled', false)) {
+        if (!Messages::enabled()) {
             return;
         }
         $this->pdo->beginTransaction();

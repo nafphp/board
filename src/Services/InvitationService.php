@@ -59,7 +59,7 @@ final class InvitationService implements InvitationServiceInterface
         $validated = Input::validate($data, ['email' => 'required|string|email|max:190']);
         $email     = strtolower(trim($validated['email']));
         $send      = in_array($data['send_email'] ?? false, [true, 1, '1'], true);
-        if ($send && !config('nafinity:mail_enabled', false)) {
+        if ($send && !Messages::enabled()) {
             throw new Failure(t('Der E-Mail-Versand ist nicht aktiviert. Du kannst einen Einladungslink erstellen.'), 503);
         }
 
