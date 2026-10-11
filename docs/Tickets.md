@@ -110,8 +110,8 @@ visible in the menu. Multiple assignment remains possible.
 The search filters the list only and saves no ticket change. Arrow keys navigate, Enter selects,
 Escape closes the menu, and Tab or a click outside leaves it as well. When creating, these
 choices are part of the draft until **Create ticket**. The list stays inside the viewport on
-narrow screens and opens upwards when space is short. `ticket/choice.phtml` and
-`ticket-choice.js` extend the existing native form values; endpoints, NAF validation, CSRF and
+narrow screens and opens upwards when space is short. `components/choice.phtml` and
+`choice.js` extend the existing native form values; endpoints, NAF validation, CSRF and
 the revision check are unchanged. The native
 [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API/Using) keeps the menu
 above the dialog. Without that API it is positioned fixed, and without JavaScript a select and

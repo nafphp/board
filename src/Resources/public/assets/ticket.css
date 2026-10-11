@@ -1141,7 +1141,7 @@
   font-weight: 650;
 }
 .ticket-primary-meta [data-inline-field='assignee_ids'] {
-  font-size: 12px;
+  font-size: 13px;
 }
 .ticket-field [data-field-editor] input[type='checkbox'] {
   padding: 0;
@@ -1210,6 +1210,54 @@
   overflow: visible;
   overflow-wrap: anywhere;
 }
+/* Assignment is a primary ticket action, with one quiet target in both modes. */
+.ticket-primary-meta
+  [data-inline-field='assignee_ids']:not(.is-editing)
+  > .inline-display[role='button'],
+.ticket-primary-meta [data-choice='assignee_ids'] .choice-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--input);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.ticket-primary-meta [data-inline-field='assignee_ids'] > .inline-display[role='button']::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex: none;
+  margin-left: auto;
+  border: solid var(--muted);
+  border-width: 0 1.5px 1.5px 0;
+  transform: translateY(-2px) rotate(45deg);
+}
+.ticket-primary-meta
+  [data-inline-field='assignee_ids']
+  > .inline-display[role='button']:is(:hover, :focus-visible),
+.ticket-primary-meta
+  [data-choice='assignee_ids']
+  .choice-trigger:is(:hover, :focus-visible, [aria-expanded='true']) {
+  border-color: var(--accent);
+  background: var(--hover);
+}
+.ticket-primary-meta [data-inline-field='assignee_ids'] .ticket-person {
+  flex: 1;
+  min-width: 0;
+  font-size: inherit;
+  margin: 0;
+}
+.ticket-primary-meta [data-inline-field='assignee_ids'] :is(.ticket-person, .choice-text) {
+  font-weight: 500;
+}
+
 .ticket-field .choice-search-wrap input {
   border: 0;
   background: transparent;
