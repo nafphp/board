@@ -6,7 +6,7 @@ const { mountThemeManager } = await import('../../src/Resources/public/assets/th
 delete globalThis.document;
 delete globalThis.window;
 
-function setup(context) {
+function setup(context, themes = {}) {
   const original = Object.fromEntries(
     ['fetch', 'FormData', 'setTimeout', 'clearTimeout'].map((key) => [key, globalThis[key]]),
   );
@@ -55,10 +55,16 @@ function setup(context) {
   frame.contentDocument = { documentElement: html, getElementById: () => style };
   const status = {};
   const picker = node('picker');
+  const editor = { dataset: {} };
+  const edit = node('edit');
+  edit.dataset = { themeEdit: 'theme-custom' };
+  picker.dispatchEvent = (event) => listeners['picker:' + event.type]?.(event);
   const root = {
+    querySelectorAll: (selector) => (selector === '[data-theme-edit]' ? [edit] : []),
     querySelector: (selector) =>
       ({
-        '[data-theme-definitions]': { textContent: JSON.stringify({ schema, themes: {} }) },
+        '.theme-editor-section': editor,
+        '[data-theme-definitions]': { textContent: JSON.stringify({ schema, themes }) },
         '[data-theme-editor]': form,
         '[name="edit_theme"]': picker,
         '[data-theme-frame]': frame,
@@ -81,7 +87,18 @@ function setup(context) {
   mountThemeManager(root);
   const respond = (index, css, ok = true) =>
     requests[index].resolve({ ok, json: async () => (ok ? { css } : { message: css }) });
-  return { fields, listeners, style, html, status, picker, requests, respond, run: () => timer() };
+  return {
+    fields,
+    listeners,
+    style,
+    html,
+    status,
+    picker,
+    editor,
+    requests,
+    respond,
+    run: () => timer(),
+  };
 }
 
 test('preview stays unsaved and a late response cannot replace newer edits', async (context) => {
@@ -183,4 +200,28 @@ test('a validated imported draft updates the actual switch without publishing it
   assert.equal(state.fields.enabled.checked, false);
   assert.equal(state.fields.id.value, '');
   assert.equal(state.fields.name.value, 'Draft import');
+});
+
+test('library editing selects the saved theme while duplicating keeps it as an unsaved draft', (context) => {
+  const state = setup(context, {
+    'theme-custom': { name: 'Team design', base: 'classic', enabled: true, css: '.team {}' },
+  });
+  state.listeners['edit:click']();
+  assert.equal(state.picker.value, 'theme-custom');
+  assert.equal(state.fields.id.value, 'theme-custom');
+  assert.equal(state.fields.name.value, 'Team design');
+  assert.equal(state.editor.dataset.dialogTitle, 'Theme bearbeiten · Team design');
+  state.listeners['duplicate:click']();
+  assert.equal(state.fields.id.value, '');
+  assert.equal(state.fields.name.value, 'Team design Kopie');
+  assert.equal(state.fields.css.value, '.team {}');
+  assert.equal(state.requests.length, 0, 'selecting and duplicating does not save the draft');
+});
+
+test('a rejected import exposes its error without replacing the existing draft', async (context) => {
+  const state = setup(context);
+  await state.listeners['import:change']({ target: { files: [{ size: 65537 }] } });
+  assert.equal(state.status.textContent, 'Dieses Theme konnte nicht importiert werden.');
+  assert.equal(state.fields.name.value, 'Draft');
+  assert.equal(state.requests.length, 0);
 });

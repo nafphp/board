@@ -10,6 +10,66 @@ let controls;
 let revision = 0;
 let requesting = false;
 
+const editors = new WeakMap();
+let editorSerial = 0;
+
+// Enhance the original disclosure rather than duplicating its forms. Keeping
+// the dialog beside the disclosure also preserves delegated feature listeners.
+export function openDialogEditor(details) {
+  const editor = editors.get(details);
+  if (!editor || editor.dialog.open) return Promise.resolve();
+  const { dialog, summary, body, title } = editor;
+  title.textContent = details.dataset.dialogTitle || editor.name.textContent.trim();
+  body.append(...[...details.childNodes].filter((node) => node !== summary));
+  details.after(dialog);
+  summary.setAttribute('aria-expanded', 'true');
+  dialog.addEventListener(
+    'close',
+    () => {
+      details.append(...body.childNodes);
+      summary.setAttribute('aria-expanded', 'false');
+      dialog.remove();
+    },
+    { once: true },
+  );
+  return openDialog(dialog);
+}
+
+export function mountDialogEditors(root = document) {
+  const document = root.ownerDocument || root;
+  const template = document.getElementById('settings-editor-template');
+  if (!template) return;
+  for (const group of root.querySelectorAll('[data-dialog-editors]')) {
+    for (const details of group.querySelectorAll(group.dataset.dialogEditors || 'details')) {
+      if (editors.has(details)) continue;
+      const summary = details.querySelector(':scope > summary');
+      if (!summary) continue;
+      const dialog = template.content.firstElementChild.cloneNode(true);
+      const title = dialog.querySelector('[data-dialog-title]');
+      title.id = `dialog-editor-title-${++editorSerial}`;
+      dialog.setAttribute('aria-labelledby', title.id);
+      editors.set(details, {
+        dialog,
+        summary,
+        title,
+        body: dialog.querySelector('[data-dialog-body]'),
+        name:
+          summary.querySelector(group.dataset.dialogTitleSelector || '[data-dialog-title]') ||
+          summary,
+      });
+      details.open = false;
+      summary.setAttribute('aria-haspopup', 'dialog');
+      summary.setAttribute('aria-expanded', 'false');
+      summary.addEventListener('click', (event) => {
+        if (event.defaultPrevented || event.target.closest('a, button, input, select, textarea'))
+          return;
+        event.preventDefault();
+        openDialogEditor(details);
+      });
+    }
+  }
+}
+
 function positionControls() {
   if (!controls) return;
   const rect = stack.at(-1).getBoundingClientRect();
@@ -147,7 +207,9 @@ function arrangeStack() {
     dialog.toggleAttribute('data-dialog-child', index > 0);
     const entry = entries.get(dialog);
     dialog.inert = depth > 0 || entry.inert;
-    if (depth) dialog.setAttribute('aria-hidden', 'true');
+    // aria-hidden cannot be undone by a descendant native dialog. Native modal
+    // inertness still hides the covered parent while its child remains accessible.
+    if (depth && !dialog.contains?.(stack.at(-1))) dialog.setAttribute('aria-hidden', 'true');
     else if (entry.ariaHidden === null) dialog.removeAttribute('aria-hidden');
     else dialog.setAttribute('aria-hidden', entry.ariaHidden);
     const finalStyle = getComputedStyle(dialog);

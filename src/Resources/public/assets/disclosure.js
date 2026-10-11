@@ -55,7 +55,7 @@ function settle(shell) {
 document.addEventListener('click', (event) => {
   const summary = event.target.closest?.('summary');
   const shell = summary?.parentElement;
-  if (!summary || shell?.tagName !== 'DETAILS' || still.matches) return;
+  if (event.defaultPrevented || !summary || shell?.tagName !== 'DETAILS' || still.matches) return;
   // A menu lies over the page instead of growing inside it, so it keeps the native toggle.
   if (shell.hasAttribute('data-menu')) return;
   // Anything inside the summary that is a control of its own keeps its click.

@@ -48,7 +48,7 @@ use function Naf\View\s;
         <?= s(t('Eigene Rollen')) ?>
         <span class="count"><?= count($customRoles) ?></span>
     </h3>
-    <div class="settings-rows">
+    <div class="settings-rows" data-dialog-editors=".settings-row">
         <?php if (!$customRoles && !$scope->allows('roles')): ?>
             <p class="settings-row-empty">
                 <?= s(t('Für dieses Projekt wurden noch keine eigenen Rollen angelegt.')) ?>
@@ -60,7 +60,7 @@ use function Naf\View\s;
                     <?php if ($role === null): ?>
                         <span class="settings-row-add"><?= Icon::mark('add', 'sm') ?></span>
                     <?php endif ?>
-                    <span class="settings-row-title">
+                    <span class="settings-row-title" data-dialog-title>
                         <?= s($role ? $role['name'] : t('Eigene Rolle anlegen')) ?>
                     </span>
                     <span class="settings-row-marks">

@@ -91,7 +91,7 @@ test('an empty result points to the invitation form', async (context) => {
   ui.type('Nobody');
   ui.tick();
   await ui.result(0, []);
-  assert.match(ui.status.textContent, /unten einladen/);
+  assert.match(ui.status.textContent, /Neue Person einladen/);
 });
 
 test('a denied search leaves the direct email fallback available and a later search can succeed', async (context) => {

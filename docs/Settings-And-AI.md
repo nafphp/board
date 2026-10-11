@@ -67,6 +67,20 @@ Cycles are rejected. Generic dialog buttons using `data-dialog="dialog-id"`, and
 `openDialog()` / `closeDialog()` from `assets/dialog.js`, share the automatic native stack.
 Keep specific close guards on the dialog’s cancel event; do not recreate stacking per feature.
 
+Project and installation roles open their existing edit/create forms above the role list.
+Board members keep their list and pending invitations in the parent, with separate children
+for adding an existing account and inviting a new person. Themes keep the library and
+installation default in the parent; choosing a theme opens its editor and live preview together.
+Closing an editor preserves its draft and returns focus to its trigger. Saving uses the
+existing endpoints and reopens the containing settings card after the response.
+
+These editors progressively enhance existing disclosures: a container's
+`data-dialog-editors` selects its `details` elements; optional `data-dialog-title-selector`
+and `data-dialog-title` provide the accessible title. `mountDialogEditors()` and
+`openDialogEditor()` in `assets/dialog.js` use the shared `settings/dialog` shell and move
+original DOM nodes into it, restoring them on close. Without JavaScript the same forms
+remain ordinary disclosures. The installation role wrapper embeds `rbac/roles` unchanged.
+
 
 ## Switches
 

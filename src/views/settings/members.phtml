@@ -9,6 +9,8 @@
  * @var string $token
  */
 
+use Naf\Board\Support\Icon;
+
 use function Naf\Board\field;
 use function Naf\Board\partial;
 use function Naf\I18n\t;
@@ -35,44 +37,45 @@ use function Naf\View\s;
         <?php endforeach ?>
     </tbody>
 </table>
-<section class="settings-section">
-    <h3><?= s(t('Mitglied hinzufügen')) ?></h3>
-    <form method="post" data-enhanced action="<?= s(route('project.members', ['project' => $projectId])) ?>">
-        <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-        <?= field([
-            'label'      => 'Konto suchen',
-            'name'       => 'email',
-            'id'         => 'member-account',
-            'type'       => 'text',
-            'required'   => true,
-            'hint'       => 'Suche nach Name oder E-Mail und wähle ein bestehendes Konto aus.',
-            'attributes' => ['placeholder' => 'Name oder E-Mail', 'list' => 'member-accounts', 'autocomplete' => 'off', 'data-account-search' => route('project.accounts', ['project' => $projectId])],
-        ]) ?>
-        <?= field([
-            'label'   => 'Rolle',
-            'name'    => 'role',
-            'id'      => 'membership-role',
-            'type'    => 'select',
-            'value'   => isset($availableRoles['member']) ? 'member' : 'viewer',
-            'options' => $availableRoles,
-            'hint'    => 'Du kannst nur Rechte vergeben, die du selbst besitzt. Eigene Rollen gelten '
-                . 'nur für dieses Projekt.',
-            'choice' => ['searchLabel' => 'Rollen suchen'],
-        ]) ?>
-        <datalist id="member-accounts"></datalist>
-        <?= partial('components/notice', ['severity' => 'notice', 'messageAttributes' => ['data-account-status' => true, 'role' => 'status']]) ?>
-        <div class="form-errors" role="alert"></div>
-        <div class="settings-actions">
-            <button class="button primary"><?= s(t('Mitgliedschaft speichern')) ?></button>
-        </div>
-    </form>
-</section>
-
-<section class="settings-section settings-invitation">
-    <h3><?= s(t('Neue Person einladen')) ?></h3>
-    <?= partial('components/notice', ['severity' => 'info', 'message' => t('Die Person legt ihr Konto über den Einladungslink selbst an und erhält nur Zugang zu diesem Board.')]) ?>
-    <?= partial('settings/invite-form', ['projectId' => $projectId, 'token' => $token, 'inviteRoles' => array_diff_key($availableRoles, ['remove' => true])]) ?>
-</section>
+<div class="settings-rows" data-dialog-editors=".settings-row">
+    <details class="settings-row">
+        <summary class="settings-row-head"><span class="settings-row-title" data-dialog-title><?= s(t('Mitglied hinzufügen')) ?></span><?= Icon::mark('chevron_right', 'sm') ?></summary>
+        <form method="post" data-enhanced action="<?= s(route('project.members', ['project' => $projectId])) ?>">
+            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+            <?= field([
+                'label'      => 'Konto suchen',
+                'name'       => 'email',
+                'id'         => 'member-account',
+                'type'       => 'text',
+                'required'   => true,
+                'hint'       => 'Suche nach Name oder E-Mail und wähle ein bestehendes Konto aus.',
+                'attributes' => ['placeholder' => 'Name oder E-Mail', 'list' => 'member-accounts', 'autocomplete' => 'off', 'data-account-search' => route('project.accounts', ['project' => $projectId])],
+            ]) ?>
+            <?= field([
+                'label'   => 'Rolle',
+                'name'    => 'role',
+                'id'      => 'membership-role',
+                'type'    => 'select',
+                'value'   => isset($availableRoles['member']) ? 'member' : 'viewer',
+                'options' => $availableRoles,
+                'hint'    => 'Du kannst nur Rechte vergeben, die du selbst besitzt. Eigene Rollen gelten '
+                    . 'nur für dieses Projekt.',
+                'choice' => ['searchLabel' => 'Rollen suchen'],
+            ]) ?>
+            <datalist id="member-accounts"></datalist>
+            <?= partial('components/notice', ['severity' => 'notice', 'messageAttributes' => ['data-account-status' => true, 'role' => 'status']]) ?>
+            <div class="form-errors" role="alert"></div>
+            <div class="settings-actions">
+                <button class="button primary"><?= s(t('Mitgliedschaft speichern')) ?></button>
+            </div>
+        </form>
+    </details>
+    <details class="settings-row settings-invitation">
+        <summary class="settings-row-head"><span class="settings-row-title" data-dialog-title><?= s(t('Neue Person einladen')) ?></span><?= Icon::mark('chevron_right', 'sm') ?></summary>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t('Die Person legt ihr Konto über den Einladungslink selbst an und erhält nur Zugang zu diesem Board.')]) ?>
+        <?= partial('settings/invite-form', ['projectId' => $projectId, 'token' => $token, 'inviteRoles' => array_diff_key($availableRoles, ['remove' => true])]) ?>
+    </details>
+</div>
 <?php if ($invitations): ?>
     <section class="settings-section">
         <h3><?= s(t('Offene Einladungen')) ?></h3>

@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { readFile } from 'node:fs/promises';
+import { runInNewContext } from 'node:vm';
 import {
   selectedTargets,
   syncSelection,
@@ -83,4 +85,65 @@ test('the compact role summary keeps multiple roles and clears without inserting
   labels = [];
   syncRoleSummary(row);
   assert.equal(summary.textContent, 'Unassigned');
+});
+
+test('a person editor opens inside any active native dialog without a fixed settings ID', async () => {
+  const source = await readFile(
+    new URL('../../src/Resources/public/assets/people.js', import.meta.url),
+    'utf8',
+  );
+  const listeners = {};
+  const editor = { addEventListener() {} };
+  const content = {
+    replaceChildren(...nodes) {
+      this.nodes = nodes;
+    },
+  };
+  const error = {};
+  const parent = { id: 'settings-detail-7', open: true };
+  const root = directory([]);
+  const originalQuery = root.querySelector;
+  root.querySelector = (selector) =>
+    ({
+      '[data-people-error]': error,
+      '#people-editor': editor,
+      '[data-person-content]': content,
+      '[data-people-search]': { addEventListener() {} },
+    })[selector] || originalQuery(selector);
+  root.closest = (selector) => (selector === 'dialog' ? parent : null);
+  root.addEventListener = (type, handler) => {
+    listeners[type] = handler;
+  };
+  root.ownerDocument = { dispatchEvent() {} };
+  const person = {
+    dataset: { personOpen: '/settings/users/2' },
+    closest: (selector) => (selector === '[data-person-open]' ? person : null),
+    setAttribute() {},
+    removeAttribute() {},
+  };
+  const fragment = { textContent: 'Person form' };
+  const opened = [];
+  const context = {
+    t: (message) => message,
+    fetch: async () => ({ ok: true, text: async () => '<form>Person form</form>' }),
+    CustomEvent: class {},
+    DOMParser: class {
+      parseFromString() {
+        return { querySelector: () => ({}), body: { childNodes: [fragment] } };
+      }
+    },
+    openDialog: (dialog) => opened.push(dialog),
+  };
+  runInNewContext(
+    source.replace(/^import .*;\n/gm, '').replaceAll('export function', 'function'),
+    context,
+  );
+  context.mountPeopleDirectory(root);
+  await listeners.click({ target: person });
+  assert.deepEqual(opened, [editor]);
+  assert.deepEqual(content.nodes, [fragment]);
+  assert.equal(error.textContent, '');
+  parent.open = false;
+  await listeners.click({ target: person });
+  assert.equal(opened.length, 1, 'the plain page keeps its existing inline person form');
 });

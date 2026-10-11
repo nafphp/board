@@ -1,0 +1,28 @@
+<?php
+/** Shared native shell for settings cards and progressively enhanced editors. */
+use Naf\Board\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+$editor ??= false;
+?>
+<dialog
+    <?= $editor ? '' : 'id="settings-detail" data-settings-dialog aria-labelledby="settings-detail-title" aria-describedby="settings-detail-description"' ?>
+    class="settings-detail"
+>
+    <header class="settings-detail-heading">
+        <?php if (!$editor): ?><div class="settings-icon" data-settings-icon></div><?php endif ?>
+        <div>
+            <h2 <?= $editor ? 'data-dialog-title' : 'id="settings-detail-title"' ?>></h2>
+            <?php if (!$editor): ?><p id="settings-detail-description"></p><?php endif ?>
+        </div>
+        <button
+            type="button"
+            class="icon-button"
+            <?= $editor ? 'data-close-dialog' : 'data-settings-close' ?>
+            aria-label="<?= s(t('Einstellungen schließen')) ?>"
+        ><?= Icon::mark('close') ?></button>
+    </header>
+    <div class="settings-detail-body" <?= $editor ? 'data-dialog-body' : '' ?>></div>
+</dialog>

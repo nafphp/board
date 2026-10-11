@@ -67,7 +67,11 @@ or a plugin metaframework.
   do not implement them. Named ancestor headers request cancel from newest to the chosen
   ancestor and stop at existing close guards; keep those guards on `cancel`. A `SettingSection`
   can name a same-scope `parent`; the settings renderer and dialog controller create the
-  hierarchy and restore deep links automatically.
+  hierarchy and restore deep links automatically. Editor lists opt into
+  `data-dialog-editors="<details selector>"` and use the shared `settings/dialog` shell.
+  `mountDialogEditors()` moves the original disclosure content into a child dialog;
+  `openDialogEditor(details)` opens it programmatically. Keep forms and delegated feature
+  listeners in their original root so closing and reopening preserves drafts.
 - German is the complete base language of the product UI; English covers the main
   interface texts. Code, comments and documentation are English.
 

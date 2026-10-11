@@ -1343,3 +1343,8 @@ summary.settings-role-heading {
 [data-email-test-status]:empty {
   display: none;
 }
+
+/* An editor keeps the same complete shell as its parent card. */
+[data-dialog-editors] > .settings-row > .settings-row-head > .mi:last-child {
+  margin-left: auto;
+}
