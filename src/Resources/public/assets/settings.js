@@ -5,7 +5,7 @@ import { mountThemeManager } from './themes.js';
 import { mountBrandingPreview } from './branding-preview.js';
 import { mountAdvancedSettings } from './settings-configuration.js';
 import { mountMemberControls } from './members.js';
-import { mountPeopleDirectory } from './people.js?v=4';
+import { mountPeopleDirectory } from './people.js?v=5';
 mountDialogEditors(document);
 document.querySelectorAll('[data-people-directory]').forEach(mountPeopleDirectory);
 

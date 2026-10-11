@@ -1,4 +1,4 @@
-import { openDialog, closeDialog } from './dialog.js';
+import { openDialog } from './dialog.js';
 import { t } from './i18n.js';
 
 // Selection always means the explicit, visible rows. A new result page resets it.
@@ -36,7 +36,7 @@ export function syncRoleSummary(row) {
 export function mountPeopleDirectory(root) {
   const document = root.ownerDocument;
   const error = root.querySelector('[data-people-error]');
-  const editor = root.querySelector('#people-editor');
+  const editor = root.querySelector('[data-people-panel="editor"] dialog');
   const content = root.querySelector('[data-person-content]');
   const bulkForm = root.querySelector('[data-bulk-form]');
   let generation = 0;
@@ -61,11 +61,6 @@ export function mountPeopleDirectory(root) {
       result.hidden = true;
     });
   });
-
-  const open = (dialog, trigger) => {
-    dialog.addEventListener('close', () => trigger?.focus({ preventScroll: true }), { once: true });
-    openDialog(dialog);
-  };
 
   async function loadResults(url) {
     controller?.abort();
@@ -132,11 +127,6 @@ export function mountPeopleDirectory(root) {
       }
       return;
     }
-    const close = event.target.closest('[data-people-close]');
-    if (close) {
-      closeDialog(close.closest('dialog'));
-      return;
-    }
     const clear = event.target.closest('[data-bulk-clear]');
     if (clear) {
       root.querySelectorAll('[data-bulk-target]').forEach((input) => (input.checked = false));
@@ -151,8 +141,11 @@ export function mountPeopleDirectory(root) {
     }
     const trigger = event.target.closest('[data-people-dialog]');
     if (trigger) {
-      const dialog = root.querySelector(`#${trigger.dataset.peopleDialog}`);
-      if (dialog.id === 'people-bulk') {
+      const dialog = root.querySelector(
+        `[data-people-panel="${trigger.dataset.peopleDialog}"] dialog`,
+      );
+      if (!dialog) return;
+      if (trigger.dataset.peopleDialog === 'bulk') {
         const targets = selectedTargets(root);
         if (!targets.length) return;
         bulkForm.reset();
@@ -174,7 +167,7 @@ export function mountPeopleDirectory(root) {
           { count: targets.length },
         );
       }
-      open(dialog, trigger);
+      openDialog(dialog);
       return;
     }
     let person = event.target.closest('[data-person-open]');
@@ -189,7 +182,10 @@ export function mountPeopleDirectory(root) {
       const response = await fetch(person.dataset.personOpen, { headers: { Accept: 'text/html' } });
       if (!response.ok || response.redirected) throw new Error('Person unavailable');
       replacePerson(await response.text());
-      if (root.closest('dialog')?.open) open(editor, person);
+      if (root.closest('dialog')?.open) {
+        person.focus({ preventScroll: true });
+        openDialog(editor);
+      }
     } catch {
       error.textContent = t('Das Konto konnte nicht geladen werden. Bitte erneut versuchen.');
     } finally {

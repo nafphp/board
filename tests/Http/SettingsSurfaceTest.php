@@ -63,6 +63,29 @@ final class SettingsSurfaceTest extends AcceptanceTestCase
         self::assertSame(1, $xpath->query('//template[@id="settings-editor-template"]/dialog')->length);
     }
 
+    public function testPeoplePanelsShareTheSettingsShellWithoutFixedDialogIds(): void
+    {
+        $xpath = $this->settingsDocument('/settings');
+        foreach (['editor' => 'Nutzer bearbeiten', 'invite' => 'Person einladen', 'bulk' => 'Update'] as $panel => $title) {
+            $dialogs = $xpath->query('//*[@data-people-panel="' . $panel . '"]/dialog');
+            self::assertCount(1, $dialogs);
+            $dialog = $dialogs->item(0);
+            self::assertSame('settings-detail', $dialog->getAttribute('class'));
+            self::assertFalse($dialog->hasAttribute('id'));
+            self::assertSame($title, $dialog->getAttribute('aria-label'));
+            self::assertSame($title, trim($xpath->query('./header//h2', $dialog)->item(0)->textContent));
+            self::assertSame(1, $xpath->query('./header//button[@data-close-dialog]', $dialog)->length);
+            self::assertSame(1, $xpath->query('./div[@data-dialog-body]', $dialog)->length);
+        }
+        self::assertSame(0, $xpath->query('//*[@data-people-close]')->length);
+        foreach (['/invitations', '/settings/users/bulk'] as $action) {
+            $forms = $xpath->query('//*[@data-people-directory]//form[@action="' . $action . '"]');
+            self::assertCount(1, $forms);
+            self::assertSame(1, $xpath->query('ancestor::dialog/ancestor::*[@data-people-directory]', $forms->item(0))->length);
+            self::assertSame(1, $xpath->query('.//input[@name="_csrf"]', $forms->item(0))->length);
+        }
+    }
+
     private function settingsDocument(string $path): DOMXPath
     {
         $document = new DOMDocument();

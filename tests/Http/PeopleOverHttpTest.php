@@ -18,7 +18,7 @@ final class PeopleOverHttpTest extends AcceptanceTestCase
         self::assertStringContainsString('settings-people-table', $page);
         self::assertStringContainsString('ui-notice--info', $page);
         self::assertStringNotContainsString('class="settings-hint"', $page);
-        self::assertStringContainsString('class="button primary" data-people-dialog="people-invite"', $page);
+        self::assertStringContainsString('class="button primary" data-people-dialog="invite"', $page);
         self::assertStringContainsString('data-bulk-target', $page);
         self::assertStringNotContainsString('class="rbac-grants"', $page);
         $id       = app()->container()->get(PDO::class)->query("SELECT id FROM users WHERE email='bob@example.test'")->fetchColumn();

@@ -87,13 +87,14 @@ test('the compact role summary keeps multiple roles and clears without inserting
   assert.equal(summary.textContent, 'Unassigned');
 });
 
-test('a person editor opens inside any active native dialog without a fixed settings ID', async () => {
+test('directory editors use their root panels inside any active dialog without fixed IDs', async () => {
   const source = await readFile(
     new URL('../../src/Resources/public/assets/people.js', import.meta.url),
     'utf8',
   );
   const listeners = {};
   const editor = { addEventListener() {} };
+  const invite = {};
   const content = {
     replaceChildren(...nodes) {
       this.nodes = nodes;
@@ -106,7 +107,8 @@ test('a person editor opens inside any active native dialog without a fixed sett
   root.querySelector = (selector) =>
     ({
       '[data-people-error]': error,
-      '#people-editor': editor,
+      '[data-people-panel="editor"] dialog': editor,
+      '[data-people-panel="invite"] dialog': invite,
       '[data-person-content]': content,
       '[data-people-search]': { addEventListener() {} },
     })[selector] || originalQuery(selector);
@@ -120,6 +122,9 @@ test('a person editor opens inside any active native dialog without a fixed sett
     closest: (selector) => (selector === '[data-person-open]' ? person : null),
     setAttribute() {},
     removeAttribute() {},
+    focus() {
+      this.focused = true;
+    },
   };
   const fragment = { textContent: 'Person form' };
   const opened = [];
@@ -141,9 +146,16 @@ test('a person editor opens inside any active native dialog without a fixed sett
   context.mountPeopleDirectory(root);
   await listeners.click({ target: person });
   assert.deepEqual(opened, [editor]);
+  assert.equal(person.focused, true, 'the central controller captures the clicked row trigger');
   assert.deepEqual(content.nodes, [fragment]);
   assert.equal(error.textContent, '');
   parent.open = false;
   await listeners.click({ target: person });
   assert.equal(opened.length, 1, 'the plain page keeps its existing inline person form');
+  const inviteTrigger = {
+    dataset: { peopleDialog: 'invite' },
+    closest: (selector) => (selector === '[data-people-dialog]' ? inviteTrigger : null),
+  };
+  await listeners.click({ target: inviteTrigger });
+  assert.deepEqual(opened, [editor, invite], 'invitation opening uses the local shared shell');
 });

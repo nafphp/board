@@ -1,0 +1,27 @@
+<?php
+use function Naf\Board\extensions;
+use function Naf\Board\partial;
+use function Naf\Form\csrf;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+?>
+<p data-bulk-summary></p>
+<?= partial('components/notice', ['severity' => 'info', 'message' => t('Nur aktivierte Eigenschaften werden geändert. Alle Änderungen werden gemeinsam gespeichert. Bei einem Fehler wird nichts übernommen.')]) ?>
+<form method="post" action="<?= s(route('installation.users.bulk')) ?>" data-enhanced data-bulk-form>
+    <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
+    <div data-bulk-targets></div>
+    <?php foreach ($bulkProperties as $key => $property): ?>
+        <div class="settings-bulk-property">
+            <label><input type="checkbox" data-bulk-enable /> <?= s(t($property['definition']->label)) ?></label>
+            <fieldset disabled>
+                <?php $type       = extensions()->fieldTypes()->get($property['definition']->type); ?>
+                <?php $definition = (object) [...get_object_vars($property['definition']), 'options' => $property['options'], 'sensitive' => false]; ?>
+                <?= partial($type->view(), ['definition' => $definition, 'name' => 'values[' . $key . ']', 'value' => null, 'id' => 'bulk-' . $key, 'disabled' => false, 'required' => false]) ?>
+            </fieldset>
+        </div>
+    <?php endforeach ?>
+    <div class="form-errors" role="alert"></div>
+    <div class="settings-actions"><button class="button primary" type="submit" data-bulk-submit disabled><?= s(t('Änderungen für Auswahl speichern')) ?></button></div>
+</form>

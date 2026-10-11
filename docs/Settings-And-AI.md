@@ -74,6 +74,10 @@ the original reorder buttons remain available in the parent list.
 Board members keep their list and pending invitations in the parent, with separate children
 for adding an existing account and inviting a new person. Themes keep the library and
 installation default in the parent; choosing a theme opens its editor and live preview together.
+The installation's people directory uses the same shell for account details, invitations and
+bulk updates. Its existing search, selection, forms and permission checks stay inside the
+directory; opening and closing, ancestor navigation and focus restoration use the central
+controller, without fixed dialog IDs or a separate dialog stylesheet.
 Closing an editor preserves its draft and returns focus to its trigger. Saving uses the
 existing endpoints and reopens the containing settings card after the response.
 
@@ -82,7 +86,10 @@ These editors progressively enhance existing disclosures: a container's
 and `data-dialog-title` provide the accessible title. `mountDialogEditors()` and
 `openDialogEditor()` in `assets/dialog.js` use the shared `settings/dialog` shell and move
 original DOM nodes into it, restoring them on close. Without JavaScript the same forms
-remain ordinary disclosures. The installation role wrapper embeds `rbac/roles` unchanged.
+remain ordinary disclosures. Static or asynchronously populated editors render the same
+`settings/dialog` partial with `editor: true`, a plain-text `title` and trusted, already-rendered
+`content`. Keep their bodies inside the feature root for delegated listeners and use
+`openDialog()` plus the shared close button. The installation role wrapper embeds `rbac/roles` unchanged.
 
 
 ## Switches
