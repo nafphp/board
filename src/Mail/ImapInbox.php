@@ -7,6 +7,8 @@ namespace Naf\Board\Mail;
 use RuntimeException;
 use Webklex\PHPIMAP\Client;
 use Webklex\PHPIMAP\ClientManager;
+use Webklex\PHPIMAP\Exceptions\InvalidMessageDateException;
+use Webklex\PHPIMAP\Exceptions\SpoofingAttemptDetectedException;
 use Webklex\PHPIMAP\Folder;
 use Webklex\PHPIMAP\IMAP;
 use Webklex\PHPIMAP\Message;
@@ -93,7 +95,14 @@ final class ImapInbox implements Inbox
         if (!is_string($raw) || strlen($raw) > $this->settings->maxBytes) {
             return null;
         }
-        $message = Message::fromString($raw, $this->client->getConfig());
+
+        try {
+            $message = Message::fromString($raw, $this->client->getConfig());
+        } catch (InvalidMessageDateException|SpoofingAttemptDetectedException) {
+            // An unsupported message must not pin the UID cursor forever. Leave
+            // its flags untouched; connection and configuration failures still retry.
+            return null;
+        }
 
         return self::decode($message, hash('sha256', $this->settings->mailboxKey() . ':' . $this->validity . ':' . $uid));
     }

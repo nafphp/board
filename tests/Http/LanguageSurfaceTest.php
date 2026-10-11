@@ -19,6 +19,8 @@ final class LanguageSurfaceTest extends AcceptanceTestCase
         try {
             $page = $this->page($this->alice, '/projects/' . self::PROJECT);
             $this->assertStringContainsString('lang="en"', $page);
+            $this->assertStringContainsString('href="#main-content">Skip to content</a>', $page);
+            $this->assertStringContainsString('<main id="main-content" tabindex="-1">', $page);
             $this->assertStringContainsString('aria-label="Open menu"', $page);
             $this->assertSame(1, preg_match('/id="nafinity-browser-words">(.*?)<\/script>/s', $page, $matches));
             $words = json_decode($matches[1], true, flags: JSON_THROW_ON_ERROR);

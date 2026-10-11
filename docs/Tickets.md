@@ -336,3 +336,7 @@ verification. Receiving-provider spam and mail authentication controls remain re
 OAuth accepts an externally refreshed access token; provider-specific consent and refresh
 flows are outside this integration. See the central documentation draft
 `drafts/nafinity-mail-to-ticket.md` for environment setup and all configuration keys.
+
+Malformed IMAP date headers and detected sender-spoofing header conflicts are unsupported
+messages: polling advances past them without marking them seen. Connection and configuration
+failures still stop the poll for retry, so transient failures never silently discard replies.

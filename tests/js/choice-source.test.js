@@ -9,7 +9,7 @@ const source = (
   .replace(/^import .*\n/gm, '')
   .replace(/export function /g, 'function ');
 
-function setup() {
+function setup({ remote = true, options = [] } = {}) {
   function node() {
     return {
       dataset: {},
@@ -19,7 +19,15 @@ function setup() {
       listeners: {},
       attributes: {},
       style: { setProperty() {} },
-      classList: { toggle() {} },
+      classList: {
+        values: new Set(),
+        toggle(name, enabled) {
+          enabled ? this.values.add(name) : this.values.delete(name);
+        },
+        contains(name) {
+          return this.values.has(name);
+        },
+      },
       append(child) {
         this.children.push(child);
       },
@@ -57,6 +65,14 @@ function setup() {
     status = node(),
     wrap = node();
   list.id = 'tickets';
+  control.options = options.map((value) => ({
+    value,
+    text: value,
+    dataset: {},
+    get selected() {
+      return control.value === value;
+    },
+  }));
   popup.hidden = true;
   const parts = {
     '[data-choice-native]': native,
@@ -71,7 +87,11 @@ function setup() {
   };
   const root = Object.assign(node(), {
     isConnected: true,
-    dataset: { choiceSource: '/suggestions', choiceEmpty: 'Search', choiceLabel: 'Ticket' },
+    dataset: {
+      ...(remote ? { choiceSource: '/suggestions' } : {}),
+      choiceEmpty: 'Search',
+      choiceLabel: 'Ticket',
+    },
     querySelector: (selector) => parts[selector],
     querySelectorAll: () => [],
   });
@@ -167,4 +187,26 @@ test('remote answers cannot repopulate a removed or closed choice', () => {
   ui.root.isConnected = false;
   ui.answer({ state: 'ready', options: [{ value: '2', label: 'Late' }] });
   assert.equal(ui.list.children.length, 0);
+});
+
+test('short choices focus their labelled listbox and support boundary navigation and Space', () => {
+  const ui = setup({ remote: false, options: ['First', 'Last'] });
+  ui.open();
+  assert.equal(ui.list.focused, true);
+  assert.equal(ui.popup.focused, undefined);
+  assert.equal(ui.search.focused, undefined);
+  assert.equal(ui.list.attributes['aria-activedescendant'], 'tickets-0');
+  const key = (key) =>
+    ui.root.listeners.keydown({ key, preventDefault() {}, stopPropagation() {} });
+  key('End');
+  assert.equal(ui.list.attributes['aria-activedescendant'], 'tickets-1');
+  key(' ');
+  assert.equal(ui.control.value, 'Last');
+  assert.deepEqual(ui.control.events, ['input', 'change']);
+  assert.equal(ui.popup.hidden, true);
+  assert.equal(ui.trigger.focused, true);
+  ui.open();
+  key('Home');
+  key('Enter');
+  assert.equal(ui.control.value, 'First');
 });

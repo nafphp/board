@@ -47,6 +47,26 @@ final class ChoiceComponentTest extends TestCase
         $this->assertCount(1, $xpath->query('//input[@name="roles" and @type="hidden" and @value=""]'));
     }
 
+    public function testRepeatedFieldNamesDeriveListboxIdsFromTheirNativeControls(): void
+    {
+        $markup = '';
+        foreach (['profile-locale', 'settings-locale'] as $id) {
+            $markup .= view('components/choice', [
+                'name'    => 'locale', 'id' => $id, 'label' => 'Language',
+                'options' => ['de' => 'Deutsch', 'en' => 'English'],
+            ]);
+        }
+        $xpath = $this->xpath($markup);
+        $ids   = [];
+        foreach ($xpath->query('//*[@id]') as $node) {
+            $this->assertNotContains($node->getAttribute('id'), $ids);
+            $ids[] = $node->getAttribute('id');
+        }
+        foreach ($xpath->query('//*[@aria-controls]') as $control) {
+            $this->assertCount(1, $xpath->query('//*[@id="' . $control->getAttribute('aria-controls') . '" and @role="listbox"]'));
+        }
+    }
+
     private function xpath(string $markup): DOMXPath
     {
         $document = new DOMDocument();
