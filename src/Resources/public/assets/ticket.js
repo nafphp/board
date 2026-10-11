@@ -375,8 +375,14 @@ document.addEventListener('nafinity:choice-dismiss', (event) => {
   if (field?.classList.contains('is-editing')) finishEdit(field, !event.detail.focus);
 });
 document.addEventListener('click', (event) => {
-  const display = event.target.closest('.inline-display[role=button]');
-  if (display && !event.target.closest('a')) beginEdit(display.closest('[data-inline-field]'));
+  const display = event.target.closest('.inline-display[role=button], [data-description-display]');
+  const field = display?.closest('[data-inline-field]');
+  if (
+    field?.querySelector('.inline-display[role=button]') &&
+    !event.defaultPrevented &&
+    !event.target.closest('a')
+  )
+    beginEdit(field);
   const retry = event.target.closest('[data-retry-save]');
   if (retry) flushInline(retry.closest('form'));
   const reply = event.target.closest('[data-reply]');

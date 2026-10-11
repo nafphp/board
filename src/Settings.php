@@ -105,7 +105,7 @@ final readonly class Settings
         return new self(SettingsContext::projectUser($projectId, $this->access()->actor()));
     }
 
-    /** The declared, read-only configuration values of the installation. */
+    /** Installation configuration; writes require the global settings permission. */
     public function forApplication(): self
     {
         return new self(SettingsContext::application());

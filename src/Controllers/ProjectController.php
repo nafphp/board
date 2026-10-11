@@ -92,6 +92,15 @@ final class ProjectController
         });
     }
 
+    public function delete(string $project): ResponseInterface
+    {
+        return Respond::mutation($this->access, function ($data) use ($project) {
+            $this->projects->delete(Input::id($project), $data);
+
+            return ['url' => '/projects'];
+        });
+    }
+
     public function archive(string $project): ResponseInterface
     {
         return Respond::mutation($this->access, function ($data) use ($project) {

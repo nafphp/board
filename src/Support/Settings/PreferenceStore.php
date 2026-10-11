@@ -58,7 +58,11 @@ final class PreferenceStore
      */
     public function writeUser(int $userId, array $values): void
     {
-        $values = array_intersect_key($values, self::USER_DEFAULTS);
+        // PDO's execute() would send false as an empty string to integer columns.
+        $values = array_map(
+            static fn(mixed $value) => is_bool($value) ? (int) $value : $value,
+            array_intersect_key($values, self::USER_DEFAULTS),
+        );
 
         if ($values === []) {
             return;
@@ -103,7 +107,11 @@ final class PreferenceStore
      */
     public function writeProjectUser(int $projectId, int $userId, array $values): void
     {
-        $values = array_intersect_key($values, self::PROJECT_USER_DEFAULTS);
+        // PDO's execute() would send false as an empty string to integer columns.
+        $values = array_map(
+            static fn(mixed $value) => is_bool($value) ? (int) $value : $value,
+            array_intersect_key($values, self::PROJECT_USER_DEFAULTS),
+        );
 
         if ($values === []) {
             return;

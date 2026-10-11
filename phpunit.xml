@@ -35,6 +35,8 @@
         <ini name="display_errors" value="1" />
         <const name="PHPUNIT_RUNNING" value="true" />
         <env name="APP_ENV" value="test" force="true" />
+        <env name="NAFINITY_TEST_INVOICE_API" value="1" />
+        <env name="NAFINITY_TEST_EXPORT_KEY" value="MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=" />
         <env name="APP_URL" value="http://127.0.0.1:38080" />
         <env name="DB_HOST" value="127.0.0.1" />
         <env name="DB_PORT" value="33306" />

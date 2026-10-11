@@ -39,6 +39,8 @@ final class AuditLog
      */
     public const array PERSONAL = [
         'account.password_changed',
+        'account.password_reset_requested',
+        'account.updated',
         'account.email_requested',
         'account.email_changed',
         'account.signed_in',
@@ -198,7 +200,7 @@ final class AuditLog
         foreach ($rows as $row) {
             $scope         = (string) $row['scope'];
             $named[$scope] = $scope === ''
-                ? 'Installation'
+                ? 'Global'
                 : ((string) ($row['name'] ?? '') ?: self::unnamed($scope));
         }
 
@@ -255,6 +257,6 @@ final class AuditLog
     {
         $parsed = Scope::parse($scope);
 
-        return $parsed->isEverywhere() ? 'Installation' : $parsed->type . ' ' . $parsed->id;
+        return $parsed->isEverywhere() ? 'Global' : $parsed->type . ' ' . $parsed->id;
     }
 }

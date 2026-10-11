@@ -9,6 +9,7 @@ use Naf\Board\Contracts\AttachmentServiceInterface;
 use Naf\Board\Contracts\RememberStoreInterface;
 use Naf\Board\Contracts\SettingsServiceInterface;
 use Naf\Board\Services\AuditLog;
+use Naf\Board\Services\UserAdministration;
 use Naf\Board\Support\SettingsContext;
 use Naf\CLI\Core\Output;
 use Naf\RateLimit\PdoLimiter;
@@ -24,6 +25,7 @@ final class MaintenanceJob implements ScheduledJobInterface
         private RememberStoreInterface $remembered,
         private AuditLog $audit,
         private SettingsServiceInterface $settings,
+        private UserAdministration $users,
     ) {
     }
 
@@ -37,6 +39,7 @@ final class MaintenanceJob implements ScheduledJobInterface
         $this->attachments->cleanup();
         $this->limiter->cleanup();
         $this->accounts->cleanup();
+        $this->users->cleanup();
 
         // A remembered sign-in that has expired does not work any more; it is
         // only taking up room. Nothing is decided here, which is why it needs no

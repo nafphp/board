@@ -16,6 +16,19 @@ final class BoardFilterRegistry extends DefinitionRegistry
         parent::__construct(BoardFilterDefinition::class, 'Board filter');
     }
 
+    /**
+     * Filters with a control, in the same order on the board and in personal settings.
+     *
+     * @return array<string, BoardFilterDefinition>
+     */
+    public function controls(): array
+    {
+        return array_filter(
+            $this->all(),
+            static fn(BoardFilterDefinition $filter) => $filter->view !== null,
+        );
+    }
+
     public function get(string $id): ?BoardFilterDefinition
     {
         return parent::get($id);

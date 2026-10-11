@@ -8,6 +8,7 @@ use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\TimerServiceInterface;
 use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Failure;
+use Naf\Board\Support\Format;
 use PDO;
 
 use function Naf\event;
@@ -244,11 +245,28 @@ final class TimerService implements TimerServiceInterface
             ]);
             if ($minutes > 0) {
                 $spend->execute([$minutes, $now, $run['project_id'], $run['ticket_id']]);
+                $this->record($run, $minutes, $now);
                 $recorded += $minutes;
             }
         }
 
         return $recorded;
+    }
+
+    /** Snapshot before a transfer changes the ticket's project, key and title. */
+    private function record(array $run, int $minutes, string $now): void
+    {
+        $ticket = $this->pdo->prepare('SELECT t.number,t.title,p.ticket_key FROM tickets t
+            JOIN projects p ON p.id=t.project_id WHERE t.project_id=? AND t.id=?');
+        $ticket->execute([$run['project_id'], $run['ticket_id']]);
+        $row = $ticket->fetch(PDO::FETCH_ASSOC);
+        $this->pdo->prepare('INSERT INTO ticket_time_entries
+            (project_id,ticket_id,user_id,ticket_key,ticket_title,minutes,recorded_at) VALUES(?,?,?,?,?,?,?)')
+            ->execute([
+                $run['project_id'], $run['ticket_id'], $run['user_id'],
+                Format::ticket((string) $row['ticket_key'], (int) $row['number']),
+                $row['title'], $minutes, $now,
+            ]);
     }
 
     /** What the clock shows: everything tracked here so far, plus the run in progress. */

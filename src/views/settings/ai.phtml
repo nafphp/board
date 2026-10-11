@@ -11,19 +11,18 @@
  */
 
 use function Naf\Board\field;
+use function Naf\Board\partial;
 use function Naf\I18n\t;
 use function Naf\View\s;
 
 ?>
 <form data-ai-settings data-user="<?= s($user->getIdentifier()) ?>" data-project="<?= (int) ($projectId ?? 0) ?>">
-    <p class="settings-note">
-        <?= s(t(
-            'Dein Assistent läuft direkt über Ollama auf deinem Gerät. Verbindung und Modell '
-            . 'gelten für dich in diesem Browser. Chatverlauf und Gedächtnis sind zusätzlich '
-            . 'nach Projekt getrennt.',
-        )) ?>
-    </p>
-    <?= field(['label' => 'Assistent aktivieren', 'name' => 'enabled', 'type' => 'checkbox', 'class' => 'ai-check']) ?>
+    <?= partial('components/notice', ['severity' => 'info', 'message' => t(
+        'Dein Assistent läuft direkt über Ollama auf deinem Gerät. Verbindung und Modell '
+        . 'gelten für dich in diesem Browser. Chatverlauf und Gedächtnis sind zusätzlich '
+        . 'nach Projekt getrennt.',
+    )]) ?>
+    <?= field(['label' => 'Assistent aktivieren', 'name' => 'enabled', 'type' => 'switch']) ?>
     <?= field([
         'label'    => 'Ollama-Adresse',
         'name'     => 'url',
@@ -80,12 +79,10 @@ use function Naf\View\s;
                 . 'Embedding-Modell ab.',
             'attributes' => ['min' => 0, 'max' => 1, 'step' => 0.05],
         ]) ?>
-        <p class="settings-hint">
-            <?= s(t(
-                'Ohne Embedding-Modell oder bei einem Fehler wird eine begrenzte Stichwortsuche '
-                . 'verwendet. Der Chat zeigt den verwendeten Modus an.',
-            )) ?>
-        </p>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t(
+            'Ohne Embedding-Modell oder bei einem Fehler wird eine begrenzte Stichwortsuche '
+            . 'verwendet. Der Chat zeigt den verwendeten Modus an.',
+        )]) ?>
     </details>
     <?= field([
         'label'      => 'Zusätzliche Anweisungen',
@@ -113,12 +110,10 @@ use function Naf\View\s;
             'type'       => 'textarea',
             'attributes' => ['rows' => 5, 'maxlength' => 12000, 'placeholder' => t('Bewährte Hinweise aus euren Gesprächen.')],
         ]) ?>
-        <p class="settings-hint">
-            <?= s(t(
-                'Diese Hinweise ergänzen die mitgelieferten Regeln. Änderungen benötigen im Chat '
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t(
+            'Diese Hinweise ergänzen die mitgelieferten Regeln. Änderungen benötigen im Chat '
                 . 'weiterhin deine Bestätigung.',
-            )) ?>
-        </p>
+        )]) ?>
     </details>
     <div class="form-errors" role="alert"></div>
     <div class="settings-actions">
@@ -128,12 +123,10 @@ use function Naf\View\s;
     <output class="ai-test-output" data-ai-output aria-live="polite"></output>
     <details class="ai-advanced">
         <summary><?= s(t('Feedback & Lernen')) ?></summary>
-        <p class="settings-hint">
-            <?= s(t(
-                'Markiere unpassende Antworten im Chat mit „Feedback". Du kannst die gesammelten '
-                . 'Hinweise prüfen und daraus Vorschläge für das Projektgedächtnis erstellen lassen.',
-            )) ?>
-        </p>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t(
+            'Markiere unpassende Antworten im Chat mit „Feedback". Du kannst die gesammelten '
+            . 'Hinweise prüfen und daraus Vorschläge für das Projektgedächtnis erstellen lassen.',
+        )]) ?>
         <div data-ai-feedback-list class="ai-feedback-list"></div>
         <div class="settings-actions">
             <button type="button" class="button subtle" data-ai-review><?= s(t('Feedback analysieren')) ?></button>
@@ -153,18 +146,10 @@ use function Naf\View\s;
     </details>
     <details class="ai-advanced">
         <summary><?= s(t('Verbindung einrichten')) ?></summary>
-        <p class="settings-hint">
-            <?= s(t('Starte Ollama lokal. Für den Zugriff von Nafinity muss Ollama die Herkunft')) ?>
-            <code>https://localhost</code>
-            <?= s(t('erlauben')) ?>
-            (<code>OLLAMA_ORIGINS=https://localhost</code>).
-            <?= s(t('Starte Ollama nach der Änderung neu.')) ?>
-        </p>
-        <p class="settings-hint">
-            <?= s(t(
-                'Dein Browser kann zusätzlich nach Zugriff auf das lokale Netzwerk fragen. Für '
-                . 'den Chat wird kein Cloud-Konto und kein API-Schlüssel benötigt.',
-            )) ?>
-        </p>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t('Starte Ollama lokal. Für den Zugriff von Nafinity muss Ollama die Herkunft') . ' https://localhost ' . t('erlauben') . ' (OLLAMA_ORIGINS=https://localhost). ' . t('Starte Ollama nach der Änderung neu.')]) ?>
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t(
+            'Dein Browser kann zusätzlich nach Zugriff auf das lokale Netzwerk fragen. Für '
+            . 'den Chat wird kein Cloud-Konto und kein API-Schlüssel benötigt.',
+        )]) ?>
     </details>
 </form>

@@ -1,0 +1,27 @@
+<?php
+
+use function Naf\Board\partial;
+use function Naf\Board\template;
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+$this->setLayout(template('layout'));
+$this->block('content');
+?>
+<section class="page-heading">
+    <div>
+        <h1><?= s(t('Suche')) ?></h1>
+        <p><?= s($query === '' ? t('Tickets und Projekte suchen') : t('Ergebnisse für „:query“', ['query' => $query])) ?></p>
+    </div>
+</section>
+<?php if (mb_strlen($query) < 2): ?>
+    <p class="muted"><?= s(t('Gib mindestens zwei Zeichen ein.')) ?></p>
+<?php elseif ($groups === []): ?>
+    <p class="muted"><?= s(t('Keine passenden Tickets oder Boards gefunden.')) ?></p>
+<?php else: ?>
+    <div class="workspace-search-page">
+        <?= partial('search/results', ['groups' => $groups]) ?>
+    </div>
+    <?php if ($more): ?><p class="muted"><?= s(t('Es gibt weitere Treffer. Grenze die Suche etwas ein.')) ?></p><?php endif ?>
+<?php endif ?>
+<?php $this->endblock('content'); ?>

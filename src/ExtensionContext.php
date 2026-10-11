@@ -9,6 +9,7 @@ use Naf\Board\Registry\AiToolRegistry;
 use Naf\Board\Registry\AssetPackageRegistry;
 use Naf\Board\Registry\AssetRegistry;
 use Naf\Board\Registry\BoardFilterRegistry;
+use Naf\Board\Registry\BulkPropertyRegistry;
 use Naf\Board\Registry\EstimationScaleRegistry;
 use Naf\Board\Registry\ExporterRegistry;
 use Naf\Board\Registry\FieldTypeRegistry;
@@ -69,6 +70,11 @@ final readonly class ExtensionContext
     public function views(): ViewRegistry
     {
         return $this->extensions->views();
+    }
+
+    public function bulkProperties(): BulkPropertyRegistry
+    {
+        return $this->extensions->bulkProperties();
     }
 
     public function settings(): SettingRegistry

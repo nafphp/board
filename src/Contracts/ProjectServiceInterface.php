@@ -17,6 +17,9 @@ interface ProjectServiceInterface
 
     public function archive(int $project, bool $archived): void;
 
+    /** Permanently remove an owned project after confirming its current name. */
+    public function delete(int $project, array $data): void;
+
     public function member(int $project, array $data): void;
 
     public function structure(int $project, array $data): void;

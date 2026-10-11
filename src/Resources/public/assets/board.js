@@ -1,6 +1,6 @@
 import { t } from './i18n.js';
 
-// Pointer driven board dragging: a lifted ghost card, a live placeholder slot and
+// Pointer driven board dragging: a lifted ghost, a reserved origin, a live drop slot and
 // FLIP motion for every card that has to make room.
 import { csrf, toast } from './app.js';
 import { celebrate } from './fireworks.js';
@@ -42,6 +42,7 @@ const drag = {
   card: null,
   ghost: null,
   slot: null,
+  originSlot: null,
   originCell: null,
   originIndex: 0,
   pointer: 0,
@@ -240,8 +241,21 @@ function flip(nodes, mutate) {
 
 function place(cell, before) {
   const source = drag.slot.parentElement;
+  const atOrigin =
+    cell === drag.originCell && before === neighbour(drag.originSlot, 'nextElementSibling');
+
   flip([...cardsIn(cell), ...(source ? cardsIn(source) : [])], () => {
-    cell.insertBefore(drag.slot, before);
+    if (atOrigin) {
+      // Returning uses the reserved space itself, never a second gap beside it.
+      if (drag.slot !== drag.originSlot) drag.slot.remove();
+      drag.slot = drag.originSlot;
+    } else {
+      // Leave the origin in place until the card lands, so its neighbours stay put.
+      if (drag.slot === drag.originSlot) drag.slot = drag.originSlot.cloneNode();
+      cell.insertBefore(drag.slot, before);
+    }
+    drag.originSlot.classList.toggle('is-active', atOrigin);
+    drag.slot.classList.add('is-active');
     if (source && source !== cell) emptyHint(source);
     emptyHint(cell);
   });
@@ -264,25 +278,34 @@ function slotIndex() {
 // where it happens to sit and cannot settle into a dead zone.
 function openings(cell) {
   const gap = parseFloat(getComputedStyle(cell).rowGap) || 0;
-  // What the slot takes up right now, which is less than the card while it is still growing.
+  // The origin stays in the flow. Only a separate target slot is taken out of the estimates.
   const span =
-    drag.slot.parentElement === cell ? drag.slot.getBoundingClientRect().height + gap : 0;
+    drag.slot !== drag.originSlot && drag.slot.parentElement === cell
+      ? drag.slot.getBoundingClientRect().height + gap
+      : 0;
+  const originRight =
+    cell === drag.originCell ? neighbour(drag.originSlot, 'nextElementSibling') : false;
   const spots = [];
   let below = false;
   let end = null;
+  let lastIsOrigin = false;
 
   for (const node of cell.children) {
-    if (node === drag.slot) {
+    const isOrigin = node === drag.originSlot;
+    if (node === drag.slot && !isOrigin) {
       below = true;
       continue;
     }
-    if (!node.classList.contains('ticket-card')) continue;
+    if (!isOrigin && !node.classList.contains('ticket-card')) continue;
     const box = layoutBox(node);
     const top = box.top - (below ? span : 0);
-    spots.push({ before: node, top });
+    // The origin and its following ticket mean the same placement; offer it only once.
+    if (isOrigin) spots.push({ before: originRight, top });
+    else if (node !== originRight) spots.push({ before: node, top });
     end = top + box.height + gap;
+    lastIsOrigin = isOrigin;
   }
-  if (end !== null) spots.push({ before: null, top: end });
+  if (end !== null && !lastIsOrigin) spots.push({ before: null, top: end });
 
   return spots;
 }
@@ -359,8 +382,9 @@ function lift(card, x, y) {
   drag.card = card;
   drag.offsetX = x - box.left;
   drag.offsetY = y - box.top;
-  drag.width = box.width;
-  drag.height = box.height;
+  // Measure the layout size: the pressed card may still be scaled by its active animation.
+  drag.width = card.offsetWidth;
+  drag.height = card.offsetHeight;
   drag.x = x;
   drag.y = y;
   drag.tilt = 0;
@@ -370,15 +394,17 @@ function lift(card, x, y) {
   suppressClick = true;
 
   drag.slot = document.createElement('div');
-  drag.slot.className = 'card-slot';
-  drag.slot.style.height = box.height + 'px';
+  drag.slot.className = 'card-slot is-active';
+  drag.slot.style.height = drag.height + 'px';
+  drag.slot.setAttribute('aria-hidden', 'true');
+  drag.originSlot = drag.slot;
   card.before(drag.slot);
   card.remove();
 
   drag.ghost = card.cloneNode(true);
   drag.ghost.classList.add('ticket-ghost');
   drag.ghost.setAttribute('aria-hidden', 'true');
-  drag.ghost.style.width = box.width + 'px';
+  drag.ghost.style.width = drag.width + 'px';
   document.body.append(drag.ghost);
   paintGhost();
   if (!reducedMotion.matches) {
@@ -386,16 +412,8 @@ function lift(card, x, y) {
       [{ transform: drag.ghost.style.transform.replace('scale(1.035)', 'scale(1)') }, {}],
       { duration: 200, easing: spring },
     );
-    drag.slot.animate(
-      [
-        { height: '0px', opacity: 0 },
-        { height: box.height + 'px', opacity: 1 },
-      ],
-      {
-        duration: 240,
-        easing: spring,
-      },
-    );
+    // Reserve the full card size immediately so lifting it never opens a growing gap.
+    drag.slot.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: spring });
   }
   document.documentElement.classList.add('board-dragging');
   highlight(drag.originCell);
@@ -506,8 +524,12 @@ async function land(cell) {
   ]);
   slot.replaceWith(card);
   ghost.remove();
-  emptyHint(card.parentElement);
-  emptyHint(origin);
+  // Release the reserved origin only after landing, and let the board close its gap gently.
+  flip([...board.querySelectorAll('.ticket-card, .empty-cell, .lane-heading')], () => {
+    if (drag.originSlot !== slot) drag.originSlot.remove();
+    emptyHint(card.parentElement);
+    emptyHint(origin);
+  });
   syncCounts();
   settle(card);
   reset();
@@ -543,6 +565,7 @@ function reset() {
   drag.card = null;
   drag.ghost = null;
   drag.slot = null;
+  drag.originSlot = null;
   drag.pointer = 0;
 }
 

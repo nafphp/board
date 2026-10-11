@@ -158,12 +158,16 @@
   pointer-events: none;
 }
 
-/* The slot left behind while a card is in flight. */
+/* Both slots share the carried card's size; the reserved origin stays quiet. */
 .card-slot {
   flex: none;
   border-radius: 10px;
-  border: 1px dashed color-mix(in srgb, var(--accent) 55%, var(--line));
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  border: 1px dashed var(--line);
+  background: color-mix(in srgb, var(--muted) 4%, transparent);
+}
+.card-slot.is-active {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
@@ -210,26 +214,25 @@ html.board-dragging .ticket-card {
 html.board-dragging .ticket-card::after {
   display: none;
 }
-
-.board-cell.is-target {
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-  outline: 1px dashed color-mix(in srgb, var(--accent) 45%, transparent);
-  outline-offset: 5px;
+/* Empty-state hints have their own minimum height. During a drag only the actual slots
+   should look like drop targets; keep the hints' hit area without drawing another box. */
+html.board-dragging .empty-cell {
+  visibility: hidden;
 }
+
 /* The closing column promises the reward before the card even lands there. */
-.board-cell.is-target.is-closing {
+.board-cell.is-target.is-closing > .card-slot.is-active {
   background: linear-gradient(
     180deg,
     color-mix(in srgb, #2fbf8f 14%, transparent),
     color-mix(in srgb, #ffd267 12%, transparent)
   );
-  outline-color: color-mix(in srgb, #2fbf8f 65%, transparent);
+  border-color: color-mix(in srgb, #2fbf8f 65%, var(--line));
   animation: closing-glow 1.3s ease-in-out infinite;
 }
 @keyframes closing-glow {
   50% {
-    outline-offset: 8px;
-    outline-color: color-mix(in srgb, #ffd267 70%, transparent);
+    border-color: color-mix(in srgb, #ffd267 70%, var(--line));
   }
 }
 
@@ -323,7 +326,7 @@ html.board-dragging .ticket-card::after {
   .ticket-card.celebrating,
   .ticket-card.celebrating::before,
   .ticket-card.rejected,
-  .board-cell.is-target.is-closing {
+  .board-cell.is-target.is-closing > .card-slot.is-active {
     animation: none;
   }
   .ticket-card:hover {

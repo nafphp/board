@@ -1,0 +1,23 @@
+<?php
+
+use function Naf\Board\extensions;
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+?>
+<div class="filter-visibility" role="group" aria-label="<?= s(t('Sichtbare Boardfilter')) ?>">
+    <?php foreach (extensions()->boardFilters()->controls() as $filter): ?>
+        <label class="filter-visibility-row">
+            <span><?= s(t($filter->label)) ?></span>
+            <input type="hidden" name="<?= s($name . '[' . $filter->id . ']') ?>" value="0" <?= $disabled ? 'disabled' : '' ?> />
+            <input
+                type="checkbox"
+                role="switch"
+                name="<?= s($name . '[' . $filter->id . ']') ?>"
+                value="1"
+                <?= ($value[$filter->id] ?? true) ? 'checked' : '' ?>
+                <?= $disabled ? 'disabled' : '' ?>
+            />
+        </label>
+    <?php endforeach ?>
+</div>

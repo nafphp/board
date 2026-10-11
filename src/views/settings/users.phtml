@@ -1,19 +1,8 @@
 <?php
-
-/**
- * The accounts of this installation, each with what they hold and where.
- *
- * Opening one is the edit, like everywhere else in these settings. The editor
- * itself comes from naf/rbac -- this card only says who there is to edit.
- *
- * @var array $people
- */
-
 use Naf\Board\Rbac\Installation;
 use Naf\Board\Support\Icon;
 
-use function Naf\Auth\auth;
-use function Naf\Board\field;
+use function Naf\Board\extensions;
 use function Naf\Board\partial;
 use function Naf\Form\csrf;
 use function Naf\I18n\t;
@@ -22,68 +11,58 @@ use function Naf\route;
 use function Naf\View\s;
 
 ?>
-<div class="settings-rows" data-kind="user">
-    <?php if (rbac()->allows((int) (auth()->user()?->getIdentifier() ?? 0), Installation::MANAGE_USERS)): ?>
-        <?php /* Opening an account used to mean having a shell on the server. */ ?>
-        <details class="settings-row">
-            <summary class="settings-row-head">
-                <span class="settings-row-title"><?= s(t('Konto anlegen')) ?></span>
-                <?= Icon::mark('person_add', 'sm', 'settings-row-caret') ?>
-            </summary>
-            <div class="settings-row-body">
-                <form method="post" data-enhanced action="<?= s(route('installation.users.create')) ?>">
-                    <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
-                    <?= field(['label' => 'Name', 'name' => 'name', 'required' => true, 'attributes' => ['maxlength' => 120]]) ?>
-                    <?= field(['label' => 'E-Mail', 'name' => 'email', 'type' => 'email', 'required' => true, 'attributes' => ['maxlength' => 190]]) ?>
-                    <?= field([
-                        'label'      => 'Erstes Passwort',
-                        'name'       => 'password',
-                        'type'       => 'password',
-                        'required'   => true,
-                        'hint'       => 'Die Person ändert es danach selbst. Sag es ihr auf einem anderen Weg als per E-Mail.',
-                        'attributes' => ['autocomplete' => 'new-password'],
-                    ]) ?>
-                    <div class="form-errors" role="alert"></div>
-                    <div class="settings-actions">
-                        <button class="button primary"><?= s(t('Konto anlegen')) ?></button>
+<div data-people-directory data-people-url="<?= s(route('installation.users.index')) ?>">
+    <div class="settings-toolbar">
+        <form method="get" action="/settings#installation_users" data-people-search role="search">
+            <label class="sr-only" for="people-search"><?= s(t('Nutzer suchen')) ?></label>
+            <input id="people-search" type="search" name="users_q" value="<?= s($search) ?>" maxlength="190" placeholder="<?= s(t('Name oder E-Mail suchen …')) ?>" />
+            <button class="button" type="submit"><?= Icon::mark('search', 'sm') ?><span class="sr-only"><?= s(t('Suchen')) ?></span></button>
+        </form>
+        <?php if (rbac()->allows($actor, Installation::MANAGE_USERS)): ?>
+            <button type="button" class="button primary" data-people-dialog="people-invite" aria-haspopup="dialog"><?= Icon::mark('person_add', 'sm') ?><?= s(t('Person einladen')) ?></button>
+        <?php endif ?>
+    </div>
+    <div class="settings-bulk-bar" data-bulk-bar hidden>
+        <strong data-bulk-count role="status" aria-live="polite"></strong>
+        <button type="button" class="button primary" data-people-dialog="people-bulk" aria-haspopup="dialog"><?= s(t('Update')) ?></button>
+        <button type="button" class="button" data-bulk-clear><?= s(t('Auswahl aufheben')) ?></button>
+    </div>
+    <p class="form-errors" data-people-error role="alert"></p>
+    <?= partial('settings/users-table', compact('people', 'actor', 'page', 'pages', 'search', 'total', 'bulkProperties')) ?>
+    <dialog id="people-editor" class="settings-subdialog" aria-labelledby="people-editor-title">
+        <header><h2 id="people-editor-title"><?= s(t('Nutzer bearbeiten')) ?></h2><button class="icon-button" type="button" data-people-close aria-label="<?= s(t('Schließen')) ?>"><?= Icon::mark('close') ?></button></header>
+        <div class="settings-subdialog-body" data-person-content></div>
+    </dialog>
+    <dialog id="people-invite" class="settings-subdialog" aria-labelledby="people-invite-title">
+        <header><h2 id="people-invite-title"><?= s(t('Person einladen')) ?></h2><button class="icon-button" type="button" data-people-close aria-label="<?= s(t('Schließen')) ?>"><?= Icon::mark('close') ?></button></header>
+        <div class="settings-subdialog-body settings-invitation">
+            <?= partial('components/notice', ['severity' => 'info', 'message' => t('Wähle das erste Board. Die Person legt ihr Konto selbst an und erhält nur dort Zugang. Weitere Boards kannst du später über die Kontosuche zuweisen.')]) ?>
+            <?php if ($inviteTargets): ?>
+                <?= partial('settings/invite-form', ['projectId' => null, 'token' => csrf()->token(), 'inviteTargets' => $inviteTargets, 'inviteRoles' => ['member' => 'Member', 'viewer' => 'Viewer']]) ?>
+            <?php else: ?><?= partial('components/notice', ['severity' => 'warning', 'message' => t('Du kannst derzeit für kein aktives Board Mitglieder verwalten.')]) ?><?php endif ?>
+        </div>
+    </dialog>
+    <dialog id="people-bulk" class="settings-subdialog" aria-labelledby="people-bulk-title">
+        <header><h2 id="people-bulk-title"><?= s(t('Update')) ?></h2><button class="icon-button" type="button" data-people-close aria-label="<?= s(t('Schließen')) ?>"><?= Icon::mark('close') ?></button></header>
+        <div class="settings-subdialog-body">
+            <p data-bulk-summary></p>
+            <?= partial('components/notice', ['severity' => 'info', 'message' => t('Nur aktivierte Eigenschaften werden geändert. Alle Änderungen werden gemeinsam gespeichert. Bei einem Fehler wird nichts übernommen.')]) ?>
+            <form method="post" action="<?= s(route('installation.users.bulk')) ?>" data-enhanced data-bulk-form>
+                <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
+                <div data-bulk-targets></div>
+                <?php foreach ($bulkProperties as $key => $property): ?>
+                    <div class="settings-bulk-property">
+                        <label><input type="checkbox" data-bulk-enable /> <?= s(t($property['definition']->label)) ?></label>
+                        <fieldset disabled>
+                            <?php $type       = extensions()->fieldTypes()->get($property['definition']->type); ?>
+                            <?php $definition = (object) [...get_object_vars($property['definition']), 'options' => $property['options'], 'sensitive' => false]; ?>
+                            <?= partial($type->view(), ['definition' => $definition, 'name' => 'values[' . $key . ']', 'value' => null, 'id' => 'bulk-' . $key, 'disabled' => false, 'required' => false]) ?>
+                        </fieldset>
                     </div>
-                </form>
-            </div>
-        </details>
-    <?php endif ?>
-    <p class="settings-note">
-        <?= s(t(
-            'Eine Rolle ohne Ort gilt überall, eine mit Ort nur dort. Deine eigenen Rollen kann '
-            . 'nur jemand anderes ändern.',
-        )) ?>
-    </p>
-    <?php foreach ($people as $person): ?>
-        <details class="settings-row">
-            <summary class="settings-row-head">
-                <span class="settings-row-title"><?= s($person['name']) ?></span>
-                <span class="settings-row-marks">
-                    <?php if (!$person['active']): ?>
-                        <span class="settings-row-mark"><?= s(t('inaktiv')) ?></span>
-                    <?php endif ?>
-                    <?php if ($person['roles'] === []): ?>
-                        <span class="settings-row-mark"><?= s(t('keine Rolle')) ?></span>
-                    <?php endif ?>
-                    <?php foreach ($person['roles'] as $grant): ?>
-                        <span class="settings-row-mark">
-                            <?= s($grant['label']) ?><?= $grant['scope'] === '' ? '' : ' · ' . s($grant['scope']) ?>
-                        </span>
-                    <?php endforeach ?>
-                </span>
-                <?= Icon::mark('expand_more', 'sm', 'mi-turn settings-row-caret') ?>
-            </summary>
-            <div class="settings-row-body">
-                <p class="settings-hint"><?= s($person['email']) ?></p>
-                <?= partial('rbac/grants', [
-                    'user'   => $person['id'],
-                    'name'   => $person['name'],
-                    'return' => '/settings',
-                ]) ?>
-            </div>
-        </details>
-    <?php endforeach ?>
+                <?php endforeach ?>
+                <div class="form-errors" role="alert"></div>
+                <div class="settings-actions"><button class="button primary" type="submit" data-bulk-submit disabled><?= s(t('Änderungen für Auswahl speichern')) ?></button></div>
+            </form>
+        </div>
+    </dialog>
 </div>

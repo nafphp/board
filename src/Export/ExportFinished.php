@@ -24,12 +24,14 @@ final readonly class ExportFinished
      * @param int    $project  The project that was exported
      * @param array  $columns  Column key to translated heading, as decided for this run
      * @param int    $written  How many records went out
+     * @param string $source   Dataset id
      */
     public function __construct(
         public string $exporter,
         public int $project,
         public array $columns,
         public int $written,
+        public string $source = 'tickets',
     ) {
     }
 

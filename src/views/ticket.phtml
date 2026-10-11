@@ -143,6 +143,7 @@ $ticketSlot = new TicketSlotContext(
     preferences: $preferences,
     creator: (string) ($creator ?? ''),
     field: new InlineFieldRenderer($field),
+    fieldVisibility: $fieldVisibility ?? [],
 );
 
 // Only what the built-in panels need to draw themselves.
@@ -232,7 +233,6 @@ $panelData = [
                     <?php } ?>
                     <?php if (!$comments): ?><p class="muted small"><?= s(t('Noch keine Kommentare.')) ?></p><?php endif ?>
                 </div>
-            </section>
             <?php if ($scope->allows('comment')): ?>
                 <form class="comment-composer" method="post" action="<?= s(route('ticket.comments', $params)) ?>" data-ticket-form data-comment-composer data-refresh-section="comments">
                     <input type="hidden" name="_csrf" value="<?= s($token) ?>" /><input type="hidden" name="parent_id" value="" />
@@ -245,10 +245,16 @@ $panelData = [
                     <template data-mention-members><?php foreach ($members as $member): ?><span data-handle="<?= s($member['handle']) ?>" data-name="<?= s($member['name']) ?>"></span><?php endforeach ?></template>
                 </form>
             <?php endif ?>
+            </section>
             <?php endif ?>
         </div>
         <aside class="ticket-context ticket-sidebar" aria-label="<?= s(t('Ticketdetails')) ?>">
             <?= slot('ticket.sidebar.panels', $ticketSlot, $panelData) ?>
+            <?php if (!$isNew): ?>
+                <div class="ticket-sidebar-settings">
+                    <a href="<?= s(route('project.settings', ['project' => $projectId])) ?>#ticket_sidebar"><?= Icon::mark('tune', 'sm') ?><?= s(t('Deine Ticketansicht anpassen')) ?></a>
+                </div>
+            <?php endif ?>
         </aside>
     </div>
     <?php if ($isNew): ?>

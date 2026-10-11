@@ -2,13 +2,22 @@
 
 The ticket view shows the key at the top, then title and description. Below that come linked
 tickets, attachments, the collapsible history and finally the comments. The input for a new
-comment stays visible at the bottom edge. On the desktop the metadata bar sits on the right; on
-small screens it follows the description.
+comment follows the discussion in the normal document flow, so it cannot cover attachments,
+history or existing comments. On the desktop the metadata bar sits on the right; on small
+screens it follows the description.
 
 The same view works on the ticket's own URL and in the board drawer. The whole ticket card opens
 the ticket, description and empty space included. The card menu stays independently operable,
 including right after a drag gesture, and the native title link still supports the keyboard, the
 context menu and opening in a new tab.
+
+When dragging a ticket, a muted placeholder reserves its original position until the card
+lands. The active drop preview uses the accent colour; closing columns retain their completion
+highlight. Both placeholders match the carried card's height. Returning to the original
+position activates that same placeholder, without adding a second gap. Empty-state hints stay
+hidden during dragging, so their larger box does not compete with the card-sized previews.
+After dropping, the original gap closes with the board's normal motion; cancellation restores
+the card to that reserved position.
 
 ## Creating a ticket in the modal
 
@@ -113,8 +122,12 @@ Attributes and associations that are not submitted are preserved. Updates requir
 movement retain their board revision checks. Status changes use the existing state service. System values such as creator
 and change date are read-only.
 
-Time tracking is a manually editable **total in minutes**; it is not a stopwatch and not a
-per-person booking journal. The display converts to hours and minutes. When an estimate exists,
+The ticket keeps a manually editable **total in minutes** and a server-backed work timer.
+Starting or resuming counts elapsed seconds; pausing holds them without booking, and stopping
+adds whole minutes to the ticket. Remaining seconds carry into the next session. New timer
+bookings also enter a per-person journal used by the [personal hours export](Profile.md#exporting-personal-hours).
+Manual edits of the aggregate do not create personal bookings. The display converts to hours
+and minutes. When an estimate exists,
 progress and remaining time — or an overrun — are shown. The start date may not lie after the
 due date.
 
@@ -167,7 +180,33 @@ replaced nor removed through the registries — `TicketFieldRegistry::FIXED_AREA
 
 See [Extensibility](Extensibility.md) for the full API, the slot list and the negative cases.
 
+## Personal sidebar
+
+Choose **Deine Ticketansicht anpassen** at the bottom of a ticket's sidebar to open
+**Deine Ticketansicht** in that board's settings. Each person can show or hide registered
+attributes for that board, including contributed metadata. Groups and field order stay
+as defined by the registry. Newly installed attributes are visible by default;
+**Standard wiederherstellen** removes the personal override.
+
+This is a `project_user` setting named `ticket_fields`, stored through the existing
+settings service. It changes presentation only: ticket values, versions, permissions,
+exports and other people's views stay intact. Viewers can configure their own display.
+Creation forms retain their fields, empty groups disappear, and ticket actions and the
+customization link remain reachable even when every attribute is hidden. Hiding tracked
+time also hides its timer control, without stopping any running timer.
+
+Labels and values share their first text baseline, including inline editors, badges and
+read-only information. This keeps their alignment when values wrap or an editor opens.
+
 ## Links and comments
+
+Ticket sections share a 32 px vertical separation, with a separate heading-to-content gap.
+The comment composer has 20 px inner padding (16 px on phones), a 96 px minimum writing
+area and a separated footer whose hint and send action can wrap. Comment text, bylines,
+reply/edit actions and expanded edit forms have their own gaps. Linking and upload forms
+use the same 16 px content spacing; hidden error messages and reply context leave no gap.
+The composer belongs to the comments section but stays outside the refreshed thread, so
+loading updated comments preserves the current draft.
 
 **Link ticket** expects the number of another ticket in the same project, for example `42` for
 `NAF-42`. A link appears on both sides; duplicates and self-links are prevented. Removing one
@@ -234,8 +273,11 @@ The last full run and its numbers are recorded in
 
 
 Inline field buttons expose the field label, current displayed value and edit action together.
-Rich descriptions remain readable document content with a separate edit button, so their links
-and headings are not flattened into one long button name.
+Clicking description text or its empty placeholder opens the inline editor directly, just like
+the title; links inside the description keep their normal navigation. Rich descriptions remain
+readable document content. A visually hidden edit button stays available through Tab and
+Enter or Space, with its focus outline shown around the description, so links and headings
+are not flattened into one long button name.
 
 A real version conflict keeps the current editor open. “Entwurf sichern” downloads that form's
 current values as JSON pairs (including repeated field names), without CSRF tokens or lock

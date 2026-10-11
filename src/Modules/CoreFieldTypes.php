@@ -6,6 +6,7 @@ namespace Naf\Board\Modules;
 
 use Naf\Board\Contracts\ExtensionProviderInterface;
 use Naf\Board\ExtensionContext;
+use Naf\Board\Support\Fields\BoardFilterVisibilityType;
 use Naf\Board\Support\Fields\BooleanType;
 use Naf\Board\Support\Fields\DateType;
 use Naf\Board\Support\Fields\IntegerType;
@@ -13,6 +14,7 @@ use Naf\Board\Support\Fields\MultiselectType;
 use Naf\Board\Support\Fields\SelectType;
 use Naf\Board\Support\Fields\TextareaType;
 use Naf\Board\Support\Fields\TextType;
+use Naf\Board\Support\Fields\TicketFieldVisibilityType;
 
 /**
  * The value types settings and ticket metadata share.
@@ -32,5 +34,7 @@ final class CoreFieldTypes implements ExtensionProviderInterface
         $types->add(new DateType());
         $types->add(new SelectType());
         $types->add(new MultiselectType());
+        $types->add(new BoardFilterVisibilityType());
+        $types->add(new TicketFieldVisibilityType());
     }
 }

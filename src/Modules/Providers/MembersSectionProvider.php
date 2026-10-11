@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Naf\Board\Modules\Providers;
 
+use Naf\Board\Contracts\InvitationServiceInterface;
 use Naf\Board\Contracts\SettingSectionProviderInterface;
 use Naf\Board\Definition\SettingSection;
 use Naf\Board\Support\UiContext;
@@ -13,8 +14,12 @@ use Naf\Board\Support\UiContext;
  */
 final class MembersSectionProvider implements SettingSectionProviderInterface
 {
+    public function __construct(private InvitationServiceInterface $invitations)
+    {
+    }
+
     public function data(SettingSection $section, UiContext $context, array $page): array
     {
-        return ['description' => Names::of($page['members'] ?? [])];
+        return ['description' => Names::of($page['members'] ?? []), 'invitations' => $this->invitations->pending((int) $page['projectId'])];
     }
 }

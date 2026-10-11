@@ -12,13 +12,24 @@ use function Naf\View\s;
  * in the order the registry gives them.
  */
 ?>
+<?php if (!$slot->showsGroup('details')) {
+    return;
+} ?>
 <section class="ticket-sidebar-group">
     <h2><?= s(t('Details')) ?></h2>
     <dl class="ticket-meta">
+        <?php if ($slot->shows('priority')): ?>
         <dt><?= s(t('Priorität')) ?></dt><dd><?= $slot->field->render('priority', 'Priorität', 'select', $slot->ticket['priority'], '<span class="priority-value priority-' . s($slot->ticket['priority']) . '">● ' . s($priorities[$slot->ticket['priority']]) . '</span>', $priorities) ?></dd>
+        <?php endif ?>
+        <?php if ($slot->shows('swimlane_id')): ?>
         <dt><?= s(t('Swimlane')) ?></dt><dd><?= $slot->field->render('swimlane_id', 'Swimlane', 'select', $slot->ticket['swimlane_id'], s(array_column($slot->swimlanes, 'name', 'id')[$slot->ticket['swimlane_id']]), array_column($slot->swimlanes, 'name', 'id'), ['action' => route('ticket.move', $slot->params), 'hidden' => ['column_id' => $slot->ticket['column_id']]]) ?></dd>
+        <?php endif ?>
+        <?php if ($slot->shows('label_ids')): ?>
         <dt>Labels</dt><dd><?= $slot->field->render('label_ids', 'Labels', 'multiple', $selected_labels, $labelDisplay ?: $empty, array_column($slot->labels, 'name', 'id')) ?></dd>
+        <?php endif ?>
+        <?php if ($slot->shows('color')): ?>
         <dt><?= s(t('Akzentfarbe')) ?></dt><dd><?= $slot->field->render('color', 'Akzentfarbe', 'color', $slot->ticket['color'], '<span class="ticket-color" style="background:' . s($slot->ticket['color']) . '"></span><span class="muted small">' . s($slot->ticket['color']) . '</span>') ?></dd>
+        <?php endif ?>
     <?php foreach ($slot->fieldsIn('details') as $metaKey => $metaField): ?>
         <?= partial('ticket/metadata', [
             'definition' => $metaField,

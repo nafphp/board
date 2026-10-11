@@ -214,8 +214,26 @@ final class AutoSaveAndPickerTest extends AcceptanceTestCase
             $this->assertNotSame('', trim($button->textContent));
         }
         $this->assertSame(1, $xpath->query('//*[@data-description-display and not(@role)]')->length);
+        $this->assertSame(1, $xpath->query('//*[@data-description-display]/following-sibling::*[@role="button" and contains(@class, "sr-only")]')->length);
         $priority = $xpath->query('//*[@data-inline-field="priority"]/*[@role="button"]')->item(0);
         $this->assertStringContainsString('Priorität:', $priority->textContent);
         $this->assertStringContainsString('Normal', $priority->textContent);
+    }
+
+    public function testDescriptionContentKeepsItsHeadingsAndLinksOutsideTheEditButton(): void
+    {
+        $html = '<h2>Plan</h2><p>Read <a href="https://example.com/guide">the guide</a>.</p>';
+        $this->assertSame(200, $this->post($this->alice, $this->url, [
+            'description_html' => $html,
+        ] + $this->ticketState($this->url))['status']);
+
+        foreach ([$this->alice, $this->viewer] as $client) {
+            $dom = new DOMDocument();
+            @$dom->loadHTML('<?xml encoding="UTF-8">' . $this->page($client, $this->url . '?fragment=1'));
+            $xpath = new DOMXPath($dom);
+            $this->assertSame(1, $xpath->query('//*[@data-description-display]/h2')->length);
+            $this->assertSame(1, $xpath->query('//*[@data-description-display]//a[@href="https://example.com/guide" and not(ancestor::*[@role="button"])]')->length);
+            $this->assertSame($client === $this->alice ? 1 : 0, $xpath->query('//*[@data-inline-field="description"]/*[@role="button" and @tabindex="0"]')->length);
+        }
     }
 }

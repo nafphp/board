@@ -99,15 +99,6 @@
   font-size: 12px;
   margin-top: 26px;
 }
-.settings-hint {
-  margin: 10px 0 0;
-  padding: 9px 12px;
-  border-radius: 9px;
-  font-size: 12px;
-  color: var(--muted);
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
-}
 .settings-open {
   overflow: hidden;
 }
@@ -234,12 +225,6 @@
   font-size: 12px;
   line-height: 1.5;
 }
-.permission-grid input {
-  width: 17px;
-  height: 17px;
-  flex-shrink: 0;
-  accent-color: var(--accent);
-}
 @media (max-width: 650px) {
   .settings-context {
     flex-direction: column;
@@ -281,27 +266,31 @@
   color: var(--muted);
   font-size: 13px;
 }
-.settings-row {
+.settings-row,
+.settings-detail .rbac-role {
   border-bottom: 1px solid var(--line);
 }
 /* The row that adds one closes the list, so it carries no divider. */
 .settings-rows > .settings-row:last-child {
   border-bottom: 0;
 }
-.settings-row-head {
+.settings-row-head,
+.settings-detail .rbac-role-head {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 13px 4px;
+  padding: 14px 12px;
   cursor: pointer;
   border-radius: 10px;
   list-style: none;
   transition: background 0.15s;
 }
-.settings-row-head::-webkit-details-marker {
+.settings-row-head::-webkit-details-marker,
+.settings-detail .rbac-role-head::-webkit-details-marker {
   display: none;
 }
-.settings-row-head:hover {
+.settings-row-head:hover,
+.settings-detail .rbac-role-head:hover {
   background: color-mix(in srgb, var(--accent) 5%, transparent);
 }
 .structure-swatch {
@@ -323,7 +312,8 @@
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   flex-shrink: 0;
 }
-.settings-row-title {
+.settings-row-title,
+.settings-detail .rbac-role-name {
   font-size: 14px;
   font-weight: 500;
 }
@@ -349,6 +339,62 @@
   border-color: transparent;
   color: #10b981;
   background: #10b98118;
+}
+/* Account summaries keep the place readable and the role secondary. */
+.settings-user-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.settings-user-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.settings-user-role {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  max-width: 100%;
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--muted) 8%, transparent);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.settings-user-place {
+  min-width: 0;
+  font-weight: 500;
+}
+.settings-user-role-name {
+  min-width: 0;
+  padding-left: 7px;
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+}
+.settings-user-role.is-global {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.settings-user-role.is-global .settings-user-place {
+  color: var(--muted);
+  font-weight: 400;
+}
+.settings-user-role.is-global .settings-user-role-name {
+  color: var(--accent);
+}
+.settings-user-state {
+  color: var(--muted);
+  font-size: 12px;
+}
+.settings-user-email {
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  overflow-wrap: anywhere;
 }
 .structure-order {
   display: flex;
@@ -379,12 +425,21 @@
   opacity: 0.25;
   cursor: default;
 }
-.settings-row-caret {
+.settings-row-caret,
+.settings-detail .rbac-role-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
   color: var(--muted);
-  flex-shrink: 0;
+  transform-origin: center;
 }
-.settings-row-body {
-  padding: 4px 4px 22px;
+.settings-row-body,
+.settings-detail .rbac-grants .rbac-group {
+  padding: 16px 12px 24px;
 }
 /* The label carries its own bottom margin, so the grid only spaces columns. */
 .settings-fields {
@@ -472,6 +527,44 @@ label > small {
   margin: 0 0 14px;
   font-size: 14px;
 }
+.project-management-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.project-archive {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+.project-archive .project-management-note {
+  flex: 1 1 280px;
+}
+.project-archive .form-errors:not(:empty) {
+  flex-basis: 100%;
+}
+.project-delete {
+  margin-top: 20px;
+}
+.project-delete summary {
+  width: fit-content;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+.project-delete summary:hover,
+.project-delete[open] summary {
+  color: var(--danger);
+}
+.project-delete form {
+  max-width: 480px;
+  margin-top: 16px;
+}
+.project-delete .project-management-note {
+  margin-bottom: 18px;
+}
 .settings-actions {
   display: flex;
   flex-wrap: wrap;
@@ -486,23 +579,532 @@ label > small {
 @media (prefers-reduced-motion: reduce) {
   .field-pick,
   .structure-nudge,
-  .settings-row-head {
+  .settings-row-head,
+  .settings-detail .rbac-role-head {
     transition: none;
   }
 }
 
 /* The role editor naf/rbac ships, in this application's colours. Its own
    defaults are neutral so that this is the whole of the mapping. */
-.rbac-roles,
-.rbac-grants {
+body .rbac-roles,
+body .rbac-grants {
   --rbac-line: var(--line);
   --rbac-muted: var(--muted);
   --rbac-accent: var(--accent);
   --rbac-danger: var(--danger, #e05260);
   --rbac-surface: var(--input);
   --rbac-radius: 10px;
+  --rbac-switch-thumb: var(--surface);
 }
 .rbac-roles .rbac-button.is-primary,
 .rbac-grants .rbac-button.is-primary {
   color: var(--on-accent);
+}
+/* RBAC disclosures share the settings rows and Material Symbols caret above. */
+.settings-detail .rbac-role-caret {
+  margin-left: 0;
+  transform: none;
+}
+.settings-detail .rbac-role-caret::before {
+  content: 'expand_more';
+  width: auto;
+  height: auto;
+  border: 0;
+}
+.invite-delivery {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pending-invitations {
+  padding: 0;
+  list-style: none;
+}
+.pending-invitations li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.pending-invitations small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+}
+.invitation-result {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+/* Actions sit above the content; account editors are fetched only when opened. */
+.settings-toolbar,
+.settings-table-pages,
+.settings-bulk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.settings-toolbar {
+  justify-content: flex-end;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.settings-toolbar form {
+  display: flex;
+  gap: 8px;
+  margin: 0 auto 0 0;
+  flex: 1 1 260px;
+  max-width: 420px;
+}
+.settings-toolbar input {
+  flex: 1;
+  width: 100%;
+  margin: 0;
+  min-width: 0;
+}
+.settings-bulk-bar {
+  position: sticky;
+  top: -28px;
+  z-index: 2;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  font-size: 12px;
+}
+.settings-bulk-bar[hidden] {
+  display: none;
+}
+.settings-bulk-bar strong {
+  margin-right: auto;
+}
+.settings-table-scroll {
+  overflow-x: auto;
+  margin-top: 18px;
+}
+.settings-people-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12px;
+}
+.settings-people-table th,
+.settings-people-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.settings-people-table th {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 550;
+}
+.settings-people-table tbody tr {
+  cursor: pointer;
+}
+.settings-people-table tbody tr:hover,
+.settings-people-table tr.is-selected {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+.settings-people-table .settings-select-cell {
+  width: 30px;
+}
+/* Preserve native checkbox semantics while making selection and locks distinct. */
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]) {
+  appearance: none;
+  box-sizing: border-box;
+  position: relative;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--muted) 70%, var(--surface));
+  border-radius: 4px;
+  background: var(--input);
+  color: var(--on-accent);
+  cursor: var(--cursor-pointer, pointer);
+  vertical-align: middle;
+}
+.settings-people-table input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):enabled:hover {
+  border-color: var(--accent);
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):is(
+  :checked,
+  :indeterminate
+) {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):checked::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 7px;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -60%) rotate(45deg);
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):indeterminate::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 2px;
+  border: 0;
+  border-radius: 1px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):disabled {
+  border-color: color-mix(in srgb, var(--muted) 35%, var(--surface));
+  background: color-mix(in srgb, var(--muted) 15%, var(--surface));
+  color: var(--muted);
+  cursor: not-allowed;
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):disabled::before {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 5px;
+  border: 1px solid currentColor;
+  border-radius: 1px;
+  background: none;
+  transform: translate(-50%, 0);
+}
+:is(.settings-people-table input[type='checkbox'], [data-bulk-enable]):disabled::after {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  width: 5px;
+  height: 4px;
+  border: 1px solid currentColor;
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+  transform: translateX(-50%);
+}
+@media (forced-colors: active) {
+  :is(.settings-people-table input[type='checkbox'], [data-bulk-enable]) {
+    appearance: auto;
+  }
+  :is(.settings-people-table input[type='checkbox'], [data-bulk-enable])::before,
+  :is(.settings-people-table input[type='checkbox'], [data-bulk-enable])::after {
+    display: none;
+  }
+}
+.settings-person-open {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.settings-person-open strong {
+  font-size: 13px;
+  font-weight: 550;
+}
+.settings-person-open small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.settings-person-state {
+  color: var(--muted);
+  white-space: nowrap;
+}
+.settings-person-state.is-active::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.settings-people-table .settings-user-role {
+  padding: 3px 6px;
+  font-size: 11px;
+}
+.settings-table-pages {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.settings-table-pages span {
+  margin-right: auto;
+}
+.settings-subdialog {
+  width: min(760px, calc(100vw - 40px));
+  max-width: none;
+  max-height: calc(100dvh - 56px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: 0 24px 90px #15142e50;
+}
+.settings-subdialog::backdrop {
+  background: #17162c70;
+  backdrop-filter: blur(3px);
+}
+.settings-subdialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.settings-subdialog > header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--line);
+}
+.settings-subdialog h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.settings-subdialog > header .icon-button {
+  margin-left: auto;
+}
+.settings-subdialog-body {
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+}
+.settings-bulk-property {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.settings-bulk-property > label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.settings-bulk-property fieldset:disabled {
+  opacity: 0.45;
+}
+.settings-person-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.settings-person-heading h3 {
+  margin: 0;
+}
+.settings-person-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+[data-person-status]:empty {
+  display: none;
+}
+.settings-person-section h4 {
+  margin: 0 0 18px;
+  font-size: 14px;
+}
+.settings-person-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0 0;
+  font-size: 11px;
+}
+.settings-person-meta dt {
+  color: var(--muted);
+}
+.settings-person-meta dd {
+  margin: 5px 0 0;
+  overflow-wrap: anywhere;
+}
+.settings-person-roles > summary {
+  padding-bottom: 12px;
+  cursor: var(--cursor-pointer, pointer);
+  font-size: 14px;
+  font-weight: 600;
+}
+.settings-role-group {
+  margin-top: 20px;
+}
+.settings-person-roles .settings-role-group h4 {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 550;
+}
+.settings-role-row {
+  border-bottom: 1px solid var(--line);
+}
+.settings-role-heading,
+.settings-role-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) 28px;
+  align-items: center;
+  gap: 14px;
+}
+.settings-role-heading {
+  min-height: 44px;
+  padding: 8px 0;
+  list-style: none;
+  font-size: 12px;
+}
+summary.settings-role-heading {
+  cursor: var(--cursor-pointer, pointer);
+}
+.settings-role-heading::-webkit-details-marker {
+  display: none;
+}
+.settings-role-heading:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.settings-role-scope,
+.settings-role-current {
+  overflow-wrap: anywhere;
+}
+.settings-role-current {
+  color: var(--muted);
+  text-align: right;
+}
+.settings-role-edit {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--muted) 8%, transparent);
+}
+.settings-role-heading:hover .settings-role-edit,
+.settings-role-row[open] .settings-role-edit {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.settings-role-control {
+  padding-bottom: 14px;
+}
+.settings-role-control > .choice {
+  grid-column: 2 / -1;
+  min-width: 0;
+}
+.settings-role-control .choice-trigger {
+  min-height: 36px;
+  font-size: 12px;
+}
+[data-reset-result] {
+  margin-top: 20px;
+}
+@media (max-width: 650px) {
+  .settings-toolbar > button {
+    margin-left: auto;
+  }
+  .settings-people-table {
+    min-width: 600px;
+  }
+  .settings-subdialog-body {
+    padding: 18px;
+  }
+  .settings-person-meta {
+    grid-template-columns: 1fr;
+  }
+  .settings-role-heading,
+  .settings-role-control {
+    gap: 10px;
+  }
+  .settings-role-control > .choice {
+    grid-column: 1 / -1;
+  }
+}
+
+.settings-configuration-field {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.settings-configuration-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0 16px;
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.settings-configuration-source {
+  max-width: 320px;
+}
+
+.settings-advanced-toggle {
+  margin: 0 0 28px;
+}
+.settings-advanced-toggle label {
+  margin: 0;
+}
+.settings-advanced-heading {
+  margin: 32px 0 18px;
+  font-size: 18px;
+}
+.settings-detail .settings-advanced-fields {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.settings-advanced-fields > legend {
+  padding: 0 12px 0 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+[data-settings-advanced-group][hidden],
+[data-settings-advanced-fields][hidden] {
+  display: none;
+}
+
+/* Invitation hints and fields share a deliberate vertical rhythm. */
+.settings-invitation > .ui-notice {
+  margin: 0 0 22px;
+}
+.invitation-form,
+.invitation-notices {
+  display: grid;
+  gap: 20px;
+}
+.invitation-form > label,
+.invitation-form > .settings-actions,
+.invitation-form > .form-errors,
+.invitation-notices > .ui-notice,
+.invitation-notices > label {
+  margin: 0;
+}
+.invitation-notices {
+  gap: 10px;
 }

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Naf\Board\Tests\Database;
 
+use Naf\Board\Contracts\SettingsServiceInterface;
 use Naf\Board\Services\PreferenceService;
+use Naf\Board\Support\SettingsContext;
 use Naf\Board\Tests\Support\BoardTestCase;
 
 use function Naf\app;
@@ -71,6 +73,39 @@ final class PreferenceTest extends BoardTestCase
         $after = $this->query->preferences();
         $this->assertSame('anthracite', $after['palette']);
         $this->assertSame('dark', $after['theme']);
+    }
+
+    public function testTheSettingsApiCanTurnOffBooleanPreferencesWithoutResettingAppearance(): void
+    {
+        $settings = app()->container()->get(SettingsServiceInterface::class);
+        $settings->save(SettingsContext::user((int) $this->alice->getId()), [
+            'notify_in_app' => false,
+            'notify_mail'   => false,
+        ]);
+
+        $after = $this->query->preferences();
+        $this->assertSame(0, (int) $after['notify_in_app']);
+        $this->assertSame(0, (int) $after['notify_mail']);
+        $this->assertSame('dark', $after['theme']);
+        $this->assertSame('anthracite', $after['palette']);
+    }
+
+    public function testAnArchivedProjectKeepsItsPersonalSettingsWhileSharedSettingsStayLocked(): void
+    {
+        $this->projects->archive($this->projectA, true);
+        $settings = app()->container()->get(SettingsServiceInterface::class);
+        $context  = SettingsContext::projectUser($this->projectA, (int) $this->alice->getId());
+
+        foreach ([true, false] as $muted) {
+            $settings->save($context, ['muted' => $muted]);
+            $this->assertSame($muted, $settings->get($context, 'muted'));
+            $listed = array_column($this->query->projects(), 'notifications_muted', 'id');
+            $this->assertSame((int) $muted, (int) $listed[$this->projectA]);
+        }
+
+        $this->assertDenied(403, fn() => $settings->save(SettingsContext::project($this->projectA), [
+            'name' => 'Changed archived project',
+        ]));
     }
 
     public function testALanguageNobodyOffersIsRefused(): void

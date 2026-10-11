@@ -1,6 +1,7 @@
 <?php
 
 use Naf\Board\Contracts\SettingsServiceInterface;
+use Naf\Board\Services\ApplicationSettings;
 use Naf\Board\Support\SettingsContext;
 
 use function Naf\app;
@@ -11,56 +12,121 @@ use function Naf\I18n\t;
 use function Naf\route;
 use function Naf\View\s;
 
-/**
- * The form a settings card gets when it does not bring its own.
- *
- * Fields come from the registry and render through their declared type, so a
- * new field appears here without this template learning anything about it.
- */
+/** Registered fields share their renderer across every settings scope. */
 $definitions = extensions()->settings()->forSection($section->scope, $section->id);
-$context     = match ($section->scope) {
+$application = $section->scope === 'application'
+    ? app()->container()->get(ApplicationSettings::class) : null;
+$context = match ($section->scope) {
+    'application'  => SettingsContext::application(),
     'project'      => SettingsContext::project((int) $projectId),
     'project_user' => SettingsContext::projectUser((int) $projectId, (int) $user->getIdentifier()),
     default        => SettingsContext::user((int) $user->getIdentifier()),
 };
 $values = app()->container()->get(SettingsServiceInterface::class)->all($context);
 $action = match ($section->scope) {
+    'application'  => route('api.settings.application.write'),
     'project'      => route('api.settings.project.write', ['project' => $projectId]),
     'project_user' => route('api.settings.project_user.write', ['project' => $projectId]),
     default        => route('api.settings.user.write'),
 };
-$writable = match ($section->scope) {
-    'project'      => $scope !== null && $scope->allows('manage'),
-    'project_user' => true,
-    default        => true,
-};
+$writable = $application !== null || $section->scope !== 'project'
+    || ($scope !== null && $scope->allows('manage'));
 ?>
 <form method="post" data-enhanced data-settings-form="<?= s($section->id) ?>" action="<?= s($action) ?>">
     <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
+    <?php if ($application !== null): ?>
+        <input type="hidden" name="configurationRevision" value="<?= s($application->revision()) ?>" />
+        <?= partial('components/notice', ['severity' => 'info', 'message' => t('Die Administration überschreibt die Serverkonfiguration. Wähle „Serverkonfiguration“, um wieder deren Wert zu verwenden. Änderungen gelten für neue Anfragen; laufende Worker müssen neu gestartet werden.')]) ?>
+    <?php endif ?>
     <fieldset <?= $writable ? '' : 'disabled' ?>>
-        <?php foreach ($definitions as $key => $definition): ?>
+        <?php foreach ([false, true] as $advancedGroup): ?>
             <?php
-            $type = extensions()->fieldTypes()->get($definition->type);
-            $id   = 'setting-' . preg_replace('/[^A-Za-z0-9_-]/', '-', $section->id . '-' . $key);
+            $groupDefinitions = array_filter($definitions, fn($definition) => ($application !== null && $definition->advanced) === $advancedGroup);
+            if ($groupDefinitions === []) {
+                continue;
+            }
+            $previousGroup = null;
             ?>
-            <label for="<?= s($id) ?>" data-setting-key="<?= s($key) ?>">
-                <?= s(t($definition->label)) ?>
-                <?= $type === null
-                    ? '<em>' . s(t('Unbekannter Feldtyp: :type', ['type' => $definition->type])) . '</em>'
-                    : partial($type->view(), [
-                        'name'       => 'values[' . $key . ']',
-                        'id'         => $id,
-                        'value'      => $values[$key] ?? null,
-                        'definition' => $definition,
-                        'required'   => false,
-                        'disabled'   => !$writable,
-                    ]) ?>
-            </label>
+            <?php if ($advancedGroup): ?>
+                <fieldset class="settings-advanced-fields" data-settings-advanced-fields hidden disabled>
+                    <legend><?= s(t('Erweiterte Einstellungen')) ?></legend>
+            <?php endif ?>
+            <?php foreach ($groupDefinitions as $key => $definition): ?>
+                <?php
+                if ($application === null && ($definition->sensitive || !array_key_exists($key, $values))) {
+                    continue;
+                }
+                $group = $section->id === 'configuration_mail' ? match (true) {
+                    str_starts_with($definition->configKey ?? '', 'mail:smtp:') => 'SMTP',
+                    str_starts_with($definition->configKey ?? '', 'mail:imap:') => 'Mail-to-Ticket (IMAP)',
+                    default                                                     => 'Mailversand',
+                } : null;
+                $type     = extensions()->fieldTypes()->get($definition->type);
+                $id       = 'setting-' . preg_replace('/[^A-Za-z0-9_-]/', '-', $section->id . '-' . $key);
+                $metadata = $application?->describe($definition);
+                $source   = match ($metadata['source'] ?? '') {
+                    'administration' => 'Administration',
+                    'environment'    => 'Umgebung',
+                    'default'        => 'Standardwert',
+                    default          => 'Serverkonfiguration',
+                };
+                $mode = ($metadata['source'] ?? '') === 'administration'
+                    ? ($metadata['configured'] ? 'administration' : 'empty') : 'configuration';
+                ?>
+                <?php if ($group !== null && $group !== $previousGroup): ?>
+                    <h3 class="eyebrow"><?= s(t($group)) ?></h3>
+                    <?php $previousGroup = $group; ?>
+                <?php endif ?>
+                <?php if ($application !== null): ?>
+                <div class="settings-configuration-field" data-configuration-field>
+                <?php endif ?>
+                    <label for="<?= s($id) ?>" data-setting-key="<?= s($key) ?>">
+                        <?= s(t($definition->label)) ?>
+                        <?= $type === null
+                            ? '<em>' . s(t('Unbekannter Feldtyp: :type', ['type' => $definition->type])) . '</em>'
+                            : partial($type->view(), [
+                                'name'       => 'values[' . $key . ']',
+                                'id'         => $id,
+                                'value'      => $values[$key] ?? null,
+                                'definition' => $definition,
+                                'required'   => false,
+                                'disabled'   => !$writable || ($application !== null && $definition->configKey === null),
+                            ]) ?>
+                    </label>
+                    <?php if ($metadata !== null): ?>
+                        <div class="settings-configuration-meta">
+                            <code><?= s($metadata['path'] ?? $key) ?></code>
+                            <span class="settings-user-role <?= $metadata['source'] === 'administration' ? 'is-global' : '' ?>">
+                                <?= s(t('Quelle')) ?>: <?= s(t($source)) ?>
+                                <?= $metadata['source'] === 'environment' ? ' · ' . s($metadata['environment']) : '' ?>
+                            </span>
+                        </div>
+                        <?php if ($definition->sensitive): ?>
+                            <p class="settings-row-empty"><?= s(t($metadata['configured'] ? 'Geheimnis gesetzt. Leer lassen behält den bisherigen Wert.' : 'Kein Geheimnis gesetzt.')) ?></p>
+                        <?php endif ?>
+                        <?php if ($metadata['path'] !== null): ?>
+                        <label class="settings-configuration-source" for="<?= s($id) ?>-source">
+                            <?= s(t('Wert verwenden aus')) ?>
+                            <select id="<?= s($id) ?>-source" name="modes[<?= s($key) ?>]" data-configuration-source>
+                                <option value="configuration" <?= $mode === 'configuration' ? 'selected' : '' ?>><?= s(t('Serverkonfiguration')) ?></option>
+                                <option value="administration" <?= $mode === 'administration' ? 'selected' : '' ?>><?= s(t('Administration')) ?></option>
+                                <?php if (($definition->options['nullable'] ?? false) === true): ?>
+                                    <option value="empty" <?= $mode === 'empty' ? 'selected' : '' ?>><?= s(t('Wert leeren')) ?></option>
+                                <?php endif ?>
+                            </select>
+                        </label>
+                        <?php endif ?>
+                    <?php endif ?>
+                <?php if ($application !== null): ?>
+                </div>
+                <?php endif ?>
+            <?php endforeach ?>
+            <?php if ($advancedGroup): ?>
+                </fieldset>
+            <?php endif ?>
         <?php endforeach ?>
         <?php if (!$definitions): ?>
-            <p class="settings-row-empty">
-                <?= s(t('Für diesen Bereich sind keine Felder registriert.')) ?>
-            </p>
+            <p class="settings-row-empty"><?= s(t('Für diesen Bereich sind keine Felder registriert.')) ?></p>
         <?php endif ?>
         <?php if ($writable): ?>
             <div class="form-errors" role="alert"></div>

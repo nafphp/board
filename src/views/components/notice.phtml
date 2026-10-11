@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * Reusable, escaped notice with a severity icon.
+ *
+ * @var string $message Plain text, already translated by the caller
+ * @var string $severity notice|info|warning|error; unknown values use info
+ * @var string|null $title Optional plain-text heading
+ * @var array<string, string|bool> $messageAttributes Trusted attributes for a dynamic message
+ */
+
+use Naf\Board\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+$message ??= '';
+$severity ??= 'info';
+$title ??= null;
+$messageAttributes ??= [];
+$variants = [
+    'notice'  => ['notifications', 'Hinweis'],
+    'info'    => ['info', 'Information'],
+    'warning' => ['warning', 'Warnung'],
+    'error'   => ['error', 'Fehler'],
+];
+$severity       = isset($variants[$severity]) ? $severity : 'info';
+[$icon, $label] = $variants[$severity];
+$attributes     = '';
+foreach ($messageAttributes as $name => $value) {
+    if ($value === false || $value === null) {
+        continue;
+    }
+    $attributes .= ' ' . s($name) . ($value === true ? '' : '="' . s((string) $value) . '"');
+}
+?>
+<div class="ui-notice ui-notice--<?= s($severity) ?>" role="<?= $severity === 'error' ? 'alert' : 'note' ?>">
+    <?= Icon::mark($icon, 'md', 'ui-notice__icon') ?>
+    <div class="ui-notice__content">
+        <span class="sr-only"><?= s(t($label)) ?>: </span>
+        <?php if ($title !== null && $title !== ''): ?>
+            <p class="ui-notice__title"><?= s($title) ?></p>
+        <?php endif ?>
+        <p class="ui-notice__message"<?= $attributes ?>><?= s($message) ?></p>
+    </div>
+</div>

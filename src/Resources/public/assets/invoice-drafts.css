@@ -1,0 +1,7 @@
+.invoice-drafts-table {
+  overflow-x: auto;
+}
+
+.invoice-drafts-table .member-table {
+  min-width: 640px;
+}

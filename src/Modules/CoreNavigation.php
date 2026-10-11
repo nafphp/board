@@ -11,6 +11,7 @@ use Naf\Board\ExtensionContext;
 use Naf\Board\Modules\Providers\LanguagePickerProvider;
 use Naf\Board\Modules\Providers\ProfileTriggerProvider;
 use Naf\Board\Modules\Providers\TimerChipProvider;
+use Naf\Board\Modules\Providers\WorkspaceToolsProvider;
 use Naf\Board\Support\UiContext;
 
 /**
@@ -97,6 +98,16 @@ final class CoreNavigation implements ExtensionProviderInterface
             'shell/profile-row',
             400,
             ProfileTriggerProvider::class,
+            null,
+            [UiContext::MODE_PAGE, UiContext::MODE_DETAIL, UiContext::MODE_CREATE],
+        ));
+
+        $ui->add(new UiContribution(
+            'core.topbar.workspace',
+            'topbar.tools',
+            'shell/workspace-tools',
+            100,
+            WorkspaceToolsProvider::class,
             null,
             [UiContext::MODE_PAGE, UiContext::MODE_DETAIL, UiContext::MODE_CREATE],
         ));

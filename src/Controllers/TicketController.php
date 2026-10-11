@@ -14,6 +14,7 @@ use Naf\Board\Support\Input;
 use Psr\Http\Message\ResponseInterface;
 
 use function Naf\Board\extensions;
+use function Naf\Board\settings;
 use function Naf\request;
 use function Naf\route;
 
@@ -48,10 +49,11 @@ final class TicketController
                 'title' => 'Ticket',
                 ...$boardData,
                 ...$details,
-                'mode'     => 'detail',
-                'fragment' => $this->fragment(),
-                'timer'    => $this->timers->state($projectId, $details['ticket']['id']),
-                'targets'  => $this->query->transferTargets($projectId),
+                'mode'            => 'detail',
+                'fragment'        => $this->fragment(),
+                'timer'           => $this->timers->state($projectId, $details['ticket']['id']),
+                'targets'         => $this->query->transferTargets($projectId),
+                'fieldVisibility' => settings()->forProjectUser($projectId)->get('ticket_fields', []),
             ]);
         });
     }

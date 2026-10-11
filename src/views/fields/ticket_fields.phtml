@@ -1,0 +1,35 @@
+<?php
+
+use Naf\Board\Modules\CoreTicket;
+
+use function Naf\Board\field;
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+$groups = [];
+foreach ($fields ?? [] as $definition) {
+    $groups[$definition->group][] = $definition;
+}
+$groups = array_filter(array_replace(array_fill_keys(array_keys(CoreTicket::PANELS), []), $groups));
+?>
+<div class="ticket-field-visibility">
+    <?php foreach ($groups as $group => $definitions): ?>
+        <?php $caption = CoreTicket::PANELS[$group][1] ?? 'Weitere Attribute'; ?>
+        <fieldset>
+            <legend><?= s(t($caption)) ?></legend>
+            <div class="switch-list">
+                <?php foreach ($definitions as $definition): ?>
+                    <input type="hidden" name="<?= s($name . '[' . $definition->key . ']') ?>" value="0" <?= $disabled ? 'disabled' : '' ?> />
+                    <?= field([
+                        'type'     => 'switch',
+                        'id'       => 'ticket-visible-' . bin2hex($definition->key),
+                        'name'     => $name . '[' . $definition->key . ']',
+                        'label'    => $definition->label,
+                        'value'    => (int) ($value[$definition->key] ?? true),
+                        'disabled' => $disabled,
+                    ]) ?>
+                <?php endforeach ?>
+            </div>
+        </fieldset>
+    <?php endforeach ?>
+</div>

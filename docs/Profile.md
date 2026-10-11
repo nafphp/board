@@ -4,13 +4,93 @@ The avatar in the top right and the whole user card at the bottom of the sidebar
 dialog. Name, avatar and arrow form one button that also works from the keyboard. The card and
 the header show the role in the current project, including custom roles. Outside a project it
 reads "personal account", because roles are project-scoped. The modal lists the assigned project
-roles with links to their boards, plus password change, email change and sign-out.
+roles with links to their boards, personal settings, board filter visibility, local AI, password
+change, email change and sign-out. **Project notifications** offers a mute switch per assigned
+project, with the saved state shown beside its name. The switch saves immediately for the current
+account and keeps the modal open; other members' notification preferences remain independent.
+Archived memberships stay listed, while administrative access without a membership does not add
+a project to this personal list.
 
 The native HTML dialog holds keyboard focus. The X, Escape and a click on the backdrop close it
 and return focus to the trigger. Opening and closing animate over 260 and 150 ms;
 `prefers-reduced-motion` turns the movement off. Mobile widths, both brightness modes in
 both palettes and forced system colours are handled in CSS. Password and code are cleared from the fields on submit and on
 close; the application never puts them in LocalStorage or IndexedDB.
+
+## Inviting people and assigning boards
+
+**Invite person** in installation settings and **Invite new person** in a board's
+member settings share the same invitation service. Choose an initial board, email and board
+role. The default is Member; only a current owner can grant Owner or Manager. Project custom
+roles follow the same permission checks as direct membership changes. With email delivery
+enabled, the form can send the invitation; otherwise it returns a link to copy and share.
+No administrator chooses the recipient's password.
+
+The recipient opens the link, enters a name and their own password, and immediately reaches
+the inviting board. The email is bound to the invitation and cannot be changed at registration.
+The password follows the same 15-character/72-byte rule as password changes. New invited
+accounts receive only the selected board membership, with no installation role or right to
+create projects. An invitation does not set `email_verified_at`: administrators may copy links,
+so possession alone does not prove delivery to the named mailbox.
+
+Use **Search accounts** in another board's member settings to add that person later. After
+two characters, autocomplete finds active accounts by name or email, and selecting a result
+fills the email. A complete email also works without JavaScript. Only people allowed to manage
+members of that board can use the directory; it returns at most 20 names and email addresses.
+Adding existing accounts continues to use the regular membership service and its role checks.
+Already existing accounts cannot be recreated through an invitation. If an account is created
+after a link was issued, its owner must sign in with that account before joining. Existing active
+membership and credentials are preserved.
+
+Links expire after seven days, can be used once and can be revoked under **Pending invitations**.
+Inviting the same address to the same board again replaces the previous link. Different boards
+can have separate invitations. Acceptance rechecks the inviting person's current membership,
+role permissions, the custom role and the board's archive state. Revocation, expiry, loss of
+the sponsor's rights, archiving and project deletion prevent registration through that link.
+Registration, membership assignment and consuming the token commit together. The database
+stores only the SHA-256 token hash; audit events contain no invitation token or email.
+
+The public link and confirmation pages use `Cache-Control: private, no-store` and
+`Referrer-Policy: no-referrer`. Creation, searches and acceptance use NAF's persistent rate
+limiter; all writes require native CSRF protection. The public URL comes from `app:url`, not
+the request's Host header. Email is sent synchronously through NAF's Mailer. A delivery failure
+returns 503 and preserves any previous invitation. SMTP and SQL cannot commit atomically:
+a delivered link can be unusable if a later event or commit refuses the write.
+
+`M202610100001ProjectInvitations` adds `project_invitations`. The public contract is
+`InvitationServiceInterface`; UI entry points call it rather than creating accounts directly.
+Installation administrators retain the programmatic `AccountServiceInterface::create()` API
+for provisioning. Regression coverage lives in `InvitationTest`, `InvitationOverHttpTest` and
+the browser account-search tests.
+
+## Exporting personal hours
+
+**Data export** in the account modal downloads the current account's booked time as PDF,
+UTF-8 text, CSV or JSON. Choose one accessible board or all accessible boards and optional
+inclusive UTC booking dates. Running and paused timers are not booked. Stopping books whole
+minutes; remaining seconds carry forward. Transferring a ticket also settles its clocks.
+
+The time journal begins with `M202610100002TimeEntries`. Older ticket totals and manually
+edited totals have no reliable author or booking date and are not backfilled. Bookings retain
+the original ticket key and title after a rename, transfer or ticket deletion. Project deletion
+removes its bookings. Reading or exporting them still requires current read access to the
+original project, including archived projects. Even administrators receive only their own
+entries through this personal endpoint; project-wide ticket export permissions remain separate.
+
+`GET /profile/export?source=time&format=pdf&project=all&from=2026-10-01&until=2026-10-31`
+uses the shared exporter registry and file renderer. Formats have the same eight columns:
+UTC booking timestamp, board, original ticket key/title, person, integer minutes, decimal hours
+(rounded to six places) and the unit code `HUR`. Minutes are the exact source quantity. CSV
+retains its UTF-8 BOM, semicolon separator and protection against spreadsheet formulas. PDF
+renders escaped text locally, repeats the headings on subsequent pages and includes a total.
+An empty selection is a valid empty download. All downloads are private and uncached.
+
+The file is a time report, not an invoice. Invoice adapters need additional seller/buyer,
+price, tax and invoice data. [EN 16931](https://ec.europa.eu/digital-building-blocks/sites/display/DIGITAL/Compliance+with+eInvoicing+standard)
+is the common semantic basis; [XRechnung](https://xeinkauf.de/xrechnung) and
+[ZUGFeRD/Factur-X](https://www.ferd-net.de/standards/zugferd-faq) are relevant invoice formats.
+Importing draft invoice lines into a specific accounting tool needs its own verified field
+mapping or API adapter. A plain time-report PDF is not a structured e-invoice.
 
 ## Changing the password
 
@@ -142,3 +222,12 @@ and [session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_
 The local delivery options follow the official documentation of
 [Mailpit](https://mailpit.axllent.org/docs/install/docker/) and
 [msmtp](https://marlam.de/msmtp/msmtp.html).
+
+## Invoice-position export
+
+The account modal also offers **Export invoice items** for one readable board, with explicit
+EUR net hourly pricing and tax percentage. Neutral CSV and Lexware Office, sevdesk, easybill
+and FastBill API-position JSON use the same authorized personal booking source and exporter
+registry. The JSON files contain positions for a receiving integration, not complete invoices
+or web-upload imports. See [Invoice exports](Invoice-Exports.md) for required fields, provider
+specifications, precision and the downstream DATEV boundary.

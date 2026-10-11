@@ -1,0 +1,40 @@
+<?php
+use function Naf\Board\partial;
+use function Naf\Form\csrf;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+?>
+<?= partial('components/notice', ['severity' => 'info', 'message' => t('Aktiviere den Schalter, um ein Projekt stummzuschalten. Gilt nur für dich.')]) ?>
+<div class="project-notifications">
+    <?php foreach ($projects as $notificationProject): ?>
+        <?php $muted = (bool) ($notificationProject['notifications_muted'] ?? false); ?>
+        <form
+            method="post"
+            action="<?= s(route('api.settings.project_user.write', ['project' => $notificationProject['id']])) ?>"
+            class="project-notification"
+            data-project-notification="<?= s($notificationProject['id']) ?>"
+        >
+            <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
+            <input type="hidden" name="values[muted]" value="0" />
+            <label>
+                <span>
+                    <strong><?= s($notificationProject['name']) ?><?= $notificationProject['archived_at'] ? ' · ' . s(t('Archiviert')) : '' ?></strong>
+                    <small data-project-notification-state><?= s(t($muted ? 'Stummgeschaltet' : 'Benachrichtigungen aktiv')) ?></small>
+                </span>
+                <input
+                    type="checkbox"
+                    role="switch"
+                    name="values[muted]"
+                    value="1"
+                    aria-label="<?= s(t(':project stummschalten', ['project' => $notificationProject['name']])) ?>"
+                    <?= $muted ? 'checked' : '' ?>
+                />
+            </label>
+            <p class="project-notification-feedback" data-project-notification-feedback role="status" aria-live="polite"></p>
+            <div class="form-errors" role="alert"></div>
+            <button type="submit" class="button subtle"><?= s(t('Speichern')) ?></button>
+        </form>
+    <?php endforeach ?>
+</div>

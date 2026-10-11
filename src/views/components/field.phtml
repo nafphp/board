@@ -11,7 +11,7 @@
  *
  * @var string      $label
  * @var string      $name
- * @var string      $type     text|email|url|password|number|color|date|search|textarea|checkbox|select|multiselect
+ * @var string      $type     text|email|url|password|number|color|date|search|textarea|checkbox|switch|select|multiselect
  * @var mixed       $value
  * @var string|null $hint     small print under the control
  * @var array       $options  value => text, for select and multiselect
@@ -34,6 +34,9 @@ $hint ??= null;
 $options ??= [];
 $id ??= 'field-' . preg_replace('/[^A-Za-z0-9_-]/', '-', $name);
 $class ??= '';
+if ($type === 'switch') {
+    $class = trim($class . ' switch-field');
+}
 $required ??= false;
 $disabled ??= false;
 $attributes ??= [];
@@ -49,6 +52,9 @@ foreach ($attributes as $attribute => $content) {
         continue;
     }
     $extra .= ' ' . s($attribute) . ($content === true ? '' : '="' . s((string) $content) . '"');
+}
+if ($type === 'switch' && $hint !== null && !isset($attributes['aria-describedby'])) {
+    $extra .= ' aria-describedby="' . s($id . '-hint') . '"';
 }
 if ($required) {
     $extra .= ' required';
@@ -95,9 +101,9 @@ if ($disabled) {
     </div>
 <?php else: ?>
 <label<?= $class === '' ? '' : ' class="' . s($class) . '"' ?><?= $type === 'checkbox' ? '' : ' for="' . s($id) . '"' ?>>
-    <?php if ($type === 'checkbox'): ?>
-        <input type="checkbox" id="<?= s($id) ?>" name="<?= s($name) ?>" value="1" <?= $value ? 'checked' : '' ?><?= $extra ?> />
-        <?= s(t($label)) ?>
+    <?php if ($type === 'checkbox' || $type === 'switch'): ?>
+        <input type="checkbox"<?= $type === 'switch' ? ' role="switch"' : '' ?> id="<?= s($id) ?>" name="<?= s($name) ?>" value="1" <?= $value ? 'checked' : '' ?><?= $extra ?> />
+        <span><?= s(t($label)) ?></span>
     <?php else: ?>
         <?= s(t($label)) ?>
         <?php if ($type === 'select' || $type === 'multiselect'): ?>
@@ -118,7 +124,7 @@ if ($disabled) {
         <?php endif ?>
     <?php endif ?>
     <?php if ($hint !== null): ?>
-        <small class="field-hint"><?= s(t($hint)) ?></small>
+        <small class="field-hint"<?= $type === 'switch' ? ' id="' . s($id . '-hint') . '"' : '' ?>><?= s(t($hint)) ?></small>
     <?php endif ?>
 </label>
 <?php endif ?>

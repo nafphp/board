@@ -14,16 +14,24 @@ use function Naf\View\s;
  * in the order the registry gives them.
  */
 ?>
-<?php if ($slot->isNew): ?>
-<?php return; ?>
-<?php endif ?>
-<details class="ticket-sidebar-group ticket-audit" data-ticket-readonly="audit">
+<?php
+if ($slot->isNew) {
+    return;
+}
+$stamps      = ['created_at' => 'Erstellt', 'updated_at' => 'Geändert', 'closed_at' => 'Geschlossen', 'archived_at' => 'Archiviert'];
+$unavailable = array_keys(array_filter($stamps, static fn($caption, $stamp) => !$slot->ticket[$stamp], ARRAY_FILTER_USE_BOTH));
+$visible     = $slot->showsGroup('information', $unavailable);
+?>
+<details class="ticket-sidebar-group ticket-audit" data-ticket-readonly="audit" <?= $visible ? '' : 'hidden' ?>>
+    <?php if ($visible): ?>
     <summary><h2><?= s(t('Informationen')) ?></h2><?= Icon::mark('expand_more', 'sm', 'mi-turn') ?></summary>
-    <dl class="ticket-meta"><dt><?= s(t('Ersteller')) ?></dt><dd><?= s($slot->creator) ?></dd><dt><?= s(t('Projekt')) ?></dt><dd><?= s($slot->project['name']) ?></dd>
-        <?php foreach (['created_at' => 'Erstellt', 'updated_at' => 'Geändert', 'closed_at' => 'Geschlossen', 'archived_at' => 'Archiviert'] as $stamp => $caption): ?>
-            <?php if ($slot->ticket[$stamp]): ?><dt><?= s(t($caption)) ?></dt><dd><time><?= s(Format::dateTime($slot->ticket[$stamp], $slot->preferences)) ?></time></dd><?php endif ?>
+    <dl class="ticket-meta">
+        <?php if ($slot->shows('creator')): ?><dt><?= s(t('Ersteller')) ?></dt><dd><?= s($slot->creator) ?></dd><?php endif ?>
+        <?php if ($slot->shows('project')): ?><dt><?= s(t('Projekt')) ?></dt><dd><?= s($slot->project['name']) ?></dd><?php endif ?>
+        <?php foreach ($stamps as $stamp => $caption): ?>
+            <?php if ($slot->ticket[$stamp] && $slot->shows($stamp)): ?><dt><?= s(t($caption)) ?></dt><dd><time><?= s(Format::dateTime($slot->ticket[$stamp], $slot->preferences)) ?></time></dd><?php endif ?>
         <?php endforeach ?>
-        <dt><?= s(t('Stand')) ?></dt><dd><?= (int) $slot->ticket['version'] ?></dd>
+        <?php if ($slot->shows('version')): ?><dt><?= s(t('Stand')) ?></dt><dd><?= (int) $slot->ticket['version'] ?></dd><?php endif ?>
     <?php foreach ($slot->fieldsIn('information') as $metaKey => $metaField): ?>
         <?= partial('ticket/metadata', [
             'definition' => $metaField,
@@ -33,4 +41,5 @@ use function Naf\View\s;
         ]) ?>
     <?php endforeach ?>
     </dl>
+    <?php endif ?>
 </details>

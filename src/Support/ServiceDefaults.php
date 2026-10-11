@@ -10,6 +10,7 @@ use Naf\Board\Contracts\AiServiceInterface;
 use Naf\Board\Contracts\AttachmentServiceInterface;
 use Naf\Board\Contracts\BoardQueryInterface;
 use Naf\Board\Contracts\CommentServiceInterface;
+use Naf\Board\Contracts\InvitationServiceInterface;
 use Naf\Board\Contracts\NotificationServiceInterface;
 use Naf\Board\Contracts\PageRendererInterface;
 use Naf\Board\Contracts\PreferenceServiceInterface;
@@ -28,6 +29,7 @@ use Naf\Board\Services\AiService;
 use Naf\Board\Services\AttachmentService;
 use Naf\Board\Services\BoardQuery;
 use Naf\Board\Services\CommentService;
+use Naf\Board\Services\InvitationService;
 use Naf\Board\Services\NotificationService;
 use Naf\Board\Services\PageRenderer;
 use Naf\Board\Services\PreferenceService;
@@ -65,6 +67,7 @@ final class ServiceDefaults
         AccessInterface::class               => Access::class,
         ProjectAccessInterface::class        => ProjectAccess::class,
         AccountServiceInterface::class       => AccountService::class,
+        InvitationServiceInterface::class    => InvitationService::class,
         AiServiceInterface::class            => AiService::class,
         AttachmentServiceInterface::class    => AttachmentService::class,
         BoardQueryInterface::class           => BoardQuery::class,

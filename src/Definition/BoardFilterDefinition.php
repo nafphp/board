@@ -23,7 +23,7 @@ final readonly class BoardFilterDefinition
      * @param Closure     $normalize fn(mixed $value): mixed, throws Failure when invalid
      * @param Closure     $condition fn(mixed $value, BoardFilterContext $context): SqlCondition
      * @param int         $index     Sort value, ascending
-     * @param string|null $view      Logical view name rendering the filter control
+     * @param string|null $view      Control template; receives filter, name, value and authorized board context
      */
     public function __construct(
         public string $id,

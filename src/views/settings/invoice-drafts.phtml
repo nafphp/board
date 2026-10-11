@@ -1,0 +1,9 @@
+<?php
+use function Naf\Board\partial;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+?>
+<?= partial('components/notice', ['severity' => 'info', 'message' => t('Persönliche Einreichungen und Firmenabrechnungen verwenden dieselben Exportadapter. Firmenzugänge rechnen alle gebuchten Stunden eines berechtigten Boards ab.')]) ?>
+<a class="button primary" href="<?= s(route('invoice.drafts')) ?>"><?= s(t('Rechnungsentwürfe öffnen')) ?></a>

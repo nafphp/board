@@ -15,6 +15,7 @@ use Naf\Board\Domain\Failure;
 use Naf\Board\Domain\ProjectScope;
 use Naf\Board\Support\Settings\PreferenceStore;
 use Naf\Board\Support\SettingsContext;
+use Naf\Core\Config;
 use Naf\ORM\Core\EntityManager;
 use PDO;
 use Throwable;
@@ -100,7 +101,9 @@ final class SettingsService implements SettingsServiceInterface
     public function save(SettingsContext $context, array $values, array $resetKeys = []): void
     {
         if ($context->scope === 'application') {
-            throw new Failure(t('Anwendungseinstellungen sind schreibgeschützt.'), 403);
+            \Naf\app()->container()->get(ApplicationSettings::class)->save($values, $resetKeys);
+
+            return;
         }
 
         $definitions = $this->definitionsFor($context, [...array_keys($values), ...$resetKeys]);
@@ -278,7 +281,14 @@ final class SettingsService implements SettingsServiceInterface
         if ($definition->configKey !== null) {
             $configured = config($definition->configKey);
 
-            if ($configured !== null) {
+            if ($definition->scope === 'application' && $definition->type === 'integer' && $configured === '') {
+                $configured = null;
+            }
+            if ($definition->type === 'boolean' && is_string($configured)) {
+                $configured = filter_var($configured, FILTER_VALIDATE_BOOL);
+            }
+
+            if ($configured !== null || \Naf\app()->container()->get(Config::class)->source($definition->configKey) === 'administration') {
                 return $this->type($definition)->normalize($configured, $this->options($definition));
             }
         }
@@ -452,7 +462,7 @@ final class SettingsService implements SettingsServiceInterface
                 $lock->execute([$context->projectId]);
                 $scope = $this->access->project((int) $context->projectId, 'read', true);
 
-                if ($scope->project['archived_at'] !== null) {
+                if ($context->scope === 'project' && $scope->project['archived_at'] !== null) {
                     throw new Failure(t('Dieses Projekt ist archiviert.'), 403);
                 }
             }

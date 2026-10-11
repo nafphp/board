@@ -1,10 +1,124 @@
 # Settings, custom roles and local AI
 
-Settings are reached through the entry at the bottom of the sidebar. The project picker switches
-between personal settings and the settings of a visible project. A card opens as a large dialog
-and slides back on the X or Escape. Input is preserved on close, and after a successful save the
-same card is reopened. The animation honours the operating system's reduced-motion option. On
-small screens the dialog takes up nearly the whole area.
+Personal settings live in the account modal, reached through the profile picture. A board's
+Settings tab holds its shared project settings; it has no separate **For me in this project**
+card. General notification preferences belong to the account modal. Its **Project notifications**
+section lists the projects the person belongs to, including archived ones, with their current mute
+state. Each switch immediately saves the person's `project_user` setting `muted` through the
+existing settings API while keeping the modal open. A failed save restores the last confirmed
+switch state and displays the error. Without JavaScript, each form has a Save button. The
+Notifications page also retains its mute and enable controls. Extensions can still contribute
+`project_user` cards.
+
+A project settings card opens as a large dialog and slides back on the X or Escape. Input is
+preserved on close, and after a successful save the same card is reopened. The animation honours
+the operating system's reduced-motion option. On small screens the dialog takes up nearly the
+whole area.
+
+The top bar contains one global workspace search on every application page, without a
+project-name prefix. The project heading and sidebar identify the current board. Navigation
+stays in the sidebar and the project's tabs. The board's filter row contains dedicated filters
+only, with no second text search. Existing board URLs with a `q` filter remain supported and
+retain that value when another filter changes; **Reset** clears it with the other filters.
+
+The top bar's workspace search finds readable projects by name/key and tickets by title,
+plain description or ticket reference. Autocomplete is grouped by board, including matching
+archived or closed records. Each response replaces the entire result container; there is no
+fixed set of boards or ticket slots. Typing is debounced; clearing, closing or changing the
+query invalidates earlier responses. Arrow keys select results, Enter follows the selection
+(or opens the result page), and Escape closes the suggestions. The native GET search page
+also works without JavaScript. Suggestions return at most eight tickets and six additional
+matching boards; the result page allows 50 tickets and 20 matching boards, with a refinement
+hint when more exist. Both endpoints use current project authorization and private, uncached
+responses. SQL wildcard characters are treated literally.
+
+**New ticket** appears in the project heading, using the same primary button style as
+**New project** in the project overview. It opens the existing ticket dialog for the current
+writable project. Workspace pages and read-only project views omit the action; there is no
+cross-board creation picker. The top bar contains workspace search only. Extensions can
+replace the `core.topbar.workspace` search contribution or add controls to `topbar.tools`.
+
+## Switches
+
+On/off controls share the same switch appearance, including personal notifications,
+live updates, presence, the local assistant, live answers, invitation delivery, and permissions
+for project and installation roles. Registered `boolean` settings use it too. Switches
+keep their native checkbox behavior, keyboard activation, visible focus and disabled state.
+Personal settings, roles and invitations still take effect through their form's Save or submit
+button; project mute switches retain their immediate save behavior. Multiple-choice controls,
+such as ticket assignees, keep checkboxes.
+
+## Installation configuration
+
+Global settings use the same typed fields and cards as personal/project settings.
+Every leaf of the merged server configuration is described automatically; provider
+metadata supplies choices, ranges and secret fields, including SMTP configuration.
+Lists and structured values use JSON. Existing application definitions and extension
+replacements take precedence over generated fields.
+
+Installation settings initially show the standard fields and cards. The native
+**Advanced settings** switch reveals generated configuration cards below them and
+an **Advanced settings** fieldset below standard fields in mixed dialogs. The view
+preference is kept per administrator in the current browser tab; it does not change
+configuration. Hidden advanced controls are disabled and omitted from saves, so a
+standard-field save preserves all advanced overrides. Direct links to advanced cards
+reveal the advanced view. Extensions can opt fields in with `advanced: true` on
+`SettingDefinition` (the default remains false).
+
+New scalar, nested and list entries in the host's `config.php` are discovered on the
+next request without a schema registration; lists use JSON and secret-like paths
+retain the shared write-only treatment. A central display glossary capitalizes known
+abbreviations such as MCP, RBAC, API, SMTP and IMAP; unknown words are humanized and
+explicit provider labels take precedence. Literal configuration paths remain unchanged.
+
+The source next to each field distinguishes administration overrides, environment
+references, server configuration and declared defaults. Editing a field selects an
+administration override. Choosing **Server configuration** deletes that override;
+**Clear value** stores an explicit null where allowed. Passwords are write-only: a
+blank password input retains the previous value. Secrets never appear in HTML, JSON
+read responses or audit payloads.
+
+Writes require installation `settings.manage` and native CSRF validation. The global
+endpoint is `GET/POST /api/settings/application`; values cannot be written into personal
+preferences. Form revisions reject stale edits with 409. Validation is all-or-nothing;
+database changes must connect to an existing application database where the current
+administrator remains active and authorized. Existing mail adapters validate active
+mail configuration without sending a message. The audit records changed/reset keys.
+
+Overrides load before any plugin boots through the framework's `config_sources.php`
+convention, so database, sessions, auth and mail see the same values. They live outside
+the database in `storage/configuration/values.enc`, encrypted through the existing token
+cipher, with a generated `key` beside it. The directory is private (0700), files are 0600,
+and writes are locked and atomic. All application processes/replicas must share this
+private storage; back it up with its key. The key's protection rests on filesystem access.
+
+New requests read the saved configuration; restart already-running queue/schedule/socket
+workers after changing their configuration. If a start-critical override prevents boot,
+set the process environment `NAFINITY_CONFIG_OVERRIDES=0` and restart affected processes
+to recover using server configuration. Restore a valid encrypted file and its key, or
+move `storage/configuration/values.enc` aside, before removing the recovery override.
+The fixed storage location and recovery switch deliberately remain outside editable config.
+
+Custom mail transports may implement `ConfigurableTransportInterface::configurationFields()`
+to return colon-separated config paths with label, type, default, index, options and sensitive
+metadata. This optional contract extends the existing transport interface; it introduces
+no dependency on Board or its renderer. Extensions can also declare application
+`SettingDefinition` values with `configKey` using the existing registry.
+
+## Project management
+
+The General card ends with a quiet **Manage project** section for owners. Archiving keeps
+the project readable and can be undone with Restore. **Delete project** opens a collapsed
+form requiring the project's current name and an explicit confirmation. The server checks
+actual ownership under the project lock; ticket deletion or management permissions alone
+do not allow project deletion. Archived projects can also be deleted by their owners.
+
+Deletion permanently removes the project, its tickets, comments, attachment records,
+structure, notifications, memberships, settings and project-specific role grants in one
+transaction. Other projects and account settings remain. Audit entries retain their scope
+and the deletion records the project's name; only installation audit readers can reach the
+detached history. Private files become inaccessible immediately and are removed by the
+existing orphan sweep once older than 24 hours. A failure rolls back the entire deletion.
 
 ## Appearance
 
@@ -16,11 +130,25 @@ on that device until a user signs in; authenticated pages use the account's save
 Existing preference rows gain a `palette` column defaulting to `classic`, so upgrades keep their
 current appearance.
 
+## Board filters
+
+The account modal has a **Board filters** section, also reached through the sliders
+beside the board's filters. Each registered filter with a control has a switch. The
+selection belongs to the signed-in user across projects and is stored through the
+existing user settings service, under `board_filters` as a map of filter ids to booleans.
+An omitted id is visible, so newly installed filters appear automatically. Search stays
+available. A hidden filter on a shared URL stays visible while it is active and can be
+cleared normally; visibility never changes the card query or another user's settings.
+
+Choosing a filter applies it immediately. Fulltext typing applies after a short pause;
+the native GET form and its **Filter** button remain available without JavaScript.
+The board, counts, drag restrictions and shareable URL use the same server query.
+
 ## Cards and permissions
 
 - Personal: appearance, language, time zone, notifications and configured external accounts.
 - Local AI: connection, models, live test, extra prompts, memory and feedback.
-- General: project details and archiving according to your own permissions.
+- General: project details and project management according to your own permissions.
 - Roles & permissions: view the default roles; owners can create, change and delete custom ones.
 - Users: assign existing accounts by email, change roles and revoke access.
 - Columns, swimlanes and labels: edit the existing board structure.
@@ -35,6 +163,12 @@ User managers can only grant or revoke permissions they hold themselves. Owners 
 still only be assigned or changed by owners. A custom role that is in use can only be deleted
 after a different assignment. Versions prevent overwriting role changes made in the meantime. A
 revocation takes effect on the next action, including in the AI tools and in upload recovery.
+
+In Global settings' Users card, role summaries show the board's current name beside the
+role. Installation-wide roles are marked **Global**; wildcard project grants say
+**All projects**. Long names wrap. Archived boards retain their names, and inaccessible or
+missing places show **Unavailable**. Additional scope kinds use the labels supplied by their
+registered RBAC scope source.
 
 ## Ollama
 
@@ -127,6 +261,10 @@ on every execution. The actions use the same application services, transactions,
 and events as the interface. The HTTP routes under `/ai` use the native NAF session, CSRF and
 rate limit. The local registration is separate from the public `/mcp` endpoint, which still
 requires a token; it opens no anonymous access.
+
+Tool arguments must match the tool's input schema. Unknown properties, missing required
+arguments, invalid types and values outside the allowed range return HTTP 422 with a translated
+validation message. A rejected call does not execute the tool, even after write confirmation.
 
 Nafinity itself provides:
 

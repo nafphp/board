@@ -1,0 +1,43 @@
+<?php
+
+use function Naf\Board\choice;
+use function Naf\Board\extensions;
+use function Naf\I18n\t;
+
+// Core controls use their established query names. Extension controls receive
+// filters[<id>] from the board and may use any native form control or choice().
+$people = array_column($members, 'name', 'id');
+$me     = (int) $scope->userId;
+$mine   = [];
+if (isset($people[$me])) {
+    $mine = [$me => t('Ich (:name)', ['name' => $people[$me]])];
+    unset($people[$me]);
+}
+$options = match ($filter->id) {
+    'assignee' => ['' => t('Alle Verantwortlichen')] + $mine + $people,
+    'label'    => ['' => t('Alle Labels')] + array_column($labels, 'name', 'id'),
+    'priority' => ['' => t('Priorität')] + extensions()->priorities()->options(),
+    'column'   => ['' => t('Alle Spalten')] + array_column($columns, 'name', 'id'),
+    'swimlane' => ['' => t('Alle Swimlanes')] + array_column($swimlanes, 'name', 'id'),
+    'status'   => [
+        ''         => t('Offen und geschlossen'),
+        'open'     => t('Offen'),
+        'closed'   => t('Geschlossen'),
+        'archived' => t('Archiviert'),
+    ],
+};
+?>
+<?= choice([
+    'name'        => $filter->id,
+    'label'       => $filter->label,
+    'value'       => $value,
+    'options'     => $options,
+    'id'          => 'filter-' . $filter->id,
+    'searchLabel' => match ($filter->id) {
+        'assignee' => 'Personen suchen',
+        'label'    => 'Labels suchen',
+        'column'   => 'Spalten suchen',
+        'swimlane' => 'Swimlanes suchen',
+        default    => 'Suchen …',
+    },
+]) ?>

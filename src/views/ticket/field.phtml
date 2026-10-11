@@ -9,7 +9,7 @@ $creating ??= false;
     <?php if (!$creating): ?>
     <?php if ($type === 'rich'): ?>
     <div class="ticket-prose" data-description-display><?= $display ?></div>
-    <div class="inline-display" <?= $editable ? 'role="button" tabindex="0" aria-expanded="false"' : 'hidden' ?>><?= s(t($label)) ?>: <?= s(t('Bearbeiten')) ?></div>
+    <div class="inline-display sr-only" <?= $editable ? 'role="button" tabindex="0" aria-expanded="false"' : 'hidden' ?>><?= s(t($label)) ?>: <?= s(t('Bearbeiten')) ?></div>
     <?php else: ?>
     <div class="inline-display" <?= $editable ? 'role="button" tabindex="0" aria-expanded="false"' : '' ?>>
         <span class="sr-only"><?= s(t($label)) ?>: </span>

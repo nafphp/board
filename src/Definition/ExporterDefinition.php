@@ -6,19 +6,7 @@ namespace Naf\Board\Definition;
 
 use InvalidArgumentException;
 
-/**
- * One way of getting a board's tickets out of Nafinity.
- *
- * A format is a definition rather than a branch in a controller, for the reason
- * every registry here exists: the page that offers the formats and the endpoint
- * that serves them both read this list, so a format cannot be offered and
- * missing, or present and unreachable.
- *
- * It also settles the question a second exporter usually raises. Whatever the
- * format, the rows are built once, in one service, and every format sees the
- * same rows -- so a listener that changes something for an export changes it
- * for all of them, rather than for whichever one the author remembered.
- */
+/** A file format and the datasets it can render, shared by menus and download endpoints. */
 final readonly class ExporterDefinition
 {
     /**
@@ -28,6 +16,8 @@ final readonly class ExporterDefinition
      * @param string       $mimeType  Content type the download is served with
      * @param class-string $writer    ExporterInterface implementation doing the writing
      * @param int          $index     Sort value, ascending
+     * @param list<string> $sources   Supported datasets; existing plugin writers default to tickets
+     * @param class-string|null $draftAdapter Optional InvoiceDraftAdapterInterface for invoice-items delivery
      */
     public function __construct(
         public string $id,
@@ -36,7 +26,13 @@ final readonly class ExporterDefinition
         public string $mimeType,
         public string $writer,
         public int $index = 100,
+        public array $sources = ['tickets'],
+        public ?string $draftAdapter = null,
     ) {
+        if ($sources === [] || array_filter($sources, static fn(mixed $source): bool => !is_string($source) || !preg_match('/^[a-z0-9]+(?:[._-][a-z0-9]+)*$/D', $source)) !== []) {
+            throw new InvalidArgumentException('An exporter needs valid source ids.');
+        }
+
         if ($id === '') {
             throw new InvalidArgumentException('An exporter needs a non-empty id.');
         }

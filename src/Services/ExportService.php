@@ -5,37 +5,16 @@ declare(strict_types=1);
 namespace Naf\Board\Services;
 
 use Naf\Board\Contracts\AccessInterface;
-use Naf\Board\Contracts\ExporterInterface;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Domain\ProjectScope;
-use Naf\Board\Export\ExportFinished;
-use Naf\Board\Export\ExportLine;
 use Naf\Board\Export\ExportOptions;
-use Naf\Board\Export\ExportStarted;
 use Naf\Board\Support\Format;
-use Naf\Board\Support\Resolver;
 use PDO;
-use Throwable;
 
-use function Naf\app;
 use function Naf\Board\extensions;
-use function Naf\event;
 use function Naf\I18n\t;
 
-/**
- * Getting a board out of Nafinity, in whichever format was asked for.
- *
- * One service for every format, and that is the design rather than an accident
- * of there being two so far. The rows are built here and handed to a writer
- * that only turns them into text, so a third format cannot quietly grow its own
- * idea of what a ticket is -- and `export.line` fires here, once per record,
- * which is what makes it true that a listener sees every export rather than the
- * ones whose author remembered to ask.
- *
- * Written straight into a temporary stream as it goes. A board of fifty
- * thousand tickets is read in pages and never held whole, so an export costs a
- * file on disk rather than a copy of the board in memory.
- */
+/** Ticket selection and readable columns, handed to the shared export renderer in pages. */
 final class ExportService
 {
     /** Tickets read per round trip, and metadata resolved per round trip with them. */
@@ -45,6 +24,7 @@ final class ExportService
         private PDO $pdo,
         private AccessInterface $access,
         private TicketMetadataWriter $metadata,
+        private ExportRenderer $renderer = new ExportRenderer(),
     ) {
     }
 
@@ -99,17 +79,6 @@ final class ExportService
     /** @param list<ProjectScope> $scopes */
     private function render(array $scopes, string $format, ?ExportOptions $options, bool $identifyBoards): array
     {
-        $definition = extensions()->exporters()->get($format);
-        if ($definition === null) {
-            throw new Failure(t('Dieses Exportformat gibt es nicht: :format', ['format' => $format]), 404);
-        }
-
-        // A fresh writer for each file: stateful plugin writers must not be singletons.
-        $writer = Resolver::build(app()->container(), $definition->writer);
-        if (!$writer instanceof ExporterInterface) {
-            throw new Failure(t('Das Exportformat :format kann nicht schreiben.', ['format' => $format]), 500);
-        }
-
         $columns    = $identifyBoards ? ['project_id' => t('Board-ID'), 'project' => t('Board')] : [];
         $perProject = [];
         foreach ($scopes as $scope) {
@@ -117,56 +86,37 @@ final class ExportService
             $perProject[$project] = $this->selectedColumns($scope, $options);
             $columns += $perProject[$project];
         }
-
-        $out = fopen('php://temp/maxmemory:' . (4 * 1024 * 1024), 'w+b');
-
-        try {
-            fwrite($out, $writer->open($columns));
-            foreach ($scopes as $index => $scope) {
-                $project = (int) $scope->project['id'];
-                // Events keep their per-board meaning, even inside a combined file.
-                event()->dispatch(new ExportStarted($definition->id, $project, $columns));
-                $written = 0;
-                foreach ($this->pages($project, $options ?? ExportOptions::fromInput([])) as $rows) {
-                    $ids   = array_map(intval(...), array_column($rows, 'id'));
-                    $meta  = ($options?->metadata ?? true) ? $this->metadata->readable($scope, $project, $ids) : [];
-                    $lists = $this->lists($project, $ids);
-                    foreach ($rows as $row) {
-                        $id   = (int) $row['id'];
-                        $data = $this->data(
-                            $row,
-                            $meta[$id] ?? [],
-                            $perProject[$project],
-                            $lists['labels'][$id] ?? [],
-                            $lists['assignees'][$id] ?? [],
-                        );
-                        if ($identifyBoards) {
-                            $data = ['project_id' => $project, 'project' => (string) $scope->project['name']] + $data;
-                        }
-                        $line = new ExportLine($definition->id, $project, $row, $data);
-                        event()->dispatch($line);
-                        fwrite($out, $writer->line($line, $columns));
-                        $written++;
-                    }
-                }
-                if ($index === array_key_last($scopes)) {
-                    fwrite($out, $writer->close());
-                }
-                event()->dispatch(new ExportFinished($definition->id, $project, $columns, $written));
-            }
-            rewind($out);
-        } catch (Throwable $error) {
-            fclose($out);
-            throw $error;
+        $groups = [];
+        foreach ($scopes as $scope) {
+            $project          = (int) $scope->project['id'];
+            $groups[$project] = $this->records($scope, $options, $perProject[$project], $identifyBoards);
         }
 
-        return [
-            'stream'   => $out,
-            'mime'     => $definition->mimeType,
-            'filename' => $identifyBoards
-                ? 'boards-' . date('Y-m-d') . '.' . $definition->extension
-                : $this->filename($scopes[0], $definition->extension),
-        ];
+        return $this->renderer->write(
+            $format,
+            'tickets',
+            $columns,
+            $groups,
+            $identifyBoards ? 'boards-' . gmdate('Y-m-d') : $this->filename($scopes[0]),
+        );
+    }
+
+    private function records(ProjectScope $scope, ?ExportOptions $options, array $columns, bool $identifyBoards): iterable
+    {
+        $project = (int) $scope->project['id'];
+        foreach ($this->pages($project, $options ?? ExportOptions::fromInput([])) as $rows) {
+            $ids   = array_map(intval(...), array_column($rows, 'id'));
+            $meta  = ($options?->metadata ?? true) ? $this->metadata->readable($scope, $project, $ids) : [];
+            $lists = $this->lists($project, $ids);
+            foreach ($rows as $row) {
+                $id   = (int) $row['id'];
+                $data = $this->data($row, $meta[$id] ?? [], $columns, $lists['labels'][$id] ?? [], $lists['assignees'][$id] ?? []);
+                if ($identifyBoards) {
+                    $data = ['project_id' => $project, 'project' => (string) $scope->project['name']] + $data;
+                }
+                yield ['record' => $row, 'data' => $data];
+            }
+        }
     }
 
     private function selectedColumns(ProjectScope $scope, ?ExportOptions $options): array
@@ -375,10 +325,10 @@ final class ExportService
         return $named;
     }
 
-    private function filename(ProjectScope $scope, string $extension): string
+    private function filename(ProjectScope $scope): string
     {
         $slug = strtolower((string) ($scope->project['ticket_key'] ?? 'export'));
 
-        return preg_replace('/[^a-z0-9]+/', '-', $slug) . '-' . date('Y-m-d') . '.' . $extension;
+        return preg_replace('/[^a-z0-9]+/', '-', $slug) . '-' . gmdate('Y-m-d');
     }
 }

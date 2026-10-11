@@ -27,6 +27,7 @@ final class Installation
 {
     public const string VIEW_USERS      = 'users.view';
     public const string MANAGE_USERS    = 'users.manage';
+    public const string RESET_PASSWORDS = 'users.reset_password';
     public const string IMPERSONATE     = 'users.impersonate';
     public const string CREATE_PROJECTS = 'projects.create';
     public const string ADMIN_PROJECTS  = 'projects.administer';
@@ -63,16 +64,23 @@ final class Installation
             new PermissionDefinition(
                 self::VIEW_USERS,
                 'Nutzer sehen',
-                'Die Liste der Konten dieser Installation einsehen.',
+                'Alle Nutzerkonten einsehen.',
                 'Nutzer',
                 10,
             ),
             new PermissionDefinition(
                 self::MANAGE_USERS,
                 'Nutzer verwalten',
-                'Konten anlegen, einladen und deaktivieren.',
+                'Konten anlegen, einladen, bearbeiten und deaktivieren.',
                 'Nutzer',
                 20,
+            ),
+            new PermissionDefinition(
+                self::RESET_PASSWORDS,
+                'Passwörter zurücksetzen',
+                'Einmalige Reset-Links für lokale Nutzerkonten erstellen.',
+                'Nutzer',
+                25,
             ),
             new PermissionDefinition(
                 self::IMPERSONATE,
@@ -98,23 +106,23 @@ final class Installation
             ),
             new PermissionDefinition(
                 self::MANAGE_SETTINGS,
-                'Installation einstellen',
-                'Mailversand, Grenzen und andere Vorgaben dieser Installation.',
-                'Installation',
+                'Globale Einstellungen verwalten',
+                'Globale Vorgaben für Mailversand, Grenzen und weitere Einstellungen.',
+                'Global',
                 10,
             ),
             new PermissionDefinition(
                 self::VIEW_AUDIT,
                 'Protokoll lesen',
-                'Die aufgezeichneten Änderungen dieser Installation einsehen, auch außerhalb der Boards.',
-                'Installation',
+                'Alle aufgezeichneten Änderungen einsehen, auch außerhalb der Boards.',
+                'Global',
                 20,
             ),
             new PermissionDefinition(
                 self::VIEW_PERSONAL_AUDIT,
                 'Persönliche Vorgänge im Protokoll lesen',
                 'Auch Passwort- und E-Mail-Änderungen einzelner Konten sehen.',
-                'Installation',
+                'Global',
                 30,
             ),
         );
@@ -136,6 +144,7 @@ final class Installation
                 'rbac.manage.own',
                 self::VIEW_USERS,
                 self::MANAGE_USERS,
+                self::RESET_PASSWORDS,
                 self::IMPERSONATE,
                 self::CREATE_PROJECTS,
                 self::ADMIN_PROJECTS,

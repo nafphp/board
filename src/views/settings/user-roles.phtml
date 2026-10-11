@@ -1,0 +1,98 @@
+<?php
+
+use Naf\Board\Support\Icon;
+use Naf\Rbac\Scope;
+
+use function Naf\Auth\auth;
+use function Naf\Board\choice;
+use function Naf\Form\csrf;
+use function Naf\I18n\t;
+use function Naf\Rbac\rbac;
+use function Naf\route;
+use function Naf\View\s;
+
+// Keep the native RBAC form contract: the writer replaces all places together.
+$rbac    = rbac();
+$roles   = $rbac->roles->all();
+$actor   = (int) (auth()->user()?->getIdentifier() ?? 0);
+$canEdit = $actor !== $user && $rbac->allows($actor, 'rbac.manage');
+$held    = [];
+foreach ($rbac->assignments->grantsOf($user) as $grant) {
+    $held[$grant['scope']][] = $grant;
+}
+
+$groups = ['' => ['label' => t('Global'), 'places' => ['' => t('Für die ganze Installation')]]];
+foreach ($rbac->declared->scopes() as $type => $source) {
+    $places = [(string) Scope::allOf($type) => t('Auf allen')];
+    foreach ($source->instances() as $id => $label) {
+        $places[(string) Scope::of($type, $id)] = $label;
+    }
+    $groups[$type] = ['label' => t($source->label()), 'places' => $places];
+}
+
+$offered = [];
+$row     = 0;
+?>
+<form class="rbac-grants" method="post" action="<?= s(route('rbac.grants.save')) ?>" data-enhanced>
+    <input type="hidden" name="_csrf" value="<?= s(csrf()->token()) ?>" />
+    <input type="hidden" name="return" value="<?= s($return ?? '/') ?>" />
+    <input type="hidden" name="user" value="<?= (int) $user ?>" />
+    <?php // Only one clear marker: another bare `grants` would discard earlier grants[].?>
+    <input type="hidden" name="grants" value="" />
+    <?php foreach ($groups as $type => $group): ?>
+        <?php
+        $available = array_values(array_filter($roles, static fn(array $role) => $role['scopeType'] === $type));
+        if (!$available) {
+            continue;
+        }
+        ?>
+        <section class="settings-role-group" aria-labelledby="person-role-group-<?= s($type ?: 'global') ?>">
+            <h4 id="person-role-group-<?= s($type ?: 'global') ?>"><?= s($group['label']) ?></h4>
+            <?php foreach ($group['places'] as $scope => $label): ?>
+                <?php
+                $offered[$scope] = true;
+                $selected        = array_map(static fn(array $grant) => $grant['role_id'] . '|' . $scope, $held[$scope] ?? []);
+                $labels          = array_column($held[$scope] ?? [], 'label');
+                $options         = [];
+                foreach ($available as $role) {
+                    $options[$role['id'] . '|' . $scope] = $role['label'];
+                }
+                ++$row;
+                ?>
+                <<?= $canEdit ? 'details' : 'div' ?> class="settings-role-row" data-person-role-row>
+                    <<?= $canEdit ? 'summary' : 'div' ?> class="settings-role-heading">
+                        <span class="settings-role-scope"><?= s($label) ?></span>
+                        <span class="settings-role-current" data-person-role-summary data-empty="<?= s(t('Nicht zugewiesen')) ?>"><?= s($labels ? implode(', ', $labels) : t('Nicht zugewiesen')) ?></span>
+                        <?php if ($canEdit): ?><span class="settings-role-edit" title="<?= s(t('Rollen bearbeiten')) ?>"><?= Icon::mark('edit', 'sm') ?><span class="sr-only"><?= s(t('Rollen bearbeiten')) ?></span></span><?php endif ?>
+                    </<?= $canEdit ? 'summary' : 'div' ?>>
+                    <?php if ($canEdit): ?>
+                        <div class="settings-role-control">
+                            <?= choice([
+                                'name'       => 'grants', 'label' => t('Rollen') . ' · ' . $label,
+                                'options'    => $options, 'value' => $selected, 'multiple' => true,
+                                'id'         => 'person-role-' . $row, 'listId' => 'person-role-list-' . $row,
+                                'clearField' => false,
+                            ]) ?>
+                        </div>
+                    <?php endif ?>
+                </<?= $canEdit ? 'details' : 'div' ?>>
+            <?php endforeach ?>
+        </section>
+    <?php endforeach ?>
+    <?php // Archived or unavailable scope instances must survive unrelated edits.?>
+    <?php foreach ($held as $scope => $grants): ?>
+        <?php if (!isset($offered[$scope])): ?>
+            <div class="settings-role-row">
+                <div class="settings-role-heading">
+                    <span class="settings-role-scope"><?= s(t('Nicht verfügbar')) ?></span>
+                    <span class="settings-role-current"><?= s(implode(', ', array_column($grants, 'label'))) ?></span>
+                </div>
+            </div>
+            <?php if ($canEdit): ?><?php foreach ($grants as $grant): ?><input type="hidden" name="grants[]" value="<?= s($grant['role_id'] . '|' . $scope) ?>" /><?php endforeach ?><?php endif ?>
+        <?php endif ?>
+    <?php endforeach ?>
+    <?php if ($canEdit): ?>
+        <div class="form-errors" role="alert"></div>
+        <div class="settings-actions"><button type="submit" class="button primary"><?= s(t('Rollen speichern')) ?></button></div>
+    <?php endif ?>
+</form>

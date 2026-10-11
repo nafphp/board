@@ -78,22 +78,15 @@ final class SessionAndCsrfTest extends AcceptanceTestCase
         );
     }
 
-    /**
-     * The extra filters are a menu, not a section that grows.
-     *
-     * Their panel lies over the board. Without this attribute the sweep in
-     * disclosure.js animates the element's own height instead, which pushed the
-     * board down for the length of the animation -- 35px to 282px, and the
-     * document with it -- and snapped it back when the animation ended.
-     */
-    public function testTheExtraFiltersOpenOverTheBoardRatherThanInsideIt(): void
+    /** Filter controls sit in the bar; configuring them opens the account modal. */
+    public function testFilterVisibilityOpensTheProfileInsteadOfAnExpandingMenu(): void
     {
         $board = $this->page($this->alice, '/projects/' . self::PROJECT);
 
+        $this->assertStringNotContainsString('class="extra-filters"', $board);
         $this->assertMatchesRegularExpression(
-            '/<details[^>]*class="extra-filters"[^>]*\bdata-menu\b/',
+            '/<button[^>]*data-profile-open[^>]*data-profile-section="board_filters"[^>]*aria-controls="profile-dialog"/',
             $board,
-            'the extra filters would animate their own height and move the board',
         );
     }
 

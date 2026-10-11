@@ -14,7 +14,7 @@ use function Naf\View\s;
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <title>Anmelden · Nafinity</title>
         <script src="/assets/boot.js?v=2"></script>
-        <link rel="stylesheet" href="/assets/app.css?v=36" />
+        <link rel="stylesheet" href="/assets/app.css?v=38" />
         <!-- This page builds its own head rather than using the layout, so it has to
              ask for the icon font itself: without it a ligature like arrow_forward
              is shown as that word. -->
@@ -89,8 +89,8 @@ use function Naf\View\s;
                     <?php // Unchecked by default. Staying signed in is a choice made
                           // on the device somebody is sitting at, and a shared one is
                           // exactly where the default matters.?>
-                    <label class="remember-me">
-                        <input type="checkbox" name="remember" value="1" />
+                    <label class="switch-field remember-me">
+                        <input type="checkbox" role="switch" name="remember" value="1" />
                         <?= s(t('Angemeldet bleiben')) ?>
                     </label>
                     <?php if ($error): ?>

@@ -43,6 +43,10 @@ final class SessionController
 
     public function login(): ResponseInterface
     {
+        $invitation = request()->getQueryParams()['invitation'] ?? '';
+        if (is_string($invitation) && preg_match('/^[a-f0-9]{64}$/D', $invitation) === 1) {
+            $this->session->flash('login.return', '/invitations/' . $invitation);
+        }
         if ($this->auth->check()) {
             return redirect('/', 303);
         }
@@ -98,7 +102,7 @@ final class SessionController
                 $this->remember->issue((int) $this->auth->id());
             }
 
-            return redirect('/', 303);
+            return redirect($this->session->getFlash('login.return', '/'), 303);
         } catch (Failure $exception) {
             return render(template('login'), ['error' => $exception->getMessage(), 'email' => ''])
                 ->withStatus($exception->status);
@@ -114,7 +118,9 @@ final class SessionController
         $this->auth->logout();
         csrf()->generate();
 
-        return redirect('/login', 303);
+        $return = Input::body()['return_to'] ?? '';
+
+        return redirect(is_string($return) && preg_match('#^/invitations/[a-f0-9]{64}$#D', $return) === 1 ? $return : '/login', 303);
     }
 
     /** The first board somebody belongs to, or the list to start one from. */

@@ -23,12 +23,14 @@ use Naf\Board\Domain\ProjectScope;
 use Naf\Board\Events\ActivityListener;
 use Naf\Board\ExtensionContext;
 use Naf\Board\Jobs\MaintenanceJob;
+use Naf\Board\Modules\CoreConfiguration;
 use Naf\Board\Modules\CoreTicket;
 use Naf\Board\Modules\NafinityDefaults;
 use Naf\Board\Policies\ProjectPolicy;
 use Naf\Board\Rbac\Boards;
 use Naf\Board\Rbac\Installation;
 use Naf\Board\Rbac\Project;
+use Naf\Board\Services\ApplicationSettings;
 use Naf\Board\Services\RememberService;
 use Naf\Board\Services\RememberStore;
 use Naf\Board\Support\AccountStateStore;
@@ -36,6 +38,7 @@ use Naf\Board\Support\AttachmentStorage;
 use Naf\Board\Support\ContainerLogger;
 use Naf\Board\Support\Resolver;
 use Naf\Board\Support\ServiceDefaults;
+use Naf\Board\Support\Settings\FileConfigurationStore;
 use Naf\CLI\Support\CommandRegistry;
 use Naf\Database\Support\MigrationRegistry;
 use Naf\Queue\Core\Queue;
@@ -233,6 +236,18 @@ if (config('ldap:enabled', false)) {
 $extensions = extensions();
 $context    = new ExtensionContext($container, $extensions);
 Resolver::service($container, NafinityDefaults::class)->register($context);
+
+$container->set(
+    FileConfigurationStore::class,
+    static fn() => new FileConfigurationStore(BASE_PATH . '/storage/configuration'),
+);
+$container->set(
+    ApplicationSettings::class,
+    static fn() => $container->make(ApplicationSettings::class),
+);
+
+// Describe configuration before extensions and host overrides customize the registry.
+(new CoreConfiguration())->register($context);
 
 // Declared prerequisites and extension plugins have booted before Board.
 // Extensions noted during Composer plugin boot run now, ascending by index and
