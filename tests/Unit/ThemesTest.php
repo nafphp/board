@@ -6,6 +6,7 @@ namespace Naf\Board\Tests\Unit;
 
 use Naf\Board\Domain\Failure;
 use Naf\Board\Support\Themes;
+use Nyholm\Psr7\Uri;
 use PHPUnit\Framework\TestCase;
 
 final class ThemesTest extends TestCase
@@ -29,6 +30,17 @@ final class ThemesTest extends TestCase
         self::assertStringContainsString('--accent:#112233', $css);
         self::assertSame(2, substr_count($css, '--accent:#aabbcc'));
         self::assertStringEndsWith('.ticket { border-width: 2px; }', $css);
+    }
+
+    public function testPreviewPolicyUsesOnlyTheCurrentOriginEvenForInlineDocuments(): void
+    {
+        foreach ([
+            'https://admin:secret@board.example.test:8443/settings?draft=1#themes' => 'https://board.example.test:8443',
+            'http://[::1]:8080/settings'                                           => 'http://[::1]:8080',
+        ] as $url => $origin) {
+            $policy = Themes::previewPolicy(new Uri($url));
+            self::assertSame("default-src 'none'; style-src {$origin} 'unsafe-inline'; img-src {$origin} data:; font-src {$origin}; form-action 'none'; base-uri 'none'", $policy);
+        }
     }
 
     public function testGeneratedBaseStylesAndComponentTokensDoNotDrift(): void

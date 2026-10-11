@@ -13,6 +13,7 @@ use Psr\Http\Message\ResponseInterface;
 
 use function Naf\Board\template;
 use function Naf\json;
+use function Naf\request;
 use function Naf\response;
 use function Naf\route;
 use function Naf\View\render;
@@ -49,7 +50,7 @@ final class ThemeController
 
             return render(template('settings/theme-preview'))
                 ->withHeader('Cache-Control', 'private, no-store')
-                ->withHeader('Content-Security-Policy', "default-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'");
+                ->withHeader('Content-Security-Policy', Themes::previewPolicy(request()->getUri()));
         });
     }
 

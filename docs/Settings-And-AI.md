@@ -53,7 +53,9 @@ scrollable strip while bounding the visible offset. Reduced motion skips the mov
 Existing direct links such as `#themes` and `#email-design` restore their parent chain too.
 
 Theme previews use sandboxed inline HTML documents, so host headers that prohibit framing
-separate pages can stay enabled. Neither preview runs scripts or changes the parent theme.
+separate pages can stay enabled. The theme preview explicitly allows local styles, icons and
+fonts from the current HTTP origin, including its port, so Firefox also renders the inline
+document correctly. Neither preview runs scripts or changes the parent theme.
 
 The email designer’s **Send a test email to me** action sends the current unsaved draft and
 selected sample through the configured mail transport to the signed-in account’s current

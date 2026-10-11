@@ -15,14 +15,14 @@ To add an icon, extend the name list and fetch the subset again:
     curl "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=$ICONS"
 
 The stylesheet that call returns names a `fonts.gstatic.com` file; download it to
-`material-symbols-outlined.woff2`. `app/public/assets/icons.css` holds the local
+`material-symbols-outlined.woff2`. `src/Resources/public/assets/icons.css` holds the local
 `@font-face` and the `.mi` class.
 
 ## Included glyphs
 
 ```
 add, arrow_back, arrow_downward, arrow_forward, arrow_upward, attach_file, auto_awesome,
-chat_bubble, check, check_circle, close, comment, contrast, dark_mode, delete, download,
+chat_bubble, check, check_circle, chevron_right, close, comment, contrast, dark_mode, delete, download,
 drag_indicator, drive_file_move, edit, error, expand_less, expand_more, filter_alt,
 folder_open, grid_view, group, history, info, keyboard_double_arrow_up, label,
 left_panel_close, left_panel_open, light_mode, link, lock, logout, mail, menu,

@@ -1,6 +1,9 @@
 <?php
+use Naf\Board\Support\Themes;
+
 use function Naf\Board\partial;
 use function Naf\I18n\t;
+use function Naf\request;
 use function Naf\View\s;
 
 ?>
@@ -8,12 +11,13 @@ use function Naf\View\s;
 <html lang="<?= s(\Naf\I18n\lang()) ?>" data-theme="light">
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'" />
+    <meta http-equiv="Content-Security-Policy" content="<?= s(Themes::previewPolicy(request()->getUri())) ?>" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title><?= s(t('Theme-Vorschau')) ?></title>
+    <link rel="stylesheet" href="/assets/icons.css?v=6" />
     <link rel="stylesheet" href="/assets/tokens.css?v=1" />
-    <link rel="stylesheet" href="/assets/app.css?v=45" />
-    <link rel="stylesheet" href="/assets/settings.css?v=31" />
+    <link rel="stylesheet" href="/assets/app.css?v=48" />
+    <link rel="stylesheet" href="/assets/settings.css?v=36" />
     <style id="theme-preview-style"></style>
 </head>
 <body class="theme-sample">

@@ -7,6 +7,8 @@ namespace Naf\Board\Tests\Http;
 use Naf\Board\Support\Themes;
 use Naf\Board\Tests\Support\AcceptanceTestCase;
 use Naf\Board\Tests\Support\HttpClient;
+use Naf\Board\Tests\Support\TestServer;
+use Nyholm\Psr7\Uri;
 
 final class ThemesOverHttpTest extends AcceptanceTestCase
 {
@@ -87,6 +89,13 @@ final class ThemesOverHttpTest extends AcceptanceTestCase
         self::assertStringContainsString('sandbox="allow-same-origin"', $settingsPage);
         self::assertMatchesRegularExpression('/srcdoc="&lt;!doctype html&gt;.*?data-theme-frame/s', $settingsPage);
         self::assertStringNotContainsString('src="/settings/themes/sample"', $settingsPage);
+        $policy = Themes::previewPolicy(new Uri(TestServer::url()));
+        self::assertStringContainsString('Content-Security-Policy: ' . $policy, $sample['headers']);
+        $inlinePreview = $this->firstMatch('/srcdoc="([^"]+)"[^>]*data-theme-frame/s', $settingsPage, 'inline preview');
+        self::assertStringContainsString($policy, html_entity_decode(html_entity_decode($inlinePreview, ENT_QUOTES), ENT_QUOTES));
+        foreach (['tokens', 'app', 'settings', 'icons'] as $asset) {
+            self::assertStringContainsString('href="/assets/' . $asset . '.css?', $sample['body']);
+        }
         self::assertSame(1, substr_count($settingsPage, 'id="theme-enabled"'));
         self::assertStringContainsString('for="theme-enabled"', $settingsPage);
         self::assertSame(403, $this->bob->request('/settings/themes/sample')['status']);

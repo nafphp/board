@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Naf\Board\Support;
 
+use InvalidArgumentException;
 use Naf\Board\Domain\Failure;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UriInterface;
 use Sabberworm\CSS\Parser;
 use Sabberworm\CSS\Settings;
 use Throwable;
@@ -29,6 +31,19 @@ final class Themes
         static $schema;
 
         return $schema ??= json_decode(file_get_contents(__DIR__ . '/../Resources/public/assets/theme-tokens.json'), true, 64, JSON_THROW_ON_ERROR);
+    }
+
+    public static function previewPolicy(UriInterface $uri): string
+    {
+        if (!in_array($uri->getScheme(), ['http', 'https'], true)
+            || preg_match('/^(?:[a-z0-9.-]+|\[[a-f0-9:.]+\])$/iD', $uri->getHost()) !== 1) {
+            throw new InvalidArgumentException('Theme previews require an HTTP origin.');
+        }
+        // Firefox resolves 'self' against about:srcdoc in a meta policy. Name only
+        // the current HTTP origin, including its port, for local assets and fonts.
+        $origin = (string) $uri->withUserInfo('')->withPath('')->withQuery('')->withFragment('');
+
+        return "default-src 'none'; style-src {$origin} 'unsafe-inline'; img-src {$origin} data:; font-src {$origin}; form-action 'none'; base-uri 'none'";
     }
 
     public static function catalog(): array
