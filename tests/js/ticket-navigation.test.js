@@ -20,8 +20,6 @@ function drawerFixture() {
   let index = 0;
   let canClose = true;
   let workspace;
-  let motion = [];
-  let hidden = false;
   const content = {
     set innerHTML(_html) {
       workspace = {
@@ -50,7 +48,6 @@ function drawerFixture() {
         : selector === '.ticket-workspace'
           ? workspace
           : null,
-    getAnimations: () => motion,
     addEventListener: (name, callback) => (drawerListeners[name] = callback),
     dispatchEvent: () => canClose,
     showModal() {
@@ -86,14 +83,11 @@ function drawerFixture() {
       AbortController,
       Event,
       CustomEvent,
-      setTimeout,
-      clearTimeout,
+      openDialog: (dialog) => dialog.showModal(),
+      closeDialog: (dialog) => dialog.close(),
       t: (message) => message,
       toast() {},
       document: {
-        get hidden() {
-          return hidden;
-        },
         querySelector: () => drawer,
         addEventListener(name, callback) {
           (documentListeners[name] ??= []).push(callback);
@@ -119,9 +113,6 @@ function drawerFixture() {
     requests,
     url: () => entries[index].url,
     canClose: (value) => (canClose = value),
-    hasContent: () => Boolean(workspace),
-    motion: (finished) => (motion = [{ finished }]),
-    hidden: (value) => (hidden = value),
     async open(creating = true, modifiers = {}) {
       const link = {
         href: creating ? createUrl : detailUrl,
@@ -153,48 +144,6 @@ test('creation keeps the exact board URL while fetching the existing creation fr
   assert.equal(ui.drawer.open, true);
   ui.drawer.close();
   assert.equal(ui.url(), boardUrl);
-});
-
-test('close retains the ticket until the exit finishes, including a cancelled transition', async () => {
-  for (const cancelled of [false, true]) {
-    const ui = drawerFixture();
-    await ui.open();
-    let settle;
-    ui.motion(new Promise((resolve, reject) => (settle = cancelled ? reject : resolve)));
-    ui.drawer.close();
-    assert.equal(ui.url(), boardUrl, 'history should return immediately');
-    assert.equal(ui.hasContent(), true, 'the departing panel lost its content');
-    settle();
-    await new Promise(setImmediate);
-    assert.equal(ui.hasContent(), false);
-  }
-});
-
-test('an old exit cannot clear a reopened ticket or a newer exit', async () => {
-  const ui = drawerFixture();
-  await ui.open();
-  let firstExit;
-  ui.motion(new Promise((resolve) => (firstExit = resolve)));
-  ui.drawer.close();
-  await ui.open();
-  let secondExit;
-  ui.motion(new Promise((resolve) => (secondExit = resolve)));
-  ui.drawer.close();
-  firstExit();
-  await new Promise(setImmediate);
-  assert.equal(ui.hasContent(), true, 'an earlier close removed the newer ticket');
-  secondExit();
-  await new Promise(setImmediate);
-  assert.equal(ui.hasContent(), false);
-});
-
-test('a hidden tab does not wait for a frozen exit timeline', async () => {
-  const ui = drawerFixture();
-  await ui.open();
-  ui.hidden(true);
-  ui.motion(new Promise(() => {}));
-  ui.drawer.close();
-  assert.equal(ui.hasContent(), false);
 });
 
 test('Back with a changed creation draft preserves the board address and the open drawer', async () => {
@@ -343,7 +292,8 @@ test('an accepted creation with a failed detail refresh is saved after controls 
   ui.controls[2].value = 'Accepted draft';
   const workspace = { dataset: {}, querySelector: () => ({ textContent: '' }) };
   Object.assign(ui.form, {
-    closest: (selector) => (selector === 'dialog:not([open])' ? null : workspace),
+    closest: (selector) =>
+      selector === 'dialog:not([open]), dialog[data-dialog-closing]' ? null : workspace,
     getAttribute: () => '/projects/1/tickets',
     querySelector: () => null,
     querySelectorAll: () => ui.controls,

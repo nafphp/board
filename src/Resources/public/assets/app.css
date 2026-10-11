@@ -1,4 +1,10 @@
 :root {
+  --dialog-enter-duration: 480ms;
+  --dialog-exit-duration: 280ms;
+  --dialog-enter-easing: cubic-bezier(0.16, 1, 0.3, 1);
+  --dialog-exit-easing: cubic-bezier(0.4, 0, 0.6, 1);
+  --dialog-closed-transform: translateY(16px) scale(0.98);
+  --dialog-closed-opacity: 0;
   font-family:
     Inter,
     ui-sans-serif,
@@ -1855,10 +1861,24 @@ details[data-sweeping] {
   color: var(--text);
   box-shadow: 0 25px 100px #0003;
 }
-.modal::backdrop,
-.ticket-drawer::backdrop {
+dialog::backdrop {
   background: #13152860;
   backdrop-filter: blur(3px);
+  opacity: 1;
+  transition: opacity var(--dialog-enter-duration) var(--dialog-enter-easing);
+}
+dialog[data-dialog-opening]::backdrop,
+dialog[data-dialog-closing]::backdrop {
+  opacity: 0;
+}
+dialog[data-dialog-closing]::backdrop {
+  transition-duration: var(--dialog-exit-duration);
+  transition-timing-function: var(--dialog-exit-easing);
+}
+@media (prefers-reduced-motion: reduce) {
+  dialog::backdrop {
+    transition: none;
+  }
 }
 .dialog-heading {
   display: flex;
@@ -2345,10 +2365,7 @@ fieldset:disabled select {
   font-size: 8px;
   color: var(--muted);
 }
-/* The panel is anchored to the right edge, so it arrives from there. Both directions are
-   done in CSS: transitioning display and overlay as discrete properties keeps the dialog in
-   the top layer until the slide is over, which also covers the native Escape close that no
-   script of ours would see. Browsers without it simply show the panel at once. */
+/* The shared dialog motion returns the panel to the right edge before closing. */
 .ticket-drawer {
   position: fixed;
   inset: 0 0 0 auto;
@@ -2363,47 +2380,8 @@ fieldset:disabled select {
   color: var(--text);
   padding: 32px;
   overflow: auto;
-  transform: translateX(100%);
-  transition:
-    transform 0.28s cubic-bezier(0.4, 0, 0.6, 1),
-    overlay 0.28s allow-discrete,
-    display 0.28s allow-discrete;
-}
-.ticket-drawer[open] {
-  transform: none;
-  transition-duration: 0.48s;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-}
-@starting-style {
-  .ticket-drawer[open] {
-    transform: translateX(100%);
-  }
-}
-.ticket-drawer::backdrop {
-  opacity: 0;
-  transition:
-    opacity 0.24s ease-in,
-    overlay 0.28s allow-discrete,
-    display 0.28s allow-discrete;
-}
-.ticket-drawer[open]::backdrop {
-  opacity: 1;
-  transition-duration: 0.36s, 0.48s, 0.48s;
-  transition-timing-function: ease-out;
-}
-@starting-style {
-  .ticket-drawer[open]::backdrop {
-    opacity: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ticket-drawer,
-  .ticket-drawer::backdrop {
-    transition: none;
-  }
-  .ticket-drawer {
-    transform: none;
-  }
+  --dialog-closed-transform: translateX(100%);
+  --dialog-closed-opacity: 1;
 }
 .ticket-drawer .ticket-detail-grid {
   grid-template-columns: minmax(0, 1fr) 240px;

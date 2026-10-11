@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from './dialog.js';
 import { t } from './i18n.js';
 
 const root = document.documentElement;
@@ -110,9 +111,9 @@ document.addEventListener('click', (event) => {
     if (sidebar?.classList.contains('open')) sidebar.querySelector('a')?.focus();
   }
   if (target.dataset.dialog) {
-    document.getElementById(target.dataset.dialog)?.showModal();
+    openDialog(document.getElementById(target.dataset.dialog));
   }
-  if (target.hasAttribute('data-close-dialog')) target.closest('dialog')?.close();
+  if (target.hasAttribute('data-close-dialog')) closeDialog(target.closest('dialog'));
   if (target.hasAttribute('data-reload')) location.reload();
   if (target.dataset.demo) {
     const form = document.querySelector('.login-card form');
@@ -143,7 +144,7 @@ document.addEventListener('click', (event) => {
     form.elements.column_id.value = cell.dataset.column;
     form.elements.swimlane_id.value = cell.dataset.lane;
     dialog.querySelector('.move-title').textContent = card.dataset.title;
-    dialog.showModal();
+    openDialog(dialog);
   }
 });
 /*
@@ -170,7 +171,7 @@ document.addEventListener('click', (event) => {
   dialog.querySelector('[data-confirm-yes]').textContent =
     button.dataset.confirmYes || t('Löschen');
   awaitingConfirmation = button;
-  dialog.showModal();
+  openDialog(dialog);
 });
 
 document.querySelector('#confirm')?.addEventListener('close', (event) => {
@@ -181,6 +182,23 @@ document.querySelector('#confirm')?.addEventListener('close', (event) => {
   button.dataset.confirmed = 'yes';
   button.click();
   delete button.dataset.confirmed;
+});
+
+// Dialogs with their own guards handle cancel themselves; the other native
+// dialogs share the same exit for Escape and method="dialog" form buttons.
+document
+  .querySelectorAll('dialog:not(#ticket-drawer):not(#settings-detail):not(#profile-dialog)')
+  .forEach((dialog) => {
+    dialog.addEventListener('cancel', (event) => {
+      if (event.defaultPrevented) return;
+      event.preventDefault();
+      closeDialog(dialog);
+    });
+  });
+document.addEventListener('submit', (event) => {
+  if (event.target.method !== 'dialog' || event.defaultPrevented) return;
+  event.preventDefault();
+  closeDialog(event.target.closest('dialog'), { returnValue: event.submitter?.value || '' });
 });
 
 // Treat a backdrop click like Escape, so each modal keeps its own close guards.
@@ -225,7 +243,7 @@ document.addEventListener('click', (event) => {
   )
     return;
   if (typeof dialog.requestClose === 'function') dialog.requestClose();
-  else if (dialog.dispatchEvent(new Event('cancel', { cancelable: true }))) dialog.close();
+  else if (dialog.dispatchEvent(new Event('cancel', { cancelable: true }))) closeDialog(dialog);
 });
 
 // Not form.action: a form exposes its own controls by name, and a control called
@@ -340,7 +358,6 @@ const drawer = document.querySelector('#ticket-drawer');
 let drawerAbort = null;
 let drawerCloseFromHistory = false;
 let drawerUrl = '';
-let drawerGeneration = 0;
 document.addEventListener('click', async (event) => {
   const link = event.target.closest('a[data-ticket-link]');
   if (
@@ -355,14 +372,13 @@ document.addEventListener('click', async (event) => {
   )
     return;
   event.preventDefault();
-  drawerGeneration += 1;
   drawerAbort?.abort();
   drawerAbort = new AbortController();
   const creating = link.hasAttribute('data-ticket-create-link');
   drawer.classList.toggle('ticket-create-modal', creating);
   drawer.setAttribute('aria-label', creating ? t('Neues Ticket') : t('Ticketdetails'));
   drawer.querySelector('.drawer-content').textContent = t('Ticket wird geladen …');
-  drawer.showModal();
+  openDialog(drawer);
   try {
     const url = new URL(link.href);
     url.searchParams.set('fragment', '1');
@@ -383,7 +399,7 @@ document.addEventListener('click', async (event) => {
     drawer.querySelector(creating ? '[name=title]' : 'button[data-close-drawer]')?.focus();
   } catch (error) {
     if (error.name !== 'AbortError') {
-      drawer.close();
+      closeDialog(drawer);
       toast(t('Ticket konnte nicht geladen werden.'));
     }
   }
@@ -392,7 +408,7 @@ document.addEventListener('click', (event) => {
   if (event.target.closest('[data-close-drawer]')) {
     event.preventDefault();
     if (drawer?.dispatchEvent(new Event('nafinity:ticket-before-close', { cancelable: true })))
-      drawer.close();
+      closeDialog(drawer);
   }
 });
 drawer?.addEventListener('close', () => {
@@ -404,25 +420,7 @@ drawer?.addEventListener('close', () => {
       detail: { node: drawer.querySelector('.drawer-content') },
     }),
   );
-  // Native close starts the CSS exit. Keep the rendered ticket until that slide
-  // finishes, but never let an old close clear a quickly reopened drawer.
-  const generation = drawerGeneration;
-  const clearContent = () => {
-    if (!drawer.open && drawerGeneration === generation)
-      drawer.querySelector('.drawer-content').replaceChildren();
-  };
-  const motion = drawer.getAnimations();
-  if (motion.length && !document.hidden) {
-    let timeout;
-    Promise.race([
-      Promise.allSettled(motion.map((animation) => animation.finished)),
-      // A background tab can freeze the timeline after close has already begun.
-      new Promise((done) => (timeout = setTimeout(done, 600))),
-    ]).then(() => {
-      clearTimeout(timeout);
-      clearContent();
-    });
-  } else clearContent();
+  drawer.querySelector('.drawer-content').replaceChildren();
   if (!drawerCloseFromHistory && history.state?.nafinityDrawer) history.back();
   drawerCloseFromHistory = false;
 });
@@ -440,7 +438,7 @@ window.addEventListener('popstate', () => {
       return;
     }
     drawerCloseFromHistory = true;
-    drawer.close();
+    closeDialog(drawer);
   }
 });
 
