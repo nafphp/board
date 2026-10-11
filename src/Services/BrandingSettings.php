@@ -8,6 +8,7 @@ use Naf\Board\Contracts\BoardQueryInterface;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Support\Branding;
 use Naf\Board\Support\BrandLogoStorage;
+use Naf\Board\Support\Settings\FileConfigurationStore;
 use Naf\Core\Config;
 use Psr\Http\Message\UploadedFileInterface;
 use Throwable;
@@ -23,6 +24,7 @@ final class BrandingSettings
         private BoardQueryInterface $query,
         private BrandLogoStorage $logos,
         private Config $configuration,
+        private FileConfigurationStore $store,
     ) {
     }
 
@@ -73,7 +75,17 @@ final class BrandingSettings
         }
         if ($previous !== null && $previous !== $serverLogo && $previous !== Branding::logoKey()) {
             try {
-                $this->logos->delete($previous);
+                // Serialize cleanup with every configuration write. Another admin may
+                // have selected the previous key again after this form was saved.
+                $this->store->update(function (array $current) use ($previous, $serverLogo): array {
+                    $configured = array_key_exists(Branding::LOGO_PATH, $current)
+                        ? $current[Branding::LOGO_PATH] : $serverLogo;
+                    if ($configured !== $previous) {
+                        $this->logos->delete($previous);
+                    }
+
+                    return $current;
+                });
             } catch (Throwable) {
                 // Saving succeeded; a storage cleanup failure must not report a failed save.
                 log()->warning('Branding saved, but the previous logo could not be removed.');

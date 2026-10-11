@@ -335,13 +335,6 @@ label > .sr-only:not([type='checkbox']) {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.brand-dot {
-  width: 5px;
-  height: 5px;
-  background: var(--accent);
-  border-radius: 50%;
-  margin: 15px 0 0 -7px;
-}
 .workspace-caption,
 .section-caption,
 .eyebrow {
@@ -680,7 +673,6 @@ label > .sr-only:not([type='checkbox']) {
   .sidebar
     :where(
       .brand-word,
-      .brand-dot,
       .link-label,
       .user-identity,
       .user-chevron,

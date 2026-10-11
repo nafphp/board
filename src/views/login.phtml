@@ -38,11 +38,13 @@ use function Naf\View\s;
                     <br />
                     <?= s(t('Für jedes Projekt in einem Board.')) ?>
                 </p>
+                <?php if (Branding::logoKey() === null): ?>
                 <div class="orbit-art" aria-hidden="true">
                     <span>∞</span>
                     <i></i>
                     <b></b>
                 </div>
+                <?php endif ?>
             </div>
             <span class="login-credit"><?= s(t('Gebaut mit NAF · Not Another Framework')) ?></span>
         </div>

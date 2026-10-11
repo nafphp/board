@@ -85,7 +85,8 @@ final class BrandingOverHttpTest extends AcceptanceTestCase
         try {
             $response = $this->upload(base64_decode(self::PNG));
             self::assertSame(200, $response['status'], $response['body']);
-            $page  = $this->page($this->guest('branding-logo'), '/login');
+            $page = $this->page($this->guest('branding-logo'), '/login');
+            self::assertStringNotContainsString('class="orbit-art"', $page);
             $url   = $this->firstMatch('#src="(/branding/logo/[^"]+)"#', $page, 'public logo');
             $image = $this->guest('branding-raster')->request($url);
             self::assertSame(200, $image['status']);
