@@ -1742,17 +1742,59 @@ dialog[data-dialog-child]::backdrop {
 dialog[data-dialog-covered] {
   transform: translateY(calc(-1 * var(--space-40) * var(--dialog-stack-depth)));
 }
-/* Equal-sized settings panels leave one quiet strip and its close mark visible. */
-.settings-detail[data-dialog-covered] > * {
+/* Only shared stack headers are interactive above a covered dialog. */
+dialog[data-dialog-covered] > * {
   opacity: 0;
   pointer-events: none;
 }
-.settings-detail[data-dialog-covered]::after {
-  content: '×';
-  position: absolute;
-  top: var(--space-6);
-  right: var(--space-24);
+.dialog-stack-controls {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0;
+  max-height: calc(var(--space-40) * var(--dialog-stack-count));
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-17) var(--radius-17) 0 0;
+  background: var(--surface);
   color: var(--muted);
+  scrollbar-width: thin;
+}
+.dialog-stack-controls::backdrop {
+  background: transparent;
+  pointer-events: none;
+}
+.dialog-stack-controls button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  width: 100%;
+  height: var(--space-40);
+  min-height: var(--space-40);
+  margin: 0;
+  padding: 0 var(--space-24);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font-size: var(--font-12);
+}
+.dialog-stack-controls button + button {
+  border-top: 1px solid var(--line);
+}
+.dialog-stack-controls button:is(:hover, :focus-visible) {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.dialog-stack-controls button span:first-child {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.dialog-stack-controls button span:last-child {
   font-size: var(--font-24);
   line-height: 1;
 }

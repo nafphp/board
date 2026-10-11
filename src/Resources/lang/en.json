@@ -1297,5 +1297,7 @@
   "Für dein Konto ist keine gültige E-Mail-Adresse hinterlegt.": "Your account has no valid email address.",
   "Die Vorschau verwendet Beispieldaten. Testmails werden nur auf Klick versendet.": "The preview uses sample data. Test emails are only sent when you click the button.",
   "Anwendung & Protokoll": "Application & activity log",
-  "Aktivitätsprotokoll aufbewahren (Tage, 0 = unbegrenzt)": "Retain activity log (days, 0 = unlimited)"
+  "Aktivitätsprotokoll aufbewahren (Tage, 0 = unbegrenzt)": "Retain activity log (days, 0 = unlimited)",
+  "Dialog": "Dialog",
+  ":name und darüberliegende Dialoge schließen": "Close :name and dialogs above it"
 }

@@ -44,8 +44,12 @@ replace the `core.topbar.workspace` search contribution or add controls to `topb
 email design and advanced display settings. **Application & activity log**, including
 activity-log retention, is available with advanced settings enabled. Each child opens over its
 parent; closing the uppermost dialog returns to the unchanged parent, including its scroll position and focus.
-Only the active dialog accepts input. Reduced motion skips the movement. Existing direct
-links such as `#themes` and `#email-design` restore their parent chain too.
+Covered dialogs expose a named close header through the active dialog. Closing a middle
+header closes that dialog and all descendants, newest first; the oldest header closes the
+whole stack. Each close request follows the normal cancel path and stops if a dirty or busy
+guard blocks it. Background forms remain inert. Deep stacks keep all named headers in a
+scrollable strip while bounding the visible offset. Reduced motion skips the movement.
+Existing direct links such as `#themes` and `#email-design` restore their parent chain too.
 
 Theme previews use sandboxed inline HTML documents, so host headers that prohibit framing
 separate pages can stay enabled. Neither preview runs scripts or changes the parent theme.

@@ -1,9 +1,93 @@
+import { t } from './i18n.js';
+
 // One native top-layer stack for every caller, including declarative data-dialog buttons.
 // A parent keeps its DOM, scroll position and focus until the last child returns.
 const movement = new WeakMap();
 const suspended = new WeakMap();
 const entries = new WeakMap();
 const stack = [];
+let controls;
+let revision = 0;
+let requesting = false;
+
+function positionControls() {
+  if (!controls) return;
+  const rect = stack.at(-1).getBoundingClientRect();
+  controls.style.width = `${rect.width}px`;
+  controls.style.left = `${rect.left}px`;
+  controls.style.top = `max(var(--space-8), ${rect.top - controls.getBoundingClientRect().height}px)`;
+}
+
+function dialogTitle(dialog) {
+  const labelled = (dialog.getAttribute('aria-labelledby') || '')
+    .split(/\s+/)
+    .map((id) => document.getElementById(id)?.textContent || '')
+    .join(' ')
+    .trim();
+  return (
+    labelled ||
+    dialog.getAttribute('aria-label') ||
+    dialog.querySelector('h1, h2, h3')?.textContent.trim() ||
+    t('Dialog')
+  );
+}
+
+// Ask each dialog through its normal cancel path. A dirty/busy guard stops the
+// cascade, so these controls never bypass a feature's existing close decision.
+async function requestStackClose(target) {
+  if (requesting || !stack.includes(target)) return;
+  requesting = true;
+  controls?.querySelectorAll('button').forEach((button) => (button.disabled = true));
+  try {
+    while (stack.includes(target)) {
+      const current = stack.at(-1);
+      current.dispatchEvent(new Event('cancel', { cancelable: true }));
+      if (!current.open) continue;
+      const closing = movement.get(current);
+      if (!closing?.closing) break;
+      await closing.finished;
+    }
+  } finally {
+    requesting = false;
+    controls?.querySelectorAll('button').forEach((button) => (button.disabled = false));
+  }
+}
+
+function showControls() {
+  controls?.remove();
+  controls = undefined;
+  if (stack.length < 2) return;
+  const panel = document.createElement('div');
+  panel.className = 'dialog-stack-controls';
+  panel.setAttribute('popover', 'manual');
+  for (const parent of stack.slice(0, -1)) {
+    const title = dialogTitle(parent);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.disabled = requesting;
+    button.setAttribute(
+      'aria-label',
+      t(':name und darüberliegende Dialoge schließen', { name: title }),
+    );
+    button.title = button.getAttribute('aria-label');
+    const name = document.createElement('span');
+    name.textContent = title;
+    const close = document.createElement('span');
+    close.textContent = '×';
+    close.setAttribute('aria-hidden', 'true');
+    button.append(name, close);
+    button.onclick = () => requestStackClose(parent);
+    panel.append(button);
+  }
+  // A popover inside the active dialog escapes clipping while staying within
+  // the native modal's interactive subtree. Background forms remain inert.
+  stack.at(-1).append(panel);
+  controls = panel;
+  panel.showPopover();
+  positionControls();
+}
+
+globalThis.addEventListener?.('resize', positionControls);
 
 function timing(dialog, opening) {
   const style = getComputedStyle(dialog);
@@ -36,10 +120,15 @@ function waitForMotion(animation, duration) {
 }
 
 function arrangeStack() {
+  const currentRevision = ++revision;
+  const motions = [];
+  controls?.remove();
+  controls = undefined;
   stack.forEach((dialog, index) => {
     const depth = stack.length - index - 1;
     const previous = suspended.get(dialog);
-    const start = { transform: getComputedStyle(dialog).transform };
+    const style = getComputedStyle(dialog);
+    const start = { transform: style.transform, translate: style.translate, height: style.height };
     previous?.cancel();
     const entering = movement.get(dialog);
     if (depth && entering && !entering.closing) {
@@ -48,6 +137,7 @@ function arrangeStack() {
       delete dialog.dataset.dialogOpening;
     }
     dialog.style.setProperty('--dialog-stack-depth', Math.min(depth, 3));
+    dialog.style.setProperty('--dialog-stack-count', Math.min(stack.length - 1, 3));
     dialog.toggleAttribute('data-dialog-covered', depth > 0);
     dialog.toggleAttribute('data-dialog-child', index > 0);
     const entry = entries.get(dialog);
@@ -55,16 +145,32 @@ function arrangeStack() {
     if (depth) dialog.setAttribute('aria-hidden', 'true');
     else if (entry.ariaHidden === null) dialog.removeAttribute('aria-hidden');
     else dialog.setAttribute('aria-hidden', entry.ariaHidden);
-    const end = { transform: getComputedStyle(dialog).transform };
+    const finalStyle = getComputedStyle(dialog);
+    const end = {
+      transform: finalStyle.transform,
+      translate: finalStyle.translate,
+      height: finalStyle.height,
+    };
     const options = timing(dialog, true);
-    if (start.transform === end.transform || !options.duration || entering?.closing) return;
+    if (
+      Object.keys(start).every((key) => start[key] === end[key]) ||
+      !options.duration ||
+      entering?.closing
+    )
+      return;
     const animation = dialog.animate([start, end], options);
     suspended.set(dialog, animation);
-    waitForMotion(animation, options.duration).then(() => {
-      if (suspended.get(dialog) !== animation) return;
-      animation.cancel();
-      suspended.delete(dialog);
-    });
+    motions.push(
+      waitForMotion(animation, options.duration).then(() => {
+        if (suspended.get(dialog) !== animation) return;
+        animation.cancel();
+        suspended.delete(dialog);
+      }),
+    );
+  });
+  Promise.all(motions).then(async () => {
+    await movement.get(stack.at(-1))?.finished;
+    if (currentRevision === revision) showControls();
   });
 }
 
@@ -82,6 +188,7 @@ function forget(dialog) {
   dialog.removeAttribute('data-dialog-covered');
   dialog.removeAttribute('data-dialog-child');
   dialog.style.removeProperty('--dialog-stack-depth');
+  dialog.style.removeProperty('--dialog-stack-count');
   entries.delete(dialog);
   arrangeStack();
   if (wasTop) return entry.focus;
@@ -136,12 +243,13 @@ export function openDialog(dialog, { from, animate = true } = {}) {
   requestAnimationFrame(() => {
     if (movement.get(dialog) === state && !state.closing) delete dialog.dataset.dialogOpening;
   });
-  return waitForMotion(animation, options.duration).then(() => {
+  state.finished = waitForMotion(animation, options.duration).then(() => {
     if (movement.get(dialog) !== state) return;
     animation.cancel();
     movement.delete(dialog);
     delete dialog.dataset.dialogOpening;
   });
+  return state.finished;
 }
 
 export function closeDialog(dialog, { to, returnValue = '' } = {}) {

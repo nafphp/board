@@ -104,7 +104,8 @@
 }
 .settings-detail {
   width: min(1000px, calc(100vw - 56px));
-  height: min(820px, calc(100dvh - 64px));
+  height: min(820px, calc(100dvh - 64px - var(--space-40) * var(--dialog-stack-count, 0)));
+  translate: 0 calc(var(--space-20) * var(--dialog-stack-count, 0));
   max-width: none;
   max-height: none;
   padding: 0;
@@ -229,7 +230,7 @@
   }
   .settings-detail {
     width: calc(100vw - 20px);
-    height: calc(100dvh - 96px);
+    height: calc(100dvh - 96px - var(--space-40) * var(--dialog-stack-count, 0));
   }
   .settings-detail-heading {
     padding: var(--space-20);
