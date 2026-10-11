@@ -1286,9 +1286,7 @@
   "E-Mail-Design zurücksetzen": "Reset email design",
   "Mobil": "Mobile",
   "Beispielprojekt": "Example project",
-  "Design & Erscheinungsbild": "Design & appearance",
   "Anzeige": "Display",
-  "Gestalte Name, Logo, Oberfläche und E-Mails an einem Ort. Öffne einen Bereich, um ihn anzupassen.": "Customize the name, logo, interface and emails in one place. Open a section to edit it.",
   "Testmail an mich senden": "Send a test email to me",
   "Sendet den aktuellen Entwurf an :email, ohne ihn zu speichern.": "Send the current draft to :email without saving it.",
   "Testmail wird versendet …": "Sending test email …",
@@ -1297,5 +1295,7 @@
   "Die Testmail konnte nicht versendet werden. Bitte prüfe die E-Mail-Einstellungen.": "The test email could not be sent. Check the email settings.",
   "Bitte warte eine Minute, bevor du weitere Testmails sendest.": "Wait a minute before sending more test emails.",
   "Für dein Konto ist keine gültige E-Mail-Adresse hinterlegt.": "Your account has no valid email address.",
-  "Die Vorschau verwendet Beispieldaten. Testmails werden nur auf Klick versendet.": "The preview uses sample data. Test emails are only sent when you click the button."
+  "Die Vorschau verwendet Beispieldaten. Testmails werden nur auf Klick versendet.": "The preview uses sample data. Test emails are only sent when you click the button.",
+  "Anwendung & Protokoll": "Application & activity log",
+  "Aktivitätsprotokoll aufbewahren (Tage, 0 = unbegrenzt)": "Retain activity log (days, 0 = unlimited)"
 }

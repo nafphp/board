@@ -40,9 +40,10 @@ replace the `core.topbar.workspace` search contribution or add controls to `topb
 
 ## Design settings and dialog hierarchy
 
-**Global → Design & appearance** groups branding and landing page, interface themes,
-email design and advanced display settings. Each child opens over its parent; closing the
-uppermost dialog returns to the unchanged parent, including its scroll position and focus.
+**Global → General** groups branding and landing page, interface themes,
+email design and advanced display settings. **Application & activity log**, including
+activity-log retention, is available with advanced settings enabled. Each child opens over its
+parent; closing the uppermost dialog returns to the unchanged parent, including its scroll position and focus.
 Only the active dialog accepts input. Reduced motion skips the movement. Existing direct
 links such as `#themes` and `#email-design` restore their parent chain too.
 
@@ -55,7 +56,7 @@ email address. It cannot target another address. Saving and automatic preview up
 send test mail. The server allows three test messages per account per minute and reports a
 transport failure without changing the draft.
 
-Extensions add nested settings by setting `parent: 'appearance'` (or another section id in
+Extensions add nested settings by setting `parent: 'application'` (or another section id in
 the same scope) on `Naf\Board\Definition\SettingSection`. The renderer handles the hierarchy
 without extra JavaScript; a removed or hidden parent leaves authorized children at the root.
 Cycles are rejected. Generic dialog buttons using `data-dialog="dialog-id"`, and callers of
@@ -75,7 +76,7 @@ such as ticket assignees, keep checkboxes.
 
 ## Installation identity and start page
 
-**Global → Appearance & start page** controls the installation name, logo and the
+**Global → General → Appearance & start page** controls the installation name, logo and the
 destination of the top-left brand link. The default destination is the project overview.
 Administrators may choose an active board instead. The choice also applies after sign-in,
 unless sign-in was requested for an invitation. Each request checks the person's current

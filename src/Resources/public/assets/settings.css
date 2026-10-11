@@ -1331,11 +1331,6 @@ summary.settings-role-heading {
   margin-bottom: var(--space-16);
 }
 
-.settings-design-intro {
-  margin: 0 0 var(--space-24);
-  color: var(--muted);
-  line-height: 1.7;
-}
 .email-test-actions {
   align-items: center;
   margin-bottom: var(--space-16);
