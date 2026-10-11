@@ -1,0 +1,64 @@
+<?php
+use Naf\Board\Services\ApplicationSettings;
+use Naf\Board\Support\Branding;
+
+use function Naf\app;
+use function Naf\Board\extensions;
+use function Naf\Board\field;
+use function Naf\Board\partial;
+use function Naf\config;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$settings = app()->container()->get(ApplicationSettings::class);
+$revision = $settings->revision();
+$home     = (int) config(Branding::HOME_PATH, 0);
+$options  = [0 => t('Projektübersicht')];
+foreach ($projects as $project) {
+    if (empty($project['archived_at'])) {
+        $options[(int) $project['id']] = $project['name'];
+    }
+}
+if (!isset($options[$home])) {
+    $options[$home] = t('Board nicht verfügbar · Projektübersicht wird geöffnet');
+}
+$source = $settings->describe(extensions()->settings()->find('application', Branding::NAME));
+?>
+<form method="post" enctype="multipart/form-data" data-enhanced data-settings-form="branding" action="<?= s(route('branding.save')) ?>">
+    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+    <input type="hidden" name="configurationRevision" value="<?= s($revision) ?>" />
+    <div class="branding-preview" aria-label="<?= s(t('Aktuelles Erscheinungsbild')) ?>">
+        <?= partial('shell/brand', ['linked' => false]) ?>
+    </div>
+    <?= field(['label' => 'Name der Anwendung', 'name' => 'name', 'value' => Branding::name(), 'required' => true, 'attributes' => ['maxlength' => 120]]) ?>
+    <p class="field-hint"><?= s(t('Quelle')) ?>: <?= s(t($source['source'] === 'administration' ? 'Administration' : 'Serverkonfiguration')) ?></p>
+    <?= field([
+        'label'      => 'Logo hochladen',
+        'name'       => 'logo',
+        'type'       => 'file',
+        'hint'       => 'PNG, JPG oder WebP · höchstens 512 KB und 2048 × 2048 Pixel. Das Logo ist auch auf der Anmeldung sichtbar.',
+        'attributes' => ['accept' => 'image/png,image/jpeg,image/webp'],
+    ]) ?>
+    <?php if (Branding::logoKey() !== null): ?>
+        <?= field(['label' => 'Logo entfernen und Standardsymbol verwenden', 'name' => 'remove_logo', 'type' => 'checkbox']) ?>
+    <?php endif ?>
+    <?= field([
+        'label'   => 'Startseite beim Klick auf das Logo',
+        'name'    => 'home_project',
+        'type'    => 'select',
+        'value'   => $home,
+        'options' => $options,
+        'hint'    => 'Gilt auch nach der Anmeldung. Ohne Zugriff auf das gewählte Board öffnet sich die Projektübersicht.',
+    ]) ?>
+    <div class="form-errors" role="alert"></div>
+    <div class="settings-actions"><button class="button primary"><?= s(t('Einstellungen speichern')) ?></button></div>
+</form>
+<form class="branding-reset" method="post" data-enhanced action="<?= s(route('branding.save')) ?>">
+    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+    <input type="hidden" name="configurationRevision" value="<?= s($revision) ?>" />
+    <input type="hidden" name="reset" value="1" />
+    <p class="field-hint"><?= s(t('Name, Logo und Startseite können gemeinsam auf die Servervorgaben zurückgesetzt werden.')) ?></p>
+    <div class="form-errors" role="alert"></div>
+    <button class="button subtle"><?= s(t('Servervorgaben wiederherstellen')) ?></button>
+</form>

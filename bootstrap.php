@@ -35,6 +35,7 @@ use Naf\Board\Services\RememberService;
 use Naf\Board\Services\RememberStore;
 use Naf\Board\Support\AccountStateStore;
 use Naf\Board\Support\AttachmentStorage;
+use Naf\Board\Support\BrandLogoStorage;
 use Naf\Board\Support\ContainerLogger;
 use Naf\Board\Support\Resolver;
 use Naf\Board\Support\ServiceDefaults;
@@ -192,6 +193,7 @@ $container->set(
         (string) config('storage:disks:attachments:root', BASE_PATH . '/storage/attachments'),
     ),
 );
+$container->set(BrandLogoStorage::class, static fn() => new BrandLogoStorage(\Naf\Storage\storage('attachments')));
 $container->set(
     Queue::class,
     static fn() => new Queue(

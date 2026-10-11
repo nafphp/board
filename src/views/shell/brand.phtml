@@ -1,0 +1,18 @@
+<?php
+use Naf\Board\Support\Branding;
+
+use function Naf\route;
+use function Naf\View\s;
+
+$name = Branding::name();
+$logo = Branding::logoUrl();
+$tag  = ($linked ?? true) ? 'a' : 'div';
+?>
+<<?= $tag ?> class="brand"<?= $tag === 'a' ? ' href="' . s(route('home')) . '"' : '' ?> title="<?= s($name) ?>">
+    <?php if ($logo !== null): ?>
+        <img class="brand-image" src="<?= s($logo) ?>" alt="" width="36" height="36" />
+    <?php else: ?>
+        <span class="brand-symbol" aria-hidden="true">∞</span>
+    <?php endif ?>
+    <span class="brand-word"><?= s($name) ?></span>
+</<?= $tag ?>>

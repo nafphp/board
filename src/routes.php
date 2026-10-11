@@ -4,6 +4,7 @@ declare(strict_types=1);
 use Naf\Board\Controllers\AiController;
 use Naf\Board\Controllers\AttachmentController;
 use Naf\Board\Controllers\BoardController;
+use Naf\Board\Controllers\BrandingController;
 use Naf\Board\Controllers\ExportController;
 use Naf\Board\Controllers\InstallationController;
 use Naf\Board\Controllers\InvitationController;
@@ -106,6 +107,8 @@ $routes = [
     ['GET', '/projects/{project}/accounts', [InvitationController::class, 'search'], 'project.accounts'],
     ['POST', '/projects/{project}/invitations/{invitation}/revoke', [InvitationController::class, 'revoke'], 'project.invitations.revoke'],
 
+    ['GET', '/branding/logo/{logo}', [BrandingController::class, 'logo'], 'branding.logo'],
+    ['POST', '/settings/branding', [BrandingController::class, 'save'], 'branding.save'],
     ['GET', '/settings', [InstallationController::class, 'settings'], 'installation.settings'],
     ['GET', '/settings/users', [UserDirectoryController::class, 'index'], 'installation.users.index'],
     ['POST', '/settings/users/bulk', [UserDirectoryController::class, 'update'], 'installation.users.bulk'],
