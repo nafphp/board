@@ -50,13 +50,17 @@ test('email preview keeps the latest valid draft and sends neither save nor mail
     srcdoc: 'saved',
     style: {},
     addEventListener() {},
-    contentDocument: { body: { getBoundingClientRect: () => ({ height: 710 }) } },
+    contentDocument: {
+      documentElement: {},
+      body: { getBoundingClientRect: () => ({ height: 710 }) },
+    },
   };
   const status = {};
   const listeners = {};
   const form = {
     dataset: { previewUrl: '/settings/email-design/preview' },
-    querySelector: (selector) => (selector === '[data-email-preview]' ? frame : status),
+    querySelector: (selector) =>
+      ({ '[data-email-preview]': frame, '[data-email-preview-status]': status })[selector],
     elements: { namedItem: () => ({ value: 'mobile' }) },
     addEventListener: (type, listener) => {
       listeners[type] = listener;
@@ -87,4 +91,56 @@ test('email preview keeps the latest valid draft and sends neither save nor mail
   assert.equal(frame.srcdoc, 'new draft');
   assert.equal(status.textContent, 'Invalid CSS');
   assert.ok(requests.every((request) => request.url === '/settings/email-design/preview'));
+});
+
+test('test send is explicit, uses the live draft, prevents duplicate clicks and reports failure without saving', async (context) => {
+  const original = { fetch: globalThis.fetch, FormData: globalThis.FormData };
+  context.after(() => Object.assign(globalThis, original));
+  const values = new Map([
+    ['_csrf', 'token'],
+    ['sample', 'notification'],
+    ['design[colors][accent]', '#112233'],
+  ]);
+  globalThis.FormData = class extends Map {
+    constructor() {
+      super(values);
+    }
+  };
+  const requests = [];
+  globalThis.fetch = (url, options) =>
+    new Promise((resolve) => requests.push({ url, options, resolve }));
+  let send;
+  const button = { disabled: false, addEventListener: (_, listener) => (send = listener) };
+  const status = {};
+  const frame = { addEventListener() {} };
+  const form = {
+    dataset: { previewUrl: '/preview', testUrl: '/test' },
+    querySelector: (selector) =>
+      ({
+        '[data-email-preview]': frame,
+        '[data-email-preview-status]': {},
+        '[data-email-test]': button,
+        '[data-email-test-status]': status,
+      })[selector],
+    addEventListener() {},
+  };
+  mountEmailDesigner(form);
+  assert.equal(requests.length, 0, 'mounting never sends mail');
+  const first = send();
+  await send();
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].url, '/test');
+  assert.equal(JSON.parse(requests[0].options.body).design.colors.accent, '#112233');
+  assert.equal(requests[0].options.headers['X-CSRF-Token'], 'token');
+  requests[0].resolve({ ok: true, json: async () => ({ message: 'Test sent' }) });
+  await first;
+  assert.equal(status.textContent, 'Test sent');
+  assert.equal(button.disabled, false);
+  values.set('design[colors][accent]', '#445566');
+  const second = send();
+  requests[1].resolve({ ok: false, json: async () => ({ message: 'Transport refused' }) });
+  await second;
+  assert.equal(status.textContent, 'Transport refused');
+  assert.equal(button.disabled, false);
+  assert.equal(values.get('design[colors][accent]'), '#445566');
 });

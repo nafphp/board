@@ -293,7 +293,7 @@ document.addEventListener('submit', async (event) => {
       root.dataset.palette = data.get('palette');
       rememberAppearance();
     }
-    if (form.closest('#settings-detail')) {
+    if (form.closest('[data-settings-dialog]')) {
       const destination = new URL(result.url || location.href, location.href);
       if (destination.pathname.endsWith('/settings') || destination.pathname === '/preferences') {
         const card = form.closest('[data-settings-content]')?.dataset.settingsContent;

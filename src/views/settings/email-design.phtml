@@ -12,7 +12,7 @@ use function Naf\View\s;
 $design   = Design::current();
 $revision = app()->container()->get(ApplicationSettings::class)->revision();
 ?>
-<form method="post" data-enhanced data-email-design action="<?= s(route('email_design.save')) ?>" data-preview-url="<?= s(route('email_design.preview')) ?>">
+<form method="post" data-enhanced data-email-design action="<?= s(route('email_design.save')) ?>" data-preview-url="<?= s(route('email_design.preview')) ?>" data-test-url="<?= s(route('email_design.test')) ?>">
     <input type="hidden" name="_csrf" value="<?= s($token) ?>">
     <input type="hidden" name="configurationRevision" value="<?= s($revision) ?>">
     <p class="field-hint"><?= s(t('Dieses Design gilt global für alle E-Mails. Name und Logo stammen aus dem Erscheinungsbild. Persönliche Oberflächen-Themes ändern den E-Mail-Versand nicht.')) ?></p>
@@ -21,8 +21,13 @@ $revision = app()->container()->get(ApplicationSettings::class)->revision();
             <?= field(['label' => 'E-Mail-Typ in der Vorschau', 'name' => 'sample', 'type' => 'select', 'value' => 'invitation', 'options' => Design::SAMPLES]) ?>
             <?= field(['label' => 'Vorschau-Breite', 'name' => 'preview_size', 'type' => 'select', 'value' => 'desktop', 'options' => ['desktop' => 'Desktop', 'mobile' => 'Mobil']]) ?>
         </div>
+        <div class="settings-actions email-test-actions">
+            <button class="button subtle" type="button" data-email-test><?= s(t('Testmail an mich senden')) ?></button>
+            <small class="field-hint"><?= s(t('Sendet den aktuellen Entwurf an :email, ohne ihn zu speichern.', ['email' => $user->getProfile()->email ?? ''])) ?></small>
+        </div>
+        <p class="field-hint" data-email-test-status role="status"></p>
         <iframe title="<?= s(t('E-Mail-Vorschau')) ?>" sandbox="allow-same-origin" tabindex="-1" data-email-preview srcdoc="<?= s(Design::sample('invitation', $design)) ?>"></iframe>
-        <p class="field-hint" data-email-preview-status role="status"><?= s(t('Beispieldaten · Es wird keine E-Mail versendet.')) ?></p>
+        <p class="field-hint" data-email-preview-status role="status"><?= s(t('Die Vorschau verwendet Beispieldaten. Testmails werden nur auf Klick versendet.')) ?></p>
     </div>
     <details class="theme-token-group" open>
         <summary><?= s(t('Farben')) ?></summary>

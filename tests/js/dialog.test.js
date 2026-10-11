@@ -29,39 +29,85 @@ function fixture({ reduced = false, hidden = false, drawer = false } = {}) {
       }[name];
     },
   };
-  const dialog = {
-    open: false,
-    dataset: {},
-    showModal() {
-      this.open = true;
-      opens += 1;
-    },
-    close(value) {
-      this.open = false;
-      closed.push(value);
-    },
-    animate(frames, options) {
-      let resolve, reject;
-      const run = {
-        frames,
-        options,
-        cancelled: false,
-        finished: new Promise((done, fail) => {
-          resolve = done;
-          reject = fail;
-        }),
-        finish: () => resolve(),
-        cancel() {
-          this.cancelled = true;
-          reject();
-        },
-      };
-      animations.push(run);
-      return run;
-    },
-  };
+  const dialogs = [];
+  function newDialog() {
+    const attributes = new Map();
+    const listeners = new Map();
+    const properties = new Map();
+    const dialog = {
+      open: false,
+      inert: false,
+      dataset: {},
+      getAttribute: (key) => attributes.get(key) ?? null,
+      setAttribute: (key, value) => attributes.set(key, value),
+      removeAttribute: (key) => attributes.delete(key),
+      toggleAttribute: (key, enabled) =>
+        enabled ? attributes.set(key, '') : attributes.delete(key),
+      style: {
+        setProperty: (key, value) => properties.set(key, value),
+        removeProperty: (key) => properties.delete(key),
+      },
+      depth: () => properties.get('--dialog-stack-depth'),
+      addEventListener(type, callback, options) {
+        const handlers = listeners.get(type) || [];
+        handlers.push({ callback, once: options?.once });
+        listeners.set(type, handlers);
+      },
+      removeEventListener(type, callback) {
+        listeners.set(
+          type,
+          (listeners.get(type) || []).filter((handler) => handler.callback !== callback),
+        );
+      },
+      fire(type, event = {}) {
+        const handlers = [...(listeners.get(type) || [])];
+        for (const handler of handlers) {
+          if (handler.once) this.removeEventListener(type, handler.callback);
+          handler.callback(event);
+        }
+      },
+      showModal() {
+        this.open = true;
+        opens += 1;
+      },
+      close(value) {
+        this.open = false;
+        closed.push(value);
+        this.fire('close');
+      },
+      animate(frames, options) {
+        let resolve, reject;
+        const run = {
+          dialog: this,
+          frames,
+          options,
+          cancelled: false,
+          finished: new Promise((done, fail) => {
+            resolve = done;
+            reject = fail;
+          }),
+          finish: () => resolve(),
+          cancel() {
+            this.cancelled = true;
+            reject();
+          },
+        };
+        animations.push(run);
+        return run;
+      },
+    };
+    dialogs.push(dialog);
+    return dialog;
+  }
+  const dialog = newDialog();
   const context = {
-    getComputedStyle: () => style,
+    getComputedStyle: (element) => ({
+      ...style,
+      transform:
+        element.getAttribute('data-dialog-covered') !== null
+          ? `translateY(${-40 * element.depth()}px)`
+          : style.transform,
+    }),
     matchMedia: () => ({ matches: reduced }),
     document: { hidden },
     requestAnimationFrame: (callback) => callback(),
@@ -74,6 +120,7 @@ function fixture({ reduced = false, hidden = false, drawer = false } = {}) {
   runInNewContext(source.replaceAll('export function', 'function'), context);
   return {
     dialog,
+    newDialog,
     style,
     animations,
     closed,
@@ -161,4 +208,61 @@ test('a frozen or cancelled exit cannot strand the native modal', async () => {
     assert.equal(ui.dialog.open, false);
     assert.equal(ui.closed.length, 1);
   }
+});
+
+test('arbitrary dialog depth suspends only parents and restores their original accessibility state', async () => {
+  const ui = fixture({ reduced: true });
+  const dialogs = [ui.dialog, ...Array.from({ length: 6 }, ui.newDialog)];
+  dialogs[0].setAttribute('aria-hidden', 'false');
+  const focus = { isConnected: true, closest: () => null, focus: () => focus.count++, count: 0 };
+  ui.context.document.activeElement = focus;
+  for (const dialog of dialogs) await ui.context.openDialog(dialog);
+  assert.equal(dialogs[0].depth(), 3, 'visual offset is bounded while logical depth is unlimited');
+  for (const parent of dialogs.slice(0, -1)) {
+    assert.equal(parent.inert, true);
+    assert.equal(parent.getAttribute('aria-hidden'), 'true');
+  }
+  assert.equal(dialogs.at(-1).inert, false);
+  for (let index = dialogs.length - 1; index >= 0; index--) {
+    await ui.context.closeDialog(dialogs[index]);
+    if (index) assert.equal(dialogs[index - 1].inert, false);
+  }
+  assert.equal(dialogs[0].getAttribute('aria-hidden'), 'false');
+  assert.equal(focus.count, dialogs.length);
+  assert.equal(ui.closed.length, dialogs.length);
+});
+
+test('closing a parent unwinds children before it and native close restores the stack too', async () => {
+  const ui = fixture({ reduced: true });
+  await ui.open();
+  const child = ui.newDialog();
+  await ui.context.openDialog(child);
+  child.close('native');
+  assert.equal(ui.dialog.inert, false);
+  await ui.context.openDialog(child);
+  await ui.close({ returnValue: 'parent' });
+  assert.deepEqual(ui.closed, ['native', '', 'parent']);
+  assert.equal(child.open, false);
+  assert.equal(ui.dialog.open, false);
+});
+
+test('a dynamically added dialog gets animated Escape and respects an existing cancel guard', async () => {
+  const ui = fixture({ reduced: true });
+  const child = ui.newDialog();
+  await ui.context.openDialog(child);
+  const cancel = {
+    defaultPrevented: false,
+    preventDefault() {
+      this.defaultPrevented = true;
+    },
+  };
+  child.fire('cancel', cancel);
+  assert.equal(child.open, false);
+  const guarded = ui.newDialog();
+  guarded.addEventListener('cancel', (event) => event.preventDefault());
+  await ui.context.openDialog(guarded);
+  cancel.defaultPrevented = false;
+  guarded.fire('cancel', cancel);
+  assert.equal(guarded.open, true);
+  await ui.context.closeDialog(guarded);
 });

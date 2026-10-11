@@ -7,6 +7,7 @@ namespace Naf\Board\Tests\Http;
 use Naf\Board\Mail\Design;
 use Naf\Board\Tests\Support\AcceptanceTestCase;
 use Naf\Board\Tests\Support\HttpClient;
+use Naf\Board\Tests\Support\Outbox;
 
 final class EmailDesignOverHttpTest extends AcceptanceTestCase
 {
@@ -36,6 +37,36 @@ final class EmailDesignOverHttpTest extends AcceptanceTestCase
         self::assertSame(403, $this->save(['design' => $design], $this->bob, '/settings/email-design/preview')['status']);
         self::assertSame(400, $this->alice->request('/settings/email-design/preview', ['design' => $design])['status']);
         self::assertSame(422, $this->save(['design' => $design, 'sample' => '../../login'], $this->alice, '/settings/email-design/preview')['status']);
+    }
+
+    public function testTestMailUsesUnsavedDraftAndOnlyTheAuthenticatedAddress(): void
+    {
+        $before                     = $this->alice->request('/api/settings/application')['body'];
+        $design                     = Design::DEFAULTS;
+        $design['colors']['accent'] = '#112233';
+        $design['css']              = '.email-title { color: var(--accent); }';
+        $payload                    = ['design' => $design, 'sample' => 'invitation', 'recipient' => 'other@example.test'];
+        $path                       = '/settings/email-design/test';
+        $outbox                     = glob(BASE_PATH . '/storage/mail/*.json') ?: [];
+        self::assertSame(403, $this->save($payload, $this->bob, $path)['status']);
+        self::assertSame(400, $this->alice->request($path, $payload)['status']);
+        self::assertSame(422, $this->save(['design' => $design, 'sample' => '../../login'], $this->alice, $path)['status']);
+        self::assertSame($outbox, glob(BASE_PATH . '/storage/mail/*.json') ?: []);
+        $preview = $this->save($payload, $this->alice, '/settings/email-design/preview');
+        $html    = json_decode($preview['body'], true)['html'];
+        for ($attempt = 0; $attempt < 3; ++$attempt) {
+            $sent = $this->save($payload, $this->alice, $path);
+            self::assertSame(200, $sent['status'], $sent['body']);
+            self::assertStringContainsString('alice@example.test', $sent['body']);
+        }
+        $messages = Outbox::messagesTo('alice@example.test');
+        $mail     = $messages[array_key_last($messages)];
+        self::assertSame(['alice@example.test'], $mail['to']);
+        self::assertSame($html, $mail['content']);
+        self::assertStringContainsString('Testmail', $mail['subject']);
+        self::assertStringContainsString('background: #112233', $mail['content']);
+        self::assertSame(429, $this->save($payload, $this->alice, $path)['status']);
+        self::assertSame($before, $this->alice->request('/api/settings/application')['body']);
     }
 
     public function testSaveResetStaleWritesAndGenericConfigurationApiShareValidation(): void

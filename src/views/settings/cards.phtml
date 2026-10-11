@@ -1,0 +1,30 @@
+<?php
+use Naf\Board\Support\Icon;
+
+use function Naf\I18n\t;
+use function Naf\View\s;
+
+?>
+<?php foreach ([false, true] as $advancedGroup): ?>
+    <?php $groupCards = array_filter($cards, fn($card) => $card[7] === $parent && $card[6] === $advancedGroup); ?>
+    <?php if ($groupCards === [] && (!$advancedGroup || !$hasApplication || $parent !== null)): ?>
+        <?php continue; ?>
+    <?php endif ?>
+    <section <?= $advancedGroup ? ($parent === null ? 'id="settings-advanced" ' : '') . 'data-settings-advanced-group hidden' : '' ?>>
+        <?php if ($advancedGroup): ?>
+            <h2 class="settings-advanced-heading"><?= s(t('Erweiterte Einstellungen')) ?></h2>
+        <?php endif ?>
+        <div class="settings-tiles">
+        <?php foreach ($groupCards as [$id, $label, $description, $icon]): ?>
+            <button type="button" class="settings-tile" data-settings-open="<?= s($id) ?>" aria-haspopup="dialog" aria-expanded="false">
+                <span class="settings-icon"><?= Icon::mark($icon, 'lg') ?></span>
+                <span class="settings-tile-text">
+                    <strong><?= s($label) ?></strong>
+                    <?php if ($description !== ''): ?><small data-settings-summary="<?= s($id) ?>"><?= s($description) ?></small><?php endif ?>
+                </span>
+                <span class="settings-arrow"><?= Icon::mark('open_in_new', 'sm') ?></span>
+            </button>
+        <?php endforeach ?>
+        </div>
+    </section>
+<?php endforeach ?>

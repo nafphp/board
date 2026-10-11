@@ -19,14 +19,14 @@ final class Messages
         return filter_var(config('mail:notifications_enabled', config('nafinity:mail_enabled', false)), FILTER_VALIDATE_BOOL);
     }
 
-    public static function create(Mailer $mailer, string $template, array $data = []): Mail
+    public static function create(Mailer $mailer, string $template, array $data = [], ?array $design = null): Mail
     {
         $mail = $mailer->createMail();
         if ($mail->getFrom() === '') {
             // Existing installations keep working until their configuration is consolidated.
             $mail->setFrom((string) config('nafinity:mail_from', ''));
         }
-        $html = self::html($template, $data);
+        $html = self::html($template, $data, $design);
 
         return $mail->setContent($html)->setTextContent(self::plainText($html));
     }
