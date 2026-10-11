@@ -56,6 +56,7 @@ test('mounting a draft leaves description and metadata collapsed and never eager
   const context = {
     document: { querySelectorAll: () => [form] },
     enhanceChoices() {},
+    inlineState() {},
     beginEdit: (field) => opened.push(field),
     resizeTitle() {},
     initializeEditor() {

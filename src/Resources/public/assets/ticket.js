@@ -15,7 +15,15 @@ const revisionFields = new Set(['_csrf', 'version', 'board_revision']);
 function values(form) {
   const editor = editors.get(form);
   if (editor) form.elements.description_html.value = editor.getSemanticHTML();
-  return JSON.stringify([...new FormData(form)].filter(([name]) => !revisionFields.has(name)));
+  return JSON.stringify(
+    [...new FormData(form)]
+      .filter(([name]) => !revisionFields.has(name))
+      .map(([name, value]) =>
+        form.hasAttribute('data-ticket-create') && name === 'description_html'
+          ? ['description', editor && !editor.getText().trim() ? '' : value]
+          : [name, value],
+      ),
+  );
 }
 function inlineState(form) {
   if (!inlineEdits.has(form))
@@ -323,6 +331,7 @@ function initializeCreation() {
   enhanceChoices();
   document.querySelectorAll('[data-ticket-create]').forEach((form) => {
     if (form.dataset.inlineReady) return;
+    inlineState(form);
     form.dataset.inlineReady = 'true';
     form.querySelectorAll('[data-inline-field]').forEach((field) => {
       const editor = field.querySelector('[data-field-editor]');
@@ -702,6 +711,7 @@ async function performSave(form, submitter) {
     if (form.hasAttribute('data-ticket-create')) {
       workspace.dataset.ticketUrl = result.url;
       delete form.dataset.dirty;
+      inlineState(form).baseline = values(form);
       history.replaceState(history.state, '', result.url);
       document.dispatchEvent(new CustomEvent('nafinity:ai-changed'));
       const response = await fetch(`${result.url}?fragment=1`, {
@@ -784,6 +794,8 @@ async function performSave(form, submitter) {
       control.disabled = false;
     });
     if (!automatic) editor?.enable(true);
+    if (accepted && form.hasAttribute('data-ticket-create'))
+      inlineState(form).baseline = values(form);
     if (
       automatic &&
       accepted &&
@@ -861,7 +873,11 @@ function mentionKeys(event) {
   }
 }
 function dirty(scope = document) {
-  return !!scope.querySelector('[data-ticket-form][data-dirty=true]');
+  return [...scope.querySelectorAll('[data-ticket-form]')].some((form) =>
+    form.hasAttribute('data-ticket-create')
+      ? values(form) !== inlineState(form).baseline
+      : form.dataset.dirty === 'true',
+  );
 }
 window.addEventListener('beforeunload', (event) => {
   if (dirty()) {

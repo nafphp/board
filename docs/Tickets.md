@@ -35,6 +35,14 @@ Escape restores that field to its value when opened, leaving the other draft fie
 Required fields are opened when native form validation needs them. Quill loads once, on the
 first description edit, through the one `core.extensions` browser entry point.
 
+Opening the creation drawer keeps the current board URL, including its filters. A same-URL
+history entry lets Back close it through the usual draft confirmation. Reloading returns to
+the board. The native browser warning protects changed drafts when reloading or leaving the
+page; it stays silent for an untouched draft or after every change was restored. Merely opening
+the description editor does not count as a change. Once creation succeeds, the saved ticket's
+URL replaces this entry. The direct creation address remains available for a new tab or native
+navigation without JavaScript.
+
 The inputs form one shared draft — the column choice, too, is only stored on **Create ticket**.
 The action stays reachable at the bottom edge of the modal. On success the modal shows the saved
 ticket with its own URL and inline editing, and comments, attachments and links become
