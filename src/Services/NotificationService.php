@@ -23,7 +23,7 @@ use function Naf\Queue\queue;
 /** @internal */
 final class NotificationService implements NotificationServiceInterface
 {
-    public function __construct(private PDO $pdo, private AccessInterface $access)
+    public function __construct(private PDO $pdo, private AccessInterface $access, private NotificationAudience $audience)
     {
     }
 
@@ -42,7 +42,8 @@ final class NotificationService implements NotificationServiceInterface
             <<<'SQL'
             SELECT m.user_id,
                    COALESCE(up.notify_in_app, 1) AS in_app,
-                   COALESCE(up.notify_mail, 0) AS mail
+                   COALESCE(up.notify_mail, 0) AS mail,
+                   COALESCE(up.notify_scope, 'all') AS notify_scope
             FROM project_members m
             JOIN users u ON u.id = m.user_id
             LEFT JOIN user_preferences up ON up.user_id = m.user_id
@@ -56,11 +57,16 @@ final class NotificationService implements NotificationServiceInterface
             SQL,
         );
         $statement->execute([$change->projectId, $change->actorId]);
+        $relevantUsers = $this->audience->users($change->projectId, $change->ticketId, $change->data);
         foreach ($statement->fetchAll() as $recipient) {
+            $relevant = in_array((int) $recipient['user_id'], $relevantUsers, true);
+            if ($recipient['notify_scope'] === 'relevant' && !$relevant) {
+                continue;
+            }
             if (!(int) $recipient['in_app'] && !(int) $recipient['mail']) {
                 continue;
             }
-            $sql    = 'INSERT INTO notifications(project_id,ticket_id,user_id,activity_id,title,created_at) VALUES(?,?,?,?,?,?)';
+            $sql    = 'INSERT INTO notifications(project_id,ticket_id,user_id,activity_id,title,created_at,relevant) VALUES(?,?,?,?,?,?,?)';
             $insert = $this->pdo->prepare($sql);
             $insert->execute([
                 $change->projectId,
@@ -69,6 +75,7 @@ final class NotificationService implements NotificationServiceInterface
                 $activity,
                 $change->type,
                 gmdate('Y-m-d H:i:s'),
+                (int) $relevant,
             ]);
             $id = (int) $this->pdo->lastInsertId();
             if ((int) $recipient['mail'] && Messages::enabled()) {
@@ -106,6 +113,7 @@ final class NotificationService implements NotificationServiceInterface
                 AND m.active = 1
                 AND COALESCE(up.notify_in_app, 1) = 1
                 AND COALESCE(pp.muted, 0) = 0
+                AND (COALESCE(up.notify_scope, 'all') = 'all' OR n.relevant = 1)
             ORDER BY n.id DESC
             LIMIT 100
             SQL,
@@ -149,9 +157,12 @@ final class NotificationService implements NotificationServiceInterface
                        u.active,
                        m.active AS member_active,
                        COALESCE(up.notify_mail, 0) AS notify_mail,
+                       COALESCE(up.notify_scope, 'all') AS notify_scope,
+                       a.payload,
                        COALESCE(pp.muted, 0) AS muted
                 FROM notifications n
                 JOIN users u ON u.id = n.user_id
+                JOIN activities a ON a.id = n.activity_id
                 JOIN project_members m ON m.project_id = n.project_id
                 AND m.user_id = n.user_id
                 LEFT JOIN user_preferences up ON up.user_id = n.user_id
@@ -168,6 +179,15 @@ final class NotificationService implements NotificationServiceInterface
                 || !(int) $notification['member_active']
                 || !(int) $notification['notify_mail']
                 || (int) $notification['muted']
+                || ($notification['notify_scope'] === 'relevant' && !in_array(
+                    (int) $notification['user_id'],
+                    $this->audience->users(
+                        (int) $notification['project_id'],
+                        $notification['ticket_id'] === null ? null : (int) $notification['ticket_id'],
+                        json_decode($notification['payload'], true) ?? [],
+                    ),
+                    true,
+                ))
             ) {
                 $this->pdo
                     ->prepare(

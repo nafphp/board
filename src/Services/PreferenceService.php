@@ -24,17 +24,19 @@ final class PreferenceService implements PreferenceServiceInterface
 
     public function save(array $data): void
     {
-        $user    = $this->access->actor();
-        $theme   = $data['theme'] ?? 'system';
-        $palette = $data['palette'] ?? 'inherit';
-        $locale  = $data['locale'] ?? 'de';
-        $zone    = $data['timezone'] ?? 'Europe/Berlin';
+        $user        = $this->access->actor();
+        $theme       = $data['theme'] ?? 'system';
+        $palette     = $data['palette'] ?? 'inherit';
+        $locale      = $data['locale'] ?? 'de';
+        $zone        = $data['timezone'] ?? 'Europe/Berlin';
+        $notifyScope = $data['notify_scope'] ?? 'all';
         if (
             !in_array($theme, ['light', 'dark', 'system'], true)
             || (!is_string($palette) || !isset(Themes::choices()[$palette]))
             || !Locales::supports($locale)
             || !is_string($zone)
             || !in_array($zone, DateTimeZone::listIdentifiers(), true)
+            || !in_array($notifyScope, ['all', 'relevant'], true)
         ) {
             throw new Failure(t('Ungültige Einstellungen.'));
         }
@@ -45,6 +47,7 @@ final class PreferenceService implements PreferenceServiceInterface
             'timezone'      => $zone,
             'notify_in_app' => isset($data['notify_in_app']) ? 1 : 0,
             'notify_mail'   => isset($data['notify_mail']) ? 1 : 0,
+            'notify_scope'  => $notifyScope,
             'live_updates'  => isset($data['live_updates']) ? 1 : 0,
             'presence'      => isset($data['presence']) ? 1 : 0,
             'new_tickets'   => Placement::person($data['new_tickets'] ?? null),

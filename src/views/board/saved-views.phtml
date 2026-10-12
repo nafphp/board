@@ -1,0 +1,44 @@
+<?php
+
+use Naf\Board\Services\SavedBoardViews;
+use Naf\Board\Support\BoardSlotContext;
+
+use function Naf\Board\partial;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+/** @var BoardSlotContext $slot */
+$projectId = $slot->projectId();
+$filters   = $slot->filters;
+$token     = $slot->token;
+$url       = SavedBoardViews::url($projectId, $filters);
+?>
+<details class="saved-views">
+    <summary><?= s(t('Gespeicherte Ansichten')) ?> <span class="muted">(<?= count($savedViews['views']) ?>)</span></summary>
+    <div class="saved-views-content">
+        <p class="muted small"><?= s(t('Ansichten sind persönlich. Teile den Link mit Personen, die dieses Projekt lesen dürfen.')) ?></p>
+        <?php foreach ($savedViews['views'] as $id => $saved): ?>
+            <div class="saved-view-row">
+                <a href="<?= s(SavedBoardViews::url($projectId, $saved['filters'])) ?>"><?= s($saved['name']) ?></a>
+                <form method="post" action="<?= s(route('board.views.save', ['project' => $projectId])) ?>" data-enhanced>
+                    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                    <input type="hidden" name="revision" value="<?= s($savedViews['revision']) ?>" />
+                    <button class="button subtle" name="remove" value="<?= s($id) ?>" aria-label="<?= s(t('Ansicht :name entfernen', ['name' => $saved['name']])) ?>"><?= s(t('Entfernen')) ?></button>
+                    <div class="form-errors" role="alert"></div>
+                </form>
+            </div>
+        <?php endforeach ?>
+        <form method="post" action="<?= s(route('board.views.save', ['project' => $projectId])) ?>" data-enhanced>
+            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+            <input type="hidden" name="revision" value="<?= s($savedViews['revision']) ?>" />
+            <?php foreach (SavedBoardViews::parameters($filters) as $key => $value): ?>
+                <?= partial('board/filter-value', ['name' => 'query[' . $key . ']', 'value' => $value]) ?>
+            <?php endforeach ?>
+            <label><?= s(t('Name der Ansicht')) ?><input name="name" required maxlength="80" autocomplete="off" /></label>
+            <button class="button primary"><?= s(t('Aktuelle Filter speichern')) ?></button>
+            <div class="form-errors" role="alert"></div>
+        </form>
+        <label><?= s(t('Link zu dieser Ansicht')) ?><input type="url" readonly value="<?= s(rtrim((string) \Naf\config('app:url'), '/') . $url) ?>" /></label>
+    </div>
+</details>

@@ -1141,6 +1141,52 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   color: var(--muted);
   margin: var(--space-21) var(--space-1) var(--space-22);
 }
+.saved-views {
+  margin-block: var(--space-12);
+}
+.saved-views > summary {
+  cursor: pointer;
+  padding-block: var(--space-8);
+}
+.saved-views-content {
+  max-width: 640px;
+  padding: var(--space-12);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-8);
+}
+.saved-view-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+.saved-view-row > a {
+  overflow-wrap: anywhere;
+}
+.my-ticket-list {
+  list-style: none;
+  padding: 0;
+}
+.my-ticket-list a {
+  display: grid;
+  gap: var(--space-6);
+  padding: var(--space-14);
+  margin-block: var(--space-8);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-8);
+  overflow-wrap: anywhere;
+}
+.my-ticket-reference,
+.my-ticket-meta {
+  color: var(--muted);
+  font-size: var(--font-12);
+}
+.ticket-list-pages {
+  display: flex;
+  gap: var(--space-12);
+}
 .board-meta strong {
   color: var(--text);
   font-weight: 600;

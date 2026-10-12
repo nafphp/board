@@ -1,0 +1,28 @@
+{
+  "name": "example/nafinity-wip-policy",
+  "description": "Optional transactional WIP limits for Nafinity boards.",
+  "type": "naf-plugin",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.3",
+    "ext-pdo": "*",
+    "naf/board": "^0.1.6",
+    "naf/framework": "^0.2.10",
+    "naf/i18n": "^0.2.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Example\\WipPolicy\\": "src/"
+    }
+  },
+  "config": {
+    "allow-plugins": false
+  },
+  "extra": {
+    "naf": {
+      "boot": {
+        "before": ["naf/board"]
+      }
+    }
+  }
+}

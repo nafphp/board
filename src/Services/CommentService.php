@@ -11,6 +11,7 @@ use Naf\Board\Domain\Change;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Domain\ProjectScope;
 use Naf\Board\Support\Input;
+use Naf\Board\Support\Mentions;
 use PDO;
 
 use function Naf\event;
@@ -47,6 +48,7 @@ final class CommentService implements CommentServiceInterface
             $this->tickets->ticket($project, $ticket);
             $actor = $this->access->actor();
             $now   = gmdate('Y-m-d H:i:s');
+            $old   = null;
             if ($id) {
                 $statement = $this->pdo->prepare(
                     'SELECT * FROM comments WHERE project_id=? AND ticket_id=? AND id=? AND deleted_at IS NULL',
@@ -97,12 +99,20 @@ final class CommentService implements CommentServiceInterface
             $this->pdo
                 ->prepare('UPDATE boards SET revision=revision+1 WHERE project_id=?')
                 ->execute([$project]);
+            $people = $this->pdo->prepare('SELECT u.id,u.name FROM project_members m JOIN users u ON u.id=m.user_id WHERE m.project_id=? AND m.active=1 AND u.active=1 ORDER BY u.name');
+            $people->execute([$project]);
+            $members  = Mentions::members($people->fetchAll());
+            $mentions = $remove ? [] : array_values(array_diff(
+                Mentions::ids($body, $members),
+                Mentions::ids($old['body'] ?? '', $members),
+            ));
             event()->dispatch(
                 new Change(
                     $project,
                     $ticket,
                     $actor,
                     $remove ? 'comment.deleted' : ($id ? 'comment.updated' : 'comment.created'),
+                    $mentions === [] ? [] : ['mentioned_user_ids' => $mentions],
                 ),
             );
         });

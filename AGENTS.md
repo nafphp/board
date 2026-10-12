@@ -25,7 +25,7 @@ into its vendor.
   is not. `src/Resources/public/` holds the assets a host publishes into its document root.
 - `tests/` — the suite. `tests/Fixtures` is the host it boots; `tests/compose.yaml` is its
   database.
-- `examples/` — two extension packages, written as documentation of the extension API.
+- `examples/` — extension packages, including an optional transactional WIP policy.
 - `docs/` — how the pieces fit together, for people working on them.
 
 Generic defects belong in the owning NAF repository, following its own `AGENTS.md`, not in
@@ -214,6 +214,7 @@ releasing is the maintainer's decision, not the agent's.
 | [Build with NafPHP](https://nafphp.github.io/docs/built-with/nafinity/) | The skeleton, running it, the commands, how a plugin extends it |
 | `docs/Extensibility.md` | The extension API in full, with examples |
 | `docs/Tickets.md` | Ticket behaviour, data model, limits |
+| `docs/Workflow-Policies.md` | Optional transactional WIP rules and their Composer package |
 | `docs/Settings-And-AI.md` | Settings cards, custom roles, local Ollama |
 | `docs/Profile.md` | Account changes, verification codes, security boundaries |
 | `docs/Implementation.md` | What is delivered, what the last full run proved, what is missing |

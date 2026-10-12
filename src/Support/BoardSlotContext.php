@@ -24,6 +24,7 @@ final readonly class BoardSlotContext implements SlotContextInterface
      * @param string       $token    The CSRF token of this page
      * @param array|null   $card     The card being rendered, in a card slot
      * @param array|null   $column   The column being rendered, in a column slot
+     * @param array        $filters  Normalized filters of the current board
      */
     public function __construct(
         private UiContext $ui,
@@ -35,6 +36,7 @@ final readonly class BoardSlotContext implements SlotContextInterface
         public string $token,
         public ?array $card = null,
         public ?array $column = null,
+        public array $filters = [],
     ) {
     }
 
@@ -76,6 +78,7 @@ final readonly class BoardSlotContext implements SlotContextInterface
             $this->token,
             $card,
             $this->column,
+            $this->filters,
         );
     }
 
@@ -94,6 +97,7 @@ final readonly class BoardSlotContext implements SlotContextInterface
             $this->token,
             $this->card,
             $column,
+            $this->filters,
         );
     }
 }

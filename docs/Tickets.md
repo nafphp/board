@@ -24,6 +24,21 @@ darker secondary text color. Custom theme colors and CSS still need their own co
 review. Regression checks cover the built-in palettes, supported control densities and the
 same accessible card markup on the board and live-update endpoint, in German and English.
 
+The board's **Saved views** disclosure keeps up to 20 named filter bookmarks per person
+and project, using the native settings store. Saving validates the filters through the
+same authorized board query; stale bookmark writes return 409. Names are escaped. A view
+link contains the normalized core and extension filters, so it can be shared without
+exposing a private bookmark id. Opening it always checks the recipient's current project
+access. Removing an extension leaves its saved filter intact; opening that view reports
+the unknown filter instead of silently widening the result.
+
+**My tickets** lists the current person's assignments across readable, active projects.
+It excludes archived tickets and projects, starts with open tickets, and offers closed or
+all non-archived tickets, due-date or last-change ordering, and pages of 50. Every project
+is authorized before querying; an old assignment never grants access after membership is
+revoked. It is a separate list, so later pages remain reachable independently of the
+board's 300-card limit.
+
 When dragging a ticket, a muted placeholder reserves its original position until the card
 lands. The active drop preview uses the accent colour; closing columns retain their completion
 highlight. Both placeholders match the carried card's height. Returning to the original

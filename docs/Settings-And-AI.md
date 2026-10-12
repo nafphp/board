@@ -10,6 +10,23 @@ switch state and displays the error. Without JavaScript, each form has a Save bu
 Notifications page also retains its mute and enable controls. Extensions can still contribute
 `project_user` cards.
 
+The personal **Notify me about** choice defaults to all project changes, preserving existing
+behavior. **My tickets, mentions and followed tickets** restricts new notifications to tickets
+the person created, is assigned to, explicitly follows, or is newly mentioned in. Comment
+mentions use the same handles and token boundaries as their rendered highlights; email
+addresses do not ping, and editing an existing mention does not ping it again. Self changes,
+inactive accounts/members, disabled channels and muted projects remain excluded.
+
+Active project members, including readers, can follow or unfollow a ticket from its detail
+page. This is personal state and does not change the ticket version. Followers remain subject
+to current access and project muting. Transferring a ticket clears its old subscriptions;
+ticket/project deletion cleans them up. The mail worker rechecks the current notification
+scope and involvement before delivery, so opting out while a message is queued takes effect.
+Relevant-only mode hides in-app notifications classified as unrelated when recorded.
+Notifications from before this feature have no classification and remain available in
+all-changes mode. Already delivered messages cannot be recalled. Notification digests are
+a separate capability.
+
 A project settings card opens as a large dialog and slides back on the X or Escape. Input is
 preserved on close, and after a successful save the same card is reopened. The animation honours
 the operating system's reduced-motion option. On small screens the dialog takes up nearly the

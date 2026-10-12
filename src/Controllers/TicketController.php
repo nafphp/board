@@ -11,6 +11,7 @@ use Naf\Board\Contracts\PageRendererInterface;
 use Naf\Board\Contracts\TicketServiceInterface;
 use Naf\Board\Contracts\TimerServiceInterface;
 use Naf\Board\Services\TicketLinkSearch;
+use Naf\Board\Services\TicketSubscriptions;
 use Naf\Board\Support\Input;
 use Psr\Http\Message\ResponseInterface;
 
@@ -38,6 +39,7 @@ final class TicketController
         private AccessInterface $access,
         private PageRendererInterface $pages,
         private TicketLinkSearch $linkSearch,
+        private TicketSubscriptions $subscriptions,
     ) {
     }
 
@@ -57,6 +59,7 @@ final class TicketController
                 'timer'           => $this->timers->state($projectId, $details['ticket']['id']),
                 'targets'         => $this->query->transferTargets($projectId),
                 'fieldVisibility' => settings()->forProjectUser($projectId)->get('ticket_fields', []),
+                'subscription'    => $this->subscriptions->state($projectId, (int) $details['ticket']['id']),
             ]);
         });
     }
@@ -96,6 +99,16 @@ final class TicketController
                 'url' => '/projects/' . $project . '/tickets/' . $reference,
                 'id'  => $reference,
             ];
+        });
+    }
+
+    public function subscribe(string $project, string $ticket): ResponseInterface
+    {
+        return Respond::mutation($this->access, function (array $data) use ($project, $ticket): array {
+            $projectId = Input::id($project);
+            $this->subscriptions->save($projectId, $this->tickets->resolve($projectId, $ticket), $data['subscribed'] ?? null);
+
+            return ['url' => route('ticket', ['project' => $projectId, 'ticket' => $ticket])];
         });
     }
 

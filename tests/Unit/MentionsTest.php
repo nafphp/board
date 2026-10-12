@@ -60,4 +60,12 @@ final class MentionsTest extends TestCase
 
         $this->assertStringNotContainsString('class="mention"', $html);
     }
+
+    public function testRecipientsMatchRenderedHandlesWithoutDuplicateOrEmailPings(): void
+    {
+        $this->assertSame([2, 3], Mentions::ids(
+            '@anna.schmid @anna.schmid.2 @florian.knapp @florian.knapp person@anna.schmid.1 @@anna.schmid.1',
+            $this->members(),
+        ));
+    }
 }

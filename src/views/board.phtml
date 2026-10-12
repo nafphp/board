@@ -110,6 +110,7 @@ $emptyCellHint = $filters
         <a class="clear-filter" href="<?= s(route('board', ['project' => $projectId])) ?>"><?= s(t('Zurücksetzen')) ?></a>
     <?php endif ?>
 </form>
+<?= slot('board.filters.after', $boardSlot) ?>
 <div class="board-meta">
     <span>
         <strong><?= $total ?></strong>

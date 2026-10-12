@@ -1,0 +1,5 @@
+{
+  "WIP-Regeln": "WIP rules",
+  "WIP-Grenzen verbindlich einhalten": "Enforce WIP limits",
+  "Die WIP-Grenze von :limit in „:column“ ist erreicht. Schließe oder verschiebe zuerst ein anderes Ticket.": "The WIP limit of :limit in “:column” has been reached. Close or move another ticket first."
+}

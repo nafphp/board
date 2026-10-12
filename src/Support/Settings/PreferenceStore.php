@@ -25,6 +25,7 @@ final class PreferenceStore
         'timezone'      => 'Europe/Berlin',
         'notify_in_app' => 1,
         'notify_mail'   => 0,
+        'notify_scope'  => 'all',
         'live_updates'  => 1,
         'presence'      => 1,
         'new_tickets'   => 'inherit',
