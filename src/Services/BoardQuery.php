@@ -118,15 +118,22 @@ final class BoardQuery implements BoardQueryInterface
         $scope = $this->access->project($project);
         $board = $this->tickets->board($project);
 
+        $expression = BoardDql::parse($query['dql'] ?? '');
+        $dql        = BoardDql::condition($expression, new BoardFilterContext($project, $scope));
+
         // The archive rule decides which tickets exist at all, so it stays out of
         // the filter registry and is applied before any fragment.
         $archived = ($query['status'] ?? '') === 'archived';
         $where    = [
             't.project_id=?',
-            $archived ? 't.archived_at IS NOT NULL' : 't.archived_at IS NULL',
+            $archived ? 't.archived_at IS NOT NULL' : (BoardDql::includesArchive($expression) ? '1=1' : 't.archived_at IS NULL'),
+            '(' . $dql->sql . ')',
         ];
-        $params  = [$project];
+        $params  = [$project, ...$dql->parameters];
         $filters = [];
+        if ($expression !== null) {
+            $filters['dql'] = trim($query['dql']);
+        }
 
         if ($archived) {
             $filters['status'] = 'archived';

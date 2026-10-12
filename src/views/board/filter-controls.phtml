@@ -1,0 +1,17 @@
+<?php
+
+use function Naf\Board\extensions;
+use function Naf\Board\partial;
+use function Naf\Board\settings;
+
+$visibleFilters = settings()->get('board_filters', []);
+?>
+<?php foreach (extensions()->boardFilters()->controls() as $id => $filter): ?>
+    <?php if (($visibleFilters[$id] ?? true) || array_key_exists($id, $filters)): ?>
+        <?= partial($filter->view, [
+            'filter'    => $filter, 'name' => 'filters[' . $id . ']', 'value' => $filters[$id] ?? '',
+            'project'   => $project, 'scope' => $scope, 'columns' => $columns,
+            'swimlanes' => $swimlanes, 'members' => $members, 'labels' => $labels,
+        ]) ?>
+    <?php endif ?>
+<?php endforeach ?>

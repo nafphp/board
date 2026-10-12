@@ -11,6 +11,9 @@ final class BrowserWords
 {
     private const array KEYS = [
         'Dialog',
+        'Bitte prüfe deine Filter.',
+        'Die Filter wurden inzwischen geändert. Bitte versuche es erneut.',
+        'Die Filter konnten nicht geladen werden.',
         ':name und darüberliegende Dialoge schließen',
         'Zurück zu :name',
         'Testmail wird versendet …',

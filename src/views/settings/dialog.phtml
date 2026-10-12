@@ -23,7 +23,7 @@ $title ??= '';
             type="button"
             class="icon-button"
             <?= $editor ? 'data-close-dialog' : 'data-settings-close' ?>
-            aria-label="<?= s(t('Einstellungen schließen')) ?>"
+            aria-label="<?= s(t($closeLabel ?? 'Einstellungen schließen')) ?>"
         ><?= Icon::mark('close') ?></button>
     </header>
     <div class="settings-detail-body" <?= $editor ? 'data-dialog-body' : '' ?>><?= $content ?? '' ?></div>

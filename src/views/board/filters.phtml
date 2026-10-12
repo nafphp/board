@@ -1,0 +1,98 @@
+<?php
+
+use Naf\Board\Domain\Failure;
+use Naf\Board\Services\BoardDql;
+use Naf\Board\Services\SavedBoardViews;
+use Naf\Board\Support\Icon;
+
+use function Naf\Board\extensions;
+use function Naf\Board\partial;
+use function Naf\Board\slot;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$url      = route('board', ['project' => $projectId]);
+$advanced = BoardDql::advanced($filters);
+$simple   = ['filters' => array_diff_key($filters, ['dql' => true]), 'residual' => $filters['dql'] ?? ''];
+if ($filterError === null) {
+    try {
+        $simple = BoardDql::dropdown(BoardDql::parse($advanced['expression']), compact('scope', 'columns', 'swimlanes', 'members', 'labels'));
+        $simple['filters'] += $advanced['retained'];
+    } catch (Failure) {
+        // The conversion endpoint reports drafts that exceed DQL's limits.
+    }
+}
+$isAdvanced = $filterError !== null || ((isset($filters['dql']) || $filterMode === 'advanced') && $filterMode !== 'simple');
+$active     = count($filters);
+$summary    = [];
+foreach ($filters as $id => $value) {
+    $summary[] = $id === 'dql' ? 'DQL' : t(extensions()->boardFilters()->get($id)?->label ?? $id);
+}
+?>
+<div class="board-tools" data-board-filters data-endpoint="<?= s(route('board.filters', ['project' => $projectId])) ?>" data-mode="<?= $isAdvanced ? 'advanced' : 'simple' ?>">
+    <details class="board-filter-disclosure" <?= $filters || $isAdvanced ? 'open' : '' ?>>
+        <summary>
+            <?= Icon::mark('filter_alt', 'sm') ?><span><?= s(t('Filter')) ?></span>
+            <?php if ($active): ?><span class="filter-count"><?= $active ?></span><?php endif ?>
+            <span class="filter-summary-description"><?= s($active ? implode(' · ', $summary) : t('Alle Tickets')) ?></span>
+            <?= Icon::mark('expand_more', 'sm', 'filter-chevron') ?>
+        </summary>
+        <div class="board-filter-body">
+            <form method="get" class="filterbar" action="<?= s($url) ?>" data-simple-filters <?= $isAdvanced ? 'hidden' : '' ?>>
+                <input type="hidden" name="mode" value="simple" />
+                <div data-retained-filters>
+                    <?php foreach ($simple['filters'] as $id => $value): ?>
+                        <?php if (extensions()->boardFilters()->get($id)?->view === null): ?>
+                            <?php foreach (SavedBoardViews::parameters([$id => $value]) as $name => $entry): ?>
+                                <?= partial('board/filter-value', ['name' => $name, 'value' => $entry]) ?>
+                            <?php endforeach ?>
+                        <?php endif ?>
+                    <?php endforeach ?>
+                </div>
+                <div class="simple-filter-controls" data-simple-controls>
+                    <?= partial('board/filter-controls', compact('project', 'scope', 'columns', 'swimlanes', 'members', 'labels') + ['filters' => $simple['filters']]) ?>
+                </div>
+                <input type="hidden" name="dql" value="<?= s($simple['residual']) ?>" data-residual-query />
+                <button class="button subtle" data-apply><?= s(t('Filtern')) ?></button>
+                <button class="filter-mode-link" name="mode" value="advanced" data-filter-mode="advanced"><?= s(t('Advanced')) ?><?= Icon::mark('arrow_forward', 'sm') ?></button>
+                <button type="button" class="icon-button filter-settings" data-profile-open data-profile-section="board_filters" aria-haspopup="dialog" aria-controls="profile-dialog" aria-expanded="false" aria-label="<?= s(t('Boardfilter anpassen')) ?>" title="<?= s(t('Boardfilter anpassen')) ?>"><?= Icon::mark('tune', 'sm') ?></button>
+                <p class="filter-residual" data-residual-summary <?= $simple['residual'] === '' ? 'hidden' : '' ?>>
+                    <span><?= s(t('Zusätzliche DQL-Bedingungen bleiben aktiv.')) ?></span>
+                    <code data-residual-text><?= s($simple['residual']) ?></code>
+                </p>
+            </form>
+            <form method="get" action="<?= s($url) ?>" class="board-dql-form" data-advanced-filters <?= $isAdvanced ? '' : 'hidden' ?>>
+                <input type="hidden" name="mode" value="advanced" />
+                <div data-retained-filters>
+                    <?php foreach (SavedBoardViews::parameters($advanced['retained']) as $name => $value): ?>
+                        <?= partial('board/filter-value', ['name' => $name, 'value' => $value]) ?>
+                    <?php endforeach ?>
+                </div>
+                <label class="dql-field" for="board-dql"><span class="dql-tag" aria-hidden="true">DQL</span><span class="sr-only"><?= s(t('Erweiterte Ticketabfrage')) ?></span>
+                    <input id="board-dql" name="dql" value="<?= s($advanced['expression']) ?>" maxlength="2000" autocomplete="off" spellcheck="false" placeholder="status = open AND assignee = me" aria-describedby="board-dql-help board-filter-error" <?= $filterError === null ? '' : 'aria-invalid="true"' ?> />
+                </label>
+                <button class="button subtle" data-dql-apply><?= Icon::mark('check', 'sm') ?><?= s(t('Anwenden')) ?></button>
+                <button class="filter-mode-link" name="mode" value="simple" data-filter-mode="simple"><?= s(t('Einfache Filter')) ?></button>
+                <details class="dql-help">
+                    <summary><?= Icon::mark('info', 'sm') ?><span><?= s(t('DQL-Hilfe')) ?></span></summary>
+                    <div>
+                        <p><?= s(t('Verbinde Bedingungen mit AND, OR und NOT. Klammern bestimmen die Reihenfolge. Namen mit Leerzeichen stehen in Anführungszeichen.')) ?></p>
+                        <p><code>status = open AND assignee = me</code><br /><code>priority IN (high, urgent) AND due &lt; 2026-12-31</code><br /><code>board = <?= s(BoardDql::quote($project['ticket_key'])) ?> AND column = "In Arbeit"</code></p>
+                        <p class="muted small"><?= s(t('assignee = me meint dich. none ist für assignee, label und due erlaubt. Archivierte Tickets erscheinen nur bei ausdrücklicher Abfrage des Status archived.')) ?></p>
+                        <dl class="dql-properties">
+                            <?php foreach (extensions()->boardFilters()->all() as $id => $definition): ?>
+                                <div><dt><code><?= s($id === 'q' ? 'text' : $id) ?></code></dt><dd><?= s(t($definition->label)) ?></dd></div>
+                            <?php endforeach ?>
+                        </dl>
+                    </div>
+                </details>
+                <p class="filter-retained" data-advanced-retained-summary <?= $advanced['retained'] ? '' : 'hidden' ?>><?= s(BoardDql::retainedSummary($advanced['retained'])) ?></p>
+                <p class="sr-only" id="board-dql-help"><?= s(t('Mit Enter oder Anwenden filtern. Die DQL-Hilfe erklärt Eigenschaften und Operatoren.')) ?></p>
+            </form>
+            <p class="filter-error" id="board-filter-error" role="alert" data-filter-error <?= $filterError === null ? 'hidden' : '' ?>><?= s($filterError ?? '') ?></p>
+            <?php if ($filters): ?><div class="filter-footer"><a class="clear-filter" href="<?= s($url) ?>"><?= s(t('Alle Filter zurücksetzen')) ?></a></div><?php endif ?>
+        </div>
+    </details>
+    <div class="board-view-tool"><?= slot('board.filters.actions', $boardSlot) ?></div>
+</div>

@@ -95,8 +95,8 @@ final class AutoSaveAndPickerTest extends AcceptanceTestCase
      *
      * "Was liegt bei mir?" is what this filter is asked most often, and finding
      * your own name in an alphabetical list of colleagues is a poor way to answer
-     * it. Only the label and the order change: the option's value stays the plain
-     * user id, so a shared link still means the same thing to whoever opens it.
+     * it. The personal option stays symbolic across DQL and shared links;
+     * named people retain their fixed ids, including the current person.
      */
     public function testThePersonFilterPutsYouFirstAndSaysSo(): void
     {
@@ -110,7 +110,8 @@ final class AutoSaveAndPickerTest extends AcceptanceTestCase
 
         $this->assertSame('Alle Verantwortlichen', $labels[0]);
         $this->assertStringStartsWith('Ich (', $labels[1], 'your own entry is not the first person offered');
-        $this->assertSame('1', $options[1][1], 'the option carries something other than the plain user id');
+        $this->assertSame('me', $options[1][1], 'the personal option lost its current-user meaning');
+        $this->assertContains('1', array_column($options, 1), 'fixed links to Alice must remain supported');
         $this->assertSame(
             1,
             count(array_filter($labels, static fn(string $l) => str_starts_with($l, 'Ich ('))),

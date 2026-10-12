@@ -118,6 +118,11 @@ overrides belong in providers, not in an extension's early bootstrap or route fi
   query hours, finalize invoices or retry an ambiguous external write.
 - A slot hands its contributions a typed context, not a loose array. Use that context and its
   `value()` and `field` instead of reaching for an own query or form.
+- DQL uses the existing `BoardFilterDefinition` registry. Its optional `dql` closure adds
+  operators to a property; return a bound `SqlCondition` using the supplied authorized
+  `BoardFilterContext`. Keep conversion lossless: conditions a dropdown cannot represent
+  stay visible as residual DQL. `board.filters.actions` holds compact toolbar actions;
+  `board.filters.after` remains available below the complete filter tool.
 - Uninstalling a package takes its contributions away and leaves the stored data alone.
 
 ### Events are the other half

@@ -461,6 +461,7 @@ if (board) import('./board.js?v=10');
 
 // Only where there is a filter row to watch.
 if (document.querySelector('.filterbar')) import('./filters.js?v=1');
+if (document.querySelector('[data-board-filters]')) import('./board-filters.js?v=1');
 
 // Only on the page that shows the history.
 if (document.querySelector('[data-activity]')) import('./activity.js?v=1');
