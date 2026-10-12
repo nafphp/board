@@ -80,6 +80,7 @@ final class BrowserWords
         'Die Verbindung ist unterbrochen. Deine Eingaben bleiben erhalten.',
         'Die Verbindung wurde unterbrochen. Bitte versuche es erneut.',
         'Die Zeiterfassung ließ sich nicht ändern.',
+        'Deine Zeiterfassung läuft',
         'Die maximale Anzahl an Werkzeugschritten ist erreicht. Stelle eine gezieltere Frage.',
         'Die vorgeschlagene Änderung wurde nicht ausgeführt.',
         'Die Änderung konnte nicht gespeichert werden.',

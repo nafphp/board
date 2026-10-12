@@ -132,10 +132,17 @@ final class TicketService implements TicketServiceInterface
             ]);
             $this->entityManager->save($ticket);
             $this->metadata->write($project, $id, $metadata);
+            $newAssignees = [];
+            if (array_key_exists('assignee_ids', $data)) {
+                $assigned = $this->pdo->prepare('SELECT user_id FROM ticket_assignees WHERE project_id=? AND ticket_id=?');
+                $assigned->execute([$project, $id]);
+                $newAssignees = array_values(array_diff(Input::ids($data['assignee_ids'], 'assignee_ids'), array_map('intval', $assigned->fetchAll(PDO::FETCH_COLUMN))));
+            }
             $this->pivots($project, $id, $data);
             $this->changed($project, $id, 'ticket.updated', [
                 'fields'   => $changed,
                 'metadata' => [...array_keys($metadata['values']), ...$metadata['resetKeys']],
+                ...($newAssignees === [] ? [] : ['assigned_user_ids' => $newAssignees]),
             ]);
         });
     }
@@ -217,7 +224,8 @@ final class TicketService implements TicketServiceInterface
             ]);
             $this->entityManager->save($ticket);
             $this->changed($project, $id, 'ticket.moved', [
-                'from' => $row['column_id'],
+                'from'        => $row['column_id'],
+                'from_status' => $row['status'],
                 // The column's name and not only its id: a log entry has to be
                 // readable years later, when that column may have been renamed
                 // or removed, and an id would then name nothing at all.
@@ -397,6 +405,7 @@ final class TicketService implements TicketServiceInterface
                     'comments',
                     'attachments',
                     'ticket_assignees',
+                    'ticket_subscriptions',
                     'ticket_labels',
                     'ticket_metadata',
                     'ticket_timers',
@@ -655,6 +664,7 @@ final class TicketService implements TicketServiceInterface
      */
     private function detach(int $project, int $id, int $target): void
     {
+        $this->pdo->prepare('DELETE FROM ticket_subscriptions WHERE project_id=? AND ticket_id=?')->execute([$project, $id]);
         $this->pdo
             ->prepare('DELETE FROM ticket_labels WHERE project_id=? AND ticket_id=?')
             ->execute([$project, $id]);

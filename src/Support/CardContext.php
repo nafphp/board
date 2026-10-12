@@ -49,6 +49,7 @@ final class CardContext
                 static fn($priority) => Icon::mark($priority->icon, 'sm'),
                 extensions()->priorities()->all(),
             ),
+            'priorityLabels' => extensions()->priorities()->options(),
             /*
              * Drawing a priority nobody declared as one of the known symbols
              * would be a guess, and failing over a single card would be worse
@@ -66,6 +67,7 @@ final class CardContext
                 array_column($view['members'] ?? [], null, 'id'),
                 $view['card_metadata'] ?? [],
                 $view['token'],
+                filters: $filters,
             ),
             'tags'         => $view['tags'] ?? [],
             'labelMap'     => array_column($view['labels'] ?? [], null, 'id'),

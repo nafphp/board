@@ -182,6 +182,15 @@ $panelData = [
                 <div class="ticket-kicker"><span class="ticket-key"><?= s(Format::ticket($key, $ticket['number'])) ?></span><span class="ticket-status" data-ticket-readonly="status"><?= s($ticket['archived_at'] ? t('Archiviert') : ($ticket['status'] === 'closed' ? t('Geschlossen') : t('Offen'))) ?></span></div><?php endif ?>
                 <?= $field('title', 'Titel', 'text', $ticket['title'], '<h1' . ($isNew ? ' class="muted"' : '') . '>' . s($isNew ? t('Was soll erledigt werden?') : $ticket['title']) . '</h1>', [], ['class' => 'ticket-title']) ?>
             </header>
+            <?php if (!$isNew && ($subscription['available'] ?? false)): ?>
+                <form method="post" action="<?= s(route('ticket.subscription', $params)) ?>" data-enhanced class="ticket-subscription">
+                    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                    <input type="hidden" name="subscribed" value="<?= $subscription['subscribed'] ? '0' : '1' ?>" />
+                    <button class="button subtle" aria-pressed="<?= $subscription['subscribed'] ? 'true' : 'false' ?>"><?= s(t($subscription['subscribed'] ? 'Ticket nicht mehr folgen' : 'Ticket folgen')) ?></button>
+                    <span class="muted small"><?= s(t('Für den Modus „Meine Tickets, Erwähnungen und gefolgte Tickets“.')) ?></span>
+                    <div class="form-errors" role="alert"></div>
+                </form>
+            <?php endif ?>
             <section class="ticket-description detail-section">
                 <h2><?= s(t('Beschreibung')) ?></h2>
                 <?= $field('description', 'Beschreibung', 'rich', RichText::description($ticket), $ticket['description'] === '' ? '<p class="muted">' . s(t($isNew ? 'Beschreibung einfügen' : 'Noch keine Beschreibung.')) . '</p>' : RichText::description($ticket)) ?>

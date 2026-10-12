@@ -6,12 +6,15 @@ namespace Naf\Board\Modules;
 
 use Naf\Board\Contracts\ExtensionProviderInterface;
 use Naf\Board\Definition\BoardFilterDefinition;
+use Naf\Board\Definition\UiContribution;
 use Naf\Board\Domain\Failure;
 use Naf\Board\Domain\Status;
 use Naf\Board\ExtensionContext;
+use Naf\Board\Modules\Providers\SavedBoardViewsProvider;
 use Naf\Board\Support\BoardFilterContext;
 use Naf\Board\Support\Input;
 use Naf\Board\Support\SqlCondition;
+use Naf\Board\Support\UiContext;
 
 use function Naf\Board\extensions;
 use function Naf\I18n\t;
@@ -38,6 +41,14 @@ final class CoreBoard implements ExtensionProviderInterface
 
     public function register(ExtensionContext $context): void
     {
+        $context->ui()->add(new UiContribution(
+            'core.board.saved_views',
+            'board.filters.after',
+            'board/saved-views',
+            provider: SavedBoardViewsProvider::class,
+            modes: [UiContext::MODE_PAGE],
+        ));
+
         $filters = $context->boardFilters();
         $index   = 100;
 

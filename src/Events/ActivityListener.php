@@ -69,7 +69,7 @@ final class ActivityListener
      */
     private function fold(Change $change): bool
     {
-        if (!in_array($change->type, self::FOLDABLE, true) || $change->ticketId === null) {
+        if (!in_array($change->type, self::FOLDABLE, true) || $change->ticketId === null || !empty($change->data['assigned_user_ids'])) {
             return false;
         }
 

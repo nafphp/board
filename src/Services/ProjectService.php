@@ -198,7 +198,7 @@ final class ProjectService implements ProjectServiceInterface
             // removes them after commit, just as it does for deleted tickets.
             foreach ([
                 'notifications', 'comments', 'attachments', 'ticket_links',
-                'ticket_assignees', 'ticket_labels', 'ticket_metadata', 'ticket_timers', 'ticket_time_entries',
+                'ticket_assignees', 'ticket_subscriptions', 'ticket_labels', 'ticket_metadata', 'ticket_timers', 'ticket_time_entries',
                 'tickets', 'labels', 'board_columns', 'swimlanes', 'boards',
                 'project_preferences', 'project_user_settings', 'project_settings', 'project_invitations',
                 'project_members', 'project_role_permissions', 'project_roles',

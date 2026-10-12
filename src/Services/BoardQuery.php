@@ -432,6 +432,7 @@ final class BoardQuery implements BoardQueryInterface
             'timezone'      => 'Europe/Berlin',
             'notify_in_app' => 1,
             'notify_mail'   => 0,
+            'notify_scope'  => 'all',
         ];
     }
 

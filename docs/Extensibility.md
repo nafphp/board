@@ -4,10 +4,14 @@ Nafinity can be extended by installed Composer packages. A package brings its ow
 routes, services, menu entries, settings, ticket fields, widgets, filters, translations, AI
 tools, commands, migrations and jobs, and can explicitly replace existing definitions.
 
-Two complete examples live in the repository:
+Two general examples live in the repository:
 [`examples/nafinity-extension-a`](../examples/nafinity-extension-a) and
 [`examples/nafinity-extension-b`](../examples/nafinity-extension-b). They are documentation --
 install one into a host through a path repository, as below, to watch it work.
+
+The focused [`examples/nafinity-wip-policy`](../examples/nafinity-wip-policy) package adds
+an optional transactional workflow rule. [Workflow policies](Workflow-Policies.md) explains
+its setting, admission rules and installation.
 
 ## Contents
 
@@ -345,7 +349,7 @@ The fixed slots:
 | `topbar.tools` | Workspace search, before the account actions |
 | `topbar.actions` | Actions in the top bar |
 | `projects.actions`, `projects.card.badges` | Project overview |
-| `board.actions`, `board.card.badges`, `board.card.details`, `board.card.actions`, `board.column.summary` | Board |
+| `board.actions`, `board.filters.after`, `board.card.badges`, `board.card.details`, `board.card.actions`, `board.column.summary` | Board; `board.filters.after` follows the filter form |
 | `ticket.actions` | Ticket action menu |
 | `ticket.main.widgets` | Between description and comments |
 | `ticket.sidebar.panels` | Groups of the right-hand ticket sidebar |
@@ -362,7 +366,7 @@ scope. The context is available in the template as `$slot`.
 |---|---|---|
 | `PageSlotContext` | `sidebar.*`, `topbar.tools`, `topbar.actions`, `projects.actions`, `notifications.actions`, `activity.actions`, `profile.panels` | `ui()` only |
 | `ProjectSlotContext` | `projects.card.badges` | `project`, `projectId()` |
-| `BoardSlotContext` | `board.*` | `project`, `scope`, `labels`, `members`, `metadata`, `token`, `card`, `column`, `value()` |
+| `BoardSlotContext` | `board.*` | `project`, `scope`, `labels`, `members`, `metadata`, `token`, `card`, `column`, `filters`, `value()` |
 | `TicketSlotContext` | `ticket.actions`, `ticket.main.widgets`, `ticket.sidebar.panels` | `ticket`, `project`, `scope`, `board`, `params`, `token`, `editable`, `isNew`, `columns`, `swimlanes`, `labels`, `members`, `metadata`, `fields`, `links`, `attachments`, `activity`, `timer`, `preferences`, `creator`, `field`, `value()`, `fieldsIn()` |
 
 All of them implement `SlotContextInterface` and hand out the checked `UiContext` through

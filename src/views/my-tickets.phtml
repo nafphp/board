@@ -1,0 +1,50 @@
+<?php
+
+use Naf\Board\Support\Format;
+
+use function Naf\Board\choice;
+use function Naf\Board\extensions;
+use function Naf\Board\template;
+use function Naf\I18n\t;
+use function Naf\route;
+use function Naf\View\s;
+
+$this->setLayout(template('layout'));
+$this->block('content');
+$priorityLabels = extensions()->priorities()->options();
+$listUrl        = static fn(int $number): string => route('my_tickets') . '?' . http_build_query(['status' => $status, 'sort' => $sort, 'page' => $number]);
+?>
+<section class="page-heading">
+    <div>
+        <h1><?= s(t('Meine Tickets')) ?></h1>
+        <p><?= s(t('Dir zugewiesene Tickets aus allen zugänglichen, aktiven Projekten.')) ?></p>
+    </div>
+</section>
+<form method="get" class="filterbar" action="<?= s(route('my_tickets')) ?>">
+    <?= choice(['name' => 'status', 'label' => 'Status', 'value' => $status, 'options' => ['open' => t('Offen'), 'closed' => t('Geschlossen'), 'all' => t('Offen und geschlossen')], 'id' => 'my-ticket-status']) ?>
+    <?= choice(['name' => 'sort', 'label' => 'Sortierung', 'value' => $sort, 'options' => ['due' => t('Fälligkeit zuerst'), 'updated' => t('Zuletzt geändert')], 'id' => 'my-ticket-sort']) ?>
+    <button class="button subtle" data-apply><?= s(t('Filtern')) ?></button>
+</form>
+<p class="muted"><?= s(t(':count Tickets · Seite :page von :pages', ['count' => $total, 'page' => $page, 'pages' => $pages])) ?></p>
+<?php if ($tickets === []): ?>
+    <p><?= s(t('Keine dir zugewiesenen Tickets mit diesen Filtern.')) ?></p>
+<?php else: ?>
+    <ul class="my-ticket-list">
+        <?php foreach ($tickets as $ticket): ?>
+            <li>
+                <a href="<?= s(route('ticket', ['project' => $ticket['project_id'], 'ticket' => Format::ticket($ticket['ticket_key'], $ticket['number'])])) ?>">
+                    <span class="my-ticket-reference"><?= s(Format::ticket($ticket['ticket_key'], $ticket['number'])) ?> · <?= s($ticket['project_name']) ?></span>
+                    <strong><?= s($ticket['title']) ?></strong>
+                    <span class="my-ticket-meta"><?= s(t($ticket['status'] === 'open' ? 'Offen' : 'Geschlossen')) ?> · <?= s(t('Priorität: :priority', ['priority' => $priorityLabels[$ticket['priority']] ?? $ticket['priority']])) ?>
+                        <?php if ($ticket['due_date']): ?> · <?= s(t('Fällig am')) ?> <time datetime="<?= s($ticket['due_date']) ?>"><?= s(date($preferences['locale'] === 'en' ? 'Y-m-d' : 'd.m.Y', strtotime($ticket['due_date']))) ?></time><?php endif ?>
+                    </span>
+                </a>
+            </li>
+        <?php endforeach ?>
+    </ul>
+<?php endif ?>
+<nav class="ticket-list-pages" aria-label="<?= s(t('Seitennavigation')) ?>">
+    <?php if ($page > 1): ?><a class="button subtle" rel="prev" href="<?= s($listUrl($page - 1)) ?>"><?= s(t('Vorherige Seite')) ?></a><?php endif ?>
+    <?php if ($page < $pages): ?><a class="button subtle" rel="next" href="<?= s($listUrl($page + 1)) ?>"><?= s(t('Nächste Seite')) ?></a><?php endif ?>
+</nav>
+<?php $this->endblock('content'); ?>

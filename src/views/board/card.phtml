@@ -29,6 +29,7 @@ use function Naf\View\s;
     'projectId'       => $projectId,
     'running_timers'  => $running_timers,
     'prioritySymbols' => $prioritySymbols,
+    'priorityLabels'  => $priorityLabels,
     'unknownPriority' => $unknownPriority,
     'boardSlot'       => $boardSlot,
     'tags'            => $tags,
@@ -38,7 +39,8 @@ use function Naf\View\s;
     'estimateUnit'    => $estimateUnit,
     'assignments'     => $assignments,
     'memberMap'       => $memberMap,
-] = $board;
+]              = $board;
+$priorityLabel = t('Priorität: :priority', ['priority' => $priorityLabels[$card['priority']] ?? $card['priority']]);
 ?>
     <article
         class="ticket-card"
@@ -58,13 +60,17 @@ use function Naf\View\s;
             <span class="card-id">
                 <span
                     class="priority priority-<?= s($card['priority']) ?>"
-                    title="<?= s($card['priority']) ?>"
+                    title="<?= s($priorityLabel) ?>"
                 >
                     <?= $prioritySymbols[$card['priority']] ?? $unknownPriority ?>
+                    <span class="sr-only"><?= s($priorityLabel) ?></span>
                 </span>
                 <span class="ticket-number"><?= s(Format::ticket($project['ticket_key'], $card['number'])) ?></span>
+                <span class="sr-only"><?= s(t($card['archived_at'] ? 'Archiviert' : ($card['status'] === 'closed' ? 'Geschlossen' : 'Offen'))) ?></span>
                 <?php if (in_array((int) $card['id'], $running_timers, true)): ?>
-                    <span class="timer-pulse" title="<?= s(t('Deine Zeiterfassung läuft')) ?>"></span>
+                    <span class="timer-pulse" data-card-timer title="<?= s(t('Deine Zeiterfassung läuft')) ?>">
+                        <span class="sr-only"><?= s(t('Deine Zeiterfassung läuft')) ?></span>
+                    </span>
                 <?php endif ?>
             </span>
             <div>
@@ -74,7 +80,7 @@ use function Naf\View\s;
                         class="card-menu"
                         data-move-card
                         data-delete-card
-                        aria-label="<?= s(t('Ticket :key verschieben', ['key' => Format::ticket($project['ticket_key'], $card['number'])])) ?>"
+                        aria-label="<?= s(t('Aktionen für Ticket :key', ['key' => Format::ticket($project['ticket_key'], $card['number'])])) ?>"
                     >
 <?= Icon::mark('more_horiz') ?>                                            </button>
                 <?php endif ?>
@@ -114,8 +120,9 @@ $points = $estimating && $card['estimate_points'] !== null;
             <div class="card-bottom">
                 <?php if ($card['due_date']): ?>
                     <span class="due-date">
+                        <span class="sr-only"><?= s(t('Fällig am')) ?>: </span>
                         <?= Icon::mark('schedule', 'sm') ?>
-                        <?= s(date('d. M', strtotime((string) $card['due_date']))) ?>
+                        <time datetime="<?= s($card['due_date']) ?>"><?= s(date('d. M', strtotime((string) $card['due_date']))) ?></time>
                     </span>
                 <?php endif ?>
                 <?php if ($points): ?>
@@ -131,7 +138,8 @@ $points = $estimating && $card['estimate_points'] !== null;
                 <div class="card-assignees">
                     <?php foreach ($people as $userId): ?>
                         <span class="avatar tiny" title="<?= s($memberMap[$userId]['name']) ?>">
-                            <?= s(mb_substr($memberMap[$userId]['name'], 0, 1)) ?>
+                            <span aria-hidden="true"><?= s(mb_substr($memberMap[$userId]['name'], 0, 1)) ?></span>
+                            <span class="sr-only"><?= s(t('Zuständig: :name', ['name' => $memberMap[$userId]['name']])) ?></span>
                         </span>
                     <?php endforeach ?>
                 </div>

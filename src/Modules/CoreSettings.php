@@ -227,6 +227,17 @@ final class CoreSettings implements ExtensionProviderInterface
             ['legacy' => ['store' => 'user_preferences', 'column' => 'notify_in_app']],
         ));
         $settings->add(new SettingDefinition(
+            'notify_scope',
+            'user',
+            'personal',
+            'Benachrichtige mich über',
+            'select',
+            'all',
+            450,
+            ['choices'   => ['all' => 'Alle Projektänderungen', 'relevant' => 'Meine Tickets, Erwähnungen und gefolgte Tickets'],
+                'legacy' => ['store' => 'user_preferences', 'column' => 'notify_scope']],
+        ));
+        $settings->add(new SettingDefinition(
             'notify_mail',
             'user',
             'personal',

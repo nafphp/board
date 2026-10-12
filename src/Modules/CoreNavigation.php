@@ -39,6 +39,16 @@ final class CoreNavigation implements ExtensionProviderInterface
             100,
         ));
         $navigation->add(new NavigationItem(
+            'core.my_tickets',
+            'sidebar.workspace',
+            'Meine Tickets',
+            'my_tickets',
+            [],
+            'person',
+            ['my_tickets'],
+            150,
+        ));
+        $navigation->add(new NavigationItem(
             'core.notifications',
             'sidebar.workspace',
             'Benachrichtigungen',

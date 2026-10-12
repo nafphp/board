@@ -58,6 +58,7 @@ final class ContributedBoardFilterTest extends BoardTestCase
             ...$this->query->board($this->projectA, $filters),
         ]);
         $this->assertSame(200, $response->getStatusCode());
+        $this->assertStringContainsString('class="saved-views"', (string) $response->getBody());
         $dom = new DOMDocument();
         @$dom->loadHTML((string) $response->getBody());
         $nodes = (new DOMXPath($dom))->query('//form[@class="filterbar"]//select');

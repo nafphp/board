@@ -6,6 +6,8 @@ namespace Naf\Board\Tests\Database;
 
 use Naf\Board\Services\NotificationService;
 use Naf\Board\Services\PreferenceService;
+use Naf\Board\Services\TicketSubscriptions;
+use Naf\Board\Support\Settings\PreferenceStore;
 use Naf\Board\Tests\Support\BoardTestCase;
 use Naf\Core\Config;
 use Naf\Mail\Core\Mailer;
@@ -140,6 +142,38 @@ final class MailDeliveryTest extends BoardTestCase
             ),
             'the skip was not recorded',
         );
+    }
+
+    public function testChangingToRelevantOnlySkipsQueuedUnrelatedMail(): void
+    {
+        $notification = $this->pendingDelivery();
+        app()->container()->make(PreferenceStore::class)->writeUser(
+            (int) $this->member->getId(),
+            ['notify_scope' => 'relevant'],
+        );
+        $this->notifications->deliver($notification, $this->mailer);
+        self::assertSame([], $this->transport->getMessages());
+        self::assertSame('skipped', $this->scalar('SELECT state FROM notification_deliveries WHERE notification_id=?', [$notification]));
+    }
+
+    public function testUnfollowingBeforeDeliverySkipsQueuedFollowerMail(): void
+    {
+        $ticket = $this->tickets->create($this->projectA, $this->ticketData());
+        $this->actAs($this->member);
+        app()->container()->make(PreferenceStore::class)->writeUser(
+            (int) $this->member->getId(),
+            ['notify_scope' => 'relevant'],
+        );
+        $subscriptions = app()->container()->make(TicketSubscriptions::class);
+        $subscriptions->save($this->projectA, $ticket, true);
+        $this->actAs($this->alice);
+        $this->comments->save($this->projectA, $ticket, ['body' => 'For followers']);
+        $notification = (int) $this->scalar('SELECT MAX(notification_id) FROM notification_deliveries');
+        $this->actAs($this->member);
+        $subscriptions->save($this->projectA, $ticket, false);
+        $this->notifications->deliver($notification, $this->mailer);
+        self::assertSame([], $this->transport->getMessages());
+        self::assertSame('skipped', $this->scalar('SELECT state FROM notification_deliveries WHERE notification_id=?', [$notification]));
     }
 
     /**

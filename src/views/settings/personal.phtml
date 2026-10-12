@@ -75,6 +75,14 @@ $logins = (array) config('auth:logins', []);
             'value' => (int) $preferences['notify_mail'],
         ]) ?>
     </div>
+    <?= field([
+        'label'   => 'Benachrichtige mich über',
+        'name'    => 'notify_scope',
+        'type'    => 'select',
+        'value'   => $preferences['notify_scope'] ?? 'all',
+        'options' => ['all' => t('Alle Projektänderungen'), 'relevant' => t('Meine Tickets, Erwähnungen und gefolgte Tickets')],
+        'hint'    => 'Meine Tickets umfasst von dir erstellte und dir zugewiesene Tickets. Stummgeschaltete Projekte bleiben still.',
+    ]) ?>
     <?php // A board that rearranges itself while you are reading it is not what
           // everybody wants from a board. Off, the page still works -- it simply
           // shows what it showed when it was loaded, like any other page.

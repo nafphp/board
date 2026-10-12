@@ -18,6 +18,7 @@ next to it instead of copying the number from here.
 | P3 | Private files with quotas, staging and recovery, the PDO queue, worker and ticker, in-app notifications, a verified mail delivery path |
 | P4 | Limiter, health and schema checks, backup and restore, the runtime snapshot; external sign-in prepared and switched off on request |
 | — | Extensibility through installed Composer packages; described in [`Extensibility.md`](Extensibility.md) |
+| — | Accessible card metadata and contrast checks, personal saved filter links, a paginated assignment list, relevant-only notifications and ticket subscriptions; an optional Composer WIP policy |
 
 ## What NAF carries
 
@@ -115,8 +116,10 @@ available.
   and browser messages. Project-owned content and extension-provided text keep their wording.
 - The file allowlist and MIME check are not a virus scanner. At most 10 MiB per file, 30 MiB per
   ticket and 200 MiB per project; storage stays private.
-- One board per project, no WIP enforcement, no saved filters, no public full API and no inbound
-  mail processing. All explicitly outside the MVP.
+- One board per project and no full external ticket API. Saved filter links and **My tickets**
+  are documented in [`Tickets.md`](Tickets.md). Core WIP limits remain advisory; the optional
+  policy is documented in [`Workflow-Policies.md`](Workflow-Policies.md). Native IMAP imports
+  replies into existing tickets; it does not create new tickets from incoming mail.
 - Live updates arrive over a socket when an installation runs naf/websocket, which is optional and
   off by default. What travels is that a board changed and at which revision; the board itself is
   fetched over the ordinary authorised path, so a page without a socket is behind and never wrong.

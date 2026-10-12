@@ -118,14 +118,17 @@ function marker(panel, active) {
   if (!where) return;
   const [, project, reference] = where;
   const card = document.querySelector(`.ticket-card[data-key="${CSS.escape(reference)}"]`);
-  const dot = card?.querySelector('.card-top > .timer-pulse');
+  const dot = card?.querySelector('[data-card-timer]');
   if (card && active && !dot) {
-    card
-      .querySelector('.card-top')
-      ?.insertBefore(
-        Object.assign(document.createElement('span'), { className: 'timer-pulse' }),
-        card.querySelector('.card-top')?.firstElementChild?.nextSibling ?? null,
-      );
+    const marker = document.createElement('span');
+    marker.className = 'timer-pulse';
+    marker.dataset.cardTimer = '';
+    marker.title = t('Deine Zeiterfassung läuft');
+    const label = document.createElement('span');
+    label.className = 'sr-only';
+    label.textContent = marker.title;
+    marker.append(label);
+    card.querySelector('.card-id')?.append(marker);
   } else if (dot && !active) {
     dot.remove();
   }

@@ -21,6 +21,7 @@ use Naf\Board\Controllers\ThemeController;
 use Naf\Board\Controllers\TicketController;
 use Naf\Board\Controllers\UserAccountController;
 use Naf\Board\Controllers\UserDirectoryController;
+use Naf\Board\Controllers\WorkspaceController;
 use Naf\Board\Support\AttachmentStorage;
 use Naf\Database\Core\MigrationRunner;
 use Naf\Database\Support\MigrationRegistry;
@@ -141,6 +142,9 @@ $routes = [
     ['GET', '/search', [SearchController::class, 'index'], 'workspace.search'],
     ['GET', '/search/suggestions', [SearchController::class, 'suggestions'], 'workspace.suggestions'],
     ['GET', '/projects', [BoardController::class, 'projects'], 'projects'],
+    ['GET', '/my-tickets', [WorkspaceController::class, 'mine'], 'my_tickets'],
+    ['POST', '/projects/{project}/tickets/{ticket}/subscription', [TicketController::class, 'subscribe'], 'ticket.subscription'],
+    ['POST', '/projects/{project}/views', [WorkspaceController::class, 'saveView'], 'board.views.save'],
     ['POST', '/projects', [ProjectController::class, 'create'], 'projects.create'],
     ['GET', '/projects/{project}', [BoardController::class, 'board'], 'board'],
     ['GET', '/projects/{project}/state', [BoardController::class, 'state'], 'board.state'],
