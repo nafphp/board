@@ -838,8 +838,10 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 .icon-button {
   display: inline-grid;
   place-items: center;
-  width: 29px;
-  height: 29px;
+  width: 32px;
+  height: 32px;
+  min-width: max(32px, var(--space-32));
+  min-height: max(32px, var(--space-32));
   background: none;
   border: 0;
   border-radius: var(--radius-6);
@@ -1285,7 +1287,7 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   margin-bottom: var(--space-9);
 }
 .ticket-number {
-  font-size: var(--font-9);
+  font-size: var(--font-11);
   color: var(--muted);
   letter-spacing: 0.3px;
 }
@@ -1330,6 +1332,10 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   color: var(--priority-low);
 }
 .card-menu {
+  display: inline-grid;
+  place-items: center;
+  min-width: max(32px, var(--space-32));
+  min-height: max(32px, var(--space-32));
   border: 0;
   background: none;
   color: var(--muted);
@@ -1345,14 +1351,14 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 }
 .card-title {
   display: block;
-  font-size: var(--font-12);
+  font-size: var(--font-13);
   font-weight: 630;
   line-height: 1.6;
   letter-spacing: -0.15px;
   overflow-wrap: anywhere;
 }
 .card-description {
-  font-size: var(--font-10);
+  font-size: var(--font-12);
   color: var(--muted);
   line-height: 1.7;
   margin: var(--space-7) 0 var(--space-12);
@@ -1383,11 +1389,13 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   display: none;
 }
 .label-tag {
-  font-size: var(--font-9);
+  font-size: var(--font-11);
   padding: var(--space-2) var(--space-6);
   border-radius: var(--radius-4);
   background: color-mix(in srgb, var(--tag-color) 10%, var(--surface));
-  color: var(--tag-color);
+  /* A label color identifies the label; it must not decide text contrast. */
+  color: var(--text);
+  border-inline-start: 3px solid var(--tag-color);
   font-weight: 550;
 }
 .card-bottom {
@@ -1411,7 +1419,7 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
   margin-top: var(--space-14);
 }
 .due-date {
-  font-size: var(--font-9);
+  font-size: var(--font-11);
   color: var(--muted);
 }
 /* A running timer has to be visible without opening the ticket. */

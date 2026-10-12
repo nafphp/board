@@ -11,6 +11,19 @@ the ticket, description and empty space included. The card menu stays independen
 including right after a drag gesture, and the native title link still supports the keyboard, the
 context menu and opening in a new tab.
 
+Board cards expose the translated priority, ticket status, full assignee names and the
+purpose of the due date to assistive technology. Decorative initials and icon names are
+hidden. Project member avatars likewise expose full names. The card action menu and shared
+icon controls retain at least a 32 × 32 CSS pixel target even at the smallest configured
+density. Card titles, descriptions, labels, references and dates use larger reading sizes.
+
+Label text follows the theme's reading color; its colored edge and tinted background keep
+the chosen label color visible. The built-in palettes meet 4.5:1 contrast for label text,
+including black, white and saturated label colors. The light Classic palette also uses a
+darker secondary text color. Custom theme colors and CSS still need their own contrast
+review. Regression checks cover the built-in palettes, supported control densities and the
+same accessible card markup on the board and live-update endpoint, in German and English.
+
 When dragging a ticket, a muted placeholder reserves its original position until the card
 lands. The active drop preview uses the accent colour; closing columns retain their completion
 highlight. Both placeholders match the carried card's height. Returning to the original

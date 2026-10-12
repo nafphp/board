@@ -1,5 +1,8 @@
 {
   "Zum Inhalt springen": "Zum Inhalt springen",
+  "Priorität: :priority": "Priorität: :priority",
+  "Zuständig: :name": "Zuständig: :name",
+  "Aktionen für Ticket :key": "Aktionen für Ticket :key",
   "Global": "Global",
   "GLOBAL": "GLOBAL",
   "Globale Einstellungen": "Globale Einstellungen",
