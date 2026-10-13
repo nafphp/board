@@ -2,6 +2,7 @@
 
 use Naf\Board\Services\SavedBoardViews;
 use Naf\Board\Support\BoardSlotContext;
+use Naf\Board\Support\Icon;
 
 use function Naf\Board\partial;
 use function Naf\I18n\t;
@@ -14,8 +15,9 @@ $filters   = $slot->filters;
 $token     = $slot->token;
 $url       = SavedBoardViews::url($projectId, $filters);
 ?>
-<details class="saved-views">
-    <summary><?= s(t('Gespeicherte Ansichten')) ?> <span class="muted">(<?= count($savedViews['views']) ?>)</span></summary>
+<div data-dialog-editors=".saved-views">
+<details class="saved-views" data-dialog-title="<?= s(t('Gespeicherte Ansichten')) ?>">
+    <summary><?= Icon::mark('view_kanban', 'sm') ?><?= s(t('Ansichten')) ?><?php if ($savedViews['views']): ?><span class="filter-count"><?= count($savedViews['views']) ?></span><?php endif ?></summary>
     <div class="saved-views-content">
         <p class="muted small"><?= s(t('Ansichten sind persönlich. Teile den Link mit Personen, die dieses Projekt lesen dürfen.')) ?></p>
         <?php foreach ($savedViews['views'] as $id => $saved): ?>
@@ -42,3 +44,4 @@ $url       = SavedBoardViews::url($projectId, $filters);
         <label><?= s(t('Link zu dieser Ansicht')) ?><input type="url" readonly value="<?= s(rtrim((string) \Naf\config('app:url'), '/') . $url) ?>" /></label>
     </div>
 </details>
+</div>

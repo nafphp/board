@@ -24,6 +24,8 @@ final readonly class BoardFilterDefinition
      * @param Closure     $condition fn(mixed $value, BoardFilterContext $context): SqlCondition
      * @param int         $index     Sort value, ascending
      * @param string|null $view      Control template; receives filter, name, value and authorized board context
+     * @param Closure|null $dql      Optional fn(string $operator, string $value, BoardFilterContext $context): SqlCondition;
+     *                              equality otherwise reuses normalize() and condition(). IN and negation are composed centrally.
      */
     public function __construct(
         public string $id,
@@ -32,6 +34,7 @@ final readonly class BoardFilterDefinition
         public Closure $condition,
         public int $index = 100,
         public ?string $view = null,
+        public ?Closure $dql = null,
     ) {
     }
 

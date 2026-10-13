@@ -96,6 +96,7 @@ route()->add('POST', '/profile/email/cancel', [ProfileController::class, 'cancel
 // Every page and write of the board: method, path, handler, route name. Names
 // are what a host or an extension reuses to replace one of these.
 $routes = [
+    ['GET', '/projects/{project}/filters', [BoardController::class, 'filters'], 'board.filters'],
     ['GET', '/', [SessionController::class, 'home'], 'home'],
     ['GET', '/login', [SessionController::class, 'login'], 'login'],
     ['POST', '/login', [SessionController::class, 'authenticate'], 'login.submit'],

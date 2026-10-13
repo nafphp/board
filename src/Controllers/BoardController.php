@@ -9,12 +9,17 @@ use Naf\Board\Contracts\AccessInterface;
 use Naf\Board\Contracts\BoardQueryInterface;
 use Naf\Board\Contracts\PageRendererInterface;
 use Naf\Board\Contracts\TicketServiceInterface;
+use Naf\Board\Domain\Failure;
+use Naf\Board\Services\BoardDql;
+use Naf\Board\Services\SavedBoardViews;
+use Naf\Board\Support\BoardFilterContext;
 use Naf\Board\Support\CardContext;
 use Naf\Board\Support\Input;
 use Naf\Board\Support\LiveConnection;
 use Naf\Board\Support\UiContext;
 use Psr\Http\Message\ResponseInterface;
 
+use function Naf\Board\extensions;
 use function Naf\Board\partial;
 use function Naf\Form\csrf;
 use function Naf\json;
@@ -45,12 +50,52 @@ final class BoardController
 
     public function board(string $project): ResponseInterface
     {
-        return Respond::read(
-            fn() => $this->pages->render('board', [
-                'title' => 'Board',
-                ...$this->query->board(Input::id($project), request()->getQueryParams()),
-            ]),
-        );
+        return Respond::read(function () use ($project): ResponseInterface {
+            $query = request()->getQueryParams();
+
+            try {
+                $board = $this->query->board(Input::id($project), $query);
+                $error = null;
+            } catch (Failure $failure) {
+                if (!isset($failure->errors['dql'])) {
+                    throw $failure;
+                }
+                unset($query['dql']);
+                $board                   = $this->query->board(Input::id($project), $query);
+                $board['cards']          = [];
+                $board['total']          = 0;
+                $board['filters']['dql'] = is_string(request()->getQueryParams()['dql'] ?? null) ? request()->getQueryParams()['dql'] : '';
+                $error                   = $failure->getMessage();
+            }
+
+            return $this->pages->render('board', ['title' => 'Board', ...$board, 'filterError' => $error, 'filterMode' => $query['mode'] ?? ''])->withStatus($error === null ? 200 : 422);
+        });
+    }
+
+    /** Translate drafts without changing the loaded board or any personal settings. */
+    public function filters(string $project): ResponseInterface
+    {
+        return Respond::read(function () use ($project): ResponseInterface {
+            try {
+                $board      = $this->query->board(Input::id($project), request()->getQueryParams());
+                $advanced   = BoardDql::advanced($board['filters']);
+                $expression = BoardDql::parse($advanced['expression']);
+                BoardDql::condition($expression, new BoardFilterContext((int) $project, $board['scope']));
+                $simple = BoardDql::dropdown($expression, $board);
+                $simple['filters'] += $advanced['retained'];
+                $retained = array_filter($simple['filters'], static fn(string $id) => extensions()->boardFilters()->get($id)?->view === null, ARRAY_FILTER_USE_KEY);
+
+                return json([
+                    ...$advanced, ...$simple,
+                    'simpleRetained'   => SavedBoardViews::parameters($retained),
+                    'advancedRetained' => SavedBoardViews::parameters($advanced['retained']),
+                    'retainedSummary'  => BoardDql::retainedSummary($advanced['retained']),
+                    'controls'         => partial('board/filter-controls', array_replace($board, ['filters' => $simple['filters']])),
+                ]);
+            } catch (Failure $failure) {
+                return json(['message' => $failure->getMessage(), 'errors' => $failure->errors], $failure->status);
+            }
+        });
     }
 
     public function activity(string $project): ResponseInterface

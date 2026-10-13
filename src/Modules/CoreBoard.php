@@ -43,7 +43,7 @@ final class CoreBoard implements ExtensionProviderInterface
     {
         $context->ui()->add(new UiContribution(
             'core.board.saved_views',
-            'board.filters.after',
+            'board.filters.actions',
             'board/saved-views',
             provider: SavedBoardViewsProvider::class,
             modes: [UiContext::MODE_PAGE],
@@ -63,6 +63,7 @@ final class CoreBoard implements ExtensionProviderInterface
                 ),
                 $index,
                 'board/filter',
+                dql: static fn(string $operator, string $value, BoardFilterContext $context) => CoreBoardDql::condition($id, $operator, $value, $context),
             ));
             $index += 100;
         }
@@ -71,14 +72,15 @@ final class CoreBoard implements ExtensionProviderInterface
             $filters->add(new BoardFilterDefinition(
                 $id,
                 $id === 'assignee' ? 'Verantwortliche' : 'Label',
-                static fn(mixed $value) => Input::id($value, $id),
+                static fn(mixed $value) => $id === 'assignee' && $value === 'me' ? 'me' : Input::id($value, $id),
                 static fn(mixed $value, BoardFilterContext $filterContext) => new SqlCondition(
                     "EXISTS(SELECT 1 FROM $table f WHERE f.project_id={$filterContext->alias}"
                     . ".project_id AND f.ticket_id={$filterContext->alias}.id AND f.$column=?)",
-                    [$value],
+                    [$id === 'assignee' && $value === 'me' ? $filterContext->scope->userId : $value],
                 ),
                 $index,
                 'board/filter',
+                dql: static fn(string $operator, string $value, BoardFilterContext $context) => CoreBoardDql::condition($id, $operator, $value, $context),
             ));
             $index += 100;
         }
@@ -120,11 +122,12 @@ final class CoreBoard implements ExtensionProviderInterface
                     return $value;
                 },
                 static fn(mixed $value, BoardFilterContext $filterContext) => new SqlCondition(
-                    $filterContext->alias . '.' . $id . '=?',
+                    $filterContext->alias . '.' . $id . '=? AND ' . $filterContext->alias . '.archived_at IS NULL',
                     [$value],
                 ),
                 $index,
                 'board/filter',
+                dql: static fn(string $operator, string $value, BoardFilterContext $context) => CoreBoardDql::condition($id, $operator, $value, $context),
             ));
             $index += 100;
         }
@@ -139,6 +142,8 @@ final class CoreBoard implements ExtensionProviderInterface
                 [$value],
             ),
             $index,
+            dql: static fn(string $operator, string $value, BoardFilterContext $context) => CoreBoardDql::condition('q', $operator, $value, $context),
         ));
+        CoreBoardDql::register($filters);
     }
 }

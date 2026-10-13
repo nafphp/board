@@ -6,13 +6,9 @@ use function Naf\I18n\t;
 
 // Core controls use their established query names. Extension controls receive
 // filters[<id>] from the board and may use any native form control or choice().
-$people = array_column($members, 'name', 'id');
-$me     = (int) $scope->userId;
-$mine   = [];
-if (isset($people[$me])) {
-    $mine = [$me => t('Ich (:name)', ['name' => $people[$me]])];
-    unset($people[$me]);
-}
+$people  = array_column($members, 'name', 'id');
+$me      = (int) $scope->userId;
+$mine    = ['me' => isset($people[$me]) ? t('Ich (:name)', ['name' => $people[$me]]) : t('Ich')];
 $options = match ($filter->id) {
     'assignee' => ['' => t('Alle Verantwortlichen')] + $mine + $people,
     'label'    => ['' => t('Alle Labels')] + array_column($labels, 'name', 'id'),

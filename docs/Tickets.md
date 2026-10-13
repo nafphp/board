@@ -24,8 +24,56 @@ darker secondary text color. Custom theme colors and CSS still need their own co
 review. Regression checks cover the built-in palettes, supported control densities and the
 same accessible card markup on the board and live-update endpoint, in German and English.
 
-The board's **Saved views** disclosure keeps up to 20 named filter bookmarks per person
-and project, using the native settings store. Saving validates the filters through the
+## Board filters and DQL
+
+The board starts with a compact **Filter** disclosure and **Views** action. Open Filter
+for the usual dropdowns; **Advanced** replaces them with a DQL field. Opening Advanced
+translates the current filters. Press Enter or **Apply** to run a query. Returning to
+**Simple filters** validates and applies the query, filling the representable dropdowns.
+`OR`, negation, lists, repeated properties and other complex conditions remain visible
+as an additional DQL expression. Switching modes never silently discards them.
+
+```text
+status = open AND assignee = me
+priority IN (high, urgent) AND due < 2030-01-01
+board = NAF AND column = "In Arbeit"
+(label = "Design" OR label = "Produkt") AND assignee != none
+```
+
+| Property | Values and operators |
+|---|---|
+| `status` | `open`, `closed`, `archived` |
+| `board` | Project id or board ticket key, such as `NAF`; always within the current authorized board |
+| `assignee` | `me`, `none`, user id, or exact active project member name/email |
+| `column`, `swimlane` | Id or exact displayed name |
+| `label` | Id, exact displayed name, or `none` |
+| `priority` | Registered priority id, including priorities from extensions |
+| `title` | `=` for equality; `~` for a literal substring |
+| `text` | `~` or `=` for the existing database fulltext search over title and description |
+| `number` | Positive ticket number; also `<`, `<=`, `>`, `>=` |
+| `due`, `created`, `updated` | `YYYY-MM-DD`; also `<`, `<=`, `>`, `>=`; `due = none` finds missing due dates |
+
+All properties support `=`, `!=`, `IN (...)` and `NOT IN (...)`. `NOT` binds before
+`AND`, then `OR`; parentheses override precedence. Property names and keywords are
+case-insensitive; value ids and displayed names use their exact spelling. Quote values
+containing spaces with single or double quotes, and escape their quote or a backslash
+with a backslash. `ticket.status`, `board.identifier` and `assigned` are aliases for
+`status`, `board` and `assignee`; `q` is an alias for `text`.
+
+Archived tickets remain excluded unless the expression explicitly references the
+`archived` status. An ordinary open/closed dropdown keeps excluding archived tickets
+even when combined with such an expression. Created/updated comparisons use stored UTC
+dates. `me` remains the current reader in both modes and in shared links; choosing a
+named person keeps that person's fixed id. Existing numeric assignee links still work.
+
+Queries use one line and reject control characters. They are limited to 2000 characters,
+256 tokens, 12 nested groups/negations and 20 values per list. Syntax/property/value errors return 422 with a position and field
+message. The board keeps the query editable and shows no cards for an invalid query;
+it does not fall back to unfiltered results. Live cards, counts and saved views reuse
+the same server-side parser, prepared parameters and project authorization.
+
+The board's **Views** action opens the shared dialog and keeps up to 20 named filter
+bookmarks per person and project, using the native settings store. Saving validates the filters through the
 same authorized board query; stale bookmark writes return 409. Names are escaped. A view
 link contains the normalized core and extension filters, so it can be shared without
 exposing a private bookmark id. Opening it always checks the recipient's current project

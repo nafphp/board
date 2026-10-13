@@ -349,7 +349,7 @@ The fixed slots:
 | `topbar.tools` | Workspace search, before the account actions |
 | `topbar.actions` | Actions in the top bar |
 | `projects.actions`, `projects.card.badges` | Project overview |
-| `board.actions`, `board.filters.after`, `board.card.badges`, `board.card.details`, `board.card.actions`, `board.column.summary` | Board; `board.filters.after` follows the filter form |
+| `board.actions`, `board.filters.actions`, `board.filters.after`, `board.card.badges`, `board.card.details`, `board.card.actions`, `board.column.summary` | Board; `board.filters.actions` holds compact toolbar actions, `board.filters.after` follows the complete filter tool |
 | `ticket.actions` | Ticket action menu |
 | `ticket.main.widgets` | Between description and comments |
 | `ticket.sidebar.panels` | Groups of the right-hand ticket sidebar |
@@ -886,6 +886,30 @@ $context->boardFilters()->add(new BoardFilterDefinition(
 `SqlCondition` holds only an SQL fragment plus positional parameters. Every fragment is combined
 with `AND` inside parentheses; `t.project_id = ?`, the archive rule, the 300-card maximum and the
 ordering stay binding outside it. User input is never SQL and never a column name.
+
+DQL composes these same definitions inside a separately bracketed expression. A
+lowercase extension id matching `[a-z][a-z0-9_.-]*` is also its DQL property:
+`example.reviewed = "1"` uses the normalizer and condition above. `!=`, `IN`, `NOT IN` and `NOT` are composed centrally. Removed
+definitions return 422 when an expression uses them; uninstalling cannot broaden a
+saved query. The project predicate and 300-card limit remain outside the expression.
+Archive visibility changes only for an explicit built-in archived-status reference.
+
+An optional `dql` closure on `BoardFilterDefinition` accepts
+`(string $operator, string $value, BoardFilterContext $context): SqlCondition` for
+property-specific operators or values. It receives `=` for individual list members
+and negated equality; the central compiler handles list combination and negation.
+Validate the operator and value and throw `Failure` for unsupported input. Bind every
+user value. Apply any extra read permissions through the already authorized context;
+the callback runs for both board cards and counts. For example, a numeric contributed
+property can accept `<`, `<=`, `>`, `>=` in addition to `=` without adding another registry.
+
+Dropdown equality that the control can represent is extracted when returning from
+Advanced. Ambiguous names, compound conditions and definitions with custom DQL
+callbacks stay in the visible residual expression. Ids outside that grammar, structured
+values and scalar normalizers that cannot round-trip through text remain in the original `filters[...]`
+envelope, with a visible summary in Advanced. Preserve those inputs when replacing
+the filter templates. The read-only, project-authorized `board.filters` GET route
+translates a draft; the normal board GET applies it. Neither route writes settings.
 
 The core query parameters (`column`, `swimlane`, `assignee`, `label`, `status`, `priority`, `q`)
 stay compatible; plugin filters arrive as `filters[example.reviewed]`. An unknown filter reports

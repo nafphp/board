@@ -88,7 +88,7 @@ final class SavedBoardViews
     {
         $query = [];
         foreach ($filters as $id => $value) {
-            if (in_array($id, ['q', 'status', 'column', 'swimlane', 'assignee', 'label', 'priority'], true)) {
+            if (in_array($id, ['q', 'dql', 'status', 'column', 'swimlane', 'assignee', 'label', 'priority'], true)) {
                 $query[$id] = $value;
             } else {
                 $query['filters'][$id] = $value;
