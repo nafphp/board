@@ -128,6 +128,89 @@ final class WorkspaceViewsOverHttpTest extends AcceptanceTestCase
         self::assertSame(200, $this->post($this->viewer, $url . '/subscription', ['subscribed' => false])['status']);
     }
 
+    public function testFollowedTicketsArePersonalAndRespectCurrentAccessAndArchives(): void
+    {
+        $url    = $this->createTicket(['title' => 'Followed-list <personal>', 'assignee_ids' => [1]]);
+        $pdo    = app()->container()->get(PDO::class);
+        $id     = (int) $this->firstMatch('/data-ticket="(\d+)"/', $this->page($this->viewer, $url), 'ticket id');
+        $viewer = (int) $pdo->query("SELECT id FROM users WHERE email='viewer@example.test'")->fetchColumn();
+        self::assertSame(200, $this->post($this->viewer, $url . '/subscription', ['subscribed' => true])['status']);
+        $page = $this->page($this->viewer, '/followed-tickets');
+        self::assertStringContainsString('<h1>Gefolgte Tickets</h1>', $page);
+        self::assertStringContainsString('Followed-list &lt;personal&gt;', $page);
+        self::assertStringNotContainsString('Followed-list &lt;personal&gt;', $this->page($this->alice, '/followed-tickets'));
+        self::assertStringNotContainsString('Followed-list &lt;personal&gt;', $this->page($this->viewer, '/my-tickets'));
+
+        $pdo->prepare("UPDATE tickets SET status='closed' WHERE id=?")->execute([$id]);
+        self::assertStringNotContainsString('Followed-list &lt;personal&gt;', $this->page($this->viewer, '/followed-tickets'));
+        self::assertStringContainsString('Followed-list &lt;personal&gt;', $this->page($this->viewer, '/followed-tickets?status=closed'));
+        $pdo->prepare('UPDATE tickets SET archived_at=NOW() WHERE id=?')->execute([$id]);
+        self::assertStringNotContainsString('Followed-list &lt;personal&gt;', $this->page($this->viewer, '/followed-tickets?status=all'));
+        $pdo->prepare('UPDATE tickets SET archived_at=NULL WHERE id=?')->execute([$id]);
+        $pdo->prepare('UPDATE projects SET archived_at=NOW() WHERE id=1')->execute();
+
+        try {
+            self::assertStringNotContainsString('Followed-list &lt;personal&gt;', $this->page($this->viewer, '/followed-tickets?status=all'));
+        } finally {
+            $pdo->prepare('UPDATE projects SET archived_at=NULL WHERE id=1')->execute();
+        }
+
+        // A stored subscription must not preserve project access after revocation.
+        $pdo->prepare('UPDATE project_members SET active=0 WHERE project_id=1 AND user_id=?')->execute([$viewer]);
+
+        try {
+            self::assertStringNotContainsString('Followed-list &lt;personal&gt;', $this->page($this->viewer, '/followed-tickets?status=all'));
+        } finally {
+            $pdo->prepare('UPDATE project_members SET active=1 WHERE project_id=1 AND user_id=?')->execute([$viewer]);
+        }
+        self::assertSame(200, $this->post($this->viewer, $url . '/subscription', ['subscribed' => false])['status']);
+        self::assertStringNotContainsString('Followed-list &lt;personal&gt;', $this->page($this->viewer, '/followed-tickets?status=all'));
+    }
+
+    public function testFollowedListPaginatesAndRejectsInvalidFiltersAndGuests(): void
+    {
+        $pdo = app()->container()->get(PDO::class);
+        for ($i = 0; $i < 51; ++$i) {
+            $url = $this->createTicket(['title' => 'Followed pagination ' . $i, 'due_date' => '1998-01-01']);
+            $id  = (int) $this->firstMatch('/data-ticket="(\d+)"/', $this->page($this->alice, $url), 'ticket id');
+            $pdo->prepare('INSERT INTO ticket_subscriptions(project_id,ticket_id,user_id) VALUES(1,?,1)')->execute([$id]);
+        }
+        $first  = $this->page($this->alice, '/followed-tickets?status=all&sort=updated');
+        $second = $this->page($this->alice, '/followed-tickets?status=all&sort=updated&page=2');
+        self::assertSame(50, substr_count($first, 'class="my-ticket-reference"'));
+        self::assertStringContainsString('/followed-tickets?status=all&amp;sort=updated&amp;page=2', $first);
+        self::assertStringContainsString('Followed pagination 0', $second);
+        self::assertStringContainsString('rel="prev"', $second);
+        foreach (['status[]=open', 'sort=unsafe', 'page=-1', 'page=1 OR 1=1'] as $query) {
+            self::assertSame(422, $this->alice->request('/followed-tickets?' . str_replace(' ', '%20', $query))['status']);
+        }
+        self::assertSame(303, $this->guest('followed-guest')->request('/followed-tickets')['status']);
+    }
+
+    public function testFollowEyeExposesItsStateInPagesAndDrawersAndSupportsNativeForms(): void
+    {
+        $url = $this->createTicket(['title' => 'Eye toggle']);
+        foreach ([$url, $url . '?fragment=1'] as $path) {
+            $page = $this->page($this->viewer, $path);
+            self::assertMatchesRegularExpression('/class="icon-button ticket-follow" aria-pressed="false" aria-label="Ticket folgen"/', $page);
+            self::assertStringContainsString('aria-hidden="true">visibility</span>', $page);
+            self::assertStringNotContainsString('Für den Modus', $page);
+        }
+        $response = $this->viewer->request($url . '/subscription', [
+            '_csrf'      => $this->viewer->token($this->page($this->viewer, $url)),
+            'subscribed' => '1',
+        ]);
+        self::assertSame(303, $response['status'], $response['body']);
+        self::assertStringContainsString('Location: ' . $url, $response['headers']);
+        foreach ([$url, $url . '?fragment=1'] as $path) {
+            self::assertMatchesRegularExpression('/class="icon-button ticket-follow" aria-pressed="true" aria-label="Ticket nicht mehr folgen"/', $this->page($this->viewer, $path));
+        }
+        self::assertSame(400, $this->viewer->request($url . '/subscription', ['subscribed' => '0'], ['Accept: application/json'])['status']);
+        $response = $this->post($this->viewer, $url . '/subscription', ['subscribed' => false]);
+        self::assertSame(200, $response['status']);
+        self::assertFalse(json_decode($response['body'], true)['subscribed']);
+    }
+
     private function revision(string $page): string
     {
         return $this->firstMatch('/name="revision" value="([a-f0-9]{64})"/', $page, 'saved views revision');

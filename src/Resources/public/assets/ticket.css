@@ -64,6 +64,27 @@
   border-left: 1px solid var(--line);
   padding-left: var(--space-12);
 }
+.ticket-subscription {
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+.ticket-follow[aria-pressed='true'] {
+  color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.ticket-subscription .form-errors:not(:empty) {
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  right: 0;
+  width: min(280px, 70vw);
+  padding: var(--space-12);
+  background: var(--surface);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-8);
+}
 .ticket-title h1 {
   font-size: clamp(var(--font-25), 2.7vw, var(--font-35));
   line-height: 1.25;

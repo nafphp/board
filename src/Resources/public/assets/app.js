@@ -257,6 +257,8 @@ document.addEventListener('submit', async (event) => {
   event.preventDefault();
   const submitter = event.submitter;
   const button = submitter || form.querySelector('button[type=submit],button:not([type])');
+  const preserveFollowFocus =
+    form.hasAttribute('data-ticket-subscription') && document.activeElement === button;
   const data = new FormData(form);
   if (submitter?.name) data.append(submitter.name, submitter.value);
   if (button) button.disabled = true;
@@ -279,6 +281,15 @@ document.addEventListener('submit', async (event) => {
         result.errors || {},
         response.status === 409,
       );
+      return;
+    }
+    if (form.hasAttribute('data-ticket-subscription') && typeof result.subscribed === 'boolean') {
+      const label = t(result.subscribed ? 'Ticket nicht mehr folgen' : 'Ticket folgen');
+      button.setAttribute('aria-pressed', String(result.subscribed));
+      button.setAttribute('aria-label', label);
+      button.title = label;
+      form.elements.subscribed.value = result.subscribed ? '0' : '1';
+      form.querySelector('.form-errors')?.replaceChildren();
       return;
     }
     // The dialog move reloads the board, so the celebration is handed over to the next page.
@@ -308,7 +319,10 @@ document.addEventListener('submit', async (event) => {
   } catch {
     showError(form, t('Die Verbindung ist unterbrochen. Deine Eingaben bleiben erhalten.'));
   } finally {
-    if (button) button.disabled = false;
+    if (button) {
+      button.disabled = false;
+      if (preserveFollowFocus && document.activeElement === document.body) button.focus();
+    }
   }
 });
 const board = document.querySelector('#board');

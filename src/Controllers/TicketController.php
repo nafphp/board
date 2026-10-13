@@ -106,9 +106,13 @@ final class TicketController
     {
         return Respond::mutation($this->access, function (array $data) use ($project, $ticket): array {
             $projectId = Input::id($project);
-            $this->subscriptions->save($projectId, $this->tickets->resolve($projectId, $ticket), $data['subscribed'] ?? null);
+            $ticketId  = $this->tickets->resolve($projectId, $ticket);
+            $this->subscriptions->save($projectId, $ticketId, $data['subscribed'] ?? null);
 
-            return ['url' => route('ticket', ['project' => $projectId, 'ticket' => $ticket])];
+            return [
+                'url'        => route('ticket', ['project' => $projectId, 'ticket' => $ticket]),
+                'subscribed' => $this->subscriptions->state($projectId, $ticketId)['subscribed'],
+            ];
         });
     }
 

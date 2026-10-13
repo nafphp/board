@@ -20,7 +20,7 @@ final class MyTickets
     {
     }
 
-    public function find(array $query): array
+    public function find(array $query, bool $followed = false): array
     {
         $actor  = $this->access->actor();
         $status = $query['status'] ?? 'open';
@@ -51,9 +51,10 @@ final class MyTickets
 
             return $result;
         }
-        $marks = implode(',', array_fill(0, count($projects), '?'));
-        $where = "t.project_id IN ($marks) AND t.archived_at IS NULL"
-            . ' AND EXISTS(SELECT 1 FROM ticket_assignees a WHERE a.project_id=t.project_id AND a.ticket_id=t.id AND a.user_id=?)';
+        $marks    = implode(',', array_fill(0, count($projects), '?'));
+        $relation = $followed ? 'ticket_subscriptions' : 'ticket_assignees';
+        $where    = "t.project_id IN ($marks) AND t.archived_at IS NULL"
+            . " AND EXISTS(SELECT 1 FROM $relation a WHERE a.project_id=t.project_id AND a.ticket_id=t.id AND a.user_id=?)";
         $params = [...$projects, $actor];
         if ($status !== 'all') {
             $where .= ' AND t.status=?';

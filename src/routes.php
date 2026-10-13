@@ -144,6 +144,7 @@ $routes = [
     ['GET', '/search/suggestions', [SearchController::class, 'suggestions'], 'workspace.suggestions'],
     ['GET', '/projects', [BoardController::class, 'projects'], 'projects'],
     ['GET', '/my-tickets', [WorkspaceController::class, 'mine'], 'my_tickets'],
+    ['GET', '/followed-tickets', [WorkspaceController::class, 'followed'], 'followed_tickets'],
     ['POST', '/projects/{project}/tickets/{ticket}/subscription', [TicketController::class, 'subscribe'], 'ticket.subscription'],
     ['POST', '/projects/{project}/views', [WorkspaceController::class, 'saveView'], 'board.views.save'],
     ['POST', '/projects', [ProjectController::class, 'create'], 'projects.create'],
