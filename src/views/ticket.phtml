@@ -179,18 +179,20 @@ $panelData = [
         <div class="ticket-main">
             <header class="ticket-heading">
                 <?php if ($isNew): ?><div class="ticket-kicker"><span class="ticket-key"><?= s(t('Neues Ticket')) ?></span></div><?php else: ?>
-                <div class="ticket-kicker"><span class="ticket-key"><?= s(Format::ticket($key, $ticket['number'])) ?></span><span class="ticket-status" data-ticket-readonly="status"><?= s($ticket['archived_at'] ? t('Archiviert') : ($ticket['status'] === 'closed' ? t('Geschlossen') : t('Offen'))) ?></span></div><?php endif ?>
+                <div class="ticket-kicker">
+                    <span class="ticket-key"><?= s(Format::ticket($key, $ticket['number'])) ?></span>
+                    <span class="ticket-status" data-ticket-readonly="status"><?= s($ticket['archived_at'] ? t('Archiviert') : ($ticket['status'] === 'closed' ? t('Geschlossen') : t('Offen'))) ?></span>
+                    <?php if ($subscription['available'] ?? false): ?>
+                        <form method="post" action="<?= s(route('ticket.subscription', $params)) ?>" data-enhanced data-ticket-subscription class="ticket-subscription">
+                            <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
+                            <input type="hidden" name="subscribed" value="<?= $subscription['subscribed'] ? '0' : '1' ?>" />
+                            <button type="submit" class="icon-button ticket-follow" aria-pressed="<?= $subscription['subscribed'] ? 'true' : 'false' ?>" aria-label="<?= s(t($subscription['subscribed'] ? 'Ticket nicht mehr folgen' : 'Ticket folgen')) ?>" title="<?= s(t($subscription['subscribed'] ? 'Ticket nicht mehr folgen' : 'Ticket folgen')) ?>"><?= Icon::mark('visibility') ?></button>
+                            <div class="form-errors" role="alert"></div>
+                        </form>
+                    <?php endif ?>
+                </div><?php endif ?>
                 <?= $field('title', 'Titel', 'text', $ticket['title'], '<h1' . ($isNew ? ' class="muted"' : '') . '>' . s($isNew ? t('Was soll erledigt werden?') : $ticket['title']) . '</h1>', [], ['class' => 'ticket-title']) ?>
             </header>
-            <?php if (!$isNew && ($subscription['available'] ?? false)): ?>
-                <form method="post" action="<?= s(route('ticket.subscription', $params)) ?>" data-enhanced class="ticket-subscription">
-                    <input type="hidden" name="_csrf" value="<?= s($token) ?>" />
-                    <input type="hidden" name="subscribed" value="<?= $subscription['subscribed'] ? '0' : '1' ?>" />
-                    <button class="button subtle" aria-pressed="<?= $subscription['subscribed'] ? 'true' : 'false' ?>"><?= s(t($subscription['subscribed'] ? 'Ticket nicht mehr folgen' : 'Ticket folgen')) ?></button>
-                    <span class="muted small"><?= s(t('Für den Modus „Meine Tickets, Erwähnungen und gefolgte Tickets“.')) ?></span>
-                    <div class="form-errors" role="alert"></div>
-                </form>
-            <?php endif ?>
             <section class="ticket-description detail-section">
                 <h2><?= s(t('Beschreibung')) ?></h2>
                 <?= $field('description', 'Beschreibung', 'rich', RichText::description($ticket), $ticket['description'] === '' ? '<p class="muted">' . s(t($isNew ? 'Beschreibung einfügen' : 'Noch keine Beschreibung.')) . '</p>' : RichText::description($ticket)) ?>

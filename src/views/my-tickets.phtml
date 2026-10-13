@@ -12,22 +12,24 @@ use function Naf\View\s;
 $this->setLayout(template('layout'));
 $this->block('content');
 $priorityLabels = extensions()->priorities()->options();
-$listUrl        = static fn(int $number): string => route('my_tickets') . '?' . http_build_query(['status' => $status, 'sort' => $sort, 'page' => $number]);
+$followed       = $followed ?? false;
+$listRoute      = $followed ? 'followed_tickets' : 'my_tickets';
+$listUrl        = static fn(int $number): string => route($listRoute) . '?' . http_build_query(['status' => $status, 'sort' => $sort, 'page' => $number]);
 ?>
 <section class="page-heading">
     <div>
-        <h1><?= s(t('Meine Tickets')) ?></h1>
-        <p><?= s(t('Dir zugewiesene Tickets aus allen zugänglichen, aktiven Projekten.')) ?></p>
+        <h1><?= s(t($followed ? 'Gefolgte Tickets' : 'Meine Tickets')) ?></h1>
+        <p><?= s(t($followed ? 'Tickets, denen du in zugänglichen, aktiven Projekten folgst.' : 'Dir zugewiesene Tickets aus allen zugänglichen, aktiven Projekten.')) ?></p>
     </div>
 </section>
-<form method="get" class="filterbar" action="<?= s(route('my_tickets')) ?>">
+<form method="get" class="filterbar" action="<?= s(route($listRoute)) ?>">
     <?= choice(['name' => 'status', 'label' => 'Status', 'value' => $status, 'options' => ['open' => t('Offen'), 'closed' => t('Geschlossen'), 'all' => t('Offen und geschlossen')], 'id' => 'my-ticket-status']) ?>
     <?= choice(['name' => 'sort', 'label' => 'Sortierung', 'value' => $sort, 'options' => ['due' => t('Fälligkeit zuerst'), 'updated' => t('Zuletzt geändert')], 'id' => 'my-ticket-sort']) ?>
     <button class="button subtle" data-apply><?= s(t('Filtern')) ?></button>
 </form>
 <p class="muted"><?= s(t(':count Tickets · Seite :page von :pages', ['count' => $total, 'page' => $page, 'pages' => $pages])) ?></p>
 <?php if ($tickets === []): ?>
-    <p><?= s(t('Keine dir zugewiesenen Tickets mit diesen Filtern.')) ?></p>
+    <p><?= s(t($followed ? 'Keine gefolgten Tickets mit diesen Filtern.' : 'Keine dir zugewiesenen Tickets mit diesen Filtern.')) ?></p>
 <?php else: ?>
     <ul class="my-ticket-list">
         <?php foreach ($tickets as $ticket): ?>

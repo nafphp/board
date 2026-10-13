@@ -32,6 +32,15 @@ final class WorkspaceController
         ]))->withHeader('Cache-Control', 'private, no-store');
     }
 
+    public function followed(): ResponseInterface
+    {
+        return Respond::read(fn() => $this->pages->render('my-tickets', [
+            'title'    => 'Gefolgte Tickets',
+            'followed' => true,
+            ...$this->tickets->find(request()->getQueryParams(), followed: true),
+        ]))->withHeader('Cache-Control', 'private, no-store');
+    }
+
     public function saveView(string $project): ResponseInterface
     {
         return Respond::mutation($this->access, fn(array $data): array => [
