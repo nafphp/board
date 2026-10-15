@@ -106,6 +106,11 @@ is signed out; other sessions are discarded on their next request. Business requ
 flight are not retroactively terminated. The login page confirms the change through a NAF
 session flash and asks for the new password.
 
+Remembered sign-ins take the same account-row lock through token revalidation, rotation and
+session publication. A password reset waits for that publication and invalidates its old
+security version, or commits first and causes the old token to be refused. The token is read
+again after acquiring the lock; two callers cannot both rotate the same stored validator.
+
 ## Recovering a local password
 
 An authorized administrator opens the person in installation settings and chooses **Create

@@ -47,7 +47,8 @@ final class RememberStore implements RememberStoreInterface
     {
         $statement = $this->pdo->prepare(
             'SELECT user_id, validator_hash, security_version, expires_at'
-            . ' FROM remembered_sign_ins WHERE selector=?',
+            . ' FROM remembered_sign_ins WHERE selector=?'
+            . ($this->pdo->inTransaction() ? ' FOR UPDATE' : ''),
         );
         $statement->execute([$selector]);
         $row = $statement->fetch(PDO::FETCH_ASSOC);
