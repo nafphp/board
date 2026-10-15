@@ -8,7 +8,9 @@ use Naf\Auth\Auth;
 use Naf\Board\Contracts\RememberStoreInterface;
 use Naf\Board\Events\SignIn;
 use Naf\Board\Support\RememberToken;
+use Naf\ORM\Core\EntityManager;
 use PDO;
+use Throwable;
 
 use function Naf\config;
 use function Naf\event;
@@ -64,11 +66,46 @@ final class RememberService
             return false;
         }
 
-        $row = $this->store->find($token->selector);
-        if ($row === null || $row['expired']) {
+        $initial = $this->store->find($token->selector);
+        if ($initial === null) {
             $this->drop($token->selector);
 
             return false;
+        }
+
+        $transaction = new EntityManager($this->pdo);
+        $transaction->begin();
+
+        try {
+            // Use the same account lock as password changes. Re-read the token
+            // after acquiring it, so concurrent resumes cannot spend one copy twice.
+            $statement = $this->pdo->prepare('SELECT security_version FROM users WHERE id=? AND active=1 FOR UPDATE');
+            $statement->execute([$initial['user_id']]);
+            $version = $statement->fetchColumn();
+            $outcome = $this->resumeLocked($token, $initial['user_id'], $version === false ? null : (int) $version);
+            $transaction->commit();
+        } catch (Throwable $exception) {
+            $transaction->rollback();
+            $this->auth->logout();
+            $this->clear();
+
+            throw $exception;
+        }
+
+        if ($outcome !== null) {
+            $this->announce($initial['user_id'], $outcome);
+        }
+
+        return $outcome === true;
+    }
+
+    private function resumeLocked(RememberToken $token, int $user, ?int $version): ?bool
+    {
+        $row = $this->store->find($token->selector);
+        if ($row === null || $row['expired'] || $row['user_id'] !== $user || $version === null) {
+            $this->drop($token->selector);
+
+            return null;
         }
 
         if (!$token->proves($row['validator_hash'])) {
@@ -76,29 +113,27 @@ final class RememberService
             // told from here, so neither is trusted and the account starts over.
             $this->store->forgetAll($row['user_id']);
             $this->clear();
-            $this->announce($row['user_id'], false);
 
             return false;
         }
 
-        if ($row['security_version'] !== $this->versionOf($row['user_id'])) {
+        if ($row['security_version'] !== $version) {
             $this->drop($token->selector);
 
-            return false;
+            return null;
         }
 
         $identity = $this->auth->load('users', (string) $row['user_id']);
         if ($identity === null) {
             $this->drop($token->selector);
 
-            return false;
+            return null;
         }
 
         $fresh = $token->rotated();
         $this->store->rotate($token->selector, $fresh);
         $this->send($fresh->cookie(), time() + $this->days() * 86400);
         $this->auth->setIdentity($identity, 'users');
-        $this->announce($row['user_id'], true);
 
         return true;
     }
