@@ -94,13 +94,36 @@ use function Naf\View\s;
             </div>
         </details>
     <?php endif ?>
-    <?php if ($slot->shows('column_id')): ?>
+    <?php if ($slot->shows('column_id')):
+        /*
+         * A status shows how far along the board a ticket is: a ring in the column's own
+         * colour that fills up from the first column towards the last open one. A column
+         * that closes tickets is complete. The picker draws the same mark for every entry,
+         * so reading and choosing look alike.
+         */
+        $openColumns = array_values(array_filter($slot->columns, static fn(array $column): bool => !$column['closes_tickets']));
+        $openIndex   = array_flip(array_map('intval', array_column($openColumns, 'id')));
+        $columnMarks = [];
+        foreach ($slot->columns as $column) {
+            $closes                     = (bool) $column['closes_tickets'];
+            $columnMarks[$column['id']] = [
+                'progress'       => $closes ? '1' : (string) round(($openIndex[(int) $column['id']] ?? 0) / max(1, count($openColumns)), 3),
+                'progress-color' => $column['color'],
+            ] + ($closes ? ['complete' => ''] : []);
+        }
+        $currentColumn = array_column($slot->columns, null, 'id')[$slot->ticket['column_id']];
+        $currentMark   = $columnMarks[$currentColumn['id']];
+        $columnDisplay = '<span class="ticket-column">'
+            . '<span class="choice-progress" aria-hidden="true" style="--progress: ' . s($currentMark['progress']) . '; --progress-color: ' . s($currentMark['progress-color']) . '"'
+            . (isset($currentMark['complete']) ? ' data-complete' : '') . '></span>'
+            . '<span class="choice-text">' . s($currentColumn['name']) . '</span></span>';
+        ?>
     <div class="meta-caption"><?= s(t('Status')) ?></div>
-    <?= $slot->field->render('column_id', 'Spalte', 'select', $slot->ticket['column_id'], '<span class="column-value">' . s(array_column($slot->columns, 'name', 'id')[$slot->ticket['column_id']]) . '' . Icon::mark('expand_more', 'sm') . '</span>', array_column($slot->columns, 'name', 'id'), ['action' => route('ticket.move', $slot->params), 'hidden' => ['swimlane_id' => $slot->ticket['swimlane_id']]]) ?>
+    <?= $slot->field->render('column_id', 'Spalte', 'select', $slot->ticket['column_id'], $columnDisplay, array_column($slot->columns, 'name', 'id'), ['action' => route('ticket.move', $slot->params), 'hidden' => ['swimlane_id' => $slot->ticket['swimlane_id']], 'optionData' => $columnMarks]) ?>
     <?php endif ?>
     <?php if ($slot->shows('assignee_ids')): ?>
     <div class="meta-caption"><?= s(t('Verantwortliche')) ?></div>
-    <?= $slot->field->render('assignee_ids', 'Verantwortliche', 'multiple', $selected_assignees, $assigneeDisplay ?: '<span class="muted">' . s(t('Nicht zugewiesen')) . '</span>', $memberNames) ?>
+    <?= $slot->field->render('assignee_ids', 'Verantwortliche', 'multiple', $selected_assignees, $assigneeDisplay ?: '<span class="ticket-person"><span class="avatar-placeholder" aria-hidden="true"></span><span class="muted">' . s(t('Nicht zugewiesen')) . '</span></span>', $memberNames) ?>
     <?php endif ?>
     <?php
     /*

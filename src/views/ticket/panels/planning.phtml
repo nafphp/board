@@ -2,6 +2,8 @@
 
 use Naf\Board\Domain\Estimation;
 use Naf\Board\Support\Duration;
+use Naf\Board\Support\Format;
+use Naf\Board\Support\Icon;
 
 use function Naf\Board\partial;
 use function Naf\I18n\t;
@@ -35,44 +37,76 @@ use function Naf\View\s;
         <dt><?= s(t('Erfasst')) ?></dt>
         <dd class="ticket-spent">
             <?= $slot->field->render('spent_minutes', 'Erfasst', 'duration', Duration::format((int) $slot->ticket['spent_minutes']), s($duration((int) $slot->ticket['spent_minutes']))) ?>
-            <?php if (!$slot->isNew && $slot->editable): ?>
-            <?php $timerState = $slot->timer['state'] ?? 'stopped'; ?>
+            <?php if (!$slot->isNew && $slot->editable):
+                $timerState     = $slot->timer['state'] ?? 'stopped';
+                $timerSeconds   = (int) ($slot->timer['seconds'] ?? 0);
+                $timerElsewhere = $slot->timer['elsewhere'] ?? null;
+                $timerReference = Format::ticket((string) $slot->project['ticket_key'], (int) $slot->ticket['number']);
+                $timerClock     = static fn(int $seconds): string => $seconds >= 3600
+                    ? sprintf('%d:%02d:%02d', intdiv($seconds, 3600), intdiv($seconds % 3600, 60), $seconds % 60)
+                    : sprintf('%d:%02d', intdiv($seconds, 60), $seconds % 60);
+                $timerTitleId = 'timer-title-' . (int) $slot->ticket['id'];
+                ?>
+                <?php /*
+                 * The row shows a compact stopwatch: just its symbol while nothing is counted,
+                 * the clock as soon as there is time on it. Everything else -- starting,
+                 * pausing and booking -- happens in the dialog it opens, which names the
+                 * ticket it counts on and the one it would pause.
+                 */ ?>
                 <div
                     class="ticket-timer"
                     data-ticket-timer
                     data-action="<?= s(route('ticket.timer', $slot->params)) ?>"
                     data-token="<?= s($slot->token) ?>"
                     data-state="<?= s($timerState) ?>"
-                    data-seconds="<?= (int) ($slot->timer['seconds'] ?? 0) ?>"
-                    data-label-start="<?= s(t('Zeiterfassung starten')) ?>"
-                    data-label-resume="<?= s(t('Zeiterfassung fortsetzen')) ?>"
-                    data-label-pause="<?= s(t('Zeiterfassung pausieren')) ?>"
+                    data-seconds="<?= $timerSeconds ?>"
+                    data-carry="<?= (int) ($slot->timer['carry'] ?? 0) ?>"
+                    data-reference="<?= s($timerReference) ?>"
                 >
                     <button
                         type="button"
-                        class="timer-button"
-                        data-timer-toggle
-                        aria-describedby="timer-hold-hint"
-                        title="<?= s(t('Gedrückt halten beendet die Erfassung')) ?>"
+                        class="timer-trigger"
+                        data-timer-open
+                        aria-haspopup="dialog"
+                        aria-controls="<?= s($timerTitleId) ?>-dialog"
+                        aria-label="<?= s(t('Zeiterfassung öffnen')) ?>"
+                        title="<?= s(t('Zeiterfassung')) ?>"
                     >
-                        <svg class="timer-ring" viewBox="0 0 36 36" aria-hidden="true" preserveAspectRatio="none">
-                            <rect class="timer-track" x="1.3" y="1.3" width="33.4" height="33.4" rx="9.7" />
-                            <rect class="timer-hold" x="1.3" y="1.3" width="33.4" height="33.4" rx="9.7" />
+                        <svg class="timer-glyph" viewBox="0 0 16 16" aria-hidden="true">
+                            <circle cx="8" cy="9.2" r="5.6" />
+                            <path d="M8 9.2V6.4M6.4 1.6h3.2M12.3 4.6l1-1" />
                         </svg>
-                        <span class="timer-face">
-                            <span class="timer-glyph" aria-hidden="true">
-                                <svg viewBox="0 0 14 14">
-                                    <path class="glyph-play" d="M4.6 2.7 11.2 7 4.6 11.3Z" />
-                                    <path class="glyph-pause" d="M4.9 3.2v7.6M9.1 3.2v7.6" />
-                                </svg>
-                            </span>
-                            <time class="timer-readout" data-timer-readout><?= s(sprintf('%d:%02d', intdiv((int) ($slot->timer['seconds'] ?? 0), 60), (int) ($slot->timer['seconds'] ?? 0) % 60)) ?></time>
-                        </span>
+                        <time class="timer-readout" data-timer-readout><?= s($timerClock($timerSeconds)) ?></time>
                     </button>
-                    <span id="timer-hold-hint" class="sr-only">
-                        <?= s(t('Gedrückt halten beendet die Erfassung. Sie läuft auf dem Server weiter, auch wenn du den Tab schließt. Beim Pausieren und Beenden werden die vollen Minuten unter Erfasst gebucht.')) ?>
-                    </span>
-                    <div class="form-errors" role="alert"></div>
+                    <dialog id="<?= s($timerTitleId) ?>-dialog" class="modal timer-dialog" aria-labelledby="<?= s($timerTitleId) ?>" data-timer-dialog>
+                        <header class="timer-dialog-heading">
+                            <div>
+                                <h2 id="<?= s($timerTitleId) ?>"><?= s(t('Zeiterfassung')) ?></h2>
+                                <p class="timer-dialog-ticket"><span class="ticket-key"><?= s($timerReference) ?></span> <span><?= s($slot->ticket['title']) ?></span></p>
+                            </div>
+                            <button type="button" class="icon-button" data-timer-close aria-label="<?= s(t('Zeiterfassung schließen')) ?>"><?= Icon::mark('close') ?></button>
+                        </header>
+                        <div class="timer-dialog-clock">
+                            <time class="timer-dialog-time" data-timer-readout><?= s($timerClock($timerSeconds)) ?></time>
+                            <span class="timer-dialog-state" data-timer-status></span>
+                        </div>
+                        <p class="timer-elsewhere" data-timer-elsewhere <?= $timerElsewhere ? '' : 'hidden' ?>>
+                            <?= Icon::mark('info', 'sm') ?>
+                            <span data-timer-elsewhere-text><?= $timerElsewhere ? s(t('Deine Zeiterfassung läuft gerade auf :ticket. Starten pausiert sie dort, die Zeit bleibt erhalten.', ['ticket' => $timerElsewhere['reference']])) : '' ?></span>
+                        </p>
+                        <div class="timer-dialog-actions">
+                            <button type="button" class="button subtle timer-run" data-timer-action="start">
+                                <svg viewBox="0 0 14 14" aria-hidden="true"><path class="glyph-play" d="M4.6 2.7 11.2 7 4.6 11.3Z" /><path class="glyph-pause" d="M4.9 3.2v7.6M9.1 3.2v7.6" /></svg>
+                                <span data-timer-run-label><?= s(t('Starten')) ?></span>
+                            </button>
+                            <button type="button" class="button primary timer-book" data-timer-action="stop">
+                                <?= Icon::mark('check', 'sm') ?>
+                                <span data-timer-book-label><?= s(t('Buchen')) ?></span>
+                            </button>
+                        </div>
+                        <p class="timer-dialog-note muted" data-timer-note></p>
+                        <div class="form-errors" role="alert"></div>
+                    </dialog>
                 </div>
             <?php endif ?>
         </dd>

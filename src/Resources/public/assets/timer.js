@@ -1,14 +1,14 @@
 import { t } from './i18n.js';
+import { toast } from './app.js';
+import { openDialog, closeDialog } from './dialog.js';
+import { refresh } from './ticket.js?v=3';
 
 // The server owns the elapsed time. This only renders it and asks for a change, so a
 // reload, a sleeping laptop or a second tab can never invent or lose a minute.
-
-// Nothing at all happens for this long, so an ordinary click never reveals the outline.
-const GRACE = 160;
-// How long the outline then takes to close, and with it how long a hold has to last.
-const SWEEP = 620;
-// How long the button states what it just did before going back to showing the clock.
-const CONFIRM = 1200;
+//
+// In the ticket the timer is a small stopwatch in the recorded-time row. It opens a dialog
+// that says which ticket it counts on, starts and pauses with one button and books with
+// another -- booking is its own, plainly labelled step, never a side effect of a gesture.
 
 function clock(seconds) {
   const hours = Math.floor(seconds / 3600);
@@ -20,16 +20,25 @@ function clock(seconds) {
 }
 
 // Counting from a fixed origin rather than adding one per tick, because a throttled
-// background tab fires far fewer ticks than it has seconds.
-function follow(element, seconds) {
-  const readout = element.querySelector('[data-timer-readout]');
-  if (!readout) return () => {};
+// background tab fires far fewer ticks than it has seconds. `paint` gets every new value,
+// so the dialog can keep what booking would add in step with the clock.
+function follow(element, seconds, paint = () => {}) {
+  const readouts = element.querySelectorAll('[data-timer-readout]');
   const origin = Date.now() - seconds * 1000;
-  const paint = () => {
-    readout.textContent = clock(Math.max(0, Math.round((Date.now() - origin) / 1000)));
+  let handle;
+  const tick = () => {
+    // A ticket the drawer has replaced, or a marker that was removed, stops counting.
+    if (!element.isConnected) {
+      clearInterval(handle);
+
+      return;
+    }
+    const now = Math.max(0, Math.round((Date.now() - origin) / 1000));
+    readouts.forEach((readout) => (readout.textContent = clock(now)));
+    paint(now);
   };
-  paint();
-  const handle = setInterval(paint, 1000);
+  tick();
+  handle = setInterval(tick, 1000);
 
   return () => clearInterval(handle);
 }
@@ -37,78 +46,100 @@ function follow(element, seconds) {
 const running = document.querySelector('[data-running-timer]');
 if (running) follow(running, Number(running.dataset.seconds || 0));
 
-// The same shape the server writes and the field accepts, so the number the button just
-// booked and the number the row shows cannot drift apart.
-function duration(minutes) {
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  if (hours && rest) return `${hours}h ${rest}m`;
-
-  return hours ? `${hours}h` : `${rest}m`;
+// Whole minutes go onto the ticket; the seconds left over from earlier bookings count
+// towards the next one. This is the same sum the server makes, so the button can say
+// exactly what pressing it will add.
+function bookable(panel, seconds) {
+  return Math.floor((Number(panel.dataset.carry || 0) + seconds) / 60);
 }
 
-// Settling a run moves whole minutes onto the ticket. The row that holds them says so: it
-// takes the new total and lights up once. Nothing lights up when nothing was booked, because
-// a run shorter than a minute leaves the total where it was.
-function booked(panel, minutes) {
-  if (typeof minutes !== 'number') return;
-  const field = panel
-    .closest('.ticket-spent')
-    ?.querySelector('[data-inline-field="spent_minutes"]');
-  const display = field?.querySelector('.inline-display');
-  const input = field?.querySelector('input[name="spent_minutes"]');
-  const text = duration(minutes);
-  if (input) input.value = text;
-  if (!display || display.textContent.trim() === text) return;
-  display.textContent = text;
-  display.classList.remove('just-booked');
-  // Reading the layout restarts the animation when two runs settle close together.
-  void display.offsetWidth;
-  display.classList.add('just-booked');
+function describe(panel, seconds) {
+  const dialog = panel.querySelector('[data-timer-dialog]') || panel.dialog;
+  if (!dialog) return;
+  const state = panel.dataset.state;
+  const minutes = bookable(panel, seconds);
+  const book = dialog.querySelector('[data-timer-action="stop"]');
+  const label = dialog.querySelector('[data-timer-book-label]');
+  const note = dialog.querySelector('[data-timer-note]');
+  book.disabled = Boolean(panel.dataset.busy) || minutes < 1;
+  label.textContent = minutes > 0 ? t(':minutes Min. buchen', { minutes }) : t('Buchen');
+  if (seconds > 0 && minutes < 1) {
+    note.textContent = t(
+      'Gebucht wird ab einer vollen Minute. Was darunter liegt, zählt beim nächsten Buchen mit.',
+    );
+  } else if (state === 'stopped' && !seconds) {
+    note.textContent = t(
+      'Die Uhr läuft auf dem Server, auch wenn du das Ticket schließt. Erst Buchen trägt die Zeit unter Erfasst ein.',
+    );
+  } else {
+    note.textContent = t(
+      'Buchen trägt die vollen Minuten unter Erfasst ein und setzt die Uhr zurück.',
+    );
+  }
+  // Seconds left over from earlier bookings are invisible on a clock that starts at zero,
+  // yet they decide when the next minute is full. Saying so keeps the button explicable.
+  const carry = Number(panel.dataset.carry || 0);
+  if (carry > 0 && (seconds > 0 || state !== 'stopped'))
+    note.textContent += ` ${t('Dazu kommen :seconds s aus früheren Buchungen.', { seconds: carry })}`;
 }
 
-function hasTime(panel) {
-  return Number(panel.dataset.seconds || 0) > 0 && panel.dataset.state !== 'stopped';
-}
-
-// The button shows the clock, and the icon whenever it has to say what a press would do:
-// when the pointer arrives, and for a moment after the state changed. The way back to the
-// clock deliberately ignores the pointer — after a click it is still on the button, and
-// waiting for it to leave would strand the icon there for as long as the hand rests.
-function face(panel, showing) {
-  panel.dataset.face = showing;
-  clearTimeout(panel.confirming);
-  if (showing !== 'icon' || !hasTime(panel)) return;
-  panel.confirming = setTimeout(() => {
-    if (!panel.holding) panel.dataset.face = 'time';
-  }, CONFIRM);
-}
-
-function render(panel, confirm = false) {
+function render(panel) {
   const state = panel.dataset.state;
   const seconds = Number(panel.dataset.seconds || 0);
-  const button = panel.querySelector('[data-timer-toggle]');
-  if (button) {
-    button.setAttribute(
-      'aria-label',
-      state === 'running'
-        ? panel.dataset.labelPause
-        : state === 'paused'
-          ? panel.dataset.labelResume
-          : panel.dataset.labelStart,
-    );
-    button.setAttribute('aria-pressed', state === 'running' ? 'true' : 'false');
+  const dialog = panel.querySelector('[data-timer-dialog]') || panel.dialog;
+  // A timer that has never run has no time worth showing, so the row keeps just its symbol.
+  panel.toggleAttribute('data-idle', state !== 'running' && seconds === 0);
+  const trigger = panel.querySelector('[data-timer-open]');
+  trigger?.setAttribute(
+    'aria-label',
+    state === 'running'
+      ? t('Zeiterfassung läuft: :time', { time: clock(seconds) })
+      : t('Zeiterfassung öffnen'),
+  );
+  if (dialog) {
+    dialog.dataset.state = state;
+    const run = dialog.querySelector('.timer-run');
+    run.dataset.timerAction = state === 'running' ? 'pause' : 'start';
+    run.querySelector('[data-timer-run-label]').textContent =
+      state === 'running' ? t('Pausieren') : seconds > 0 ? t('Fortsetzen') : t('Starten');
+    run.disabled = Boolean(panel.dataset.busy);
+    // While it runs, the button the hand is most likely to want is booking.
+    run.classList.toggle('primary', state !== 'running' && seconds === 0);
+    run.classList.toggle('subtle', !(state !== 'running' && seconds === 0));
+    dialog.querySelector('[data-timer-status]').textContent =
+      state === 'running' ? t('Läuft') : seconds > 0 ? t('Pausiert') : t('Bereit');
+    const elsewhere = dialog.querySelector('[data-timer-elsewhere]');
+    const other = panel.elsewhere;
+    if (other !== undefined) {
+      elsewhere.hidden = !other;
+      elsewhere.querySelector('[data-timer-elsewhere-text]').textContent = other
+        ? t(
+            'Deine Zeiterfassung läuft gerade auf :ticket. Starten pausiert sie dort, die Zeit bleibt erhalten.',
+            { ticket: other.reference },
+          )
+        : '';
+    }
   }
   panel.stopFollowing?.();
   panel.stopFollowing = null;
+  const paint = (now) => describe(panel, now);
   if (state === 'running') {
-    panel.stopFollowing = follow(panel, seconds);
+    panel.stopFollowing = follow(panel, seconds, paint);
+    if (dialog && !panel.contains(dialog)) {
+      const stop = follow(dialog, seconds, paint);
+      const previous = panel.stopFollowing;
+      panel.stopFollowing = () => {
+        previous();
+        stop();
+      };
+    }
   } else {
-    const readout = panel.querySelector('[data-timer-readout]');
-    if (readout) readout.textContent = clock(seconds);
+    for (const root of new Set([panel, dialog].filter(Boolean)))
+      root.querySelectorAll('[data-timer-readout]').forEach((readout) => {
+        readout.textContent = clock(seconds);
+      });
+    paint(seconds);
   }
-  // A timer that has never run has no time worth showing, so it stays an icon.
-  face(panel, confirm || !hasTime(panel) ? 'icon' : 'time');
 }
 
 // The card behind the panel and the marker in the bar are rendered by the server, so they
@@ -156,9 +187,15 @@ function marker(panel, active) {
 }
 
 async function send(panel, action) {
-  const errors = panel.querySelector('.form-errors');
-  if (errors) errors.textContent = '';
+  const dialog = panel.dialog || panel.querySelector('[data-timer-dialog]');
+  const errors = dialog?.querySelector('.form-errors');
+  if (errors) {
+    errors.textContent = '';
+    errors.classList.remove('visible');
+  }
   panel.dataset.busy = '1';
+  render(panel);
+  const before = panel.dataset.state;
   try {
     const response = await fetch(panel.dataset.action, {
       method: 'POST',
@@ -172,152 +209,127 @@ async function send(panel, action) {
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-      if (errors)
+      if (errors) {
         errors.textContent = payload.message || t('Die Zeiterfassung ließ sich nicht ändern.');
+        errors.classList.add('visible');
+      }
 
-      return;
+      return null;
     }
     panel.dataset.state = payload.state ?? 'stopped';
     panel.dataset.seconds = String(payload.seconds ?? 0);
-    render(panel, true);
-    marker(panel, panel.dataset.state === 'running');
-    booked(panel, payload.spent_minutes);
+    panel.dataset.carry = String(payload.carry ?? 0);
+    panel.elsewhere = payload.elsewhere ?? null;
+    // Starting here paused whatever ran elsewhere, so its card stops pulsing too.
+    if (action === 'start')
+      document.querySelectorAll('[data-card-timer]').forEach((dot) => dot.remove());
+    if (action !== 'state' || before !== panel.dataset.state)
+      marker(panel, panel.dataset.state === 'running');
+
+    return payload;
+  } catch {
+    if (errors) {
+      errors.textContent = t('Die Zeiterfassung ließ sich nicht ändern.');
+      errors.classList.add('visible');
+    }
+
+    return null;
   } finally {
     delete panel.dataset.busy;
+    render(panel);
   }
 }
 
-// The outline is drawn around the button as it actually is, which changes width with the
-// time inside it, so its geometry is taken from the element rather than written down.
-function outline(panel, button) {
-  const ring = panel.querySelector('.timer-hold');
-  const track = panel.querySelector('.timer-track');
-  if (!ring) return { ring: null, length: 0 };
-  const box = button.getBoundingClientRect();
-  const stroke = 2.6;
-  const inset = stroke / 2 + 0.05;
-  const width = Math.max(0, box.width - stroke - 0.1);
-  const height = Math.max(0, box.height - stroke - 0.1);
-  const radius = Math.min(height / 2, 9.7);
-  for (const rect of [track, ring]) {
-    if (!rect) continue;
-    rect.setAttribute('x', String(inset));
-    rect.setAttribute('y', String(inset));
-    rect.setAttribute('width', String(width));
-    rect.setAttribute('height', String(height));
-    rect.setAttribute('rx', String(radius));
+// Booking changed the ticket -- its total, its version, its history -- so the ticket is
+// reloaded the way every other save reloads it. Editing a field afterwards then carries the
+// current version instead of running into a conflict.
+async function book(panel) {
+  const payload = await send(panel, 'stop');
+  if (!payload) return;
+  const workspace = panel.closest('.ticket-workspace');
+  await dismiss(panel);
+  if (payload.booked > 0)
+    toast(
+      t(':minutes Min. auf :ticket gebucht', {
+        minutes: payload.booked,
+        ticket: panel.dataset.reference,
+      }),
+    );
+  if (workspace) await refresh(workspace, null, null).catch(() => {});
+  const field = workspace?.querySelector('[data-inline-field="spent_minutes"] .inline-display');
+  if (field) {
+    field.classList.remove('just-booked');
+    void field.offsetWidth;
+    field.classList.add('just-booked');
   }
-  panel.querySelector('.timer-ring')?.setAttribute('viewBox', `0 0 ${box.width} ${box.height}`);
-
-  return {
-    ring,
-    length: 2 * (width - 2 * radius) + 2 * (height - 2 * radius) + 2 * Math.PI * radius,
-  };
 }
 
-// Pressing a running timer stops the clock at once rather than at the end of the hold, so
-// holding the button cannot book the time the hold itself takes. Letting go early leaves it
-// paused, which is what a tap means anyway; holding on turns that pause into a full stop.
-function hold(panel, button) {
-  if (panel.holding || panel.dataset.busy) return;
-  const state = { reached: false, animation: null, settled: false };
-  panel.holding = state;
-  face(panel, 'icon');
-  if (panel.dataset.state === 'running') {
-    state.settled = true;
-    send(panel, 'pause');
-  }
-  state.sweep = setTimeout(() => {
-    const { ring, length } = outline(panel, button);
-    if (!ring) return;
-    ring.style.strokeDasharray = String(length);
-    panel.dataset.holding = '1';
-    state.animation = ring.animate([{ strokeDashoffset: length }, { strokeDashoffset: 0 }], {
-      duration: SWEEP,
-      easing: 'linear',
-      fill: 'forwards',
-    });
-  }, GRACE);
-  state.stop = setTimeout(() => {
-    state.reached = true;
-    panel.dataset.held = '1';
-    send(panel, 'stop');
-  }, GRACE + SWEEP);
+// The dialog is moved to the end of the document while it is open, so it is never inside
+// the drawer it was opened from: a covered drawer is inert, and so would be the timer. It
+// goes back into its row when it closes, which keeps it with the ticket it belongs to.
+async function open(panel) {
+  const dialog = panel.querySelector('[data-timer-dialog]');
+  if (!dialog || dialog.open) return;
+  panel.dialog = dialog;
+  dialog.timerPanel = panel;
+  document.body.append(dialog);
+  dialog.addEventListener('close', () => restore(panel), { once: true });
+  render(panel);
+  await openDialog(dialog);
+  // Whatever another tab or another ticket did in the meantime, the dialog shows the truth.
+  await send(panel, 'state');
+  dialog.querySelector('[data-timer-action]:not(:disabled)')?.focus();
 }
 
-function release(panel, act = true) {
-  const current = panel.holding;
-  if (!current) return;
-  panel.holding = null;
-  clearTimeout(current.sweep);
-  clearTimeout(current.stop);
-  if (current.reached) {
-    setTimeout(() => {
-      current.animation?.cancel();
-      delete panel.dataset.holding;
-      delete panel.dataset.held;
-    }, 240);
+// Back into its row, or gone with a ticket that is no longer on the page. Called by the
+// close event and again once a close this module asked for has finished, because a page
+// in the background may deliver that event late.
+function restore(panel) {
+  const dialog = panel.dialog;
+  if (!dialog || dialog.open) return;
+  if (panel.isConnected) {
+    if (!panel.contains(dialog)) panel.append(dialog);
+  } else dialog.remove();
+  render(panel);
+}
+
+async function dismiss(panel) {
+  await closeDialog(panel.dialog);
+  restore(panel);
+}
+
+function panelOf(target) {
+  return (
+    target.closest?.('[data-ticket-timer]') || target.closest?.('[data-timer-dialog]')?.timerPanel
+  );
+}
+
+document.addEventListener('click', (event) => {
+  const opener = event.target.closest?.('[data-timer-open]');
+  if (opener) {
+    open(opener.closest('[data-ticket-timer]'));
 
     return;
   }
-  current.animation?.cancel();
-  delete panel.dataset.holding;
-  // A running timer was already paused on the press, and letting go is not a new command.
-  if (act && !current.settled) send(panel, 'start');
-}
+  const panel = panelOf(event.target);
+  if (!panel || panel.dataset.busy) return;
+  if (event.target.closest('[data-timer-close]')) {
+    dismiss(panel);
+
+    return;
+  }
+  const button = event.target.closest('[data-timer-action]');
+  const action = button?.dataset.timerAction;
+  if (action === 'stop') book(panel);
+  else if (action)
+    // The button is disabled while the request runs, which drops its focus. It gets it
+    // back, so the keyboard stays in the dialog.
+    send(panel, action).then(() => {
+      if (panel.dialog?.open && !panel.dialog.contains(document.activeElement)) button.focus();
+    });
+});
 
 for (const panel of document.querySelectorAll('[data-ticket-timer]')) render(panel);
-
-document.addEventListener('pointerdown', (event) => {
-  const button = event.target.closest?.('[data-timer-toggle]');
-  const panel = button?.closest('[data-ticket-timer]');
-  if (!panel || event.button !== 0) return;
-  event.preventDefault();
-  try {
-    // Keeps the release reachable when the pointer drifts off the button while held.
-    button.setPointerCapture(event.pointerId);
-  } catch {
-    // An unknown pointer id is not worth failing the gesture over.
-  }
-  hold(panel, button);
-});
-document.addEventListener('pointerup', (event) => {
-  const panel = event.target.closest?.('[data-timer-toggle]')?.closest('[data-ticket-timer]');
-  if (panel) release(panel);
-});
-document.addEventListener('pointercancel', (event) => {
-  const panel = event.target.closest?.('[data-timer-toggle]')?.closest('[data-ticket-timer]');
-  if (panel) release(panel, false);
-});
-
-// Under the pointer the button says what it does; away from it, it goes back to the clock.
-document.addEventListener('pointerover', (event) => {
-  const panel = event.target.closest?.('[data-ticket-timer]');
-  if (panel) face(panel, 'icon');
-});
-document.addEventListener('pointerout', (event) => {
-  const panel = event.target.closest?.('[data-ticket-timer]');
-  if (panel && !panel.contains(event.relatedTarget) && !panel.holding) {
-    clearTimeout(panel.confirming);
-    panel.dataset.face = hasTime(panel) ? 'time' : 'icon';
-  }
-});
-
-// Space and Enter hold too, so the stop is reachable without a pointer. Key repeat would
-// otherwise restart the hold on every repeated keydown.
-document.addEventListener('keydown', (event) => {
-  if (event.key !== ' ' && event.key !== 'Enter') return;
-  const button = event.target.closest?.('[data-timer-toggle]');
-  const panel = button?.closest('[data-ticket-timer]');
-  if (!panel || event.repeat) return;
-  event.preventDefault();
-  hold(panel, button);
-});
-document.addEventListener('keyup', (event) => {
-  if (event.key !== ' ' && event.key !== 'Enter') return;
-  const panel = event.target.closest?.('[data-timer-toggle]')?.closest('[data-ticket-timer]');
-  if (panel) release(panel);
-});
 
 // The drawer renders its ticket after this module has run, so a freshly opened one is
 // wired when it announces itself.

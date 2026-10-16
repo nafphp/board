@@ -267,6 +267,55 @@ final class TimerTest extends BoardTestCase
         $this->assertDenied(404, fn() => $this->timers->act($this->project, $ticket, ['action' => 'start']));
     }
 
+    /** Booking says what it added, so the interface confirms the real number. */
+    public function testBookingReportsWhatItPutOnTheTicket(): void
+    {
+        $ticket = $this->addTicket();
+        $this->timers->act($this->project, $ticket, ['action' => 'start']);
+        $this->rewind($ticket, 130);
+
+        $booked = $this->timers->act($this->project, $ticket, ['action' => 'stop']);
+
+        $this->assertSame(2, $booked['booked'], 'booking did not report its minutes');
+        $this->assertEqualsWithDelta(10, $booked['carry'], self::TICK, 'the seconds left over were not reported');
+
+        $this->timers->act($this->project, $ticket, ['action' => 'start']);
+        $this->assertSame(0, $this->timers->act($this->project, $ticket, ['action' => 'pause'])['booked'], 'pausing reported a booking');
+    }
+
+    /** Opening the timer asks for the current state; asking must not change it. */
+    public function testAskingForTheStateChangesNothing(): void
+    {
+        $ticket = $this->addTicket();
+        $this->timers->act($this->project, $ticket, ['action' => 'start']);
+        $this->rewind($ticket, 90);
+
+        $state = $this->timers->act($this->project, $ticket, ['action' => 'state']);
+
+        $this->assertSame('running', $state['state'], 'asking stopped the clock');
+        $this->assertEqualsWithDelta(90, $state['seconds'], self::TICK, 'asking reset the clock');
+        $this->assertSame(0, $this->spent($ticket), 'asking booked time');
+    }
+
+    /** A ticket tells the person when their clock is counting somewhere else. */
+    public function testTheTimerNamesTheTicketThatIsCountingElsewhere(): void
+    {
+        $first  = $this->addTicket();
+        $second = $this->addTicket();
+        $this->timers->act($this->project, $first, ['action' => 'start']);
+
+        $elsewhere = $this->timers->state($this->project, $second)['elsewhere'];
+
+        $this->assertNotNull($elsewhere, 'the other run was not named');
+        $this->assertSame($this->project, $elsewhere['project']);
+        $number = $this->tickets->ticket($this->project, $first)['number'];
+        $this->assertStringEndsWith('-' . $number, $elsewhere['reference'], 'the wrong ticket was named');
+        $this->assertNull($this->timers->state($this->project, $first)['elsewhere'], 'a run named itself as elsewhere');
+
+        $this->timers->act($this->project, $second, ['action' => 'start']);
+        $this->assertNull($this->timers->state($this->project, $second)['elsewhere'], 'starting here left the other run counting');
+    }
+
     private function addTicket(): int
     {
         return $this->tickets->create($this->project, [

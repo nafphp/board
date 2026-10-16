@@ -19,9 +19,14 @@ use function Naf\I18n\t;
  * Elapsed time is derived from a stored start instant rather than counted in the browser:
  * a closed tab, a reload or a sleeping laptop can then neither lose nor invent minutes.
  *
- * Pausing holds the clock without writing anything; only stopping books what it shows. Time
- * that is never stopped therefore never reaches the ticket — it waits on the run instead of
- * being lost, and the clock still shows it on the next visit.
+ * Pausing holds the clock without writing anything; only stopping — "booking" in the
+ * interface — puts what it shows on the ticket. Time that is never booked therefore never
+ * reaches the ticket — it waits on the run instead of being lost, and the clock still shows
+ * it on the next visit.
+ *
+ * Every action takes a lock on the person as well as on the project. Two tabs starting
+ * clocks in two different projects at the same moment would otherwise each settle what the
+ * other had not written yet, and leave the person counting on two tickets at once.
  *
  * Timer writes deliberately carry no ticket version. Every other write uses optimistic
  * locking, but someone who tracked an hour would hold a stale version by the time they
@@ -32,7 +37,8 @@ use function Naf\I18n\t;
  */
 final class TimerService implements TimerServiceInterface
 {
-    private const ACTIONS = ['start', 'pause', 'stop'];
+    /** `state` changes nothing: it is how an opened timer asks what is true right now. */
+    private const ACTIONS = ['start', 'pause', 'stop', 'state'];
 
     public function __construct(
         private PDO $pdo,
@@ -58,6 +64,14 @@ final class TimerService implements TimerServiceInterface
                 throw new Failure(t('Für ein archiviertes Ticket wird keine Zeit erfasst.'));
             }
             $actor = (int) $this->access->actor();
+            // Projects first, then the person: the order every other write here takes too.
+            $lock = $this->pdo->prepare('SELECT id FROM users WHERE id=? FOR UPDATE');
+            $lock->execute([$actor]);
+            $lock->fetchColumn();
+            if ($action === 'state') {
+                return $this->state($project, $ticket, $actor);
+            }
+            $minutes = 0;
             if ($action === 'start') {
                 $this->settle($actor, 'paused');
                 $this->begin($project, $ticket, $actor);
@@ -68,11 +82,19 @@ final class TimerService implements TimerServiceInterface
                 }
             }
 
-            return $this->state($project, $ticket, $actor);
+            // `booked` is what this very action put on the ticket, so the interface can
+            // confirm it without working it out a second time.
+            return [...$this->state($project, $ticket, $actor), 'booked' => $minutes];
         });
     }
 
-    /** What the ticket view and its buttons render for the person looking at it. */
+    /**
+     * What the ticket view and its buttons render for the person looking at it.
+     *
+     * `carry` is the part of a minute left over from earlier bookings, so the interface can
+     * say exactly how many minutes booking now would add. `elsewhere` names the ticket the
+     * person is counting on instead, if it is another one: starting here would pause it.
+     */
     public function state(int $project, int $ticket, ?int $actor = null): array
     {
         $actor ??= (int) $this->access->actor();
@@ -84,10 +106,23 @@ final class TimerService implements TimerServiceInterface
         $statement = $this->pdo->prepare('SELECT spent_minutes FROM tickets WHERE project_id=? AND id=?');
         $statement->execute([$project, $ticket]);
 
+        $spent     = (int) $statement->fetchColumn();
+        $running   = $this->running($actor);
+        $elsewhere = $running !== null
+            && ((int) $running['project_id'] !== $project || (int) $running['ticket_id'] !== $ticket)
+            ? [
+                'project'   => (int) $running['project_id'],
+                'reference' => Format::ticket((string) $running['ticket_key'], (int) $running['number']),
+                'title'     => (string) $running['title'],
+            ]
+            : null;
+
         return [
             'state'         => $run ? $run['state'] : 'stopped',
             'seconds'       => $run ? $this->elapsed($run) : 0,
-            'spent_minutes' => (int) $statement->fetchColumn(),
+            'carry'         => $run ? (int) $run['carry_seconds'] : 0,
+            'spent_minutes' => $spent,
+            'elsewhere'     => $elsewhere,
         ];
     }
 
