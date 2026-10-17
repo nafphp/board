@@ -1,7 +1,13 @@
 .ticket-workspace {
   --ticket-section-gap: var(--space-32);
   --ticket-content-gap: var(--space-16);
-  max-width: 1280px;
+  /* The frame an inline field wears while it is being edited: the same box as the reading
+     view, only marked. Title, description and the sidebar fields share it. */
+  --ticket-edit-bg: color-mix(in srgb, var(--accent) 3%, var(--input));
+  --ticket-edit-ring: color-mix(in srgb, var(--accent) 34%, var(--line));
+  --ticket-edit-ring-focus: color-mix(in srgb, var(--accent) 72%, var(--line));
+  --ticket-edit-glow: color-mix(in srgb, var(--accent) 16%, transparent);
+  max-width: 1320px;
 }
 .ticket-workspace .detail-topline {
   margin-bottom: var(--space-26);
@@ -38,8 +44,8 @@
   }
 }
 .ticket-workspace .ticket-detail-grid {
-  grid-template-columns: minmax(0, 1fr) 310px;
-  gap: clamp(var(--space-24), 4vw, var(--space-64));
+  grid-template-columns: minmax(0, 1fr) 344px;
+  gap: clamp(var(--space-24), 4vw, var(--space-55));
   align-items: start;
 }
 .ticket-main {
@@ -92,13 +98,6 @@
   margin: 0;
   font-weight: 650;
   overflow-wrap: anywhere;
-}
-.ticket-title textarea {
-  font-size: clamp(var(--font-25), 2.7vw, var(--font-35));
-  line-height: 1.25;
-  font-weight: 650;
-  letter-spacing: -0.035em;
-  padding: var(--space-7);
 }
 .ticket-workspace .detail-section {
   margin-top: var(--ticket-section-gap);
@@ -160,7 +159,7 @@
 .ticket-field textarea {
   width: 100%;
   min-width: 0;
-  font-size: var(--font-12);
+  font-size: var(--font-13);
 }
 .ticket-field input[type='color'] {
   padding: var(--space-3);
@@ -246,7 +245,7 @@
   box-shadow: var(--card-shadow);
 }
 .ticket-sidebar-group {
-  padding: var(--space-21) var(--space-22);
+  padding: var(--space-22) var(--space-24);
 }
 .ticket-sidebar-group + .ticket-sidebar-group {
   border-top: 1px solid var(--line);
@@ -254,8 +253,8 @@
 .ticket-sidebar-group h2,
 .meta-caption {
   text-transform: uppercase;
-  letter-spacing: 0.09em;
-  font-size: var(--font-9);
+  letter-spacing: 0.08em;
+  font-size: var(--font-10);
   font-weight: 650;
   color: var(--muted);
   margin: 0 0 var(--space-18);
@@ -265,9 +264,9 @@
   border-radius: var(--radius-6) var(--radius-6) 0 0;
 }
 .ticket-sidebar-settings {
-  padding: var(--space-18) var(--space-22);
+  padding: var(--space-16) var(--space-24);
   border-top: 1px solid var(--line);
-  font-size: var(--font-11);
+  font-size: var(--font-12);
 }
 .ticket-sidebar-settings a {
   display: inline-flex;
@@ -301,31 +300,48 @@
 .ticket-primary-meta .ticket-field + .meta-caption {
   margin-top: var(--space-25);
 }
-.column-value {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-12);
-  font-size: var(--font-16);
-  font-weight: 650;
-  color: var(--accent);
-}
 .ticket-person {
   display: flex;
   align-items: center;
   gap: var(--space-9);
-  font-size: var(--font-12);
+  font-size: var(--font-13);
   margin-bottom: var(--space-7);
 }
 .ticket-person:last-child {
   margin-bottom: 0;
 }
+/* The sidebar's small print grows with its text, so a label or a unit never reads as a
+   footnote beside the value it belongs to. */
+.ticket-sidebar .label-tag {
+  font-size: var(--font-12);
+}
+.ticket-sidebar .ticket-points small {
+  font-size: var(--font-10);
+}
+.ticket-sidebar .avatar-small {
+  font-size: var(--font-12);
+}
+.ticket-sidebar .assign-self {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  margin-top: var(--space-4);
+  padding: var(--space-6) 0 0;
+  color: var(--muted);
+  font-size: var(--font-12);
+  transition: color 0.15s;
+}
+.ticket-sidebar .assign-self:hover {
+  color: var(--accent);
+}
 .ticket-meta {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  gap: var(--space-19) var(--space-12);
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: var(--space-16) var(--space-14);
   align-items: baseline;
   margin: 0;
-  font-size: var(--font-11);
+  font-size: var(--font-13);
+  line-height: 1.45;
 }
 .ticket-meta dt {
   color: var(--muted);
@@ -618,8 +634,8 @@
 }
 .ticket-audit .ticket-meta {
   margin-top: var(--ticket-content-gap);
-  font-size: var(--font-10);
-  gap: var(--space-15) var(--space-12);
+  font-size: var(--font-12);
+  gap: var(--space-12) var(--space-14);
 }
 .ticket-color {
   display: inline-block;
@@ -651,7 +667,7 @@
   gap: var(--space-8);
   margin: 0;
   padding: var(--space-6) var(--space-2);
-  font-size: var(--font-11);
+  font-size: var(--font-13);
 }
 .ticket-options input {
   width: 15px;
@@ -676,7 +692,7 @@
   padding: 0 var(--space-22) var(--space-20);
 }
 .ticket-archive button {
-  font-size: var(--font-10);
+  font-size: var(--font-12);
 }
 .ticket-link-row {
   display: flex;
@@ -926,15 +942,224 @@
   font-size: var(--font-11);
   margin-top: var(--space-8);
 }
-.ticket-workspace .ql-toolbar.ql-snow {
-  border-color: var(--line);
-  border-radius: var(--radius-9) var(--radius-9) 0 0;
+/*
+ * The description is edited where it is read.
+ *
+ * The editor takes over the reading view's box, type and line height, so the text stays
+ * exactly where it was; only a quiet frame marks it as a field. The formatting bar sits in
+ * the heading's row, where it covers nothing and pushes nothing down. A column too narrow
+ * for that keeps the bar above the text instead.
+ *
+ * Quill's own stylesheet is loaded after this one, so the rules below are deliberately
+ * one step more specific than the ones they replace.
+ */
+.ticket-description {
+  container: ticket-description / inline-size;
+}
+.ticket-description [data-field-editor] {
+  /* Its own formatting context, so the writing surface's negative margin cannot collapse
+     through it and the bar below can measure from the field's true top. */
+  display: flow-root;
+  position: relative;
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  width: fit-content;
+  max-width: calc(100% + 2 * var(--space-7));
+  margin: 0 calc(-1 * var(--space-7)) var(--space-12);
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-10);
   background: var(--surface);
-  padding: var(--space-8);
+  box-shadow: 0 8px 22px -14px color-mix(in srgb, var(--shadow-color) 45%, transparent);
+  font-family: inherit;
+  animation: ticket-toolbar-in 0.18s cubic-bezier(0.22, 0.7, 0.26, 1);
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow::after,
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow .ql-formats::after {
+  display: none;
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow .ql-formats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+}
+/* A bar that has to wrap keeps its groups apart by space alone; a hairline would end up
+   at the start of the second row. */
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow {
+  column-gap: var(--space-8);
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: var(--radius-6);
+  transition:
+    background 0.14s,
+    color 0.14s;
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow button svg {
+  float: none;
+  width: 15px;
+  height: 15px;
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow :is(button, .ql-picker-label) .ql-stroke,
+.ticket-workspace
+  .ticket-description
+  .ql-toolbar.ql-snow
+  :is(button, .ql-picker-label)
+  .ql-stroke-miter {
+  stroke: var(--muted);
+  transition: stroke 0.14s;
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow :is(button, .ql-picker-label) .ql-fill {
+  fill: var(--muted);
+  transition: fill 0.14s;
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow :is(button, .ql-picker-label) {
+  color: var(--muted);
+}
+.ticket-workspace
+  .ticket-description
+  .ql-toolbar.ql-snow
+  :is(button, .ql-picker-label):is(:hover, :focus-visible) {
+  color: var(--text);
+  background: var(--hover);
+}
+.ticket-workspace
+  .ticket-description
+  .ql-toolbar.ql-snow
+  :is(button, .ql-picker-label):is(:hover, :focus-visible)
+  :is(.ql-stroke, .ql-stroke-miter) {
+  stroke: var(--text);
+}
+.ticket-workspace
+  .ticket-description
+  .ql-toolbar.ql-snow
+  :is(button, .ql-picker-label):is(:hover, :focus-visible)
+  .ql-fill {
+  fill: var(--text);
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 1px;
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow button.ql-active {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.ticket-workspace
+  .ticket-description
+  .ql-toolbar.ql-snow
+  button.ql-active
+  :is(.ql-stroke, .ql-stroke-miter) {
+  stroke: var(--accent);
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow button.ql-active .ql-fill {
+  fill: var(--accent);
+}
+/* Paragraph or heading: a small, plain picker that matches the buttons beside it. */
+.ticket-workspace .ticket-description .ql-snow .ql-picker.ql-header {
+  width: 96px;
+  height: 26px;
+  font-size: var(--font-12);
+  font-weight: 550;
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow .ql-picker-label {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-20) 0 var(--space-8);
+  border: 0;
+  border-radius: var(--radius-6);
+  transition:
+    background 0.14s,
+    color 0.14s;
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow .ql-picker-label::before {
+  line-height: 26px;
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow .ql-picker-label svg {
+  right: var(--space-4);
+  width: 14px;
+  height: 14px;
+  margin-top: 0;
+  transform: translateY(-50%);
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-label {
+  color: var(--text);
+  background: var(--hover);
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow .ql-picker-options {
+  z-index: 6;
+  min-width: 168px;
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-11);
+  background: var(--surface);
+  box-shadow: 0 18px 44px -18px color-mix(in srgb, var(--shadow-color) 34.9%, transparent);
+  animation: menu-drop 0.16s cubic-bezier(0.22, 0.7, 0.26, 1);
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow .ql-picker-item {
+  padding: var(--space-6) var(--space-10);
+  border-radius: var(--radius-7);
+  color: var(--text);
+  line-height: 1.3;
+  transition: background 0.14s;
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow .ql-picker-item:hover {
+  color: var(--text);
+  background: var(--hover);
+}
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow .ql-picker-item.ql-selected {
+  color: var(--accent);
+}
+.ticket-workspace .ticket-description .ql-picker.ql-header .ql-picker-item::before {
+  font-size: var(--font-13);
+  font-weight: 500;
+}
+.ticket-workspace .ticket-description .ql-picker.ql-header .ql-picker-item[data-value='1']::before {
+  font-size: var(--font-18);
+  font-weight: 650;
+}
+.ticket-workspace .ticket-description .ql-picker.ql-header .ql-picker-item[data-value='2']::before {
+  font-size: var(--font-16);
+  font-weight: 650;
+}
+.ticket-workspace .ticket-description .ql-picker.ql-header .ql-picker-item[data-value='3']::before {
+  font-size: var(--font-14);
+  font-weight: 650;
+}
+
+/* The writing surface: the reading view's box, marked by a ring instead of a border so
+   that not a single pixel of the text moves. */
+.ticket-workspace .ticket-description .ql-container.ql-snow,
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow + .ql-container.ql-snow {
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-7));
+  border: 0;
+  border-radius: var(--radius-7);
+  background: var(--ticket-edit-bg);
+  box-shadow: inset 0 0 0 1px var(--ticket-edit-ring);
+  font: inherit;
+  transition:
+    box-shadow 0.18s,
+    background 0.18s;
+  animation: ticket-edit-in 0.18s ease-out;
+}
+.ticket-workspace .ticket-description .ql-container.ql-snow:focus-within,
+.ticket-workspace .ticket-description .ql-toolbar.ql-snow + .ql-container.ql-snow:focus-within {
+  box-shadow:
+    inset 0 0 0 1px var(--ticket-edit-ring-focus),
+    0 0 0 3px var(--ticket-edit-glow);
 }
 .ticket-workspace .ql-container.ql-snow {
   border-color: var(--line);
-  border-radius: 0 0 var(--radius-9) var(--radius-9);
   font: inherit;
   background: var(--input);
 }
@@ -945,56 +1170,159 @@
   font-size: var(--font-14);
   line-height: 1.85;
   color: var(--text);
+  caret-color: var(--accent);
 }
-.ticket-workspace .ql-snow .ql-stroke {
-  stroke: var(--text);
+.ticket-workspace .ql-editor.ql-blank::before {
+  left: var(--space-7);
+  right: var(--space-7);
+  color: var(--muted);
+  font-style: normal;
 }
-.ticket-workspace .ql-snow .ql-fill {
-  fill: var(--text);
+/* What the reading view does to rich text, the editor does too. */
+.ticket-workspace .ticket-description .ql-editor h1,
+.ticket-workspace .ticket-description .ql-editor h2,
+.ticket-workspace .ticket-description .ql-editor h3 {
+  margin: 1.2em 0 0.5em;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
+.ticket-workspace .ticket-description .ql-editor h1 {
+  font-size: var(--font-24);
+}
+.ticket-workspace .ticket-description .ql-editor h2 {
+  font-size: var(--font-20);
+}
+.ticket-workspace .ticket-description .ql-editor h3 {
+  font-size: var(--font-16);
+}
+.ticket-workspace .ql-editor p {
+  margin: 0 0 var(--space-12);
+}
+.ticket-workspace .ql-editor p:last-child {
+  margin-bottom: 0;
+}
+.ticket-workspace .ticket-description .ql-editor a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.ticket-workspace .ticket-description .ql-editor blockquote {
+  margin: var(--space-12) 0;
+  padding: var(--space-6) var(--space-16);
+  border-left: 3px solid var(--accent);
+  color: var(--muted);
+}
+.ticket-workspace .ticket-description .ql-editor code,
+.ticket-workspace .ticket-description .ql-editor .ql-code-block-container {
+  background: var(--hover);
+  color: inherit;
+  border-radius: var(--radius-5);
+  font-size: 0.9em;
+}
+.ticket-workspace .ticket-description .ql-editor code {
+  padding: 0;
+}
+.ticket-workspace .ticket-description .ql-editor .ql-code-block-container {
+  margin: 0 0 var(--space-12);
+  padding: var(--space-15);
+}
+.ticket-workspace .ticket-description .ql-editor ol {
+  padding-left: 0;
+}
+.ticket-workspace .ticket-description .ql-editor li {
+  padding-left: var(--space-24);
 }
 .ticket-workspace .ql-snow .ql-picker {
   color: var(--text);
 }
-.ticket-workspace .ql-snow .ql-picker-options,
-.ticket-workspace .ql-snow .ql-tooltip {
-  background: var(--surface);
-  border-color: var(--line);
-  color: var(--text);
-  box-shadow: 0 5px 20px color-mix(in srgb, var(--shadow-color) 13.33%, transparent);
-}
 .ticket-workspace .ql-snow .ql-tooltip {
   left: 0 !important;
   max-width: 100%;
+  padding: var(--space-6) var(--space-12);
+  border-color: var(--line);
+  border-radius: var(--radius-9);
+  background: var(--surface);
+  color: var(--text);
   white-space: normal;
+  box-shadow: 0 12px 32px -14px color-mix(in srgb, var(--shadow-color) 40%, transparent);
 }
 .ticket-workspace .ql-snow .ql-tooltip input[type='text'] {
-  width: min(170px, 100%);
+  width: min(200px, 100%);
+  border-color: var(--line);
+  border-radius: var(--radius-6);
+  background: var(--input);
+  color: var(--text);
 }
-.ticket-workspace .ql-editor.ql-blank::before {
-  color: var(--muted);
+.ticket-workspace .ql-snow .ql-tooltip a {
+  color: var(--accent);
+}
+@container ticket-description (min-width: 540px) {
+  /* Centred on the heading's line (1.5 x its 13px type, 20px above the field), so the
+     heading keeps its place and the reading view does not move either. */
+  .ticket-workspace .ticket-description .ql-toolbar.ql-snow {
+    position: absolute;
+    z-index: 3;
+    right: calc(-1 * var(--space-7));
+    bottom: calc(100% + var(--space-20) + var(--font-13) * 0.75 - 18px);
+    flex-wrap: nowrap;
+    column-gap: var(--space-2);
+    height: 36px;
+    margin: 0;
+    padding-block: 0;
+  }
+  /* In one row, groups are told apart by a short hairline rather than by a gap. */
+  .ticket-workspace .ticket-description .ql-toolbar.ql-snow .ql-formats + .ql-formats::before {
+    content: '';
+    width: 1px;
+    height: 14px;
+    margin: 0 var(--space-5) 0 var(--space-4);
+    background: var(--line);
+  }
+}
+@keyframes ticket-toolbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+@keyframes ticket-edit-in {
+  from {
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticket-workspace .ticket-description .ql-toolbar.ql-snow,
+  .ticket-workspace .ticket-description .ql-container.ql-snow,
+  .ticket-workspace .ticket-description .ql-toolbar.ql-snow .ql-picker-options {
+    animation: none;
+  }
 }
 .ticket-drawer:has(.ticket-workspace) {
-  width: 1160px;
-  max-width: min(1160px, 96vw);
+  width: 1200px;
+  max-width: min(1200px, 96vw);
 }
 .ticket-drawer .ticket-workspace .ticket-detail-grid {
-  grid-template-columns: minmax(0, 1fr) 285px;
-  gap: var(--space-30);
+  grid-template-columns: minmax(0, 1fr) 324px;
+  gap: var(--space-32);
 }
 @media (max-width: 1050px) {
   .ticket-workspace .ticket-detail-grid,
   .ticket-drawer .ticket-workspace .ticket-detail-grid {
-    grid-template-columns: minmax(0, 1fr) 270px;
+    grid-template-columns: minmax(0, 1fr) 296px;
     gap: var(--space-26);
   }
   .ticket-sidebar-group {
-    padding: var(--space-18);
+    padding: var(--space-20);
   }
   .ticket-meta {
-    grid-template-columns: 75px minmax(0, 1fr);
-    gap: var(--space-17) var(--space-10);
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: var(--space-15) var(--space-12);
   }
 }
+/*
+ * Below tablet width the sidebar becomes one card under the description: its groups stay
+ * stacked exactly as on the desktop, only as wide as the text. Splitting them into columns
+ * would tear the status from the details it belongs with and leave ragged half-empty cells.
+ */
 @media (max-width: 800px) {
   .ticket-workspace .ticket-detail-grid,
   .ticket-drawer .ticket-workspace .ticket-detail-grid {
@@ -1002,43 +1330,33 @@
     flex-direction: column;
   }
   .ticket-workspace .ticket-sidebar {
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    order: -1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
   }
   .ticket-workspace .ticket-main {
     width: 100%;
   }
-  .ticket-primary-meta {
-    border-radius: var(--radius-6) 0 0 0;
-  }
-  .ticket-sidebar-group + .ticket-sidebar-group {
-    border-top: 0;
-  }
-  .ticket-sidebar-settings {
-    grid-column: 1 / -1;
-  }
-  .ticket-sidebar-group:nth-child(n + 3) {
-    border-top: 1px solid var(--line);
+  .ticket-sidebar-group {
+    padding: var(--space-20) var(--space-22);
   }
   .ticket-meta {
-    grid-template-columns: 70px minmax(0, 1fr);
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: var(--space-14) var(--space-14);
+  }
+  .ticket-sidebar-settings {
+    padding: var(--space-14) var(--space-22);
   }
 }
 @media (max-width: 480px) {
-  .ticket-workspace .ticket-sidebar {
-    display: flex;
-    flex-direction: column;
-  }
-  .ticket-sidebar-group + .ticket-sidebar-group {
-    border-top: 1px solid var(--line);
-  }
-  .ticket-primary-meta {
-    border-radius: var(--radius-6) var(--radius-6) 0 0;
+  .ticket-sidebar-group {
+    padding: var(--space-18);
   }
   .ticket-meta {
-    grid-template-columns: 90px minmax(0, 1fr);
+    grid-template-columns: 104px minmax(0, 1fr);
+  }
+  .ticket-sidebar-settings {
+    padding: var(--space-14) var(--space-18);
   }
   .ticket-workspace .ticket-detail-grid {
     gap: var(--space-28);
@@ -1147,86 +1465,110 @@
   }
 }
 
-/* Inline editing uses the same text metrics as the reading view. */
+/* Inline editing uses the same text metrics -- and the same box -- as the reading view. */
 .ticket-field [data-field-editor] :is(input, select, textarea):not([data-choice-search]) {
   font: inherit;
-  padding: var(--space-3) var(--space-5);
-  min-height: 27px;
-  border-radius: var(--radius-3);
+  /* The display's padding less the field's 1px border. */
+  padding: var(--space-4) var(--space-6);
+  min-height: 31px;
+  border-radius: var(--radius-7);
 }
-.ticket-title [data-field-editor] textarea,
+/* A text field lies exactly over the value it replaces: the display's padding is its
+   padding, the display's negative margin its margin. */
+.ticket-field
+  [data-field-editor]
+  :is(input:not([type='checkbox'], [type='color'], [type='hidden']), select, textarea):not(
+    [data-choice] *,
+    [data-choice-search]
+  ) {
+  width: calc(100% + 2 * var(--space-7));
+  max-width: none;
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-7));
+  border-color: var(--ticket-edit-ring);
+  background: var(--ticket-edit-bg);
+  color: var(--text);
+  caret-color: var(--accent);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.ticket-field
+  [data-field-editor]
+  :is(input:not([type='checkbox'], [type='color'], [type='hidden']), select, textarea):not(
+    [data-choice] *,
+    [data-choice-search]
+  ):focus {
+  border-color: var(--ticket-edit-ring-focus);
+  box-shadow: 0 0 0 3px var(--ticket-edit-glow);
+  outline: none;
+}
+.ticket-field [data-field-editor] > .muted.small {
+  display: block;
+  margin-top: var(--space-10);
+}
+/* The title is the same heading whether it is read or written. */
 .ticket-title h1 {
   font-size: clamp(var(--font-25), 2.7vw, var(--font-35));
   font-weight: 650;
   line-height: 1.25;
   letter-spacing: -0.035em;
 }
-.ticket-title textarea {
+.ticket-workspace .ticket-field.ticket-title [data-field-editor] textarea {
   display: block;
+  width: calc(100% + 2 * var(--space-7));
+  min-height: 0;
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-7));
+  padding: var(--space-5) var(--space-7);
+  border: 0;
+  border-radius: var(--radius-7);
+  background: var(--ticket-edit-bg);
+  box-shadow: inset 0 0 0 1px var(--ticket-edit-ring);
+  color: var(--text);
+  font-family: inherit;
+  font-size: clamp(var(--font-25), 2.7vw, var(--font-35));
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.035em;
+  caret-color: var(--accent);
   resize: none;
   overflow: hidden;
+  outline: none;
+  transition:
+    box-shadow 0.18s,
+    background 0.18s;
+  animation: ticket-edit-in 0.18s ease-out;
 }
-.ticket-title [data-field-editor] textarea {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  outline: 1px solid var(--line);
-  outline-offset: 4px;
+.ticket-workspace .ticket-field.ticket-title [data-field-editor] textarea:focus {
+  box-shadow:
+    inset 0 0 0 1px var(--ticket-edit-ring-focus),
+    0 0 0 3px var(--ticket-edit-glow);
 }
-.ticket-title [data-field-editor] textarea:focus {
-  outline-color: var(--accent);
+.ticket-workspace .ticket-field.ticket-title [data-field-editor] textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
 }
-.ticket-primary-meta [data-inline-field='column_id'] {
-  font-size: var(--font-16);
-  font-weight: 650;
+@media (prefers-reduced-motion: reduce) {
+  .ticket-workspace .ticket-field.ticket-title [data-field-editor] textarea {
+    animation: none;
+  }
 }
-.ticket-primary-meta [data-inline-field='assignee_ids'] {
-  font-size: var(--font-13);
+.ticket-primary-meta :is([data-inline-field='column_id'], [data-inline-field='assignee_ids']) {
+  font-size: var(--font-14);
 }
 .ticket-field [data-field-editor] input[type='checkbox'] {
   padding: 0;
   min-height: 0;
 }
 .ticket-field [data-field-editor] input[type='color'] {
-  height: 27px;
+  height: 31px;
 }
 .ticket-field [data-field-editor] .ticket-options {
   padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-3);
 }
-.ticket-description [data-field-editor] .ql-toolbar.ql-snow {
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-3) var(--radius-3) 0 0;
-}
-.ticket-description [data-field-editor] .ql-container.ql-snow {
-  border-radius: 0 0 var(--radius-3) var(--radius-3);
-}
-.ticket-workspace .ql-editor h1,
-.ticket-workspace .ql-editor h2,
-.ticket-workspace .ql-editor h3 {
-  margin: 1.2em 0 0.5em;
-  line-height: 1.4;
-  letter-spacing: -0.02em;
-}
-.ticket-workspace .ql-editor h1 {
-  font-size: var(--font-24);
-}
-.ticket-workspace .ql-editor h2 {
-  font-size: var(--font-20);
-}
-.ticket-workspace .ql-editor h3 {
-  font-size: var(--font-16);
-}
-.ticket-workspace .ql-editor p {
-  margin: 0 0 var(--space-12);
-}
-.ticket-workspace .ql-editor p:last-child {
-  margin-bottom: 0;
-}
 
 /* The reusable select sits tighter inside a ticket's inline fields than it does
-   in an ordinary form, and the column picker carries the ticket's accent. */
+   in an ordinary form. */
 .ticket-field .choice-trigger {
   border: 0;
   border-radius: var(--radius-4);
@@ -1234,43 +1576,54 @@
   padding: var(--space-5) var(--space-7);
   margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-7));
   box-sizing: content-box;
-  font-size: var(--font-12);
+  font-size: var(--font-13);
   min-height: 24px;
 }
 .ticket-field .choice-trigger:hover,
 .ticket-field .choice-trigger[aria-expanded='true'] {
   background: var(--hover);
 }
-.ticket-field [data-choice='column_id'] .choice-trigger {
-  color: var(--accent);
-  font-size: var(--font-16);
-  font-weight: 650;
-}
 .ticket-field [data-choice-value] {
   white-space: normal;
   overflow: visible;
   overflow-wrap: anywhere;
 }
-/* Assignment is a primary ticket action, with one quiet target in both modes. */
+/*
+ * Status and assignment are the ticket's two primary choices, so they look like one pair:
+ * the same box, a round mark in front -- the column's progress, the person's initial --
+ * and the same chevron at the end. Reading and choosing share the box, so opening a
+ * picker moves nothing.
+ */
 .ticket-primary-meta
-  [data-inline-field='assignee_ids']:not(.is-editing)
+  :is([data-inline-field='column_id'], [data-inline-field='assignee_ids']):not(.is-editing)
   > .inline-display[role='button'],
-.ticket-primary-meta [data-choice='assignee_ids'] .choice-trigger {
+.ticket-primary-meta :is([data-choice='column_id'], [data-choice='assignee_ids']) .choice-trigger {
   display: flex;
   align-items: center;
   gap: var(--space-10);
   width: 100%;
-  min-height: 48px;
+  min-height: 50px;
   box-sizing: border-box;
-  padding: var(--space-9) var(--space-12);
+  padding: var(--space-9) var(--space-14) var(--space-9) var(--space-10);
   margin: 0;
   border: 1px solid var(--line);
-  border-radius: var(--radius-8);
+  border-radius: var(--radius-10);
   background: var(--input);
-  font-size: var(--font-13);
+  color: var(--text);
+  font-size: var(--font-14);
   line-height: 1.45;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--shadow-color) 5%, transparent);
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    box-shadow 0.15s;
 }
-.ticket-primary-meta [data-inline-field='assignee_ids'] > .inline-display[role='button']::after {
+.ticket-primary-meta
+  :is([data-inline-field='column_id'], [data-inline-field='assignee_ids'])
+  > .inline-display[role='button']::after,
+.ticket-primary-meta
+  :is([data-choice='column_id'], [data-choice='assignee_ids'])
+  .choice-trigger::after {
   content: '';
   width: 6px;
   height: 6px;
@@ -1279,26 +1632,87 @@
   border: solid var(--muted);
   border-width: 0 1.5px 1.5px 0;
   transform: translateY(-2px) rotate(45deg);
+  transition:
+    transform 0.18s cubic-bezier(0.22, 0.7, 0.26, 1),
+    border-color 0.15s;
+}
+.ticket-primary-meta :is([data-choice='column_id'], [data-choice='assignee_ids']) .choice-chevron {
+  display: none;
 }
 .ticket-primary-meta
-  [data-inline-field='assignee_ids']
+  :is([data-inline-field='column_id'], [data-inline-field='assignee_ids'])
   > .inline-display[role='button']:is(:hover, :focus-visible),
 .ticket-primary-meta
-  [data-choice='assignee_ids']
-  .choice-trigger:is(:hover, :focus-visible, [aria-expanded='true']) {
-  border-color: var(--accent);
+  :is([data-choice='column_id'], [data-choice='assignee_ids'])
+  .choice-trigger:is(:hover, :focus-visible) {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
   background: var(--hover);
 }
-.ticket-primary-meta [data-inline-field='assignee_ids'] .ticket-person {
-  flex: 1;
-  min-width: 0;
-  font-size: inherit;
-  margin: 0;
+.ticket-primary-meta
+  :is([data-inline-field='column_id'], [data-inline-field='assignee_ids'])
+  > .inline-display[role='button']:is(:hover, :focus-visible)::after,
+.ticket-primary-meta
+  :is([data-choice='column_id'], [data-choice='assignee_ids'])
+  .choice-trigger:is(:hover, :focus-visible)::after {
+  border-color: var(--text);
 }
-.ticket-primary-meta [data-inline-field='assignee_ids'] :is(.ticket-person, .choice-text) {
-  font-weight: 500;
+.ticket-primary-meta
+  :is([data-choice='column_id'], [data-choice='assignee_ids'])
+  .choice-trigger[aria-expanded='true'] {
+  border-color: var(--ticket-edit-ring-focus);
+  background: var(--ticket-edit-bg);
+  box-shadow: 0 0 0 3px var(--ticket-edit-glow);
+}
+.ticket-primary-meta
+  :is([data-choice='column_id'], [data-choice='assignee_ids'])
+  .choice-trigger[aria-expanded='true']::after {
+  border-color: var(--text);
+  transform: translateY(2px) rotate(225deg);
+}
+.ticket-primary-meta :is(.ticket-person, .ticket-column) {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: var(--space-9);
+  min-width: 0;
+  margin: 0;
+  font-size: inherit;
+}
+.ticket-primary-meta
+  :is([data-inline-field='column_id'], [data-inline-field='assignee_ids'])
+  :is(.ticket-person, .ticket-column, .choice-text) {
+  font-weight: 550;
+}
+/* Nobody assigned: an empty place where the initial would be, in both modes. */
+.ticket-primary-meta .avatar-placeholder,
+.ticket-primary-meta [data-choice='assignee_ids'] [data-choice-value]:not(:has(*))::before {
+  content: '';
+  flex: none;
+  width: 29px;
+  height: 29px;
+  box-sizing: border-box;
+  border: 1.5px dashed color-mix(in srgb, var(--muted) 60%, transparent);
+  border-radius: 50%;
+}
+.ticket-primary-meta [data-choice='assignee_ids'] [data-choice-value]:not(:has(*)) {
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticket-primary-meta
+    :is([data-choice='column_id'], [data-choice='assignee_ids'])
+    .choice-trigger::after {
+    transition: none;
+  }
 }
 
 .ticket-field.is-editing > [data-description-display] {
   display: none;
+}
+
+/* The sidebar's pickers list their entries at the sidebar's own, larger size. */
+.ticket-sidebar .choice-popup {
+  font-size: var(--font-13);
+}
+.ticket-sidebar .choice-search-wrap input {
+  font-size: var(--font-13);
 }

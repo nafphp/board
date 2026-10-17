@@ -215,9 +215,19 @@ movement retain their board revision checks. Status changes use the existing sta
 and change date are read-only.
 
 The ticket keeps a manually editable **total in minutes** and a server-backed work timer.
-Starting or resuming counts elapsed seconds; pausing holds them without booking, and stopping
-adds whole minutes to the ticket. Remaining seconds carry into the next session. New timer
-bookings also enter a per-person journal used by the [personal hours export](Profile.md#exporting-personal-hours).
+The recorded-time row shows a small stopwatch — just its symbol while nothing is counted, the
+clock once there is time on it, green while it runs. It opens the timer dialog, which names the
+ticket, shows the clock and offers two buttons: start, pause or resume, and **book**. Pausing
+holds the seconds without booking; booking (the `stop` action) adds the whole minutes to the
+ticket, resets the clock and reloads the ticket so later edits carry its new version. Remaining
+seconds carry into the next booking, and the dialog says how many minutes booking would add and
+how many seconds are carried. A person counts on one ticket at a time: starting pauses whatever
+ran elsewhere, across projects, and the dialog names that other ticket beforehand. Every timer
+action locks the person's row after the project and reads current timer rows after that lock,
+including runs committed while it waited, so two tabs cannot start two clocks at once.
+Opening the dialog asks the server for the current state (`state`, which changes nothing).
+Closing or redrawing it preserves the running clock; only a server response resets its reading. New
+timer bookings also enter a per-person journal used by the [personal hours export](Profile.md#exporting-personal-hours).
 Manual edits of the aggregate do not create personal bookings. The display converts to hours
 and minutes. When an estimate exists,
 progress and remaining time — or an overrun — are shown. The start date may not lie after the

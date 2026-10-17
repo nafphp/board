@@ -9,7 +9,21 @@ let activeChoice;
 // A short symbol in front of an entry -- a flag, a sign -- carried by the option as
 // data-mark. It recognises where the label names, so it is decoration: it never
 // replaces the written label and never takes part in the search.
+//
+// An option may instead carry a progress mark: data-progress (0 to 1), an optional
+// data-progress-color and data-complete. It is drawn as a small ring that fills up -- how
+// far along a workflow a status lies -- and is just as decorative as a written mark.
 function markOf(item) {
+  if (item.progress !== undefined) {
+    const node = document.createElement('span');
+    node.className = 'choice-progress';
+    node.setAttribute('aria-hidden', 'true');
+    node.style.setProperty('--progress', item.progress);
+    if (item.progressColor) node.style.setProperty('--progress-color', item.progressColor);
+    if (item.complete) node.dataset.complete = '';
+
+    return node;
+  }
   if (!item.mark) return null;
   const node = document.createElement('span');
   node.className = 'choice-mark';
@@ -163,6 +177,9 @@ function buildItems(state) {
           value: option.value,
           label: option.text,
           mark: option.dataset.mark,
+          progress: option.dataset.progress,
+          progressColor: option.dataset.progressColor,
+          complete: option.dataset.complete !== undefined,
           selected: () => option.selected,
         }));
   state.items.forEach((item, index) => {

@@ -67,6 +67,15 @@ final class TimerOverHttpTest extends AcceptanceTestCase
         );
     }
 
+    public function testTheTicketOffersTheTimerAsADialogWithItsOwnBookingButton(): void
+    {
+        $page = $this->page($this->alice, '/projects/1/tickets/NAF-1');
+
+        $this->assertStringContainsString('data-timer-open', $page, 'the row offers no way to open the timer');
+        $this->assertStringContainsString('data-timer-dialog', $page, 'the timer has no dialog');
+        $this->assertStringContainsString('data-timer-action="stop"', $page, 'the dialog has no booking button');
+    }
+
     public function testAnUnknownActionIsRefused(): void
     {
         $this->assertSame(422, $this->post($this->alice, self::FIRST, ['action' => 'rewind'])['status']);

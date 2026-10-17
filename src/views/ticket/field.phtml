@@ -36,6 +36,7 @@ $displayHidden = $creating && $editable ? 'hidden' : '';
                     'label'       => $label,
                     'value'       => $value,
                     'options'     => $options,
+                    'optionData'  => $optionData ?? [],
                     'multiple'    => $type === 'multiple',
                     'avatars'     => $name === 'assignee_ids',
                     'searchLabel' => match ($name) {

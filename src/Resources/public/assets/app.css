@@ -1746,10 +1746,6 @@ html[data-sidebar='pinned'] .sidebar-pin [data-pin-off] {
 details[data-sweeping] {
   overflow: hidden;
 }
-/* The timer is a row of the planning list like any other: its label on the left, one control
-   on the right. That control is the whole timer — it shows the clock while it runs and says
-   what a press would do whenever the pointer is on it or the state just changed. A tap starts
-   and pauses, holding it stops, and the outline drawn while holding explains how long. */
 /* One quiet flare on the number that just grew, so booking is visible without a banner. */
 @keyframes booked-flash {
   from {
@@ -1769,8 +1765,8 @@ details[data-sweeping] {
     animation: none;
   }
 }
-/* The timer lives in the recorded-time row: the booked total on the left, the control that
-   changes it on the right, so there is no second row saying the same thing twice. */
+/* The timer lives in the recorded-time row: the booked total on the left, a small
+   stopwatch on the right that opens the timer itself. */
 .ticket-spent {
   display: flex;
   align-items: center;
@@ -1789,139 +1785,221 @@ details[data-sweeping] {
   display: flex;
   align-items: center;
 }
-.timer-button {
-  position: relative;
-  margin-left: auto;
-  min-width: 26px;
-  height: 26px;
-  padding: 0 var(--space-9);
-  border: 0;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  color: var(--muted);
-  background: color-mix(in srgb, var(--line) 85%, transparent);
+/* Just the symbol while nothing is counted; the clock beside it as soon as there is time
+   on it, green while it runs. */
+.timer-trigger {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-6);
+  min-width: 30px;
+  height: 30px;
+  margin-left: auto;
+  padding: 0 var(--space-10) 0 var(--space-8);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--line) 70%, transparent);
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    color 0.18s,
+    border-color 0.18s;
+}
+.ticket-timer[data-idle] .timer-trigger {
   justify-content: center;
-  transition:
-    background 0.2s,
-    color 0.2s,
-    transform 0.14s cubic-bezier(0.2, 1.1, 0.3, 1);
+  padding: 0;
 }
-.timer-button:hover {
+.ticket-timer[data-idle] .timer-trigger .timer-readout {
+  display: none;
+}
+.timer-trigger:hover,
+.timer-trigger:focus-visible {
   color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 13%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
-.timer-button:active {
-  transform: scale(0.95);
-}
-.timer-button:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-}
-.ticket-timer[data-state='running'] .timer-button {
+.ticket-timer[data-state='running'] .timer-trigger {
   color: var(--ok);
-  background: color-mix(in srgb, var(--ok) 14%, transparent);
-}
-.timer-ring {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  overflow: visible;
-}
-.timer-ring rect {
-  fill: none;
-  stroke-width: 2.6;
-}
-.timer-track {
-  stroke: transparent;
-}
-.ticket-timer[data-holding] .timer-track {
-  stroke: color-mix(in srgb, currentColor 18%, transparent);
-}
-/* Closed by the hold animation, which drives stroke-dashoffset from full to zero. It takes
-   the button's own colour, so the control reads as charging up rather than as a warning.
-   Hidden outright when idle: a round linecap draws a dot even at zero dash length. */
-.timer-hold {
-  stroke: currentColor;
-  stroke-linecap: round;
-  opacity: 0;
-}
-.ticket-timer[data-holding] .timer-hold {
-  opacity: 1;
-}
-.ticket-timer[data-held] .timer-button {
-  transform: scale(0.93);
-}
-
-/* The two faces sit on top of one another so the button keeps its place while they swap. */
-.timer-face {
-  display: grid;
-  place-items: center;
-  transition: width 0.22s cubic-bezier(0.22, 0.7, 0.26, 1);
-}
-.timer-face > * {
-  grid-area: 1 / 1;
-  transition:
-    opacity 0.18s,
-    transform 0.18s cubic-bezier(0.2, 1.1, 0.3, 1);
-}
-.ticket-timer[data-face='time'] .timer-glyph {
-  opacity: 0;
-  transform: scale(0.75);
-}
-.ticket-timer[data-face='icon'] .timer-readout {
-  opacity: 0;
-  transform: scale(0.75);
-}
-/* Only the shown face claims width, so the pill grows for the clock and shrinks for the icon. */
-.ticket-timer[data-face='time'] .timer-glyph,
-.ticket-timer[data-face='icon'] .timer-readout {
-  visibility: hidden;
-  width: 0;
+  background: color-mix(in srgb, var(--ok) 13%, transparent);
+  border-color: color-mix(in srgb, var(--ok) 30%, transparent);
 }
 .timer-glyph {
-  position: relative;
-  width: 13px;
-  height: 13px;
-}
-.timer-glyph svg {
-  width: 100%;
-  height: 100%;
+  flex: none;
+  width: 15px;
+  height: 15px;
+  fill: none;
   stroke: currentColor;
-  stroke-linejoin: round;
+  stroke-width: 1.6;
   stroke-linecap: round;
 }
-.glyph-play {
-  fill: currentColor;
-  stroke-width: 1.7;
+.ticket-timer[data-state='running'] .timer-glyph path:first-of-type {
+  transform-origin: 8px 9.2px;
+  animation: timer-hand 4s steps(8) infinite;
 }
-.glyph-pause {
-  fill: none;
-  stroke-width: 2.8;
-  opacity: 0;
-}
-.ticket-timer[data-state='running'] .glyph-play {
-  opacity: 0;
-}
-.ticket-timer[data-state='running'] .glyph-pause {
-  opacity: 1;
-}
-.glyph-play,
-.glyph-pause {
-  transition: opacity 0.18s;
+@keyframes timer-hand {
+  to {
+    transform: rotate(1turn);
+  }
 }
 .timer-readout {
-  font-size: var(--font-13);
+  font-size: var(--font-12);
   font-weight: 640;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
   white-space: nowrap;
 }
-.ticket-timer /* The login form's own controls are stacked labels; this one is a checkbox and
-   its word, side by side, and closer to the button than to the field above. */
+
+/* The dialog: which ticket, the clock, and two buttons -- run or pause, and book. */
+.timer-dialog {
+  width: min(400px, calc(100vw - 32px));
+  padding: var(--space-24);
+  font-size: var(--font-14);
+  line-height: 1.5;
+}
+.timer-dialog-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+.timer-dialog-heading h2 {
+  margin: 0;
+  font-size: var(--font-18);
+}
+.timer-dialog-ticket {
+  display: flex;
+  gap: var(--space-8);
+  min-width: 0;
+  margin: var(--space-4) 0 0;
+  color: var(--muted);
+  font-size: var(--font-13);
+}
+.timer-dialog-ticket > span:last-child {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.timer-dialog-heading .icon-button {
+  flex: none;
+  margin: calc(-1 * var(--space-6)) calc(-1 * var(--space-6)) 0 0;
+}
+.timer-dialog-clock {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-6);
+  margin: var(--space-24) 0 var(--space-20);
+  padding: var(--space-22) var(--space-16) var(--space-18);
+  border-radius: var(--radius-14);
+  background: color-mix(in srgb, var(--line) 35%, transparent);
+  transition: background 0.2s;
+}
+.timer-dialog[data-state='running'] .timer-dialog-clock {
+  background: color-mix(in srgb, var(--ok) 10%, transparent);
+}
+.timer-dialog-time {
+  font-size: var(--font-43);
+  font-weight: 650;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.timer-dialog-state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  color: var(--muted);
+  font-size: var(--font-12);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.timer-dialog[data-state='running'] .timer-dialog-state {
+  color: var(--ok);
+}
+.timer-dialog[data-state='running'] .timer-dialog-state::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ok);
+  animation: timer-pulse 1.8s ease-out infinite;
+}
+.timer-elsewhere {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-8);
+  margin: 0 0 var(--space-16);
+  padding: var(--space-10) var(--space-12);
+  border-radius: var(--radius-9);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  font-size: var(--font-13);
+  line-height: 1.45;
+}
+.timer-elsewhere[hidden] {
+  display: none;
+}
+.timer-elsewhere .mi {
+  translate: 0 1px;
+  color: var(--warning);
+}
+.timer-dialog-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-10);
+}
+.timer-dialog-actions .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  min-height: 44px;
+  font-size: var(--font-14);
+}
+.timer-dialog-actions .button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.timer-run svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.timer-run .glyph-play {
+  fill: currentColor;
+  stroke-width: 1.7;
+}
+.timer-run .glyph-pause {
+  display: none;
+  fill: none;
+  stroke-width: 2.6;
+}
+.timer-dialog[data-state='running'] .timer-run .glyph-play {
+  display: none;
+}
+.timer-dialog[data-state='running'] .timer-run .glyph-pause {
+  display: inline;
+}
+.timer-dialog-note {
+  margin: var(--space-14) 0 0;
+  font-size: var(--font-12);
+  line-height: 1.5;
+  text-align: center;
+}
+.timer-dialog-note:empty {
+  display: none;
+}
+.timer-dialog .form-errors:empty {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticket-timer[data-state='running'] .timer-glyph path:first-of-type,
+  .timer-dialog[data-state='running'] .timer-dialog-state::before {
+    animation: none;
+  }
+}
+/* The login form's own controls are stacked labels; this one is a checkbox and its word,
+   side by side, and closer to the button than to the field above. */
 .remember-me {
   display: flex;
   align-items: center;
@@ -1936,14 +2014,6 @@ details[data-sweeping] {
 }
 .form-errors {
   flex-basis: 100%;
-}
-@media (prefers-reduced-motion: reduce) {
-  .timer-face,
-  .timer-face > *,
-  .glyph-play,
-  .glyph-pause {
-    transition: none;
-  }
 }
 .card-points {
   margin-left: var(--space-7);
@@ -3259,6 +3329,45 @@ label > .choice {
   flex: none;
   font-size: var(--font-14);
   line-height: 1;
+}
+/* A progress mark: a soft disc in the entry's colour, holding a ring that fills up
+   clockwise. Complete, the ring is solid and carries a check. Its size matches a small
+   avatar, so a status and a person line up when they stand on top of each other. */
+.choice-progress {
+  --progress-color: var(--accent);
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 29px;
+  height: 29px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--progress-color) 15%, transparent);
+}
+.choice-progress::before {
+  content: '';
+  grid-area: 1 / 1;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  padding: var(--space-1);
+  border: 1.6px solid var(--progress-color);
+  border-radius: 50%;
+  background: conic-gradient(var(--progress-color) calc(var(--progress, 0) * 1turn), transparent 0)
+    content-box;
+}
+.choice-progress[data-complete]::before {
+  padding: 0;
+  background: var(--progress-color);
+}
+.choice-progress[data-complete]::after {
+  content: '';
+  grid-area: 1 / 1;
+  width: 3px;
+  height: 6px;
+  border: solid var(--surface);
+  border-width: 0 1.5px 1.5px 0;
+  transform: translateY(-1.5px) rotate(45deg);
 }
 .choice-count {
   font-size: var(--font-10);
