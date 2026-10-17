@@ -223,8 +223,10 @@ ticket, resets the clock and reloads the ticket so later edits carry its new ver
 seconds carry into the next booking, and the dialog says how many minutes booking would add and
 how many seconds are carried. A person counts on one ticket at a time: starting pauses whatever
 ran elsewhere, across projects, and the dialog names that other ticket beforehand. Every timer
-action locks the person's row after the project, so two tabs cannot start two clocks at once.
-Opening the dialog asks the server for the current state (`state`, which changes nothing). New
+action locks the person's row after the project and reads current timer rows after that lock,
+including runs committed while it waited, so two tabs cannot start two clocks at once.
+Opening the dialog asks the server for the current state (`state`, which changes nothing).
+Closing or redrawing it preserves the running clock; only a server response resets its reading. New
 timer bookings also enter a per-person journal used by the [personal hours export](Profile.md#exporting-personal-hours).
 Manual edits of the aggregate do not create personal bookings. The display converts to hours
 and minutes. When an estimate exists,

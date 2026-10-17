@@ -99,7 +99,8 @@ final class TimerService implements TimerServiceInterface
     {
         $actor ??= (int) $this->access->actor();
         $statement = $this->pdo->prepare(
-            'SELECT * FROM ticket_timers WHERE project_id=? AND ticket_id=? AND user_id=?',
+            'SELECT * FROM ticket_timers WHERE project_id=? AND ticket_id=? AND user_id=?'
+                . ($this->pdo->inTransaction() ? ' FOR UPDATE' : ''),
         );
         $statement->execute([$project, $ticket, $actor]);
         $run       = $statement->fetch();
@@ -130,30 +131,30 @@ final class TimerService implements TimerServiceInterface
     public function running(?int $actor = null): ?array
     {
         $actor ??= (int) $this->access->actor();
+        // Authorization can establish a repeatable-read snapshot before the person
+        // lock. Read timer rows as current data, without locking another project's
+        // ticket or project: another start may already hold that project lock.
         $statement = $this->pdo->prepare(
-            <<<'SQL'
-            SELECT r.project_id,
-                   r.ticket_id,
-                   r.started_at,
-                   r.carry_seconds,
-                   r.tracked_seconds,
-                   t.number,
-                   t.title,
-                   p.ticket_key
-            FROM ticket_timers r
-            JOIN tickets t ON t.project_id = r.project_id
-                AND t.id = r.ticket_id
-            JOIN projects p ON p.id = r.project_id
-            WHERE r.user_id = ?
-                AND r.state = 'running'
-            ORDER BY r.started_at DESC
-            SQL,
+            "SELECT project_id,ticket_id,started_at,carry_seconds,tracked_seconds FROM ticket_timers"
+                . " WHERE user_id=? AND state='running' ORDER BY started_at DESC LIMIT 1"
+                . ($this->pdo->inTransaction() ? ' FOR UPDATE' : ''),
         );
         $statement->execute([$actor]);
         $run = $statement->fetch();
         if (!$run) {
             return null;
         }
+
+        $statement = $this->pdo->prepare(
+            'SELECT t.number,t.title,p.ticket_key FROM tickets t'
+                . ' JOIN projects p ON p.id=t.project_id WHERE t.project_id=? AND t.id=?',
+        );
+        $statement->execute([$run['project_id'], $run['ticket_id']]);
+        $ticket = $statement->fetch();
+        if (!$ticket) {
+            return null;
+        }
+        $run = [...$run, ...$ticket];
 
         return [...$run, 'seconds' => $this->elapsed($run)];
     }
@@ -233,7 +234,9 @@ final class TimerService implements TimerServiceInterface
         } else {
             $where .= " AND state='running'";
         }
-        $statement = $this->pdo->prepare("SELECT * FROM ticket_timers WHERE $where");
+        // A locking read sees a run committed while we waited for the person's
+        // lock; a plain read would keep the earlier authorization snapshot.
+        $statement = $this->pdo->prepare("SELECT * FROM ticket_timers WHERE $where FOR UPDATE");
         $statement->execute($params);
 
         return $this->fold($statement->fetchAll(), $state);

@@ -22,9 +22,8 @@ function clock(seconds) {
 // Counting from a fixed origin rather than adding one per tick, because a throttled
 // background tab fires far fewer ticks than it has seconds. `paint` gets every new value,
 // so the dialog can keep what booking would add in step with the clock.
-function follow(element, seconds, paint = () => {}) {
+function follow(element, seconds, paint = () => {}, origin = Date.now() - seconds * 1000) {
   const readouts = element.querySelectorAll('[data-timer-readout]');
-  const origin = Date.now() - seconds * 1000;
   let handle;
   const tick = () => {
     // A ticket the drawer has replaced, or a marker that was removed, stops counting.
@@ -85,7 +84,14 @@ function describe(panel, seconds) {
 
 function render(panel) {
   const state = panel.dataset.state;
-  const seconds = Number(panel.dataset.seconds || 0);
+  const storedSeconds = Number(panel.dataset.seconds || 0);
+  // Opening, closing or disabling the dialog redraws the same run. Keep its origin
+  // until a server response supplies a new reading, rather than restarting the display.
+  if (state !== 'running') delete panel.timerOrigin;
+  const origin =
+    state === 'running' ? (panel.timerOrigin ??= Date.now() - storedSeconds * 1000) : undefined;
+  const seconds =
+    origin === undefined ? storedSeconds : Math.max(0, Math.round((Date.now() - origin) / 1000));
   const dialog = panel.querySelector('[data-timer-dialog]') || panel.dialog;
   // A timer that has never run has no time worth showing, so the row keeps just its symbol.
   panel.toggleAttribute('data-idle', state !== 'running' && seconds === 0);
@@ -124,9 +130,9 @@ function render(panel) {
   panel.stopFollowing = null;
   const paint = (now) => describe(panel, now);
   if (state === 'running') {
-    panel.stopFollowing = follow(panel, seconds, paint);
+    panel.stopFollowing = follow(panel, seconds, paint, origin);
     if (dialog && !panel.contains(dialog)) {
-      const stop = follow(dialog, seconds, paint);
+      const stop = follow(dialog, seconds, paint, origin);
       const previous = panel.stopFollowing;
       panel.stopFollowing = () => {
         previous();
@@ -216,6 +222,7 @@ async function send(panel, action) {
 
       return null;
     }
+    delete panel.timerOrigin;
     panel.dataset.state = payload.state ?? 'stopped';
     panel.dataset.seconds = String(payload.seconds ?? 0);
     panel.dataset.carry = String(payload.carry ?? 0);
