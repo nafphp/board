@@ -188,9 +188,9 @@ final class AccountSecurityOverHttpTest extends AcceptanceTestCase
 
     /**
      * Two browsers of one account redeem the same code at the same moment. One
-     * wins; the other is told its session is gone, because the winner's change
-     * ended it. A code that both could redeem would be a code somebody else
-     * could redeem too.
+     * wins; the other is rejected by CSRF if restoration already revoked its
+     * session, or by the account check if it passed CSRF before the change.
+     * Either way the code must be consumed and the change recorded only once.
      */
     public function testTwoSimultaneousConfirmationsRedeemTheCodeExactlyOnce(): void
     {
@@ -212,11 +212,50 @@ final class AccountSecurityOverHttpTest extends AcceptanceTestCase
         $statuses = array_map(static fn(array $answer) => $answer['status'], $answers);
         sort($statuses);
 
-        $this->assertSame([200, 401], $statuses);
+        $this->assertContains($statuses, [[200, 400], [200, 401]]);
+        $this->assertEmailChangedOnce($wanted);
         $this->assertSame(401, $owner->request('/profile')['status'], 'a session survived the change');
         $this->assertSame(401, $second->request('/profile')['status']);
         $this->assertNull($this->trySignIn($this->accounts['email'], self::ORIGINAL), 'the old address still signs in');
         $this->assertNotNull($this->trySignIn($wanted, self::ORIGINAL), 'the new address does not sign in');
+    }
+
+    public function testAConfirmationPreparedBeforeRevocationCannotRedeemTheCodeAgain(): void
+    {
+        $owner   = $this->signIn($this->accounts['email'], 'late-owner');
+        $second  = $this->signIn($this->accounts['email'], 'late-second');
+        $wanted  = str_replace('-email@', '-late@', $this->accounts['email']);
+        $pending = json_decode($this->send($owner, '/profile/email', [
+            'email'            => $wanted,
+            'current_password' => self::ORIGINAL,
+        ])['body'], true)['pending'];
+        $confirm = ['request_id' => $pending['request_id'], 'code' => Outbox::codeFor($wanted)];
+        // Keep the valid token from before revocation, as a form in another tab would.
+        $headers = $second->jsonHeaders($this->tokenOf($second));
+
+        $this->assertSame(200, $this->send($owner, '/profile/email/confirm', $confirm)['status']);
+        $late = $second->request('/profile/email/confirm', $confirm, $headers);
+
+        // Auth 0.2.4 clears CSRF during restoration; earlier supported versions reach 401.
+        $this->assertContains($late['status'], [400, 401]);
+        $this->assertEmailChangedOnce($wanted);
+        $this->assertSame(401, $owner->request('/profile')['status']);
+        $this->assertSame(401, $second->request('/profile')['status']);
+    }
+
+    private function assertEmailChangedOnce(string $email): void
+    {
+        $id = $this->idOf($email);
+        $this->assertGreaterThan(0, $id);
+        $statement = $this->pdo()->prepare('SELECT security_version FROM users WHERE id=?');
+        $statement->execute([$id]);
+        $this->assertSame(1, (int) $statement->fetchColumn(), 'the account changed more than once');
+        $statement = $this->pdo()->prepare("SELECT COUNT(*) FROM activities WHERE actor_id=? AND event_type='account.email_changed'");
+        $statement->execute([$id]);
+        $this->assertSame(1, (int) $statement->fetchColumn(), 'the change was recorded more than once');
+        $statement = $this->pdo()->prepare('SELECT COUNT(*) FROM account_email_changes WHERE user_id=?');
+        $statement->execute([$id]);
+        $this->assertSame(0, (int) $statement->fetchColumn(), 'the confirmation code was not consumed');
     }
 
     /**
