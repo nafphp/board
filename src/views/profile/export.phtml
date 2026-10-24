@@ -31,7 +31,7 @@ $exportField = static fn(array $properties): string => field(['id' => 'personal-
             <?= $exportField(['label' => 'Gebucht bis', 'name' => 'until', 'type' => 'date']) ?>
         </div>
         <p class="profile-help"><?= s(t('Optional. Beide Tage zählen vollständig in UTC; leere Felder begrenzen den Zeitraum nicht.')) ?></p>
-        <p class="profile-help"><?= s(t('Enthält nur deine mit Stopp gebuchten Minuten ab Einführung des Stundenprotokolls. Laufende und pausierte Timer sowie manuell gesetzte Ticket-Summen sind nicht enthalten.')) ?></p>
+        <p class="profile-help"><?= s(t('Enthält nur deine in der Zeiterfassung gebuchten Minuten ab Einführung des Stundenprotokolls. Laufende und pausierte Timer sowie manuell gesetzte Ticket-Summen sind nicht enthalten.')) ?></p>
         <button class="button primary" type="submit"><?= s(t('Export herunterladen')) ?></button>
     </form>
 </details>

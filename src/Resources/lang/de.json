@@ -359,7 +359,7 @@
   "Diese Exportdaten gibt es nicht.": "Diese Exportdaten gibt es nicht.",
   "Gesamt: :hours Stunden (:minutes Minuten)": "Gesamt: :hours Stunden (:minutes Minuten)",
   "Keine Datensätze im gewählten Zeitraum.": "Keine Datensätze im gewählten Zeitraum.",
-  "Enthält nur deine mit Stopp gebuchten Minuten ab Einführung des Stundenprotokolls. Laufende und pausierte Timer sowie manuell gesetzte Ticket-Summen sind nicht enthalten.": "Enthält nur deine mit Stopp gebuchten Minuten ab Einführung des Stundenprotokolls. Laufende und pausierte Timer sowie manuell gesetzte Ticket-Summen sind nicht enthalten.",
+  "Enthält nur deine in der Zeiterfassung gebuchten Minuten ab Einführung des Stundenprotokolls. Laufende und pausierte Timer sowie manuell gesetzte Ticket-Summen sind nicht enthalten.": "Enthält nur deine in der Zeiterfassung gebuchten Minuten ab Einführung des Stundenprotokolls. Laufende und pausierte Timer sowie manuell gesetzte Ticket-Summen sind nicht enthalten.",
   "Rechnungspositionen – CSV": "Rechnungspositionen – CSV",
   "Lexware Office – API-Positionen (JSON)": "Lexware Office – API-Positionen (JSON)",
   "sevdesk – API-Positionen (JSON)": "sevdesk – API-Positionen (JSON)",
