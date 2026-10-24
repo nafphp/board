@@ -111,6 +111,12 @@ session publication. A password reset waits for that publication and invalidates
 security version, or commits first and causes the old token to be refused. The token is read
 again after acquiring the lock; two callers cannot both rotate the same stored validator.
 
+Requests from a session revoked by a credential change are refused. With Auth 0.2.4+, session
+restoration also clears the old CSRF token: an already prepared write can receive HTTP 400
+from the CSRF guard before reaching the account handler. A request that passed CSRF before
+the competing change is refused with 401 by the account recheck. Both outcomes require a
+fresh sign-in; neither can consume the confirmation code or apply the change a second time.
+
 ## Recovering a local password
 
 An authorized administrator opens the person in installation settings and chooses **Create
